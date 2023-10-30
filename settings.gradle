@@ -1,0 +1,3 @@
+rootProject.name = 'fauna-jvm'
+include 'common'
+include 'faunaJava'
