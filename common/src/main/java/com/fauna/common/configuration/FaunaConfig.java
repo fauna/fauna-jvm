@@ -62,7 +62,7 @@ public class FaunaConfig {
     }
 
     public static class Builder {
-        private String endpoint;
+        private String endpoint = Endpoint.DEFAULT.toString();
         private String secret;
         private Duration queryTimeout = DEFAULT_QUERY_TIMEOUT;
         private Boolean linearized;

@@ -59,5 +59,4 @@ class FaunaClientTest {
         assertEquals(httpResponse, result.join());
     }
 
-
 }
