@@ -2,6 +2,7 @@ package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.HttpClientConfig;
+import com.fauna.common.configuration.JvmDriver;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -16,6 +17,8 @@ public class Connection {
     private final HttpClientConfig httpClientConfig;
     private final HttpClient httpClient;
 
+    private final JvmDriver jvmDriver;
+
     public static Builder builder() {
         return new Builder();
     }
@@ -24,14 +27,17 @@ public class Connection {
         this.httpClientConfig = builder.httpClientConfig;
         this.requestBuilder = RequestBuilder.builder()
                 .faunaConfig(builder.faunaConfig)
+                .jvmDriver(builder.jvmDriver)
                 .build();
         this.httpClient = createHttpClient();
+        this.jvmDriver = builder.jvmDriver;
     }
 
-    Connection(RequestBuilder requestBuilder, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+    Connection(RequestBuilder requestBuilder, HttpClientConfig httpClientConfig, HttpClient httpClient, JvmDriver jvmDriver) {
         this.requestBuilder = requestBuilder;
         this.httpClientConfig = httpClientConfig;
         this.httpClient = httpClient;
+        this.jvmDriver = jvmDriver;
     }
 
     private HttpClient createHttpClient() {
@@ -49,6 +55,7 @@ public class Connection {
     public static class Builder {
         private FaunaConfig faunaConfig;
         private HttpClientConfig httpClientConfig;
+        private JvmDriver jvmDriver;
 
         public Builder faunaConfig(FaunaConfig faunaConfig) {
             this.faunaConfig = faunaConfig;
@@ -57,6 +64,10 @@ public class Connection {
 
         public Builder httpClientConfig(HttpClientConfig httpClientConfig) {
             this.httpClientConfig = httpClientConfig;
+            return this;
+        }
+        public Builder jvmDriver(JvmDriver jvmDriver) {
+            this.jvmDriver = jvmDriver;
             return this;
         }
 

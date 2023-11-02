@@ -1,16 +1,23 @@
 package com.fauna.common.connection;
 
+import com.fauna.common.configuration.JvmDriver;
+import com.fauna.common.configuration.Version;
+
 class DriverEnvironment {
 
-    private final String javaVersion;
-    private final String driverVersion = "1.0";
+    private final String driverVersion;
     private final String env;
     private final String os;
+    private String runtime;
 
-    public DriverEnvironment() {
-        this.javaVersion = System.getProperty("java.version");
+    public DriverEnvironment(JvmDriver jvmDriver) {
         this.env = getRuntimeEnvironment();
         this.os = System.getProperty("os.name") + "-" + System.getProperty("os.version");
+        this.runtime = String.format("java-%s", System.getProperty("java.version"));
+        this.driverVersion = Version.getVersion();
+        if (jvmDriver == JvmDriver.SCALA) {
+            this.runtime = String.format("%s,scala", this.runtime);
+        }
     }
 
     private String getRuntimeEnvironment() {
@@ -35,8 +42,8 @@ class DriverEnvironment {
 
     @Override
     public String toString() {
-        return String.format("driver=java-%s; runtime=java-%s; env=%s; os=%s",
-                driverVersion, javaVersion, env, os).toLowerCase();
+        return String.format("driver=%s; runtime=java-%s; env=%s; os=%s",
+                driverVersion, runtime, env, os).toLowerCase();
     }
 
 }

@@ -2,6 +2,7 @@ package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.HttpClientConfig;
+import com.fauna.common.configuration.JvmDriver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -45,11 +46,10 @@ class ConnectionTest {
         when(httpClientConfig.getConnectTimeout()).thenReturn(Duration.ofSeconds(10));
         when(httpClientConfig.getMaxConnections()).thenReturn(5);
         when(faunaConfig.getEndpoint()).thenReturn("http://localhost:8443");  // Return a valid URL string here
-        when(faunaConfig.getQueryTimeout()).thenReturn(Duration.ofSeconds(10));
 
         RequestBuilder requestBuilder = RequestBuilder.builder().faunaConfig(faunaConfig).build();
         spyRequestBuilder = spy(requestBuilder);
-        connection = new Connection(spyRequestBuilder, httpClientConfig, httpClient);
+        connection = new Connection(spyRequestBuilder, httpClientConfig, httpClient, JvmDriver.JAVA);
     }
 
     @Test

@@ -5,7 +5,7 @@ allprojects {
 }
 
 subprojects {
-    version = '1.0-SNAPSHOT'
+    version = project.version
 
     repositories {
         mavenCentral()
@@ -50,5 +50,11 @@ project(':common') {
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
+    }
+
+    processResources {
+        filesMatching('version.properties') {
+            expand 'version': project.version
+        }
     }
 }

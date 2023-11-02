@@ -1,5 +1,6 @@
 package com.fauna.client;
 
+import com.fauna.common.configuration.JvmDriver;
 import com.fauna.common.connection.Connection;
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.HttpClientConfig;
@@ -19,6 +20,7 @@ public class FaunaClient {
         this.connection = Connection.builder()
                 .faunaConfig(faunaConfig)
                 .httpClientConfig(httpClientConfig)
+                .jvmDriver(JvmDriver.JAVA)
                 .build();
     }
 

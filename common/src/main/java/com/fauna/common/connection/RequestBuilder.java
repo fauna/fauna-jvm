@@ -1,6 +1,7 @@
 package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
+import com.fauna.common.configuration.JvmDriver;
 import com.fauna.common.encoding.QueryTags;
 
 import java.net.URI;
@@ -16,6 +17,7 @@ import static com.fauna.common.connection.Headers.DRIVER_ENV;
 import static com.fauna.common.connection.Headers.FORMAT;
 import static com.fauna.common.connection.Headers.LINEARIZED;
 import static com.fauna.common.connection.Headers.QUERY_TAGS;
+import static com.fauna.common.connection.Headers.QUERY_TIMEOUT_MS;
 import static com.fauna.common.connection.Headers.TRACE_PARENT;
 import static com.fauna.common.connection.Headers.TYPE_CHECK;
 
@@ -34,14 +36,13 @@ class RequestBuilder {
         this.faunaConfig = builder.faunaConfig;
         uri = URI.create(faunaConfig.getEndpoint());
         this.auth = new Auth(faunaConfig.getSecret());
-        this.driverEnvironment = new DriverEnvironment();
+        this.driverEnvironment = new DriverEnvironment(builder.jvmDriver);
     }
 
     public HttpRequest buildRequest(String fql) {
         Map<String, String> headers = buildHeaders();
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
                 .uri(uri)
-                .timeout(faunaConfig.getQueryTimeout())
                 .POST(HttpRequest.BodyPublishers.ofString(fql));
         headers.forEach(httpRequestBuilder::header);
         return httpRequestBuilder.build();
@@ -55,6 +56,7 @@ class RequestBuilder {
         headers.put(CONTENT_TYPE, "application/json;charset=utf-8");
         headers.put(DRIVER, "Java");
         headers.put(DRIVER_ENV, driverEnvironment.toString());
+        headers.put(QUERY_TIMEOUT_MS, String.valueOf(faunaConfig.getQueryTimeout().toMillis()));
 
         if (faunaConfig.getLinearized() != null) {
             headers.put(LINEARIZED, faunaConfig.getLinearized().toString());
@@ -77,9 +79,15 @@ class RequestBuilder {
 
     public static class Builder {
         private FaunaConfig faunaConfig;
+        private JvmDriver jvmDriver;
 
         public Builder faunaConfig(FaunaConfig faunaConfig) {
             this.faunaConfig = faunaConfig;
+            return this;
+        }
+
+        public Builder jvmDriver(JvmDriver jvmDriver) {
+            this.jvmDriver = jvmDriver;
             return this;
         }
 
