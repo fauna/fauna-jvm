@@ -1,5 +1,6 @@
 package com.fauna.common.connection;
 
+import com.fauna.common.configuration.Endpoint;
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.HttpClientConfig;
 import com.fauna.common.configuration.JvmDriver;
@@ -43,13 +44,18 @@ class ConnectionTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(httpClientConfig.getConnectTimeout()).thenReturn(Duration.ofSeconds(10));
-        when(httpClientConfig.getMaxConnections()).thenReturn(5);
-        when(faunaConfig.getEndpoint()).thenReturn("http://localhost:8443");  // Return a valid URL string here
 
+        httpClientConfig = HttpClientConfig.builder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .maxConnections(5)
+                .build();
+        faunaConfig = FaunaConfig.builder()
+                .endpoint(Endpoint.LOCAL.toString())
+                .secret("secret")
+                .build();
         RequestBuilder requestBuilder = RequestBuilder.builder().faunaConfig(faunaConfig).build();
         spyRequestBuilder = spy(requestBuilder);
-        connection = new Connection(spyRequestBuilder, httpClientConfig, httpClient, JvmDriver.JAVA);
+        connection = new Connection(spyRequestBuilder, httpClientConfig, httpClient);
     }
 
     @Test

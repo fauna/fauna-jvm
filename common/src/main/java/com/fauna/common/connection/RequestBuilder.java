@@ -21,6 +21,9 @@ import static com.fauna.common.connection.Headers.QUERY_TIMEOUT_MS;
 import static com.fauna.common.connection.Headers.TRACE_PARENT;
 import static com.fauna.common.connection.Headers.TYPE_CHECK;
 
+/**
+ * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
+ */
 class RequestBuilder {
 
     private final FaunaConfig faunaConfig;
@@ -28,10 +31,20 @@ class RequestBuilder {
     private final DriverEnvironment driverEnvironment;
     private final URI uri;
 
+    /**
+     * Creates a new builder for RequestBuilder.
+     *
+     * @return A new instance of Builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Private constructor for RequestBuilder.
+     *
+     * @param builder The builder used to create the RequestBuilder instance.
+     */
     private RequestBuilder(Builder builder) {
         this.faunaConfig = builder.faunaConfig;
         uri = URI.create(faunaConfig.getEndpoint());
@@ -39,6 +52,12 @@ class RequestBuilder {
         this.driverEnvironment = new DriverEnvironment(builder.jvmDriver);
     }
 
+    /**
+     * Builds and returns an HTTP request for a given Fauna query string (FQL).
+     *
+     * @param fql The Fauna query string.
+     * @return An HttpRequest object configured for the Fauna query.
+     */
     public HttpRequest buildRequest(String fql) {
         Map<String, String> headers = buildHeaders();
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
@@ -48,6 +67,11 @@ class RequestBuilder {
         return httpRequestBuilder.build();
     }
 
+    /**
+     * Builds and returns a map of HTTP headers required for the Fauna request.
+     *
+     * @return A Map of header names to header values.
+     */
     private Map<String, String> buildHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put(AUTHORIZATION, auth.bearer());
@@ -77,20 +101,40 @@ class RequestBuilder {
         return headers;
     }
 
+    /**
+     * Builder class for RequestBuilder. Follows the Builder Design Pattern.
+     */
     public static class Builder {
         private FaunaConfig faunaConfig;
         private JvmDriver jvmDriver;
 
+        /**
+         * Sets the FaunaConfig for the RequestBuilder.
+         *
+         * @param faunaConfig The configuration settings for Fauna.
+         * @return The current Builder instance.
+         */
         public Builder faunaConfig(FaunaConfig faunaConfig) {
             this.faunaConfig = faunaConfig;
             return this;
         }
 
+        /**
+         * Sets the JvmDriver for the RequestBuilder.
+         *
+         * @param jvmDriver The JVM driver information.
+         * @return The current Builder instance.
+         */
         public Builder jvmDriver(JvmDriver jvmDriver) {
             this.jvmDriver = jvmDriver;
             return this;
         }
 
+        /**
+         * Builds and returns a new RequestBuilder instance.
+         *
+         * @return A new instance of RequestBuilder.
+         */
         RequestBuilder build() {
             return new RequestBuilder(this);
         }
