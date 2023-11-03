@@ -4,6 +4,10 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Represents a template for constructing Fauna queries with placeholders
+ * for variable interpolation.
+ */
 public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
 
     private static final char DELIMITER = '$';
@@ -21,10 +25,21 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
 
     private final String template;
 
+    /**
+     * Constructs a new FaunaTemplate with the given string template.
+     *
+     * @param template the string template containing literals and placeholders.
+     */
     public FaunaTemplate(String template) {
         this.template = template;
     }
 
+    /**
+     * Creates an iterator over the parts of the template, distinguishing
+     * between literals and variable placeholders.
+     *
+     * @return an Iterator that traverses the template parts.
+     */
     @Override
     public Iterator<TemplatePart> iterator() {
         return new Iterator<>() {
@@ -87,6 +102,12 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
         };
     }
 
+    /**
+     * Handles invalid placeholder syntax within the template.
+     *
+     * @param position the starting position of the invalid placeholder.
+     * @throws IllegalArgumentException if the placeholder syntax is invalid.
+     */
     private void handleInvalid(int position) {
         String substringUpToPosition = template.substring(0, position);
         String[] lines = substringUpToPosition.split("\r?\n");
@@ -103,19 +124,39 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
         throw new IllegalArgumentException(String.format("Invalid placeholder in template: line %d, col %d", lineno, colno));
     }
 
+    /**
+     * Represents a part of the template, which can either be a literal string
+     * or a variable placeholder.
+     */
     public static class TemplatePart {
         private final String part;
         private final TemplatePartType type;
 
+        /**
+         * Constructs a new TemplatePart with the given text and type.
+         *
+         * @param part the text of this part of the template.
+         * @param type the type of this part of the template.
+         */
         public TemplatePart(String part, TemplatePartType type) {
             this.part = part;
             this.type = type;
         }
 
+        /**
+         * Retrieves the text of this part of the template.
+         *
+         * @return the text of this template part.
+         */
         public String getPart() {
             return part;
         }
 
+        /**
+         * Retrieves the type of this part of the template.
+         *
+         * @return the type of this template part.
+         */
         public TemplatePartType getType() {
             return type;
         }
