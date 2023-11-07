@@ -32,6 +32,9 @@ project(':faunaJava') {
     dependencies {
         implementation project(':common')
 
+        implementation "com.google.code.gson:gson:${gsonVersion}"
+
+
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"

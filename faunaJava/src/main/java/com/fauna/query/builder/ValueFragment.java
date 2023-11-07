@@ -6,7 +6,7 @@ import java.util.Objects;
  * Represents a value fragment of a Fauna query.
  * This class encapsulates a value that can be a variable in the query.
  */
-class ValueFragment extends Fragment {
+public class ValueFragment extends Fragment {
 
     private final Object value;
 

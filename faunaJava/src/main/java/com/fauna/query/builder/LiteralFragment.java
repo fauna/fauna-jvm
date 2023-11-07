@@ -6,7 +6,7 @@ import java.util.Objects;
  * Represents a literal fragment of a Fauna query.
  * This class encapsulates a fixed string that does not contain any variables.
  */
-class LiteralFragment extends Fragment {
+public class LiteralFragment extends Fragment {
 
     private final String value;
 

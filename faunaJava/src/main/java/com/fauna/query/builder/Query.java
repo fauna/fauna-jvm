@@ -66,7 +66,7 @@ public class Query {
      *
      * @return a list of Fragments.
      */
-    List<Fragment> getFragments() {
+    public List<Fragment> getFragments() {
         return fragments;
     }
 
