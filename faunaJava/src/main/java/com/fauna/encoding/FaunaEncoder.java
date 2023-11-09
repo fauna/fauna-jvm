@@ -1,6 +1,12 @@
 package com.fauna.encoding;
 
 import com.fauna.exception.TypeError;
+import com.fauna.query.model.Document;
+import com.fauna.query.model.DocumentReference;
+import com.fauna.query.model.Module;
+import com.fauna.query.model.NamedDocument;
+import com.fauna.query.model.NamedDocumentReference;
+import com.fauna.query.model.NullDocument;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -20,6 +26,10 @@ import java.time.LocalDateTime;
  *     <li>{@code LocalDateTime} values to {@code @time} for Fauna.</li>
  *     <li>{@code LocalDate} values to {@code @date} for Fauna.</li>
  *     <li>{@code Boolean} values {@code true} and {@code false} are preserved as is for Fauna.</li>
+ *     <li>{@code null} values are preserved as {@code None} for Fauna.</li>
+ *     <li>{@code Document} instances to {@code @ref} for Fauna.</li>
+ *     <li>{@code DocumentReference} instances to {@code @ref} for Fauna.</li>
+ *     <li>{@code Module} instances to {@code @mod} for Fauna.</li>
  * </ul>
  * <p>
  * This class ensures that data types are encoded properly to maintain the integrity of the data when interacting with the Fauna service.
@@ -37,6 +47,7 @@ public class FaunaEncoder {
      *
      * @param value The object to encode.
      * @return A string containing the JSON encoded representation of the value.
+     * @throws TypeError if the object type is not supported by the encoder.
      */
     public static String encode(Object value) {
         return gson.toJson(wrapValue(value));
@@ -68,6 +79,28 @@ public class FaunaEncoder {
         }
         if (value instanceof LocalDate) {
             return new DateWrapper((LocalDate) value);
+        }
+        if (value instanceof DocumentReference) {
+            return new DocumentReferenceWrapper((DocumentReference) value);
+        }
+        if (value instanceof NamedDocumentReference) {
+            return new NamedDocumentReferenceWrapper((NamedDocumentReference) value);
+        }
+        if (value instanceof Module) {
+            return new ModuleWrapper((Module) value);
+        }
+        if (value instanceof NullDocument) {
+            return new NullDocumentWrapper((NullDocument) value);
+        }
+        if (value instanceof Document) {
+            return new DocumentReferenceWrapper(
+                    new DocumentReference(((Document) value).getColl(), ((Document) value).getId())
+            );
+        }
+        if (value instanceof NamedDocument) {
+            return new NamedDocumentReferenceWrapper(
+                    new NamedDocumentReference(((NamedDocument) value).getColl(), ((NamedDocument) value).getName())
+            );
         }
         throw new TypeError("Unsupported type: " + value.getClass().getName());
     }

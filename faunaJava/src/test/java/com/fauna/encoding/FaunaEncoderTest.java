@@ -1,5 +1,11 @@
 package com.fauna.encoding;
 
+import com.fauna.query.model.Document;
+import com.fauna.query.model.DocumentReference;
+import com.fauna.query.model.Module;
+import com.fauna.query.model.NamedDocument;
+import com.fauna.query.model.NamedDocumentReference;
+import com.fauna.query.model.NullDocument;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
@@ -164,6 +170,89 @@ class FaunaEncoderTest {
         LocalDate testDate = LocalDate.parse("2023-03-17");
 
         String encoded = FaunaEncoder.encode(testDate);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    void testEncodeDocumentReference() {
+        JsonElement expectedJson = JsonParser.parseString("{'@ref': {'coll': {'@mod': 'Col'}, 'id': \"123\"}}");
+        DocumentReference docRef = new DocumentReference(new Module("Col"), "123");
+
+        String encoded = FaunaEncoder.encode(docRef);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    void testEncodeNullDocument() {
+        JsonElement expectedJson = JsonParser.parseString("{\"@ref\": {\"id\": \"456\", \"coll\": {\"@mod\": \"NDCol\"}}}");
+        NullDocument nullDoc = new NullDocument(new DocumentReference(new Module("NDCol"), "456"), "not found");
+
+        String encoded = FaunaEncoder.encode(nullDoc);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    void testEncodeNamedNullDocument() {
+        JsonElement expectedJson = JsonParser.parseString("{\"@ref\": {\"name\": \"Party\", \"coll\": {\"@mod\": \"Collection\"}}}");
+        NullDocument nullDoc = new NullDocument(new NamedDocumentReference("Collection", "Party"), "not found");
+
+        String encoded = FaunaEncoder.encode(nullDoc);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    public void testEncodeNamedDocumentReference() {
+        JsonElement expectedJson = JsonParser.parseString("{\"@ref\": {\"name\": \"Hi\", \"coll\": {\"@mod\": \"Col\"}}}");
+        NamedDocumentReference docRef = new NamedDocumentReference("Col", "Hi");
+
+        String encoded = FaunaEncoder.encode(docRef);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    public void testEncodeDocument() {
+        JsonElement expectedJson = JsonParser.parseString("{\"@ref\": {\"id\": \"123\", \"coll\": {\"@mod\": \"Dogs\"}}}");
+
+        LocalDateTime fixedDatetime = LocalDateTime.now();
+        Module dogsModule = new Module("Dogs");
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "Scout");
+        Document testDoc = new Document("123", fixedDatetime, dogsModule, data);
+
+        String encoded = FaunaEncoder.encode(testDoc);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    public void testEncodeNamedDocuments() {
+        JsonElement expectedJson = JsonParser.parseString("{\"@ref\": {\"name\": \"DogSchema\", \"coll\": {\"@mod\": \"Dogs\"}}}");
+        LocalDateTime fixedDatetime = LocalDateTime.now();
+        NamedDocument testNamedDoc = new NamedDocument("DogSchema", fixedDatetime, new Module("Dogs"), new HashMap<>());
+
+        String encoded = FaunaEncoder.encode(testNamedDoc);
+        JsonElement actualJson = JsonParser.parseString(encoded);
+
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    public void testEncodeModule() {
+        JsonElement expectedJson = JsonParser.parseString("{\"@mod\": \"Math\"}");
+        Module testModule = new Module("Math");
+
+        String encoded = FaunaEncoder.encode(testModule);
         JsonElement actualJson = JsonParser.parseString(encoded);
 
         assertEquals(expectedJson, actualJson);
