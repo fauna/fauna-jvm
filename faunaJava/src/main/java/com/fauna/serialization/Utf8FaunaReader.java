@@ -66,13 +66,19 @@ public class Utf8FaunaReader {
             return false;
         }
 
-        switch (jsonParser.currentToken()) {
-            case VALUE_STRING:
-                currentFaunaTokenType = FaunaTokenType.STRING;
-                break;
-            default:
-                throw new SerializationException("Unhandled JSON token type " + jsonParser.currentToken() + ".");
+        JsonToken currentToken = jsonParser.currentToken();
+        if (currentToken != null) {
+            switch (currentToken) {
+                case VALUE_STRING:
+                    currentFaunaTokenType = FaunaTokenType.STRING;
+                    break;
+                default:
+                    throw new SerializationException("Unhandled JSON token type " + currentToken + ".");
+            }
+        } else {
+            return false;
         }
+
 
         return true;
     }

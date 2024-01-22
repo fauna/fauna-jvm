@@ -37,6 +37,7 @@ project(':faunaJava') {
         implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+        testImplementation 'junit:junit:4.13.2'
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     }

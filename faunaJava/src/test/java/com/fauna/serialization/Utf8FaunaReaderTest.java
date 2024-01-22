@@ -1,19 +1,20 @@
 package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import static org.junit.Assert.*;
 
 
 class Utf8FaunaReaderTest {
 
-    public static void main(String[] args) throws IOException {
+    @Test
+    public void testGetValueAsString() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("\"hello\"".getBytes());
         Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
 
@@ -24,25 +25,25 @@ class Utf8FaunaReaderTest {
         assertReader(reader, expectedTokens);
     }
 
-    private static void assertReader(Utf8FaunaReader reader, List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
+    private static void assertReader(Utf8FaunaReader reader, List<Map.Entry<FaunaTokenType, Object>> tokens) {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
-            Objects.requireNonNull(entry.getKey());
-            Objects.requireNonNull(reader.getCurrentTokenType());
-            assert entry.getKey().equals(reader.getCurrentTokenType());
+            assertNotNull(entry.getKey());
+            assertNotNull(reader.getCurrentTokenType());
+            assertEquals(entry.getKey(), FaunaTokenType.STRING);
 
             switch (entry.getKey()) {
                 case FIELD_NAME:
                 case STRING:
-                    assert entry.getValue().equals(reader.getValueAsString());
+                    assertEquals(entry.getValue(), reader.getValueAsString());
                     break;
                 default:
-                    assert entry.getValue() == null;
+                    assertNull(entry.getValue() == null);
                     break;
             }
         }
 
-        assert !reader.read();
+        assertFalse(reader.read());
     }
 
 }
