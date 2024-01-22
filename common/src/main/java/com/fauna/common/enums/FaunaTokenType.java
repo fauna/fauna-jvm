@@ -3,10 +3,11 @@ package com.fauna.common.enums;
 /**
  * Enumeration representing token types for Fauna serialization.
  */
-public enum TokenType {
+public enum FaunaTokenType {
     NONE,
 
     START_OBJECT,
+    START_ESCAPED_OBJECT,
     END_OBJECT,
 
     START_ARRAY,
@@ -37,5 +38,7 @@ public enum TokenType {
 
     NULL,
 
-    MODULE
+    MODULE,
+    END_SET,
+    START_SET
 }
