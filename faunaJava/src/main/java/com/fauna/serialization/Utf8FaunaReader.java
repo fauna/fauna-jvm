@@ -32,15 +32,18 @@ public class Utf8FaunaReader {
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
 
+    private enum TokenTypeInternal {
+        START_ESCAPED_OBJECT
+    }
+
     public Utf8FaunaReader(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(body);
-        System.out.println("");
         currentFaunaTokenType = NONE;
     }
 
-    public JsonToken getCurrentTokenType() {
-        return jsonParser.currentToken();
+    public FaunaTokenType getCurrentTokenType() {
+        return currentFaunaTokenType;
     }
     private final Set<FaunaTokenType> closers = new HashSet<>(Arrays.asList(
             END_OBJECT,
@@ -50,7 +53,7 @@ public class Utf8FaunaReader {
             END_ARRAY
     ));
 
-    public boolean read() {
+    public boolean read() throws IOException {
         taggedTokenValue = null;
 
         if (bufferedFaunaTokenType != null) {
@@ -72,6 +75,10 @@ public class Utf8FaunaReader {
                 case VALUE_STRING:
                     currentFaunaTokenType = FaunaTokenType.STRING;
                     break;
+                case NOT_AVAILABLE:
+                case START_OBJECT:
+                    handleStartObject();
+                    break;
                 default:
                     throw new SerializationException("Unhandled JSON token type " + currentToken + ".");
             }
@@ -83,6 +90,81 @@ public class Utf8FaunaReader {
         return true;
     }
 
+    private void handleStartObject() throws IOException {
+        advanceTrue();
+
+        switch (jsonParser.currentToken()) {
+            case FIELD_NAME:
+                switch (jsonParser.getText()) {
+                    case DATE_TAG:
+                        handleTaggedString(FaunaTokenType.DATE);
+                        break;
+                    case DOC_TAG:
+                        advance();
+                        currentFaunaTokenType = FaunaTokenType.START_DOCUMENT;
+                        tokenStack.push(FaunaTokenType.START_DOCUMENT);
+                        break;
+                    case DOUBLE_TAG:
+                        handleTaggedString(FaunaTokenType.DOUBLE);
+                        break;
+                    case INT_TAG:
+                        handleTaggedString(FaunaTokenType.INT);
+                        break;
+                    case LONG_TAG:
+                        handleTaggedString(FaunaTokenType.LONG);
+                        break;
+                    case MOD_TAG:
+                        handleTaggedString(FaunaTokenType.MODULE);
+                        break;
+                    case OBJECT_TAG:
+                        advance();
+                        currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                        tokenStack.push(TokenTypeInternal.START_ESCAPED_OBJECT);
+                        break;
+                    case REF_TAG:
+                        advance();
+                        currentFaunaTokenType = FaunaTokenType.START_REF;
+                        tokenStack.push(FaunaTokenType.START_REF);
+                        break;
+                    case SET_TAG:
+                        advance();
+                        currentFaunaTokenType = FaunaTokenType.START_PAGE;
+                        tokenStack.push(FaunaTokenType.START_PAGE);
+                        break;
+                    case TIME_TAG:
+                        handleTaggedString(FaunaTokenType.TIME);
+                        break;
+                    default:
+                        bufferedFaunaTokenType = FaunaTokenType.FIELD_NAME;
+                        tokenStack.push(FaunaTokenType.START_OBJECT);
+                        currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                        break;
+                }
+                break;
+            case END_OBJECT:
+                bufferedFaunaTokenType = FaunaTokenType.END_OBJECT;
+                tokenStack.push(FaunaTokenType.START_OBJECT);
+                currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                break;
+            default:
+                throw new SerializationException("Unexpected token following StartObject: " + jsonParser.currentToken());
+        }
+    }
+
+    private void handleTaggedString(FaunaTokenType token) throws IOException {
+        advanceTrue();
+        currentFaunaTokenType = token;
+        taggedTokenValue = jsonParser.getText();
+        advance();
+    }
+
+    private void advanceTrue() {
+        if (!advance())
+        {
+            throw new SerializationException("Unexpected end of underlying JSON reader.");
+        }
+    }
+
     private boolean advance() {
         try {
             return jsonParser.nextToken() != JsonToken.END_OBJECT;
@@ -91,11 +173,26 @@ public class Utf8FaunaReader {
         }
     }
 
+    private void validateTaggedType(FaunaTokenType type) {
+        if (currentFaunaTokenType != type || taggedTokenValue == null || !(taggedTokenValue instanceof String)) {
+            throw new IllegalStateException("CurrentTokenType is a " + currentFaunaTokenType.toString() +
+                    ", not a " + type.toString() + ".");
+        }
+    }
+
     public String getValueAsString() {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
             throw new RuntimeException("Error reading current token as String", e);
+        }
+    }
+    public Integer getValueAsInt() {
+        validateTaggedType(FaunaTokenType.INT);
+        try {
+            return Integer.parseInt(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error parsing the current token as Integer", e);
         }
     }
 }
