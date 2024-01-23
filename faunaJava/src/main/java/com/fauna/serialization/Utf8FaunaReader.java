@@ -230,4 +230,13 @@ public class Utf8FaunaReader {
             throw new RuntimeException("Error reading current token as LocalDateTime", e);
         }
     }
+
+    public Double getValueAsDouble() {
+        validateTaggedType(DOUBLE);
+        try {
+            return Double.parseDouble(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error parsing the current token as Double", e);
+        }
+    }
 }

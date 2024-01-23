@@ -92,6 +92,19 @@ class Utf8FaunaReaderTest {
         assertReader(reader, expectedTokens);
     }
 
+    @Test
+    public void testGetValueAsDouble() throws IOException {
+        String s = "{\"@double\": \"1.23\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+                Map.entry(FaunaTokenType.DOUBLE, 1.23D)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     private static void assertReader(Utf8FaunaReader reader, List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
@@ -116,6 +129,9 @@ class Utf8FaunaReaderTest {
                     break;
                 case TIME:
                     assertEquals(entry.getValue(), reader.getValueAsTime());
+                    break;
+                case DOUBLE:
+                    assertEquals(entry.getValue(), reader.getValueAsDouble());
                     break;
                 default:
                     assertNull(entry.getValue() == null);
