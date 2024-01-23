@@ -8,6 +8,9 @@ import com.fauna.exception.SerializationException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.fauna.common.enums.FaunaTokenType.*;
@@ -207,6 +210,24 @@ public class Utf8FaunaReader {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
             throw new RuntimeException("Error reading current token as Boolean", e);
+        }
+    }
+
+    public LocalDate getValueAsLocalDate() {
+        validateTaggedType(DATE);
+        try {
+            return LocalDate.parse(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error parsing the current token as LocalDate", e);
+        }
+    }
+
+    public Instant getValueAsTime() {
+        validateTaggedType(TIME);
+        try {
+            return Instant.parse(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error reading current token as LocalDateTime", e);
         }
     }
 }
