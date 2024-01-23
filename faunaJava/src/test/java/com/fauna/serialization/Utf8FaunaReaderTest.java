@@ -38,6 +38,30 @@ class Utf8FaunaReaderTest {
         assertReader(reader, expectedTokens);
     }
 
+    @Test
+    public void testGetValueAsBooleanTrue() throws IOException {
+        InputStream inputStream = new ByteArrayInputStream("true".getBytes());
+        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+                Map.entry(FaunaTokenType.TRUE, true)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
+    @Test
+    public void testGetValueAsBooleanFalse() throws IOException {
+        InputStream inputStream = new ByteArrayInputStream("false".getBytes());
+        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+                Map.entry(FaunaTokenType.FALSE, false)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     private static void assertReader(Utf8FaunaReader reader, List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
@@ -52,6 +76,10 @@ class Utf8FaunaReaderTest {
                     break;
                 case INT:
                     assertEquals(entry.getValue(), reader.getValueAsInt());
+                    break;
+                case TRUE:
+                case FALSE:
+                    assertEquals(entry.getValue(), reader.getValueAsBoolean());
                     break;
                 default:
                     assertNull(entry.getValue() == null);

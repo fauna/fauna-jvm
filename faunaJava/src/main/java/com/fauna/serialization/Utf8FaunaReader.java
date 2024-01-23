@@ -79,6 +79,12 @@ public class Utf8FaunaReader {
                 case START_OBJECT:
                     handleStartObject();
                     break;
+                case VALUE_TRUE:
+                    currentFaunaTokenType = FaunaTokenType.TRUE;
+                    break;
+                case VALUE_FALSE:
+                    currentFaunaTokenType = FaunaTokenType.FALSE;
+                    break;
                 default:
                     throw new SerializationException("Unhandled JSON token type " + currentToken + ".");
             }
@@ -193,6 +199,14 @@ public class Utf8FaunaReader {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
             throw new RuntimeException("Error parsing the current token as Integer", e);
+        }
+    }
+
+    public Boolean getValueAsBoolean() {
+        try {
+            return jsonParser.getValueAsBoolean();
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading current token as Boolean", e);
         }
     }
 }
