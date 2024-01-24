@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 import static com.fauna.common.enums.FaunaTokenType.DATE;
+import static com.fauna.common.enums.FaunaTokenType.DOUBLE;
 import static com.fauna.common.enums.FaunaTokenType.END_ARRAY;
 import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
 import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
