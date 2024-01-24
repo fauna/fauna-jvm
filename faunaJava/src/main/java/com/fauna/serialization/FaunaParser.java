@@ -43,7 +43,7 @@ public class FaunaParser {
     private static final String SET_TAG = "@set";
     private static final String OBJECT_TAG = "@object";//TODO Understand Module
     private final JsonParser jsonParser;
-    private final Stack<Object> tokenStack = new Stack<>();
+    private final Stack<FaunaTokenType> tokenStack = new Stack<>();
     private FaunaTokenType currentFaunaTokenType;
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
@@ -96,6 +96,17 @@ public class FaunaParser {
                 case NOT_AVAILABLE:
                 case START_OBJECT:
                     handleStartObject();
+                    break;
+                case START_ARRAY:
+                    tokenStack.push(FaunaTokenType.START_ARRAY);
+                    currentFaunaTokenType = FaunaTokenType.START_ARRAY;
+                    break;
+                case END_OBJECT:
+                    handleEndObject();
+                    break;
+                case END_ARRAY:
+                    tokenStack.pop();
+                    currentFaunaTokenType = FaunaTokenType.END_ARRAY;
                     break;
                 case VALUE_TRUE:
                     currentFaunaTokenType = FaunaTokenType.TRUE;
@@ -173,6 +184,34 @@ public class FaunaParser {
             default:
                 throw new SerializationException(
                     "Unexpected token following StartObject: " + jsonParser.currentToken());
+        }
+    }
+
+    private void handleEndObject() {
+        FaunaTokenType startToken = tokenStack.pop();
+        switch (startToken) {
+            case START_DOCUMENT:
+                currentFaunaTokenType = END_DOCUMENT;
+                advanceTrue();
+                break;
+            case START_PAGE:
+                currentFaunaTokenType = END_PAGE;
+                advanceTrue();
+                break;
+            case START_REF:
+                currentFaunaTokenType = END_REF;
+                advanceTrue();
+                break;
+            case START_ESCAPED_OBJECT:
+                currentFaunaTokenType = END_OBJECT;
+                advanceTrue();
+                break;
+            case START_OBJECT:
+                currentFaunaTokenType = END_OBJECT;
+                break;
+            default:
+                throw new SerializationException(
+                    "Unexpected token " + startToken + ". This might be a bug.");
         }
     }
 
