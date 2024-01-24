@@ -7,6 +7,7 @@ import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
 import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
 import static com.fauna.common.enums.FaunaTokenType.END_PAGE;
 import static com.fauna.common.enums.FaunaTokenType.END_REF;
+import static com.fauna.common.enums.FaunaTokenType.LONG;
 import static com.fauna.common.enums.FaunaTokenType.NONE;
 import static com.fauna.common.enums.FaunaTokenType.TIME;
 
@@ -255,6 +256,15 @@ public class FaunaParser {
         validateTaggedType(DOUBLE);
         try {
             return Double.parseDouble(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error parsing the current token as Double", e);
+        }
+    }
+
+    public Long getValueAsLong() {
+        validateTaggedType(LONG);
+        try {
+            return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
             throw new RuntimeException("Error parsing the current token as Double", e);
         }

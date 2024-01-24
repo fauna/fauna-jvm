@@ -108,6 +108,19 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens);
     }
 
+    @Test
+    public void testGetValueAsLong() throws IOException {
+        String s = "{\"@long\": \"123\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            Map.entry(FaunaTokenType.LONG, 123L)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
@@ -136,6 +149,9 @@ class FaunaParserTest {
                     break;
                 case DOUBLE:
                     assertEquals(entry.getValue(), reader.getValueAsDouble());
+                    break;
+                case LONG:
+                    assertEquals(entry.getValue(), reader.getValueAsLong());
                     break;
                 default:
                     assertNull(entry.getValue() == null);
