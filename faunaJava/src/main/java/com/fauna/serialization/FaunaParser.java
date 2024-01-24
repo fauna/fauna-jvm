@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fauna.common.enums.FaunaTokenType;
+import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,10 +47,6 @@ public class FaunaParser {
     private FaunaTokenType currentFaunaTokenType;
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
-
-    private enum TokenTypeInternal {
-        START_ESCAPED_OBJECT
-    }
 
     public FaunaParser(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
@@ -146,7 +143,7 @@ public class FaunaParser {
                     case OBJECT_TAG:
                         advance();
                         currentFaunaTokenType = FaunaTokenType.START_OBJECT;
-                        tokenStack.push(TokenTypeInternal.START_ESCAPED_OBJECT);
+                        tokenStack.push(FaunaTokenType.START_ESCAPED_OBJECT);
                         break;
                     case REF_TAG:
                         advance();
@@ -267,6 +264,14 @@ public class FaunaParser {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
             throw new RuntimeException("Error parsing the current token as Double", e);
+        }
+    }
+
+    public Module getValueAsModule() {
+        try {
+            return new Module(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error parsing the current token as Module", e);
         }
     }
 }
