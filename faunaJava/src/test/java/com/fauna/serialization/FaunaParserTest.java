@@ -1,8 +1,11 @@
 package com.fauna.serialization;
 
-import com.fauna.common.enums.FaunaTokenType;
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
+import com.fauna.common.enums.FaunaTokenType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,18 +13,18 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
 
-class Utf8FaunaReaderTest {
+class FaunaParserTest {
 
     @Test
     public void testGetValueAsString() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("\"hello\"".getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-                Map.entry(FaunaTokenType.STRING, "hello")
+            Map.entry(FaunaTokenType.STRING, "hello")
         );
 
         assertReader(reader, expectedTokens);
@@ -31,10 +34,10 @@ class Utf8FaunaReaderTest {
     public void testGetValueAsInt() throws IOException {
         String s = "{\"@int\": \"123\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-                Map.entry(FaunaTokenType.INT, 123)
+            Map.entry(FaunaTokenType.INT, 123)
         );
 
         assertReader(reader, expectedTokens);
@@ -43,10 +46,10 @@ class Utf8FaunaReaderTest {
     @Test
     public void testGetValueAsBooleanTrue() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("true".getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-                Map.entry(FaunaTokenType.TRUE, true)
+            Map.entry(FaunaTokenType.TRUE, true)
         );
 
         assertReader(reader, expectedTokens);
@@ -55,10 +58,10 @@ class Utf8FaunaReaderTest {
     @Test
     public void testGetValueAsBooleanFalse() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("false".getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-                Map.entry(FaunaTokenType.FALSE, false)
+            Map.entry(FaunaTokenType.FALSE, false)
         );
 
         assertReader(reader, expectedTokens);
@@ -92,7 +95,8 @@ class Utf8FaunaReaderTest {
         assertReader(reader, expectedTokens);
     }
 
-    private static void assertReader(Utf8FaunaReader reader, List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
+    private static void assertReader(FaunaParser reader,
+        List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
             assertNotNull(entry.getKey());
