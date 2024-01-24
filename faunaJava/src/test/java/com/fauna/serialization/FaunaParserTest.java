@@ -42,7 +42,7 @@ class FaunaParserTest {
     }
 
     private static void assertReader(FaunaParser reader,
-        List<Map.Entry<FaunaTokenType, Object>> tokens) {
+        List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
             assertNotNull(entry.getKey());
