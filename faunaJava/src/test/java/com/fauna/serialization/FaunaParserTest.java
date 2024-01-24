@@ -71,10 +71,10 @@ class FaunaParserTest {
     public void testeGetValueAsLocalDate() throws IOException {
         String s = "{\"@date\":\"2024-01-23\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-                Map.entry(FaunaTokenType.DATE, LocalDate.of(2024, 01, 23))
+            Map.entry(FaunaTokenType.DATE, LocalDate.of(2024, 01, 23))
         );
 
         assertReader(reader, expectedTokens);
@@ -84,12 +84,12 @@ class FaunaParserTest {
     public void testeGetValueAsTime() throws IOException {
         String s = "{\"@time\":\"2024-01-23T13:33:10.300Z\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         Instant instant = Instant.parse("2024-01-23T13:33:10.300Z");
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-                Map.entry(FaunaTokenType.TIME, instant)
+            Map.entry(FaunaTokenType.TIME, instant)
         );
 
         assertReader(reader, expectedTokens);

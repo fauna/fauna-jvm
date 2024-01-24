@@ -1,11 +1,13 @@
 package com.fauna.serialization;
 
+import static com.fauna.common.enums.FaunaTokenType.DATE;
 import static com.fauna.common.enums.FaunaTokenType.END_ARRAY;
 import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
 import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
 import static com.fauna.common.enums.FaunaTokenType.END_PAGE;
 import static com.fauna.common.enums.FaunaTokenType.END_REF;
 import static com.fauna.common.enums.FaunaTokenType.NONE;
+import static com.fauna.common.enums.FaunaTokenType.TIME;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -16,10 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static com.fauna.common.enums.FaunaTokenType.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -174,7 +172,8 @@ public class FaunaParser {
                 currentFaunaTokenType = FaunaTokenType.START_OBJECT;
                 break;
             default:
-                throw new SerializationException("Unexpected token following StartObject: " + jsonParser.currentToken());
+                throw new SerializationException(
+                    "Unexpected token following StartObject: " + jsonParser.currentToken());
         }
     }
 
@@ -186,8 +185,7 @@ public class FaunaParser {
     }
 
     private void advanceTrue() {
-        if (!advance())
-        {
+        if (!advance()) {
             throw new SerializationException("Unexpected end of underlying JSON reader.");
         }
     }
@@ -201,8 +199,10 @@ public class FaunaParser {
     }
 
     private void validateTaggedType(FaunaTokenType type) {
-        if (currentFaunaTokenType != type || taggedTokenValue == null || !(taggedTokenValue instanceof String)) {
-            throw new IllegalStateException("CurrentTokenType is a " + currentFaunaTokenType.toString() +
+        if (currentFaunaTokenType != type || taggedTokenValue == null
+            || !(taggedTokenValue instanceof String)) {
+            throw new IllegalStateException(
+                "CurrentTokenType is a " + currentFaunaTokenType.toString() +
                     ", not a " + type.toString() + ".");
         }
     }
@@ -214,6 +214,7 @@ public class FaunaParser {
             throw new RuntimeException("Error reading current token as String", e);
         }
     }
+
     public Integer getValueAsInt() {
         validateTaggedType(FaunaTokenType.INT);
         try {
