@@ -32,7 +32,7 @@ class FaunaParserTest {
     public void testGetValueAsInt() throws IOException {
         String s = "{\"@int\": \"123\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        Utf8FaunaReader reader = new Utf8FaunaReader(inputStream);
+        FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.INT, 123)
