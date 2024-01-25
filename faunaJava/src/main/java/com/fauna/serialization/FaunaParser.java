@@ -124,6 +124,11 @@ public class FaunaParser {
                         handleTaggedString(FaunaTokenType.INT);
                         break;
                     case DATE_TAG:
+                        handleTaggedString(FaunaTokenType.DATE);
+                        break;
+                    case TIME_TAG:
+                        handleTaggedString(FaunaTokenType.TIME);
+                        break;
                     case DOC_TAG:
                     case DOUBLE_TAG:
                     case LONG_TAG:
@@ -131,7 +136,6 @@ public class FaunaParser {
                     case OBJECT_TAG:
                     case REF_TAG:
                     case SET_TAG:
-                    case TIME_TAG:
                         throw new SerializationException(
                             "Token not implemented: " + jsonParser.currentToken());
                     default:
@@ -210,7 +214,7 @@ public class FaunaParser {
         try {
             return LocalDate.parse(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as LocalDate", e);
+            throw new RuntimeException("Error getting the current token as LocalDate", e);
         }
     }
 
@@ -219,7 +223,7 @@ public class FaunaParser {
         try {
             return Instant.parse(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error reading current token as LocalDateTime", e);
+            throw new RuntimeException("Error getting the current token as LocalDateTime", e);
         }
     }
 }
