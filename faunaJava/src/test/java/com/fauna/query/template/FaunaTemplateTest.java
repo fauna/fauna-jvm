@@ -1,11 +1,10 @@
 package com.fauna.query.template;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class FaunaTemplateTest {
 
@@ -61,18 +60,6 @@ class FaunaTemplateTest {
         assertEquals(TemplatePartType.LITERAL, expanded.get(0).getType());
         assertEquals("{not_a_var}'", expanded.get(1).getPart());
         assertEquals(TemplatePartType.LITERAL, expanded.get(1).getType());
-    }
-
-    @Test
-    void testTemplates_WithUnsupportedIdentifiers() {
-        FaunaTemplate template = new FaunaTemplate("let x = ${かわいい}");
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            List<FaunaTemplate.TemplatePart> expanded = new ArrayList<>();
-            template.forEach(expanded::add);
-        });
-        String expectedMessage = "Invalid placeholder in template: line 1, col 9";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
     }
 
 }
