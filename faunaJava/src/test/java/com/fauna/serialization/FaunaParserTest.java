@@ -7,8 +7,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.common.enums.FaunaTokenType;
-import com.fauna.exception.SerializationException;
 import com.fauna.common.types.Module;
+import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -156,6 +156,12 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@long\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsLong);
     }
 
     @Test
@@ -169,12 +175,6 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
-
-        String invalidJson = "{\"@long\": \"abc\"}";
-        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
-        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
-
-        assertThrows(RuntimeException.class, invalidReader::getValueAsLong);
     }
 
     private static void assertReader(FaunaParser reader,

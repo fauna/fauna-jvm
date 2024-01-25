@@ -134,8 +134,10 @@ public class FaunaParser {
                     case LONG_TAG:
                         handleTaggedString(FaunaTokenType.LONG);
                         break;
-                    case DOC_TAG:
                     case MOD_TAG:
+                        handleTaggedString(FaunaTokenType.MODULE);
+                        break;
+                    case DOC_TAG:
                     case OBJECT_TAG:
                     case REF_TAG:
                     case SET_TAG:
@@ -252,7 +254,7 @@ public class FaunaParser {
         try {
             return new Module(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as Module", e);
+            throw new RuntimeException("Error getting the current token as Module", e);
         }
     }
 }
