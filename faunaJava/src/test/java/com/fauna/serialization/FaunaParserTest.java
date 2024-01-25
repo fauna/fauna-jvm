@@ -136,6 +136,12 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@double\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsDouble);
     }
 
     private static void assertReader(FaunaParser reader,

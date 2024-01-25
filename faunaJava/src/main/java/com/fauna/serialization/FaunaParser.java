@@ -130,8 +130,10 @@ public class FaunaParser {
                     case TIME_TAG:
                         handleTaggedString(FaunaTokenType.TIME);
                         break;
-                    case DOC_TAG:
                     case DOUBLE_TAG:
+                        handleTaggedString(FaunaTokenType.DOUBLE);
+                        break;
+                    case DOC_TAG:
                     case LONG_TAG:
                     case MOD_TAG:
                     case OBJECT_TAG:
@@ -233,7 +235,7 @@ public class FaunaParser {
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as Double", e);
+            throw new RuntimeException("Error getting the current token as Double", e);
         }
     }
 }
