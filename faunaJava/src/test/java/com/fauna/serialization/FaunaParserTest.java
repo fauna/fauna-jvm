@@ -155,6 +155,12 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@long\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsLong);
     }
 
     private static void assertReader(FaunaParser reader,

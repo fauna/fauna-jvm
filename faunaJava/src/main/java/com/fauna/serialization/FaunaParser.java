@@ -134,8 +134,10 @@ public class FaunaParser {
                     case DOUBLE_TAG:
                         handleTaggedString(FaunaTokenType.DOUBLE);
                         break;
-                    case DOC_TAG:
                     case LONG_TAG:
+                        handleTaggedString(FaunaTokenType.LONG);
+                        break;
+                    case DOC_TAG:
                     case MOD_TAG:
                     case OBJECT_TAG:
                     case REF_TAG:
@@ -245,7 +247,7 @@ public class FaunaParser {
         try {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as Double", e);
+            throw new RuntimeException("Error getting the current token as Long", e);
         }
     }
 }
