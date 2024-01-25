@@ -162,8 +162,10 @@ public class FaunaParser {
                 }
                 break;
             case END_OBJECT:
-                throw new SerializationException(
-                    "Token not implemented: " + jsonParser.currentToken());
+                bufferedFaunaTokenType = FaunaTokenType.END_OBJECT;
+                tokenStack.push(FaunaTokenType.START_OBJECT);
+                currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                break;
             default:
                 throw new SerializationException(
                     "Unexpected token following StartObject: " + jsonParser.currentToken());
