@@ -96,7 +96,6 @@ public class FaunaParser {
                 case VALUE_STRING:
                     currentFaunaTokenType = FaunaTokenType.STRING;
                     break;
-                case NOT_AVAILABLE:
                 case START_OBJECT:
                     handleStartObject();
                     break;
@@ -123,44 +122,26 @@ public class FaunaParser {
         switch (jsonParser.currentToken()) {
             case FIELD_NAME:
                 switch (jsonParser.getText()) {
-                    case DATE_TAG:
-                        handleTaggedString(FaunaTokenType.DATE);
-                        break;
-                    case DOC_TAG:
-                        advance();
-                        currentFaunaTokenType = FaunaTokenType.START_DOCUMENT;
-                        tokenStack.push(FaunaTokenType.START_DOCUMENT);
-                        break;
-                    case DOUBLE_TAG:
-                        handleTaggedString(FaunaTokenType.DOUBLE);
-                        break;
                     case INT_TAG:
                         handleTaggedString(FaunaTokenType.INT);
                         break;
-                    case LONG_TAG:
-                        handleTaggedString(FaunaTokenType.LONG);
-                        break;
-                    case MOD_TAG:
-                        handleTaggedString(FaunaTokenType.MODULE);
-                        break;
-                    case OBJECT_TAG:
-                        advance();
-                        currentFaunaTokenType = FaunaTokenType.START_OBJECT;
-                        tokenStack.push(TokenTypeInternal.START_ESCAPED_OBJECT);
-                        break;
-                    case REF_TAG:
-                        advance();
-                        currentFaunaTokenType = FaunaTokenType.START_REF;
-                        tokenStack.push(FaunaTokenType.START_REF);
-                        break;
-                    case SET_TAG:
-                        advance();
-                        currentFaunaTokenType = FaunaTokenType.START_PAGE;
-                        tokenStack.push(FaunaTokenType.START_PAGE);
+                    case DATE_TAG:
+                        handleTaggedString(FaunaTokenType.DATE);
                         break;
                     case TIME_TAG:
                         handleTaggedString(FaunaTokenType.TIME);
                         break;
+                    case DOUBLE_TAG:
+                        handleTaggedString(FaunaTokenType.DOUBLE);
+                        break;
+                    case DOC_TAG:
+                    case LONG_TAG:
+                    case MOD_TAG:
+                    case OBJECT_TAG:
+                    case REF_TAG:
+                    case SET_TAG:
+                        throw new SerializationException(
+                            "Token not implemented: " + jsonParser.currentToken());
                     default:
                         bufferedFaunaTokenType = FaunaTokenType.FIELD_NAME;
                         tokenStack.push(FaunaTokenType.START_OBJECT);
@@ -169,10 +150,8 @@ public class FaunaParser {
                 }
                 break;
             case END_OBJECT:
-                bufferedFaunaTokenType = FaunaTokenType.END_OBJECT;
-                tokenStack.push(FaunaTokenType.START_OBJECT);
-                currentFaunaTokenType = FaunaTokenType.START_OBJECT;
-                break;
+                throw new SerializationException(
+                    "Token not implemented: " + jsonParser.currentToken());
             default:
                 throw new SerializationException(
                     "Unexpected token following StartObject: " + jsonParser.currentToken());
@@ -213,7 +192,7 @@ public class FaunaParser {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
-            throw new RuntimeException("Error reading current token as String", e);
+            throw new RuntimeException("Error getting the current token as String", e);
         }
     }
 
@@ -222,7 +201,7 @@ public class FaunaParser {
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as Integer", e);
+            throw new RuntimeException("Error getting the current token as Integer", e);
         }
     }
 
@@ -230,7 +209,7 @@ public class FaunaParser {
         try {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
-            throw new RuntimeException("Error reading current token as Boolean", e);
+            throw new RuntimeException("Error getting the current token as Boolean", e);
         }
     }
 
@@ -239,7 +218,7 @@ public class FaunaParser {
         try {
             return LocalDate.parse(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as LocalDate", e);
+            throw new RuntimeException("Error getting the current token as LocalDate", e);
         }
     }
 
@@ -248,7 +227,7 @@ public class FaunaParser {
         try {
             return Instant.parse(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error reading current token as LocalDateTime", e);
+            throw new RuntimeException("Error getting the current token as LocalDateTime", e);
         }
     }
 
@@ -257,7 +236,7 @@ public class FaunaParser {
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error parsing the current token as Double", e);
+            throw new RuntimeException("Error getting the current token as Double", e);
         }
     }
 

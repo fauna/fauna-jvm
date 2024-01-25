@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.common.enums.FaunaTokenType;
+import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +43,22 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@int\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsInt);
+    }
+
+    @Test
+    public void testUnexpectedEndDuringAdvance() throws IOException {
+
+        String json = "{\"@int\": \"123\"";
+        InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        assertThrows(SerializationException.class, reader::read);
     }
 
     @Test
@@ -78,6 +96,12 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@date\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsLocalDate);
     }
 
     @Test
@@ -93,6 +117,12 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@time\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsLocalDate);
     }
 
     @Test
@@ -106,6 +136,12 @@ class FaunaParserTest {
         );
 
         assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@double\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsDouble);
     }
 
     @Test
