@@ -197,7 +197,7 @@ public class FaunaParser {
         try {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
-            throw new RuntimeException("Error getting the current token as Boolean", e);
+            throw new SerializationException("Error getting the current token as Boolean", e);
         }
     }
 }
