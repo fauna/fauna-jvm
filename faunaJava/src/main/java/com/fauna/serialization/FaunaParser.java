@@ -41,6 +41,10 @@ public class FaunaParser {
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
 
+    private enum TokenTypeInternal {
+        START_ESCAPED_OBJECT
+    }
+
     public FaunaParser(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(body);
@@ -52,8 +56,8 @@ public class FaunaParser {
         currentFaunaTokenType = NONE;
     }
 
-    public JsonToken getCurrentTokenType() {
-        return jsonParser.currentToken();
+    public FaunaTokenType getCurrentTokenType() {
+        return currentFaunaTokenType;
     }
 
     private final Set<FaunaTokenType> closers = new HashSet<>(Arrays.asList(
@@ -64,7 +68,7 @@ public class FaunaParser {
         END_ARRAY
     ));
 
-    public boolean read() {
+    public boolean read() throws IOException {
         taggedTokenValue = null;
 
         if (bufferedFaunaTokenType != null) {
@@ -86,6 +90,9 @@ public class FaunaParser {
                 case VALUE_STRING:
                     currentFaunaTokenType = FaunaTokenType.STRING;
                     break;
+                case START_OBJECT:
+                    handleStartObject();
+                    break;
                 default:
                     throw new SerializationException(
                         "Unhandled JSON token type " + currentToken + ".");
@@ -97,6 +104,55 @@ public class FaunaParser {
         return true;
     }
 
+    private void handleStartObject() throws IOException {
+        advanceTrue();
+
+        switch (jsonParser.currentToken()) {
+            case FIELD_NAME:
+                switch (jsonParser.getText()) {
+                    case INT_TAG:
+                        handleTaggedString(FaunaTokenType.INT);
+                        break;
+                    case DATE_TAG:
+                    case DOC_TAG:
+                    case DOUBLE_TAG:
+                    case LONG_TAG:
+                    case MOD_TAG:
+                    case OBJECT_TAG:
+                    case REF_TAG:
+                    case SET_TAG:
+                    case TIME_TAG:
+                        throw new SerializationException(
+                            "Token not implemented: " + jsonParser.currentToken());
+                    default:
+                        bufferedFaunaTokenType = FaunaTokenType.FIELD_NAME;
+                        tokenStack.push(FaunaTokenType.START_OBJECT);
+                        currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                        break;
+                }
+                break;
+            case END_OBJECT:
+                throw new SerializationException(
+                    "Token not implemented: " + jsonParser.currentToken());
+            default:
+                throw new SerializationException(
+                    "Unexpected token following StartObject: " + jsonParser.currentToken());
+        }
+    }
+
+    private void handleTaggedString(FaunaTokenType token) throws IOException {
+        advanceTrue();
+        currentFaunaTokenType = token;
+        taggedTokenValue = jsonParser.getText();
+        advance();
+    }
+
+    private void advanceTrue() {
+        if (!advance()) {
+            throw new SerializationException("Unexpected end of underlying JSON reader.");
+        }
+    }
+
     private boolean advance() {
         try {
             return Objects.nonNull(jsonParser.nextToken());
@@ -105,11 +161,29 @@ public class FaunaParser {
         }
     }
 
+    private void validateTaggedType(FaunaTokenType type) {
+        if (currentFaunaTokenType != type || taggedTokenValue == null
+            || !(taggedTokenValue instanceof String)) {
+            throw new IllegalStateException(
+                "CurrentTokenType is a " + currentFaunaTokenType.toString() +
+                    ", not a " + type.toString() + ".");
+        }
+    }
+
     public String getValueAsString() {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
-            throw new RuntimeException("Error reading current token as String", e);
+            throw new RuntimeException("Error getting the current token as String", e);
+        }
+    }
+
+    public Integer getValueAsInt() {
+        validateTaggedType(FaunaTokenType.INT);
+        try {
+            return Integer.parseInt(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Error getting the current token as Integer", e);
         }
     }
 }
