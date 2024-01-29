@@ -278,7 +278,7 @@ public class FaunaParser {
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Double", e);
+            throw new SerializationException("Error getting the current token as Double", e);
         }
     }
 
@@ -287,7 +287,7 @@ public class FaunaParser {
         try {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Long", e);
+            throw new SerializationException("Error getting the current token as Long", e);
         }
     }
 
@@ -295,7 +295,7 @@ public class FaunaParser {
         try {
             return new Module(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Module", e);
+            throw new SerializationException("Error getting the current token as Module", e);
         }
     }
 }
