@@ -125,6 +125,22 @@ class FaunaParserTest {
         assertThrows(RuntimeException.class, invalidReader::getValueAsLocalDate);
     }
 
+    @Test
+    public void testeGetValueAsTimeNonUTC() throws IOException {
+        String s = "{\"@time\":\"2023-12-03T05:52:10.000001-09:00\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        Instant instant = Instant.parse("2023-12-03T05:52:10.000001-09:00");
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            Map.entry(FaunaTokenType.TIME, instant)
+        );
+
+        assertReader(reader, expectedTokens);
+
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
