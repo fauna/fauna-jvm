@@ -193,7 +193,7 @@ public class FaunaParser {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
-            throw new RuntimeException("Error getting the current token as String", e);
+            throw new SerializationException("Error getting the current token as String", e);
         }
     }
 
@@ -202,7 +202,7 @@ public class FaunaParser {
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Integer", e);
+            throw new SerializationException("Error getting the current token as Integer", e);
         }
     }
 
@@ -210,7 +210,7 @@ public class FaunaParser {
         try {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
-            throw new RuntimeException("Error getting the current token as Boolean", e);
+            throw new SerializationException("Error getting the current token as Boolean", e);
         }
     }
 
@@ -219,7 +219,7 @@ public class FaunaParser {
         try {
             return LocalDate.parse(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as LocalDate", e);
+            throw new SerializationException("Error getting the current token as LocalDate", e);
         }
     }
 
@@ -228,7 +228,7 @@ public class FaunaParser {
         try {
             return Instant.parse(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as LocalDateTime", e);
+            throw new SerializationException("Error getting the current token as LocalDateTime", e);
         }
     }
 
