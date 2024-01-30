@@ -93,6 +93,12 @@ public class FaunaParser {
                 case START_OBJECT:
                     handleStartObject();
                     break;
+                case VALUE_TRUE:
+                    currentFaunaTokenType = FaunaTokenType.TRUE;
+                    break;
+                case VALUE_FALSE:
+                    currentFaunaTokenType = FaunaTokenType.FALSE;
+                    break;
                 default:
                     throw new SerializationException(
                         "Unhandled JSON token type " + currentToken + ".");
@@ -184,6 +190,14 @@ public class FaunaParser {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
             throw new RuntimeException("Error getting the current token as Integer", e);
+        }
+    }
+
+    public Boolean getValueAsBoolean() {
+        try {
+            return jsonParser.getValueAsBoolean();
+        } catch (IOException e) {
+            throw new SerializationException("Error getting the current token as Boolean", e);
         }
     }
 }
