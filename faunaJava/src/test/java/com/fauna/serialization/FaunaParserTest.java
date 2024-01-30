@@ -11,6 +11,8 @@ import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -83,6 +85,62 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens);
     }
 
+    @Test
+    public void testeGetValueAsLocalDate() throws IOException {
+        String s = "{\"@date\":\"2024-01-23\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            Map.entry(FaunaTokenType.DATE, LocalDate.of(2024, 01, 23))
+        );
+
+        assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@date\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsLocalDate);
+    }
+
+    @Test
+    public void testeGetValueAsTime() throws IOException {
+        String s = "{\"@time\":\"2024-01-23T13:33:10.300Z\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        Instant instant = Instant.parse("2024-01-23T13:33:10.300Z");
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            Map.entry(FaunaTokenType.TIME, instant)
+        );
+
+        assertReader(reader, expectedTokens);
+
+        String invalidJson = "{\"@time\": \"abc\"}";
+        InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
+        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+
+        assertThrows(RuntimeException.class, invalidReader::getValueAsLocalDate);
+    }
+
+    @Test
+    public void testeGetValueAsTimeNonUTC() throws IOException {
+        String s = "{\"@time\":\"2023-12-03T05:52:10.000001-09:00\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        Instant instant = Instant.parse("2023-12-03T05:52:10.000001-09:00");
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            Map.entry(FaunaTokenType.TIME, instant)
+        );
+
+        assertReader(reader, expectedTokens);
+
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
@@ -102,6 +160,12 @@ class FaunaParserTest {
                 case TRUE:
                 case FALSE:
                     assertEquals(entry.getValue(), reader.getValueAsBoolean());
+                    break;
+                case DATE:
+                    assertEquals(entry.getValue(), reader.getValueAsLocalDate());
+                    break;
+                case TIME:
+                    assertEquals(entry.getValue(), reader.getValueAsTime());
                     break;
                 default:
                     assertNull(entry.getValue() == null);

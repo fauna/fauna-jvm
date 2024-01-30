@@ -1,11 +1,13 @@
 package com.fauna.serialization;
 
+import static com.fauna.common.enums.FaunaTokenType.DATE;
 import static com.fauna.common.enums.FaunaTokenType.END_ARRAY;
 import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
 import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
 import static com.fauna.common.enums.FaunaTokenType.END_PAGE;
 import static com.fauna.common.enums.FaunaTokenType.END_REF;
 import static com.fauna.common.enums.FaunaTokenType.NONE;
+import static com.fauna.common.enums.FaunaTokenType.TIME;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -14,6 +16,8 @@ import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.exception.SerializationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -120,6 +124,11 @@ public class FaunaParser {
                         handleTaggedString(FaunaTokenType.INT);
                         break;
                     case DATE_TAG:
+                        handleTaggedString(FaunaTokenType.DATE);
+                        break;
+                    case TIME_TAG:
+                        handleTaggedString(FaunaTokenType.TIME);
+                        break;
                     case DOC_TAG:
                     case DOUBLE_TAG:
                     case LONG_TAG:
@@ -127,7 +136,6 @@ public class FaunaParser {
                     case OBJECT_TAG:
                     case REF_TAG:
                     case SET_TAG:
-                    case TIME_TAG:
                         throw new SerializationException(
                             "Token not implemented: " + jsonParser.currentToken());
                     default:
@@ -180,7 +188,7 @@ public class FaunaParser {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
-            throw new RuntimeException("Error getting the current token as String", e);
+            throw new SerializationException("Error getting the current token as String", e);
         }
     }
 
@@ -189,7 +197,7 @@ public class FaunaParser {
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Integer", e);
+            throw new SerializationException("Error getting the current token as Integer", e);
         }
     }
 
@@ -198,6 +206,24 @@ public class FaunaParser {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
             throw new SerializationException("Error getting the current token as Boolean", e);
+        }
+    }
+
+    public LocalDate getValueAsLocalDate() {
+        validateTaggedType(DATE);
+        try {
+            return LocalDate.parse(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as LocalDate", e);
+        }
+    }
+
+    public Instant getValueAsTime() {
+        validateTaggedType(TIME);
+        try {
+            return Instant.parse(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as LocalDateTime", e);
         }
     }
 }
