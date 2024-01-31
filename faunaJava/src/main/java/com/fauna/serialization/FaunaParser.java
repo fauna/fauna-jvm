@@ -172,8 +172,10 @@ public class FaunaParser {
                         tokenStack.push(FaunaTokenType.START_PAGE);
                         break;
                     case REF_TAG:
-                        throw new SerializationException(
-                            "Token not implemented: " + jsonParser.getText());
+                        advanceTrue();
+                        currentFaunaTokenType = FaunaTokenType.START_REF;
+                        tokenStack.push(FaunaTokenType.START_REF);
+                        break;
                     default:
                         bufferedFaunaTokenType = FaunaTokenType.FIELD_NAME;
                         tokenStack.push(FaunaTokenType.START_OBJECT);
