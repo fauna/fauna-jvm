@@ -254,7 +254,7 @@ public class FaunaParser {
     public Module getValueAsModule() {
         try {
             return new Module(taggedTokenValue);
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             throw new SerializationException("Error getting the current token as Module", e);
         }
     }

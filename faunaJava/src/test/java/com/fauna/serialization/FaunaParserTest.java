@@ -210,7 +210,7 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.MODULE, new Module("MyModule"))
         );
 
-        assertReader(reader, expectedTokens);
+        assertReader(reader, expectedTokens, false);
     }
 
     private static void assertReader(FaunaParser reader,
