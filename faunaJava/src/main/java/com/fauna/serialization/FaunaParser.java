@@ -91,6 +91,8 @@ public class FaunaParser {
         JsonToken currentToken = jsonParser.currentToken();
         if (currentToken != null) {
             switch (currentToken) {
+                case NOT_AVAILABLE:
+                    break;
                 case VALUE_STRING:
                     currentFaunaTokenType = FaunaTokenType.STRING;
                     break;
@@ -113,6 +115,9 @@ public class FaunaParser {
                     break;
                 case VALUE_FALSE:
                     currentFaunaTokenType = FaunaTokenType.FALSE;
+                    break;
+                case FIELD_NAME:
+                    currentFaunaTokenType = FaunaTokenType.FIELD_NAME;
                     break;
                 default:
                     throw new SerializationException(
@@ -149,8 +154,12 @@ public class FaunaParser {
                     case MOD_TAG:
                         handleTaggedString(FaunaTokenType.MODULE);
                         break;
-                    case DOC_TAG:
                     case OBJECT_TAG:
+                        advanceTrue();
+                        currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                        tokenStack.push(FaunaTokenType.START_ESCAPED_OBJECT);
+                        break;
+                    case DOC_TAG:
                     case REF_TAG:
                     case SET_TAG:
                         throw new SerializationException(
