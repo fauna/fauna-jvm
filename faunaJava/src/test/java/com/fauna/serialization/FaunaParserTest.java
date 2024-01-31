@@ -261,6 +261,37 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens, false);
     }
 
+    @Test
+    public void testReadDocumentTokens() throws IOException {
+        String s = "{\n" +
+            "    \"@doc\": {\n" +
+            "        \"id\": \"123\",\n" +
+            "        \"coll\": { \"@mod\": \"Coll\" },\n" +
+            "        \"ts\": { \"@time\": \"2023-12-03T16:07:23.111012Z\" },\n" +
+            "        \"data\": { \"foo\": \"bar\" }\n" +
+            "    }\n" +
+            "}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_DOCUMENT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "id"),
+            Map.entry(FaunaTokenType.STRING, "123"),
+            Map.entry(FaunaTokenType.FIELD_NAME, "coll"),
+            Map.entry(FaunaTokenType.MODULE, new Module("Coll")),
+            Map.entry(FaunaTokenType.FIELD_NAME, "ts"),
+            Map.entry(FaunaTokenType.TIME, Instant.parse("2023-12-03T16:07:23.111012Z")),
+            Map.entry(FaunaTokenType.FIELD_NAME, "data"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "foo"),
+            Map.entry(FaunaTokenType.STRING, "bar"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_DOCUMENT, null)
+        );
+
+        assertReader(reader, expectedTokens, false);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens,
         boolean assertExceptions) throws IOException {
