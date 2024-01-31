@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -246,6 +247,22 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens);
     }
 
+    @Test
+    public void readArrayWithEmptyObject() throws IOException {
+        String s = "[{}]";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_ARRAY, null)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
@@ -280,6 +297,12 @@ class FaunaParserTest {
                     break;
                 case MODULE:
                     assertEquals(entry.getValue(), reader.getValueAsModule());
+                    break;
+                case START_ARRAY:
+                case START_OBJECT:
+                case END_ARRAY:
+                case END_OBJECT:
+                    assertNull(entry.getValue());
                     break;
                 default:
                     assertNull(entry.getValue() == null);
