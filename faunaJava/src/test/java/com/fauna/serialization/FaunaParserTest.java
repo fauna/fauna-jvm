@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.common.enums.FaunaTokenType;
+import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -232,6 +233,19 @@ class FaunaParserTest {
         assertEquals("Error getting the current token as Long", ex.getMessage());
     }
 
+    @Test
+    public void testGetValueAsModule() throws IOException {
+        String s = "{\"@mod\": \"MyModule\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        FaunaParser reader = new FaunaParser(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            Map.entry(FaunaTokenType.MODULE, new Module("MyModule"))
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
@@ -263,6 +277,9 @@ class FaunaParserTest {
                     break;
                 case LONG:
                     assertEquals(entry.getValue(), reader.getValueAsLong());
+                    break;
+                case MODULE:
+                    assertEquals(entry.getValue(), reader.getValueAsModule());
                     break;
                 default:
                     assertNull(entry.getValue() == null);
