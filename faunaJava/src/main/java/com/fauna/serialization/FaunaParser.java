@@ -235,7 +235,7 @@ public class FaunaParser {
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Double", e);
+            throw new SerializationException("Error getting the current token as Double", e);
         }
     }
 }
