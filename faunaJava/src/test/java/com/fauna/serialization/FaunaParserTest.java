@@ -322,7 +322,7 @@ class FaunaParserTest {
             new AbstractMap.SimpleEntry<>(FaunaTokenType.END_DOCUMENT, null)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     private static void assertReader(FaunaParser reader,
