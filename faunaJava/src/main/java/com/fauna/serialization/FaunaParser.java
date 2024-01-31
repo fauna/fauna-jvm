@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 import static com.fauna.common.enums.FaunaTokenType.DATE;
+import static com.fauna.common.enums.FaunaTokenType.DOUBLE;
 import static com.fauna.common.enums.FaunaTokenType.END_ARRAY;
 import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
 import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -129,8 +131,10 @@ public class FaunaParser {
                     case TIME_TAG:
                         handleTaggedString(FaunaTokenType.TIME);
                         break;
-                    case DOC_TAG:
                     case DOUBLE_TAG:
+                        handleTaggedString(FaunaTokenType.DOUBLE);
+                        break;
+                    case DOC_TAG:
                     case LONG_TAG:
                     case MOD_TAG:
                     case OBJECT_TAG:
@@ -213,7 +217,7 @@ public class FaunaParser {
         validateTaggedType(DATE);
         try {
             return LocalDate.parse(taggedTokenValue);
-        } catch (NumberFormatException e) {
+        } catch (DateTimeParseException e) {
             throw new SerializationException("Error getting the current token as LocalDate", e);
         }
     }
@@ -222,8 +226,17 @@ public class FaunaParser {
         validateTaggedType(TIME);
         try {
             return Instant.parse(taggedTokenValue);
-        } catch (NumberFormatException e) {
+        } catch (DateTimeParseException e) {
             throw new SerializationException("Error getting the current token as LocalDateTime", e);
+        }
+    }
+
+    public Double getValueAsDouble() {
+        validateTaggedType(DOUBLE);
+        try {
+            return Double.parseDouble(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Double", e);
         }
     }
 }
