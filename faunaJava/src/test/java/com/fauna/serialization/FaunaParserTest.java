@@ -263,6 +263,37 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens);
     }
 
+    @Test
+    public void testReadEscapedObject() throws IOException {
+        String s = "{\n" +
+            "    \"@object\": {\n" +
+            "        \"@int\": \"notanint\",\n" +
+            "        \"anInt\": { \"@int\": \"123\" },\n" +
+            "        \"@object\": \"notanobject\",\n" +
+            "        \"anEscapedObject\": { \"@object\": { \"@long\": \"notalong\" } }\n" +
+            "    }\n" +
+            "}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "@int"),
+            Map.entry(FaunaTokenType.STRING, "notanint"),
+            Map.entry(FaunaTokenType.FIELD_NAME, "anInt"),
+            Map.entry(FaunaTokenType.INT, 123),
+            Map.entry(FaunaTokenType.FIELD_NAME, "@object"),
+            Map.entry(FaunaTokenType.STRING, "notanobject"),
+            Map.entry(FaunaTokenType.FIELD_NAME, "anEscapedObject"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "@long"),
+            Map.entry(FaunaTokenType.STRING, "notalong"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
@@ -298,14 +329,8 @@ class FaunaParserTest {
                 case MODULE:
                     assertEquals(entry.getValue(), reader.getValueAsModule());
                     break;
-                case START_ARRAY:
-                case START_OBJECT:
-                case END_ARRAY:
-                case END_OBJECT:
-                    assertNull(entry.getValue());
-                    break;
                 default:
-                    assertNull(entry.getValue() == null);
+                    assertNull(entry.getValue());
                     break;
             }
         }

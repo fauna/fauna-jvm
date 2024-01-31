@@ -44,10 +44,14 @@ public class FaunaParser {
     private static final String SET_TAG = "@set";
     private static final String OBJECT_TAG = "@object";//TODO Understand Module
     private final JsonParser jsonParser;
-    private final Stack<FaunaTokenType> tokenStack = new Stack<>();
+    private final Stack<Object> tokenStack = new Stack<>();
     private FaunaTokenType currentFaunaTokenType;
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
+
+    private enum InternalTokenType {
+        START_ESCAPED_OBJECT
+    }
 
     public FaunaParser(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
@@ -114,6 +118,9 @@ public class FaunaParser {
                 case VALUE_FALSE:
                     currentFaunaTokenType = FaunaTokenType.FALSE;
                     break;
+                case FIELD_NAME:
+                    currentFaunaTokenType = FaunaTokenType.FIELD_NAME;
+                    break;
                 default:
                     throw new SerializationException(
                         "Unhandled JSON token type " + currentToken + ".");
@@ -149,8 +156,12 @@ public class FaunaParser {
                     case MOD_TAG:
                         handleTaggedString(FaunaTokenType.MODULE);
                         break;
-                    case DOC_TAG:
                     case OBJECT_TAG:
+                        advanceTrue();
+                        currentFaunaTokenType = FaunaTokenType.START_OBJECT;
+                        tokenStack.push(InternalTokenType.START_ESCAPED_OBJECT);
+                        break;
+                    case DOC_TAG:
                     case REF_TAG:
                     case SET_TAG:
                         throw new SerializationException(
@@ -174,30 +185,24 @@ public class FaunaParser {
     }
 
     private void handleEndObject() {
-        FaunaTokenType startToken = tokenStack.pop();
-        switch (startToken) {
-            case START_DOCUMENT:
-                currentFaunaTokenType = END_DOCUMENT;
-                advanceTrue();
-                break;
-            case START_PAGE:
-                currentFaunaTokenType = END_PAGE;
-                advanceTrue();
-                break;
-            case START_REF:
-                currentFaunaTokenType = END_REF;
-                advanceTrue();
-                break;
-            case START_ESCAPED_OBJECT:
-                currentFaunaTokenType = END_OBJECT;
-                advanceTrue();
-                break;
-            case START_OBJECT:
-                currentFaunaTokenType = END_OBJECT;
-                break;
-            default:
-                throw new SerializationException(
-                    "Unexpected token " + startToken + ". This might be a bug.");
+        Object startToken = tokenStack.pop();
+        if (startToken.equals(FaunaTokenType.START_DOCUMENT)) {
+            currentFaunaTokenType = END_DOCUMENT;
+            advanceTrue();
+        } else if (startToken.equals(FaunaTokenType.START_PAGE)) {
+            currentFaunaTokenType = END_PAGE;
+            advanceTrue();
+        } else if (startToken.equals(FaunaTokenType.START_REF)) {
+            currentFaunaTokenType = END_REF;
+            advanceTrue();
+        } else if (startToken.equals(InternalTokenType.START_ESCAPED_OBJECT)) {
+            currentFaunaTokenType = END_OBJECT;
+            advanceTrue();
+        } else if (startToken.equals(FaunaTokenType.START_OBJECT)) {
+            currentFaunaTokenType = END_OBJECT;
+        } else {
+            throw new SerializationException(
+                "Unexpected token " + startToken + ". This might be a bug.");
         }
     }
 

@@ -7,7 +7,6 @@ public enum FaunaTokenType {
     NONE,
 
     START_OBJECT,
-    START_ESCAPED_OBJECT,
     END_OBJECT,
 
     START_ARRAY,
