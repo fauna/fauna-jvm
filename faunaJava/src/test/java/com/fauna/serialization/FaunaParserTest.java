@@ -186,13 +186,17 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.LONG, 123L)
         );
 
-        assertReader(reader, expectedTokens);
+        assertReader(reader, expectedTokens, false);
 
         String invalidJson = "{\"@long\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        assertThrows(SerializationException.class, invalidReader::getValueAsLong);
+        expectedTokens = List.of(
+            Map.entry(FaunaTokenType.LONG, "abc")
+        );
+
+        assertReader(invalidReader, expectedTokens, true);
     }
 
     private static void assertReader(FaunaParser reader,
@@ -250,7 +254,11 @@ class FaunaParserTest {
                     }
                     break;
                 case LONG:
-                    assertEquals(entry.getValue(), reader.getValueAsLong());
+                    if (assertExceptions) {
+                        assertThrows(SerializationException.class, reader::getValueAsLong);
+                    } else {
+                        assertEquals(entry.getValue(), reader.getValueAsLong());
+                    }
                     break;
                 default:
                     assertNull(entry.getValue() == null);
