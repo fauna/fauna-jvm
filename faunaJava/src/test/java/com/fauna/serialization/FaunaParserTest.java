@@ -213,17 +213,23 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.LONG, 123L)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
+    }
 
+    @Test
+    public void testGetValueAsLongFail() throws IOException {
         String invalidJson = "{\"@long\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        expectedTokens = List.of(
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.LONG, "abc")
         );
 
-        assertReader(invalidReader, expectedTokens, true);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> assertReader(invalidReader, expectedTokens));
+
+        assertEquals("Error getting the current token as Long", ex.getMessage());
     }
 
     private static void assertReader(FaunaParser reader,
@@ -256,11 +262,7 @@ class FaunaParserTest {
                     assertEquals(entry.getValue(), reader.getValueAsDouble());
                     break;
                 case LONG:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsLong);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsLong());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsLong());
                     break;
                 default:
                     assertNull(entry.getValue() == null);
