@@ -247,7 +247,7 @@ public class FaunaParser {
         try {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Error getting the current token as Long", e);
+            throw new SerializationException("Error getting the current token as Long", e);
         }
     }
 }
