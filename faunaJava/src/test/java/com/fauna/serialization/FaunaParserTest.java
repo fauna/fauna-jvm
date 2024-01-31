@@ -334,6 +334,221 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens, false);
     }
 
+    @Test
+    public void testReadObjectTokens() throws IOException {
+        String s = "{\n" +
+            "    \"aString\": \"foo\",\n" +
+            "    \"anObject\": { \"baz\": \"luhrmann\" },\n" +
+            "    \"anInt\": { \"@int\": \"2147483647\" },\n" +
+            "    \"aLong\":{ \"@long\": \"9223372036854775807\" },\n" +
+            "    \"aDouble\":{ \"@double\": \"3.14159\" },\n" +
+            "    \"aDecimal\":{ \"@double\": \"0.1\" },\n" +
+            "    \"aDate\":{ \"@date\": \"2023-12-03\" },\n" +
+            "    \"aTime\":{ \"@time\": \"2023-12-03T14:52:10.001001Z\" },\n" +
+            "    \"anEscapedObject\": { \"@object\": { \"@int\": \"escaped\" } },\n" +
+            "    \"anArray\": [],\n" +
+            "    \"true\": true,\n" +
+            "    \"false\": false,\n" +
+            "    \"null\": null\n" +
+            "}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "aString"),
+            Map.entry(FaunaTokenType.STRING, "foo"),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "anObject"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "baz"),
+            Map.entry(FaunaTokenType.STRING, "luhrmann"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "anInt"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.INT, 2147483647),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "aLong"),
+            Map.entry(FaunaTokenType.LONG, 9223372036854775807L),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "aDouble"),
+            Map.entry(FaunaTokenType.DOUBLE, 3.14159d),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "aDecimal"),
+            Map.entry(FaunaTokenType.DOUBLE, 0.1d),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "aDate"),
+            Map.entry(FaunaTokenType.DATE, LocalDate.of(2023, 12, 3)),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "aTime"),
+            Map.entry(FaunaTokenType.TIME, Instant.parse("2023-12-03T14:52:10.001001Z")),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "anEscapedObject"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "@int"),
+            Map.entry(FaunaTokenType.STRING, "escaped"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "anArray"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_ARRAY, null),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "true"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.TRUE, true),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "false"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.FALSE, false),
+
+            Map.entry(FaunaTokenType.FIELD_NAME, "null"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.NULL, null),
+
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null)
+        );
+
+        assertReader(reader, expectedTokens, false);
+    }
+
+    @Test
+    public void testReadArray() throws IOException {
+        String s = "[\n" +
+            "    \"foo\",\n" +
+            "    { \"baz\": \"luhrmann\" },\n" +
+            "    { \"@int\": \"2147483647\" },\n" +
+            "    { \"@long\": \"9223372036854775807\" },\n" +
+            "    { \"@double\": \"3.14159\" },\n" +
+            "    { \"@double\": \"0.1\" },\n" +
+            "    { \"@date\": \"2023-12-03\" },\n" +
+            "    { \"@time\": \"2023-12-03T14:52:10.001001Z\" },\n" +
+            "    { \"@object\": { \"@int\": \"escaped\" } },\n" +
+            "    [],\n" +
+            "    true,\n" +
+            "    false,\n" +
+            "    null\n" +
+            "]";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
+
+            Map.entry(FaunaTokenType.STRING, "foo"),
+
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "baz"),
+            Map.entry(FaunaTokenType.STRING, "luhrmann"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+
+            Map.entry(FaunaTokenType.INT, 2147483647),
+
+            Map.entry(FaunaTokenType.LONG, 9223372036854775807L),
+
+            Map.entry(FaunaTokenType.DOUBLE, 3.14159d),
+
+            Map.entry(FaunaTokenType.DOUBLE, 0.1d),
+
+            Map.entry(FaunaTokenType.DATE, LocalDate.of(2023, 12, 3)),
+
+            Map.entry(FaunaTokenType.TIME, Instant.parse("2023-12-03T14:52:10.001001Z")),
+
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "@int"),
+            Map.entry(FaunaTokenType.STRING, "escaped"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null),
+
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_ARRAY, null),
+
+            Map.entry(FaunaTokenType.TRUE, true),
+
+            Map.entry(FaunaTokenType.FALSE, false),
+
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.NULL, null),
+
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_ARRAY, null)
+        );
+
+        assertReader(reader, expectedTokens, false);
+    }
+
+    @Test
+    public void throwsOnMalformedJson() {
+        String s = "{";
+        assertThrows(SerializationException.class, () -> {
+            FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+            reader.read();
+            reader.read();
+        }, "Failed to advance underlying JSON reader.");
+    }
+
+    @Test
+    public void skipValues() throws IOException {
+        List<String> tests = List.of(
+            "{\"k1\": {}, \"k2\": {}}",
+            "[\"k1\",[],{}]",
+            "{\"@ref\": {}}",
+            "{\"@doc\": {}}",
+            "{\"@set\": {}}",
+            "{\"@object\":{}}"
+        );
+
+        for (String test : tests) {
+            FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+            reader.read();
+            reader.skip();
+            assertFalse(reader.read());
+        }
+    }
+
+    @Test
+    public void skipNestedEscapedObject() throws IOException {
+        String test = "{\"@object\": {\"inner\": {\"@object\": {\"foo\": \"bar\"}}, \"k2\": {}}}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        reader.read(); // {"@object":{
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.read(); // inner
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        reader.read(); // {"@object":{
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.skip(); // "foo": "bar"}}
+        assertEquals(FaunaTokenType.END_OBJECT, reader.getCurrentTokenType());
+        reader.read();
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        assertEquals("k2", reader.getValueAsString());
+    }
+
+    @Test
+    public void skipNestedObject() throws IOException {
+        String test = "{\"k\":{\"inner\":{}},\"k2\":{}}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        reader.read(); // {
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.read(); // k
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        reader.read(); // {
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.skip(); // "inner":{}}
+        assertEquals(FaunaTokenType.END_OBJECT, reader.getCurrentTokenType());
+        reader.read();
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        assertEquals("k2", reader.getValueAsString());
+    }
+
+    @Test
+    public void skipNestedArrays() throws IOException {
+        String test = "{\"k\":[\"1\",\"2\"],\"k2\":{}}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        reader.read(); // {
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.read(); // k
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        reader.read(); // [
+        assertEquals(FaunaTokenType.START_ARRAY, reader.getCurrentTokenType());
+        reader.skip(); // "1","2"]
+        assertEquals(FaunaTokenType.END_ARRAY, reader.getCurrentTokenType());
+        reader.read();
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        assertEquals("k2", reader.getValueAsString());
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens,
         boolean assertExceptions) throws IOException {
