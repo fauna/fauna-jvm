@@ -7,6 +7,7 @@ import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
 import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
 import static com.fauna.common.enums.FaunaTokenType.END_PAGE;
 import static com.fauna.common.enums.FaunaTokenType.END_REF;
+import static com.fauna.common.enums.FaunaTokenType.LONG;
 import static com.fauna.common.enums.FaunaTokenType.NONE;
 import static com.fauna.common.enums.FaunaTokenType.TIME;
 
@@ -134,8 +135,10 @@ public class FaunaParser {
                     case DOUBLE_TAG:
                         handleTaggedString(FaunaTokenType.DOUBLE);
                         break;
-                    case DOC_TAG:
                     case LONG_TAG:
+                        handleTaggedString(FaunaTokenType.LONG);
+                        break;
+                    case DOC_TAG:
                     case MOD_TAG:
                     case OBJECT_TAG:
                     case REF_TAG:
@@ -237,6 +240,15 @@ public class FaunaParser {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
             throw new SerializationException("Error getting the current token as Double", e);
+        }
+    }
+
+    public Long getValueAsLong() {
+        validateTaggedType(LONG);
+        try {
+            return Long.parseLong(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Long", e);
         }
     }
 }
