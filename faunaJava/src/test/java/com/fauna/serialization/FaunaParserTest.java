@@ -176,7 +176,7 @@ class FaunaParserTest {
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        assertThrows(RuntimeException.class, invalidReader::getValueAsLong);
+        assertThrows(SerializationException.class, invalidReader::getValueAsLong);
     }
 
     private static void assertReader(FaunaParser reader,
