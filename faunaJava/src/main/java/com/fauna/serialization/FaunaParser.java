@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -216,7 +217,7 @@ public class FaunaParser {
         validateTaggedType(DATE);
         try {
             return LocalDate.parse(taggedTokenValue);
-        } catch (NumberFormatException e) {
+        } catch (DateTimeParseException e) {
             throw new SerializationException("Error getting the current token as LocalDate", e);
         }
     }
@@ -225,7 +226,7 @@ public class FaunaParser {
         validateTaggedType(TIME);
         try {
             return Instant.parse(taggedTokenValue);
-        } catch (NumberFormatException e) {
+        } catch (DateTimeParseException e) {
             throw new SerializationException("Error getting the current token as LocalDateTime", e);
         }
     }
