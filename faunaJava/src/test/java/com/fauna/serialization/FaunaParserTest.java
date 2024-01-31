@@ -31,7 +31,7 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.STRING, "hello")
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -44,17 +44,23 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.INT, 123)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
+    }
 
+    @Test
+    public void testGetValueAsIntFail() throws IOException {
         String invalidJson = "{\"@int\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        expectedTokens = List.of(
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.INT, "abc")
         );
 
-        assertReader(invalidReader, expectedTokens, true);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> assertReader(invalidReader, expectedTokens));
+
+        assertEquals("Error getting the current token as Integer", ex.getMessage());
     }
 
     @Test
@@ -64,7 +70,10 @@ class FaunaParserTest {
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
         FaunaParser reader = new FaunaParser(inputStream);
 
-        assertThrows(SerializationException.class, reader::read);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> reader.read());
+
+        assertEquals("Failed to advance underlying JSON reader.", ex.getMessage());
     }
 
     @Test
@@ -76,7 +85,7 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.TRUE, true)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -88,34 +97,40 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.FALSE, false)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
-    public void testeGetValueAsLocalDate() throws IOException {
+    public void testGetValueAsLocalDate() throws IOException {
         String s = "{\"@date\":\"2024-01-23\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
         FaunaParser reader = new FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
-            Map.entry(FaunaTokenType.DATE, LocalDate.of(2024, 01, 23))
+            Map.entry(FaunaTokenType.DATE, LocalDate.of(2024, 1, 23))
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
+    }
 
+    @Test
+    public void testGetValueAsLocalDateFail() throws IOException {
         String invalidJson = "{\"@date\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        expectedTokens = List.of(
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.DATE, "abc")
         );
 
-        assertReader(invalidReader, expectedTokens, true);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> assertReader(invalidReader, expectedTokens));
+
+        assertEquals("Error getting the current token as LocalDate", ex.getMessage());
     }
 
     @Test
-    public void testeGetValueAsTime() throws IOException {
+    public void testGetValueAsTime() throws IOException {
         String s = "{\"@time\":\"2024-01-23T13:33:10.300Z\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
         FaunaParser reader = new FaunaParser(inputStream);
@@ -126,17 +141,23 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.TIME, instant)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
+    }
 
+    @Test
+    public void testGetValueAsTimeFail() throws IOException {
         String invalidJson = "{\"@time\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        expectedTokens = List.of(
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.TIME, "abc")
         );
 
-        assertReader(invalidReader, expectedTokens, true);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> assertReader(invalidReader, expectedTokens));
+
+        assertEquals("Error getting the current token as LocalDateTime", ex.getMessage());
     }
 
     @Test
@@ -151,7 +172,7 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.TIME, instant)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
 
     }
 
@@ -165,17 +186,23 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.DOUBLE, 1.23D)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
+    }
 
+    @Test
+    public void testGetValueAsDoubleFail() throws IOException {
         String invalidJson = "{\"@double\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        expectedTokens = List.of(
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.DOUBLE, "abc")
         );
 
-        assertReader(invalidReader, expectedTokens, true);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> assertReader(invalidReader, expectedTokens));
+
+        assertEquals("Error getting the current token as Double", ex.getMessage());
     }
 
     @Test
@@ -188,17 +215,23 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.LONG, 123L)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
+    }
 
+    @Test
+    public void testGetValueAsLongFail() throws IOException {
         String invalidJson = "{\"@long\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
         FaunaParser invalidReader = new FaunaParser(invalidInputStream);
 
-        expectedTokens = List.of(
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.LONG, "abc")
         );
 
-        assertReader(invalidReader, expectedTokens, true);
+        Exception ex = assertThrows(SerializationException.class,
+            () -> assertReader(invalidReader, expectedTokens));
+
+        assertEquals("Error getting the current token as Long", ex.getMessage());
     }
 
     @Test
@@ -211,7 +244,7 @@ class FaunaParserTest {
             Map.entry(FaunaTokenType.MODULE, new Module("MyModule"))
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -227,7 +260,7 @@ class FaunaParserTest {
             new AbstractMap.SimpleEntry<>(FaunaTokenType.END_ARRAY, null)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -258,7 +291,7 @@ class FaunaParserTest {
             new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -289,7 +322,7 @@ class FaunaParserTest {
             new AbstractMap.SimpleEntry<>(FaunaTokenType.END_DOCUMENT, null)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -313,7 +346,7 @@ class FaunaParserTest {
             new AbstractMap.SimpleEntry<>(FaunaTokenType.END_PAGE, null)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -331,7 +364,7 @@ class FaunaParserTest {
             new AbstractMap.SimpleEntry<>(FaunaTokenType.END_REF, null)
         );
 
-        assertReader(reader, expectedTokens, false);
+        assertReader(reader, expectedTokens);
     }
 
     @Test
@@ -550,8 +583,7 @@ class FaunaParserTest {
     }
 
     private static void assertReader(FaunaParser reader,
-        List<Map.Entry<FaunaTokenType, Object>> tokens,
-        boolean assertExceptions) throws IOException {
+        List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
             assertNotNull(entry.getKey());
@@ -561,54 +593,26 @@ class FaunaParserTest {
             switch (entry.getKey()) {
                 case FIELD_NAME:
                 case STRING:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsString);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsString());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsString());
                     break;
                 case INT:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsInt);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsInt());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsInt());
                     break;
                 case TRUE:
                 case FALSE:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsBoolean);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsBoolean());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsBoolean());
                     break;
                 case DATE:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsLocalDate);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsLocalDate());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsLocalDate());
                     break;
                 case TIME:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsTime);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsTime());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsTime());
                     break;
                 case DOUBLE:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsDouble);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsDouble());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsDouble());
                     break;
                 case LONG:
-                    if (assertExceptions) {
-                        assertThrows(SerializationException.class, reader::getValueAsLong);
-                    } else {
-                        assertEquals(entry.getValue(), reader.getValueAsLong());
-                    }
+                    assertEquals(entry.getValue(), reader.getValueAsLong());
                     break;
                 case MODULE:
                     assertEquals(entry.getValue(), reader.getValueAsModule());
