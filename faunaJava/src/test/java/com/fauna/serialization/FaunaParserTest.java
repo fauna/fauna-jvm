@@ -316,6 +316,24 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens, false);
     }
 
+    @Test
+    public void testReadRef() throws IOException {
+        String s = "{\"@ref\": {\"id\": \"123\", \"coll\": {\"@mod\": \"Col\"}}}";
+
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_REF, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "id"),
+            Map.entry(FaunaTokenType.STRING, "123"),
+            Map.entry(FaunaTokenType.FIELD_NAME, "coll"),
+            Map.entry(FaunaTokenType.MODULE, new Module("Col")),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_REF, null)
+        );
+
+        assertReader(reader, expectedTokens, false);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens,
         boolean assertExceptions) throws IOException {
