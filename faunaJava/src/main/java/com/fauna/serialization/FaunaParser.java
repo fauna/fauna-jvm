@@ -42,7 +42,7 @@ public class FaunaParser {
     private static final String DOC_TAG = "@doc";
     private static final String MOD_TAG = "@mod";
     private static final String SET_TAG = "@set";
-    private static final String OBJECT_TAG = "@object";//TODO Understand Module
+    private static final String OBJECT_TAG = "@object";
     private final JsonParser jsonParser;
     private final Stack<Object> tokenStack = new Stack<>();
     private FaunaTokenType currentFaunaTokenType;
@@ -75,7 +75,7 @@ public class FaunaParser {
         END_REF,
         END_ARRAY
     ));
-
+    
     public boolean read() throws IOException {
         taggedTokenValue = null;
 
@@ -120,6 +120,9 @@ public class FaunaParser {
                     break;
                 case FIELD_NAME:
                     currentFaunaTokenType = FaunaTokenType.FIELD_NAME;
+                    break;
+                case VALUE_NULL:
+                    currentFaunaTokenType = FaunaTokenType.NULL;
                     break;
                 default:
                     throw new SerializationException(
