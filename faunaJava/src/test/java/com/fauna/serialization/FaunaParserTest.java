@@ -512,6 +512,76 @@ class FaunaParserTest {
         }, "Failed to advance underlying JSON reader.");
     }
 
+    @Test
+    public void skipValues() throws IOException {
+        List<String> tests = List.of(
+            "{\"k1\": {}, \"k2\": {}}",
+            "[\"k1\",[],{}]",
+            "{\"@ref\": {}}",
+            "{\"@doc\": {}}",
+            "{\"@set\": {}}",
+            "{\"@object\":{}}"
+        );
+
+        for (String test : tests) {
+            FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+            reader.read();
+            reader.skip();
+            assertFalse(reader.read());
+        }
+    }
+
+    @Test
+    public void skipNestedEscapedObject() throws IOException {
+        String test = "{\"@object\": {\"inner\": {\"@object\": {\"foo\": \"bar\"}}, \"k2\": {}}}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        reader.read(); // {"@object":{
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.read(); // inner
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        reader.read(); // {"@object":{
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.skip(); // "foo": "bar"}}
+        assertEquals(FaunaTokenType.END_OBJECT, reader.getCurrentTokenType());
+        reader.read();
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        assertEquals("k2", reader.getValueAsString());
+    }
+
+    @Test
+    public void skipNestedObject() throws IOException {
+        String test = "{\"k\":{\"inner\":{}},\"k2\":{}}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        reader.read(); // {
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.read(); // k
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        reader.read(); // {
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.skip(); // "inner":{}}
+        assertEquals(FaunaTokenType.END_OBJECT, reader.getCurrentTokenType());
+        reader.read();
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        assertEquals("k2", reader.getValueAsString());
+    }
+
+    @Test
+    public void skipNestedArrays() throws IOException {
+        String test = "{\"k\":[\"1\",\"2\"],\"k2\":{}}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        reader.read(); // {
+        assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
+        reader.read(); // k
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        reader.read(); // [
+        assertEquals(FaunaTokenType.START_ARRAY, reader.getCurrentTokenType());
+        reader.skip(); // "1","2"]
+        assertEquals(FaunaTokenType.END_ARRAY, reader.getCurrentTokenType());
+        reader.read();
+        assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
+        assertEquals("k2", reader.getValueAsString());
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
