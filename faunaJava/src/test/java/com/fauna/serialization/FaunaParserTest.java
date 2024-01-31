@@ -292,6 +292,30 @@ class FaunaParserTest {
         assertReader(reader, expectedTokens, false);
     }
 
+    @Test
+    public void testReadSet() throws IOException {
+        String s = "{\n" +
+            "    \"@set\": {\n" +
+            "        \"data\": [{\"@int\": \"99\"}],\n" +
+            "        \"after\": \"afterme\"\n" +
+            "    }\n" +
+            "}";
+        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_PAGE, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "data"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
+            Map.entry(FaunaTokenType.INT, 99),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_ARRAY, null),
+            Map.entry(FaunaTokenType.FIELD_NAME, "after"),
+            Map.entry(FaunaTokenType.STRING, "afterme"),
+            new AbstractMap.SimpleEntry<>(FaunaTokenType.END_PAGE, null)
+        );
+
+        assertReader(reader, expectedTokens, false);
+    }
+
     private static void assertReader(FaunaParser reader,
         List<Map.Entry<FaunaTokenType, Object>> tokens,
         boolean assertExceptions) throws IOException {
