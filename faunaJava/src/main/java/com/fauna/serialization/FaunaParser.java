@@ -71,28 +71,7 @@ public class FaunaParser {
         END_REF,
         END_ARRAY
     ));
-
-    public void skip() throws IOException {
-        switch (getCurrentTokenType()) {
-            case START_OBJECT:
-            case START_ARRAY:
-            case START_PAGE:
-            case START_REF:
-            case START_DOCUMENT:
-                skipInternal();
-                break;
-        }
-    }
-
-    private void skipInternal() throws IOException {
-        int startCount = tokenStack.size();
-        while (read()) {
-            if (tokenStack.size() < startCount) {
-                break;
-            }
-        }
-    }
-
+    
     public boolean read() throws IOException {
         taggedTokenValue = null;
 
