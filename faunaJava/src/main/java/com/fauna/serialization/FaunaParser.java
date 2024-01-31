@@ -42,7 +42,7 @@ public class FaunaParser {
     private static final String DOC_TAG = "@doc";
     private static final String MOD_TAG = "@mod";
     private static final String SET_TAG = "@set";
-    private static final String OBJECT_TAG = "@object";//TODO Understand Module
+    private static final String OBJECT_TAG = "@object";
     private final JsonParser jsonParser;
     private final Stack<FaunaTokenType> tokenStack = new Stack<>();
     private FaunaTokenType currentFaunaTokenType;
