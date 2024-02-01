@@ -81,12 +81,6 @@ public class FaunaGeneratorTest {
     private void assertWriter(String expected) throws IOException {
         writer.flush();
         String actual = new String(stream.toByteArray(), StandardCharsets.UTF_8);
-        System.out.println("Expected: " + expected);
-        System.out.println("Actual  : " + actual);
-
-        // Add this line to explicitly print the stream content
-        System.out.println("Stream Content: " + stream.toString(StandardCharsets.UTF_8));
-
         assertEquals(expected, actual);
     }
 }
