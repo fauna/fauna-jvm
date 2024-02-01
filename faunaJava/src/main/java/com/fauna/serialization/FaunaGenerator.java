@@ -71,6 +71,9 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartEscapedObject() throws IOException {
+        writeStartObject();
+        writeFieldName("@object");
+        writeStartObject();
     }
 
     /**
@@ -79,6 +82,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndEscapedObject() throws IOException {
+        writeEndObject();
+        writeEndObject();
     }
 
     /**
@@ -87,6 +92,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartArray() throws IOException {
+        jsonGenerator.writeStartArray();
     }
 
     /**
@@ -95,6 +101,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndArray() throws IOException {
+        jsonGenerator.writeEndArray();
     }
 
     /**
@@ -103,6 +110,9 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartRef() throws IOException {
+        writeStartObject();
+        writeFieldName("@ref");
+        writeStartObject();
     }
 
     /**
@@ -111,6 +121,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndRef() throws IOException {
+        writeEndObject();
+        writeEndObject();
     }
 
     /**
@@ -216,6 +228,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeModule(String fieldName, Module value) throws IOException {
+        writeFieldName(fieldName);
+        writeModuleValue(value);
     }
 
     /**
@@ -329,6 +343,16 @@ public class FaunaGenerator implements AutoCloseable {
      */
     public void writeNullValue() throws IOException {
         jsonGenerator.writeNull();
+    }
+
+    /**
+     * Writes a module value as a tagged element.
+     *
+     * @param value The module value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeModuleValue(Module value) throws IOException {
+        writeTaggedValue("@mod", value.getName());
     }
 
     @Override
