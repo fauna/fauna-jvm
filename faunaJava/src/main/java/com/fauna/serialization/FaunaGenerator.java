@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fauna.common.types.Module;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -106,16 +105,6 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndRef() throws IOException {
-    }
-
-    /**
-     * Writes a double value with a specific field name.
-     *
-     * @param fieldName The name of the field.
-     * @param value     The decimal value to write.
-     * @throws IOException If an I/O error occurs.
-     */
-    public void writeDouble(String fieldName, BigDecimal value) throws IOException {
     }
 
     /**
