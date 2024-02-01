@@ -15,7 +15,7 @@ public class FaunaGenerator implements AutoCloseable {
     private final JsonGenerator jsonGenerator;
 
     /**
-     * Initializes a new instance of the Utf8FaunaWriter class with a specified buffer writer.
+     * Initializes a new instance of the FaunaGenerator class with a specified buffer writer.
      *
      * @param bufferWriter The buffer writer to write to.
      */
@@ -25,7 +25,7 @@ public class FaunaGenerator implements AutoCloseable {
     }
 
     /**
-     * Initializes a new instance of the Utf8FaunaWriter class with a specified stream.
+     * Initializes a new instance of the FaunaGenerator class with a specified stream.
      *
      * @param outputStream The stream to write to.
      */
