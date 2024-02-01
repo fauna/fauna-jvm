@@ -8,6 +8,7 @@ import com.fauna.common.types.Module;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class FaunaGenerator implements AutoCloseable {
@@ -164,7 +165,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @param value     The LocalDateTime value to write.
      * @throws IOException If an I/O error occurs.
      */
-    public void writeDate(String fieldName, LocalDateTime value) throws IOException {
+    public void writeDate(String fieldName, LocalDate value) throws IOException {
     }
 
     /**
