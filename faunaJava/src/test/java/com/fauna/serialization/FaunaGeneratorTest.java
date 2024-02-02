@@ -78,6 +78,20 @@ public class FaunaGeneratorTest {
         assertWriter("{\"@time\":\"2024-01-23T13:33:10.300Z\"}");
     }
 
+    @Test
+    public void writeTimeWithSixDecimalPrecision() throws IOException {
+        Instant instant = Instant.parse("2024-01-23T13:33:10.300001Z");
+        writer.writeTimeValue(instant);
+        assertWriter("{\"@time\":\"2024-01-23T13:33:10.300001Z\"}");
+    }
+
+    @Test
+    public void writeNonUTCTime() throws IOException {
+        Instant instant = Instant.parse("2024-01-23T13:33:10.300001-07:00");
+        writer.writeTimeValue(instant);
+        assertWriter("{\"@time\":\"2024-01-23T20:33:10.300001Z\"}");
+    }
+
     private void assertWriter(String expected) throws IOException {
         writer.flush();
         String actual = new String(stream.toByteArray(), StandardCharsets.UTF_8);
