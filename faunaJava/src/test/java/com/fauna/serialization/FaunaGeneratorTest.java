@@ -80,6 +80,7 @@ public class FaunaGeneratorTest {
     }
 
     @Test
+
     public void writeObject() throws IOException {
         writer.writeStartObject();
         writer.writeInt("anInt", 42);
@@ -165,6 +166,18 @@ public class FaunaGeneratorTest {
         assertWriter("{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Authors\"}}}");
     }
 
+    public void writeTimeWithSixDecimalPrecision() throws IOException {
+        Instant instant = Instant.parse("2024-01-23T13:33:10.300001Z");
+        writer.writeTimeValue(instant);
+        assertWriter("{\"@time\":\"2024-01-23T13:33:10.300001Z\"}");
+    }
+
+    @Test
+    public void writeNonUTCTime() throws IOException {
+        Instant instant = Instant.parse("2024-01-23T13:33:10.300001-07:00");
+        writer.writeTimeValue(instant);
+        assertWriter("{\"@time\":\"2024-01-23T20:33:10.300001Z\"}");
+    }
 
     private void assertWriter(String expected) throws IOException {
         writer.flush();
