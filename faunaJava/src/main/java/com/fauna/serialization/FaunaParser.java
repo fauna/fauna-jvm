@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -48,6 +49,13 @@ public class FaunaParser {
     private FaunaTokenType currentFaunaTokenType;
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
+
+    public FaunaParser(String str) throws IOException {
+        InputStream inputStream = new ByteArrayInputStream(str.getBytes());
+        JsonFactory factory = new JsonFactory();
+        this.jsonParser = factory.createParser(inputStream);
+        currentFaunaTokenType = NONE;
+    }
 
     private enum InternalTokenType {
         START_ESCAPED_OBJECT
