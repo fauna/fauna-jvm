@@ -2,27 +2,19 @@ package com.fauna.serialization;
 
 import com.fauna.exception.SerializationException;
 
-public class DynamicDeserializer extends BaseDeserializer {
+public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
-    public static DynamicDeserializer instance = new DynamicDeserializer();
+    private static DynamicDeserializer<?> instance = new DynamicDeserializer<>();
 
-    public static DynamicDeserializer getInstance() {
-        if (instance == null) {
-            synchronized (DynamicDeserializer.class) {
-                if (instance == null) {
-                    instance = new DynamicDeserializer();
-                }
-            }
-        }
-        return instance;
+    public static <T> DynamicDeserializer<T> getInstance(Class<T> type) {
+        return (DynamicDeserializer<T>) instance;
     }
 
     private DynamicDeserializer() {
 
     }
 
-
-    public Object deserialize(SerializationContext context, FaunaParser reader) {
+    public T deserialize(SerializationContext context, FaunaParser reader) {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
@@ -50,11 +42,7 @@ public class DynamicDeserializer extends BaseDeserializer {
                     "Unexpected token while deserializing: " + reader.getCurrentTokenType());
         }
 
-        return value;
+        return (T) value;
     }
 
-    @Override
-    public Object deserializeGeneric(SerializationContext context, FaunaParser parser) {
-        return null;
-    }
 }

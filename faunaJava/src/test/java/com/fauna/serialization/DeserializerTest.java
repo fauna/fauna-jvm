@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 
 public class DeserializerTest {
 
-    private static <T> T deserialize(String str, Class<T> clazz) throws IOException {
-        return deserializeImpl(str, ctx -> Deserializer.generate(ctx, clazz));
+    private static <T> T deserialize(String str,
+        Function<SerializationContext, IDeserializer<T>> deserFunc) throws IOException {
+        return deserializeImpl(str, deserFunc);
     }
-
 
     private static <T> T deserializeImpl(String str,
         Function<SerializationContext, IDeserializer<T>> deserFunc)
@@ -33,7 +33,8 @@ public class DeserializerTest {
 
     @Test
     public void testDeserializeIntGeneric() throws IOException {
-        int result = deserialize("{\"@int\":\"42\"}", Integer.class);
+        int result = deserialize("{\"@int\":\"42\"}",
+            ctx -> Deserializer.generate(ctx, Integer.class));
         Assert.assertEquals(42, result);
     }
 }
