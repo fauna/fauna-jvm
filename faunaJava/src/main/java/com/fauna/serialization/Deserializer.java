@@ -2,6 +2,8 @@ package com.fauna.serialization;
 
 
 import com.fauna.common.types.Module;
+import com.google.common.reflect.TypeToken;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -32,8 +34,9 @@ public class Deserializer {
      * @param context The serialization context.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
-        IDeserializer<?> deser = generateImpl(context, targetType);
+    public static <T> IDeserializer<T> generate(SerializationContext context,
+        TypeToken<T> targetTypeToken) {
+        IDeserializer<?> deser = generateImpl(context, targetTypeToken);
         return (IDeserializer<T>) deser;
     }
 
@@ -46,40 +49,41 @@ public class Deserializer {
      * @return An {@code IDeserializer<T>}.
      */
     public static <T> IDeserializer<T> generateNullable(SerializationContext context,
-        Class<T> targetType) {
-        IDeserializer<T> deser = generate(context, targetType);
+        TypeToken<T> targetTypeToken) {
+        IDeserializer<T> deser = generate(context, targetTypeToken);
         NullableDeserializer<T> nullable = new NullableDeserializer<>(deser);
         return nullable;
     }
 
     private static <T> IDeserializer<T> generateImpl(SerializationContext context,
-        Class<T> targetType) {
-        if (targetType == Integer.class || targetType == int.class) {
+        TypeToken<T> targetType) {
+        Type type = targetType.getType();
+        if (type == Integer.class || type == int.class) {
             return (IDeserializer<T>) _integer;
         }
-        if (targetType == String.class) {
+        if (type == String.class) {
             return (IDeserializer<T>) _string;
         }
-        if (targetType == LocalDate.class) {
+        if (type == LocalDate.class) {
             return (IDeserializer<T>) _date;
         }
-        if (targetType == Instant.class) {
+        if (type == Instant.class) {
             return (IDeserializer<T>) _time;
         }
-        if (targetType == double.class || targetType == Double.class) {
+        if (type == double.class || type == Double.class) {
             return (IDeserializer<T>) _double;
         }
-        if (targetType == long.class || targetType == Long.class) {
+        if (type == long.class || type == Long.class) {
             return (IDeserializer<T>) _long;
         }
-        if (targetType == boolean.class || targetType == Boolean.class) {
+        if (type == boolean.class || type == Boolean.class) {
             return (IDeserializer<T>) _boolean;
         }
-        if (targetType == Module.class) {
+        if (type == Module.class) {
             return (IDeserializer<T>) _module;
         }
 
         throw new IllegalArgumentException(
-            "Unsupported deserialization target type " + targetType.getName());
+            "Unsupported deserialization target type " + type.getTypeName());
     }
 }
