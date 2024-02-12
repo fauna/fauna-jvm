@@ -14,6 +14,8 @@ public class Deserializer {
         LocalDate.class);
     public static final IDeserializer<Instant> _time = DynamicDeserializer.getInstance(
         Instant.class);
+    public static final IDeserializer<Double> _double = DynamicDeserializer.getInstance(
+        Double.class);
 
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
@@ -40,6 +42,9 @@ public class Deserializer {
         }
         if (targetType == Instant.class) {
             return (IDeserializer<T>) _time;
+        }
+        if (targetType == Double.class) {
+            return (IDeserializer<T>) _double;
         }
 
         throw new IllegalArgumentException(

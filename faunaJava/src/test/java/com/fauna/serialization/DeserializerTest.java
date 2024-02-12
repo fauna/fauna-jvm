@@ -82,5 +82,10 @@ public class DeserializerTest {
         assertEquals(instant, result);
     }
 
-
+    @Test
+    public void testDeserializeDouble() throws IOException {
+        Double result = deserialize("{\"@double\":\"1.23\"}",
+            ctx -> Deserializer.generate(ctx, Double.class));
+        assertEquals(1.23d, result);
+    }
 }

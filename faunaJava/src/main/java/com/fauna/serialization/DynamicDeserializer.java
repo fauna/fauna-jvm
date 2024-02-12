@@ -23,7 +23,6 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
             case START_REF:
             case START_DOCUMENT:
             case LONG:
-            case DOUBLE:
             case TRUE:
             case FALSE:
             case MODULE:
@@ -42,6 +41,9 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 break;
             case NULL:
                 value = null;
+                break;
+            case DOUBLE:
+                value = reader.getValueAsDouble();
                 break;
             default:
                 throw new SerializationException(
