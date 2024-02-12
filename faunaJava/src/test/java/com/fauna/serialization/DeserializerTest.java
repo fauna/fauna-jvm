@@ -353,4 +353,46 @@ public class DeserializerTest {
         assertEquals(expected, result);
 
     }
+
+    @Test
+    public void deserializeEscapedObject() throws IOException {
+        String given = "{\n" +
+            "    \"@object\": {\n" +
+            "        \"@int\": \"notanint\",\n" +
+            "        \"anInt\": { \"@int\": \"123\" },\n" +
+            "        \"@object\": \"notanobject\",\n" +
+            "        \"anEscapedObject\": { \"@object\": { \"@long\": \"notalong\" } }\n" +
+            "    }\n" +
+            "}";
+
+        Map<String, Object> inner = new HashMap<>();
+        inner.put("@long", "notalong");
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("@int", "notanint");
+        expected.put("anInt", 123);
+        expected.put("@object", "notanobject");
+        expected.put("anEscapedObject", inner);
+
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void deserializeIntoGenericDictionary() throws IOException {
+        String given = "{\n" +
+            "    \"k1\": { \"@int\": \"1\" },\n" +
+            "    \"k2\": { \"@int\": \"2\" },\n" +
+            "    \"k3\": { \"@int\": \"3\" }\n" +
+            "}";
+
+        Map<String, Integer> expected = new HashMap<>();
+        expected.put("k1", 1);
+        expected.put("k2", 2);
+        expected.put("k3", 3);
+
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
 }
