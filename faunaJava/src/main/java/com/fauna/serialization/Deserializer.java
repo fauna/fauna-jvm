@@ -3,8 +3,10 @@ package com.fauna.serialization;
 
 public class Deserializer {
 
-    public static final IDeserializer<Integer> integer = DynamicDeserializer.getInstance(
+    public static final IDeserializer<Integer> _integer = DynamicDeserializer.getInstance(
         Integer.class);
+    public static final IDeserializer<String> _string = DynamicDeserializer.getInstance(
+        String.class);
 
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
@@ -14,7 +16,10 @@ public class Deserializer {
     private static <T> IDeserializer<T> generateImpl(SerializationContext context,
         Class<T> targetType) {
         if (targetType == Integer.class || targetType == int.class) {
-            return (IDeserializer<T>) integer;
+            return (IDeserializer<T>) _integer;
+        }
+        if (targetType == String.class) {
+            return (IDeserializer<T>) _string;
         }
 
         throw new IllegalArgumentException(

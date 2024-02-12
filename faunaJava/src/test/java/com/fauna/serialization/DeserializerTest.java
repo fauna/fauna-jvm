@@ -32,9 +32,16 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeIntGeneric() throws IOException {
+    public void testDeserializeInt() throws IOException {
         int result = deserialize("{\"@int\":\"42\"}",
             ctx -> Deserializer.generate(ctx, Integer.class));
         Assert.assertEquals(42, result);
+    }
+
+    @Test
+    public void testDeserializeString() throws IOException {
+        String result = deserialize("\"hello\"",
+            ctx -> Deserializer.generate(ctx, String.class));
+        Assert.assertEquals("hello", result);
     }
 }
