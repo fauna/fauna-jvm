@@ -4,6 +4,10 @@ package com.fauna.serialization;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Represents methods for deserializing objects to and from Fauna's value format.
+ */
+
 public class Deserializer {
 
     private static final IDeserializer<Integer> _integer = new CheckedDeserializer(Integer.class);
@@ -14,13 +18,31 @@ public class Deserializer {
     private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
 
+    /**
+     * The dynamic data deserializer.
+     */
     public static final IDeserializer<Object> DYNAMIC = DynamicDeserializer.getInstance();
 
+    /**
+     * Generates a deserializer for the specified non-nullable .NET type.
+     *
+     * @param <T>     The type of the object to deserialize to.
+     * @param context The serialization context.
+     * @return An {@code IDeserializer<T>}.
+     */
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
         return (IDeserializer<T>) deser;
     }
 
+    /**
+     * Generates a deserializer which returns values of the specified .NET type, or the default if
+     * the underlying query value is null.
+     *
+     * @param <T>     The type of the object to deserialize to.
+     * @param context The serialization context.
+     * @return An {@code IDeserializer<T>}.
+     */
     public static <T> IDeserializer<T> generateNullable(SerializationContext context,
         Class<T> targetType) {
         IDeserializer<T> deser = generate(context, targetType);
