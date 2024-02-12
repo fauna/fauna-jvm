@@ -266,7 +266,8 @@ public class DeserializerTest {
             "}";
 
         DocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, DocumentRef.class));
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
 
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -286,7 +287,8 @@ public class DeserializerTest {
             "}";
 
         NullDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, NullDocumentRef.class));
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
 
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -305,7 +307,8 @@ public class DeserializerTest {
             "}";
 
         NamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, NamedDocumentRef.class));
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
 
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -325,11 +328,12 @@ public class DeserializerTest {
             "}";
 
         NullNamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, NullNamedDocumentRef.class));
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
 
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals("not found", actual.getCause());
     }
-    
+
 }
