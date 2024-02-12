@@ -317,5 +317,40 @@ public class DeserializerTest {
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals("not found", actual.getCause());
     }
-    
+
+    @Test
+    public void deserializeObject() throws IOException {
+        String given = "{\n" +
+            "    \"aString\": \"foo\",\n" +
+            "    \"anObject\": { \"baz\": \"luhrmann\" },\n" +
+            "    \"anInt\": { \"@int\": \"2147483647\" },\n" +
+            "    \"aLong\":{ \"@long\": \"9223372036854775807\" },\n" +
+            "    \"aDouble\":{ \"@double\": \"3.14159\" },\n" +
+            "    \"aDate\":{ \"@date\": \"2023-12-03\" },\n" +
+            "    \"aTime\":{ \"@time\": \"2023-12-03T14:52:10.001001Z\" },\n" +
+            "    \"true\": true,\n" +
+            "    \"false\": false,\n" +
+            "    \"null\": null\n" +
+            "}";
+
+        Map<String, Object> inner = new HashMap<>();
+        inner.put("baz", "luhrmann");
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("aString", "foo");
+        expected.put("anObject", inner);
+        expected.put("anInt", 2147483647);
+        expected.put("aLong", 9223372036854775807L);
+        expected.put("aDouble", 3.14159d);
+        expected.put("aDate", LocalDate.parse("2023-12-03"));
+        expected.put("aTime", Instant.parse("2023-12-03T14:52:10.001001Z"));
+        expected.put("true", true);
+        expected.put("false", false);
+        expected.put("null", null);
+
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+
+        assertEquals(expected, result);
+
+    }
 }
