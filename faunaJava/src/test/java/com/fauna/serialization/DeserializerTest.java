@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
@@ -391,6 +393,22 @@ public class DeserializerTest {
         expected.put("k2", 2);
         expected.put("k3", 3);
 
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void deserializeIntoList() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<Object> expected = Arrays.asList("item1", "item2");
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void deserializeIntoGenericListWithPrimitive() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<String> expected = Arrays.asList("item1", "item2");
         Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
         assertEquals(expected, result);
     }

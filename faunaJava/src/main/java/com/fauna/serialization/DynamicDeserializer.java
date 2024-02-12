@@ -24,6 +24,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
     private static DynamicDeserializer<?> instance = new DynamicDeserializer<>();
 
     private final MapDeserializer<T> _map;
+    private final ListDeserializer<T> _list;
 
     /**
      * Returns the singleton instance of DynamicDeserializer.
@@ -40,6 +41,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
      */
     private DynamicDeserializer() {
         _map = new MapDeserializer<>(this);
+        _list = new ListDeserializer<>(this);
     }
 
     /**
@@ -54,7 +56,10 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
                 value = _map.deserialize(context, reader);
+                break;
             case START_ARRAY:
+                value = _list.deserialize(context, reader);
+                break;
             case START_PAGE:
                 break;
             case START_REF:
