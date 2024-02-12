@@ -24,7 +24,6 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
             case START_DOCUMENT:
             case LONG:
             case DOUBLE:
-            case DATE:
             case TIME:
             case TRUE:
             case FALSE:
@@ -35,6 +34,9 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 break;
             case STRING:
                 value = reader.getValueAsString();
+                break;
+            case DATE:
+                value = reader.getValueAsLocalDate();
                 break;
             case NULL:
                 value = null;

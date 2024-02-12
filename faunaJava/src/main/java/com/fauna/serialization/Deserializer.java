@@ -1,12 +1,16 @@
 package com.fauna.serialization;
 
 
+import java.time.LocalDate;
+
 public class Deserializer {
 
     public static final IDeserializer<Integer> _integer = DynamicDeserializer.getInstance(
         Integer.class);
     public static final IDeserializer<String> _string = DynamicDeserializer.getInstance(
         String.class);
+    public static final IDeserializer<LocalDate> _date = DynamicDeserializer.getInstance(
+        LocalDate.class);
 
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
@@ -27,6 +31,9 @@ public class Deserializer {
         }
         if (targetType == String.class) {
             return (IDeserializer<T>) _string;
+        }
+        if (targetType == LocalDate.class) {
+            return (IDeserializer<T>) _date;
         }
 
         throw new IllegalArgumentException(

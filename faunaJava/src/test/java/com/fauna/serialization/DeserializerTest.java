@@ -1,11 +1,12 @@
 package com.fauna.serialization;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fauna.exception.SerializationException;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.function.Function;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 
@@ -41,20 +42,27 @@ public class DeserializerTest {
     public void testDeserializeInt() throws IOException {
         int result = deserialize("{\"@int\":\"42\"}",
             ctx -> Deserializer.generate(ctx, Integer.class));
-        Assert.assertEquals(42, result);
+        assertEquals(42, result);
     }
 
     @Test
     public void testDeserializeString() throws IOException {
         String result = deserialize("\"hello\"",
             ctx -> Deserializer.generate(ctx, String.class));
-        Assert.assertEquals("hello", result);
+        assertEquals("hello", result);
     }
 
     @Test
     public void deserializeNullableGeneric() throws IOException {
         String result = deserializeNullable("null", String.class);
         assertNull(result);
+    }
+
+    @Test
+    public void deserializeDateGeneric() throws IOException {
+        LocalDate result = deserialize("{\"@date\": \"2023-12-03\"}",
+            ctx -> Deserializer.generate(ctx, LocalDate.class));
+        assertEquals(LocalDate.of(2023, 12, 3), result);
     }
 
 }
