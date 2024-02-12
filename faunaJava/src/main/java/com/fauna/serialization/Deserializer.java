@@ -2,8 +2,12 @@ package com.fauna.serialization;
 
 
 import com.fauna.common.types.Document;
-import com.fauna.common.types.NamedDocument;
+import com.fauna.common.types.DocumentRef;
 import com.fauna.common.types.Module;
+import com.fauna.common.types.NamedDocument;
+import com.fauna.common.types.NamedDocumentRef;
+import com.fauna.common.types.NullDocumentRef;
+import com.fauna.common.types.NullNamedDocumentRef;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -25,6 +29,14 @@ public class Deserializer {
         Document.class);
     private static final IDeserializer<NamedDocument> _namedDocument = new CheckedDeserializer(
         NamedDocument.class);
+    private static final IDeserializer<DocumentRef> _documentRef = new CheckedDeserializer(
+        DocumentRef.class);
+    private static final IDeserializer<NamedDocumentRef> _namedDocumentRef = new CheckedDeserializer(
+        NamedDocumentRef.class);
+    private static final IDeserializer<NullDocumentRef> _nullDocumentRef = new CheckedDeserializer(
+        NullDocumentRef.class);
+    private static final IDeserializer<NullNamedDocumentRef> _nullNamedDocumentRef = new CheckedDeserializer(
+        NullNamedDocumentRef.class);
 
     /**
      * The dynamic data deserializer.
@@ -89,6 +101,18 @@ public class Deserializer {
         }
         if (targetType == NamedDocument.class) {
             return (IDeserializer<T>) _namedDocument;
+        }
+        if (targetType == DocumentRef.class) {
+            return (IDeserializer<T>) _documentRef;
+        }
+        if (targetType == NullDocumentRef.class) {
+            return (IDeserializer<T>) _nullDocumentRef;
+        }
+        if (targetType == NamedDocumentRef.class) {
+            return (IDeserializer<T>) _namedDocumentRef;
+        }
+        if (targetType == NullNamedDocumentRef.class) {
+            return (IDeserializer<T>) _nullNamedDocumentRef;
         }
 
         throw new IllegalArgumentException(

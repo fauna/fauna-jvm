@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fauna.common.types.Module;
 import com.fauna.common.types.Document;
+import com.fauna.common.types.DocumentRef;
 import com.fauna.common.types.Module;
 import com.fauna.common.types.NamedDocument;
+import com.fauna.common.types.NamedDocumentRef;
+import com.fauna.common.types.NullDocumentRef;
+import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -237,4 +240,82 @@ public class DeserializerTest {
         assertEquals("user_value", actual.get("user_field"));
     }
 
+    @Test
+    public void deserializeDocumentRef() throws IOException {
+        String given = "{\n" +
+            "    \"@ref\":{\n" +
+            "        \"id\":\"123\",\n" +
+            "        \"coll\":{\n" +
+            "            \"@mod\":\"MyColl\"\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+
+        DocumentRef actual = deserialize(given,
+            ctx -> Deserializer.generate(ctx, DocumentRef.class));
+
+        assertEquals("123", actual.getId());
+        assertEquals(new Module("MyColl"), actual.getCollection());
+    }
+
+    @Test
+    public void deserializeNullRef() throws IOException {
+        String given = "{\n" +
+            "    \"@ref\":{\n" +
+            "        \"id\":\"123\",\n" +
+            "        \"coll\":{\n" +
+            "            \"@mod\":\"MyColl\"\n" +
+            "        },\n" +
+            "        \"exists\":false,\n" +
+            "        \"cause\":\"not found\"\n" +
+            "    }\n" +
+            "}";
+
+        NullDocumentRef actual = deserialize(given,
+            ctx -> Deserializer.generate(ctx, NullDocumentRef.class));
+
+        assertEquals("123", actual.getId());
+        assertEquals(new Module("MyColl"), actual.getCollection());
+        assertEquals("not found", actual.getCause());
+    }
+
+    @Test
+    public void deserializeNamedRef() throws IOException {
+        String given = "{\n" +
+            "    \"@ref\":{\n" +
+            "        \"name\":\"RefName\",\n" +
+            "        \"coll\":{\n" +
+            "            \"@mod\":\"MyColl\"\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+
+        NamedDocumentRef actual = deserialize(given,
+            ctx -> Deserializer.generate(ctx, NamedDocumentRef.class));
+
+        assertEquals("RefName", actual.getName());
+        assertEquals(new Module("MyColl"), actual.getCollection());
+    }
+
+    @Test
+    public void deserializeNullNamedRef() throws IOException {
+        String given = "{\n" +
+            "    \"@ref\":{\n" +
+            "        \"name\":\"RefName\",\n" +
+            "        \"coll\":{\n" +
+            "            \"@mod\":\"MyColl\"\n" +
+            "        },\n" +
+            "        \"exists\":false,\n" +
+            "        \"cause\":\"not found\"\n" +
+            "    }\n" +
+            "}";
+
+        NullNamedDocumentRef actual = deserialize(given,
+            ctx -> Deserializer.generate(ctx, NullNamedDocumentRef.class));
+
+        assertEquals("RefName", actual.getName());
+        assertEquals(new Module("MyColl"), actual.getCollection());
+        assertEquals("not found", actual.getCause());
+    }
+    
 }

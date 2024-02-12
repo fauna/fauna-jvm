@@ -2,8 +2,12 @@ package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.common.types.Document;
+import com.fauna.common.types.DocumentRef;
 import com.fauna.common.types.Module;
 import com.fauna.common.types.NamedDocument;
+import com.fauna.common.types.NamedDocumentRef;
+import com.fauna.common.types.NullDocumentRef;
+import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.exception.SerializationException;
 import java.io.IOException;
 import java.time.Instant;
@@ -48,8 +52,10 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
             case START_ARRAY:
-            case END_PAGE:
+            case START_PAGE:
+                break;
             case START_REF:
+                value = deserializeRef(context, reader);
                 break;
             case START_DOCUMENT:
                 value = deserializeDocument(context, reader);
@@ -151,6 +157,69 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
             data.put("ts", ts);
         }
         return data;
+    }
+
+    private Object deserializeRef(SerializationContext context, FaunaParser reader)
+        throws IOException {
+        String id = null;
+        String name = null;
+        Module coll = null;
+        boolean exists = true;
+        String cause = null;
+        Map<String, Object> allProps = new HashMap<>();
+
+        while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_REF) {
+            if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
+                throw new SerializationException(
+                    "Unexpected token while deserializing into DocumentRef: "
+                        + reader.getCurrentTokenType());
+            }
+
+            String fieldName = reader.getValueAsString();
+            reader.read();
+            switch (fieldName) {
+                case "id":
+                    id = reader.getValueAsString();
+                    allProps.put("id", id);
+                    break;
+                case "name":
+                    name = reader.getValueAsString();
+                    allProps.put("name", name);
+                    break;
+                case "coll":
+                    coll = reader.getValueAsModule();
+                    allProps.put("coll", coll);
+                    break;
+                case "exists":
+                    exists = reader.getValueAsBoolean();
+                    allProps.put("exists", exists);
+                    break;
+                case "cause":
+                    cause = reader.getValueAsString();
+                    allProps.put("cause", cause);
+                    break;
+                default:
+                    allProps.put(fieldName,
+                        DynamicDeserializer.getInstance().deserialize(context, reader));
+                    break;
+            }
+        }
+
+        if (id != null && coll != null) {
+            if (exists) {
+                return new DocumentRef(id, coll);
+            }
+            return new NullDocumentRef(id, coll, cause);
+        }
+
+        if (name != null && coll != null) {
+            if (exists) {
+                return new NamedDocumentRef(name, coll);
+            }
+            return new NullNamedDocumentRef(name, coll, cause);
+        }
+
+        return allProps;
     }
 
 }
