@@ -137,4 +137,24 @@ public class DeserializerTest {
             ctx -> Deserializer.generate(ctx, Boolean.class));
         assertFalse(result);
     }
+
+   /* @Test
+    public void deserializeValues() throws IOException {
+        Map<String, Object> tests = new HashMap<>();
+        tests.put("\"hello\"", "hello");
+        tests.put("{\"@int\":\"42\"}", 42);
+        tests.put("{\"@long\":\"42\"}", 42L);
+        tests.put("{\"@double\": \"1.2\"}", 1.2d);
+        tests.put("{\"@date\": \"2023-12-03\"}", LocalDate.of(2023, 12, 3));
+        tests.put("{\"@time\": \"2023-12-03T05:52:10.000001-09:00\"}",
+            Instant.parse("2023-12-03T05:52:10.000001-09:00"));
+        tests.put("true", true);
+        tests.put("false", false);
+        tests.put("null", null);
+
+        for (Map.Entry<String, Object> entry : tests.entrySet()) {
+            Object result = deserialize(entry.getKey());
+            assertEquals(entry.getValue(), result);
+        }
+    }*/
 }

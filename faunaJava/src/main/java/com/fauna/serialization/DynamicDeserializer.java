@@ -6,7 +6,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
     private static DynamicDeserializer<?> instance = new DynamicDeserializer<>();
 
-    public static <T> DynamicDeserializer<T> getInstance(Class<T> type) {
+    public static <T> DynamicDeserializer<T> getInstance() {
         return (DynamicDeserializer<T>) instance;
     }
 

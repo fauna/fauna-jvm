@@ -12,7 +12,7 @@ public class CheckedDeserializer<T> extends BaseDeserializer<T> {
 
     public T deserialize(SerializationContext context, FaunaParser reader) {
         Object tokenType = reader.getCurrentTokenType();
-        Object obj = DynamicDeserializer.getInstance(type).deserialize(context, reader);
+        Object obj = DynamicDeserializer.getInstance().deserialize(context, reader);
 
         if (type.isInstance(obj)) {
             return type.cast(obj);

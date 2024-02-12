@@ -6,20 +6,13 @@ import java.time.LocalDate;
 
 public class Deserializer {
 
-    public static final IDeserializer<Integer> _integer = DynamicDeserializer.getInstance(
-        Integer.class);
-    public static final IDeserializer<String> _string = DynamicDeserializer.getInstance(
-        String.class);
-    public static final IDeserializer<LocalDate> _date = DynamicDeserializer.getInstance(
-        LocalDate.class);
-    public static final IDeserializer<Instant> _time = DynamicDeserializer.getInstance(
-        Instant.class);
-    public static final IDeserializer<Double> _double = DynamicDeserializer.getInstance(
-        Double.class);
-    public static final IDeserializer<Long> _long = DynamicDeserializer.getInstance(
-        Long.class);
-    public static final IDeserializer<Boolean> _boolean = DynamicDeserializer.getInstance(
-        Boolean.class);
+    public static final IDeserializer<Integer> _integer = new CheckedDeserializer(Integer.class);
+    public static final IDeserializer<String> _string = new CheckedDeserializer(String.class);
+    public static final IDeserializer<LocalDate> _date = new CheckedDeserializer(LocalDate.class);
+    public static final IDeserializer<Instant> _time = new CheckedDeserializer(Instant.class);
+    public static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
+    public static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
+    public static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
 
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
