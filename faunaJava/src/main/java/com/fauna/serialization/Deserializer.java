@@ -6,13 +6,13 @@ import java.time.LocalDate;
 
 public class Deserializer {
 
-    public static final IDeserializer<Integer> _integer = new CheckedDeserializer(Integer.class);
-    public static final IDeserializer<String> _string = new CheckedDeserializer(String.class);
-    public static final IDeserializer<LocalDate> _date = new CheckedDeserializer(LocalDate.class);
-    public static final IDeserializer<Instant> _time = new CheckedDeserializer(Instant.class);
-    public static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
-    public static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
-    public static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
+    private static final IDeserializer<Integer> _integer = new CheckedDeserializer(Integer.class);
+    private static final IDeserializer<String> _string = new CheckedDeserializer(String.class);
+    private static final IDeserializer<LocalDate> _date = new CheckedDeserializer(LocalDate.class);
+    private static final IDeserializer<Instant> _time = new CheckedDeserializer(Instant.class);
+    private static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
+    private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
+    private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
 
     public static final IDeserializer<Object> DYNAMIC = DynamicDeserializer.getInstance();
 

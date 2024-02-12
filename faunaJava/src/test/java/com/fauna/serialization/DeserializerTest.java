@@ -19,41 +19,28 @@ import org.junit.jupiter.api.Test;
 
 public class DeserializerTest {
 
-    private static <T> T deserialize(String str,
-        Function<SerializationContext, IDeserializer<T>> deserFunc) throws IOException {
-        return deserializeImpl(str, deserFunc);
-    }
-
-    private static <T> T deserialize(InputStream body,
-        Function<SerializationContext, IDeserializer<T>> deserFunc) throws IOException {
-        return deserializeImpl(body, deserFunc);
-    }
-
-    public static <T> T deserializeNullable(String str, Class<T> targetType) throws IOException {
-        return deserializeImpl(str, ctx -> Deserializer.generateNullable(ctx, targetType));
-    }
-
-    private static <T> T deserializeImpl(String str,
+    public static <T> T deserialize(String str,
         Function<SerializationContext, IDeserializer<T>> deserFunc)
         throws IOException {
         FaunaParser reader = new FaunaParser(str);
-        reader.read();
-        SerializationContext context = new SerializationContext();
-        IDeserializer<T> deser = deserFunc.apply(context);
-        T obj = deser.deserialize(context, reader);
-
-        if (reader.read()) {
-            throw new SerializationException(
-                "Token stream is not exhausted but should be: " + reader.getCurrentTokenType());
-        }
-
-        return obj;
+        return deserialize(reader, deserFunc);
     }
 
-    private static <T> T deserializeImpl(InputStream inputStream,
+    public static <T> T deserialize(InputStream inputStream,
         Function<SerializationContext, IDeserializer<T>> deserFunc)
         throws IOException {
         FaunaParser reader = new FaunaParser(inputStream);
+        return deserialize(reader, deserFunc);
+    }
+
+    public static <T> T deserializeNullable(String str, Class<T> targetType)
+        throws IOException {
+        return deserialize(str, ctx -> Deserializer.generateNullable(ctx, targetType));
+    }
+
+    private static <T> T deserialize(FaunaParser reader,
+        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        throws IOException {
         reader.read();
         SerializationContext context = new SerializationContext();
         IDeserializer<T> deser = deserFunc.apply(context);
