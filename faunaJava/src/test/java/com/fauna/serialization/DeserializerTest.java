@@ -1,10 +1,14 @@
 package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fauna.exception.SerializationException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.function.Function;
@@ -18,6 +22,11 @@ public class DeserializerTest {
         return deserializeImpl(str, deserFunc);
     }
 
+    private static <T> T deserialize(InputStream body,
+        Function<SerializationContext, IDeserializer<T>> deserFunc) throws IOException {
+        return deserializeImpl(body, deserFunc);
+    }
+
     public static <T> T deserializeNullable(String str, Class<T> targetType) throws IOException {
         return deserializeImpl(str, ctx -> Deserializer.generateNullable(ctx, targetType));
     }
@@ -26,6 +35,23 @@ public class DeserializerTest {
         Function<SerializationContext, IDeserializer<T>> deserFunc)
         throws IOException {
         FaunaParser reader = new FaunaParser(str);
+        reader.read();
+        SerializationContext context = new SerializationContext();
+        IDeserializer<T> deser = deserFunc.apply(context);
+        T obj = deser.deserialize(context, reader);
+
+        if (reader.read()) {
+            throw new SerializationException(
+                "Token stream is not exhausted but should be: " + reader.getCurrentTokenType());
+        }
+
+        return obj;
+    }
+
+    private static <T> T deserializeImpl(InputStream inputStream,
+        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        throws IOException {
+        FaunaParser reader = new FaunaParser(inputStream);
         reader.read();
         SerializationContext context = new SerializationContext();
         IDeserializer<T> deser = deserFunc.apply(context);
@@ -94,5 +120,21 @@ public class DeserializerTest {
         Long result = deserialize("{\"@long\":\"123\"}",
             ctx -> Deserializer.generate(ctx, Long.class));
         assertEquals(123l, result);
+    }
+
+    @Test
+    public void testDeserializeBooleanTrue() throws IOException {
+        InputStream inputStream = new ByteArrayInputStream("true".getBytes());
+        Boolean result = deserialize(inputStream,
+            ctx -> Deserializer.generate(ctx, Boolean.class));
+        assertTrue(result);
+    }
+
+    @Test
+    public void testDeserializeBooleanFalse() throws IOException {
+        InputStream inputStream = new ByteArrayInputStream("false".getBytes());
+        Boolean result = deserialize(inputStream,
+            ctx -> Deserializer.generate(ctx, Boolean.class));
+        assertFalse(result);
     }
 }

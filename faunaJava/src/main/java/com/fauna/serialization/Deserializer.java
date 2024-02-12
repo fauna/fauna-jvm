@@ -18,6 +18,8 @@ public class Deserializer {
         Double.class);
     public static final IDeserializer<Long> _long = DynamicDeserializer.getInstance(
         Long.class);
+    public static final IDeserializer<Boolean> _boolean = DynamicDeserializer.getInstance(
+        Boolean.class);
 
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
@@ -50,6 +52,9 @@ public class Deserializer {
         }
         if (targetType == long.class || targetType == Long.class) {
             return (IDeserializer<T>) _long;
+        }
+        if (targetType == boolean.class || targetType == Boolean.class) {
+            return (IDeserializer<T>) _boolean;
         }
 
         throw new IllegalArgumentException(
