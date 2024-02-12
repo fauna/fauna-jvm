@@ -88,4 +88,11 @@ public class DeserializerTest {
             ctx -> Deserializer.generate(ctx, Double.class));
         assertEquals(1.23d, result);
     }
+
+    @Test
+    public void testDeserializeLong() throws IOException {
+        Long result = deserialize("{\"@long\":\"123\"}",
+            ctx -> Deserializer.generate(ctx, Long.class));
+        assertEquals(123l, result);
+    }
 }
