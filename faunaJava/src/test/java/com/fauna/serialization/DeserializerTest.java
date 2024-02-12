@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -125,6 +126,13 @@ public class DeserializerTest {
         Boolean result = deserialize(inputStream,
             ctx -> Deserializer.generate(ctx, Boolean.class));
         assertFalse(result);
+    }
+
+    @Test
+    public void testDeserializeLModule() throws IOException {
+        Module result = deserialize("{\"@mod\": \"MyModule\"}",
+            ctx -> Deserializer.generate(ctx, Module.class));
+        assertEquals(new Module("MyModule"), result);
     }
 
     @Test

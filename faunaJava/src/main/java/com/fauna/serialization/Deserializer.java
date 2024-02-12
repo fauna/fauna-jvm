@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 
+import com.fauna.common.types.Module;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -17,6 +18,7 @@ public class Deserializer {
     private static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
     private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
+    private static final IDeserializer<Module> _module = new CheckedDeserializer(Module.class);
 
     /**
      * The dynamic data deserializer.
@@ -72,6 +74,9 @@ public class Deserializer {
         }
         if (targetType == boolean.class || targetType == Boolean.class) {
             return (IDeserializer<T>) _boolean;
+        }
+        if (targetType == Module.class) {
+            return (IDeserializer<T>) _module;
         }
 
         throw new IllegalArgumentException(

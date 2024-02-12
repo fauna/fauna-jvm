@@ -44,6 +44,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
             case START_REF:
             case START_DOCUMENT:
             case MODULE:
+                value = reader.getValueAsModule();
                 break;
             case INT:
                 value = reader.getValueAsInt();
