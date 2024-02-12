@@ -13,6 +13,13 @@ public class Deserializer {
         return (IDeserializer<T>) deser;
     }
 
+    public static <T> IDeserializer<T> generateNullable(SerializationContext context,
+        Class<T> targetType) {
+        IDeserializer<T> deser = generate(context, targetType);
+        NullableDeserializer<T> nullable = new NullableDeserializer<>(deser);
+        return nullable;
+    }
+
     private static <T> IDeserializer<T> generateImpl(SerializationContext context,
         Class<T> targetType) {
         if (targetType == Integer.class || targetType == int.class) {

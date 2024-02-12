@@ -1,5 +1,7 @@
 package com.fauna.serialization;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.fauna.exception.SerializationException;
 import java.io.IOException;
 import java.util.function.Function;
@@ -12,6 +14,10 @@ public class DeserializerTest {
     private static <T> T deserialize(String str,
         Function<SerializationContext, IDeserializer<T>> deserFunc) throws IOException {
         return deserializeImpl(str, deserFunc);
+    }
+
+    public static <T> T deserializeNullable(String str, Class<T> targetType) throws IOException {
+        return deserializeImpl(str, ctx -> Deserializer.generateNullable(ctx, targetType));
     }
 
     private static <T> T deserializeImpl(String str,
@@ -44,4 +50,11 @@ public class DeserializerTest {
             ctx -> Deserializer.generate(ctx, String.class));
         Assert.assertEquals("hello", result);
     }
+
+    @Test
+    public void deserializeNullableGeneric() throws IOException {
+        String result = deserializeNullable("null", String.class);
+        assertNull(result);
+    }
+
 }
