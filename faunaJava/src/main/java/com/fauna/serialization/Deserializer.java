@@ -2,8 +2,8 @@ package com.fauna.serialization;
 
 
 import com.fauna.common.types.Document;
-import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.Module;
+import com.fauna.common.types.NamedDocument;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -88,10 +88,10 @@ public class Deserializer {
         if (type == Module.class) {
             return (IDeserializer<T>) _module;
         }
-        if (targetType == Document.class) {
+        if (type == Document.class) {
             return (IDeserializer<T>) _document;
         }
-        if (targetType == NamedDocument.class) {
+        if (type == NamedDocument.class) {
             return (IDeserializer<T>) _namedDocument;
         }
 

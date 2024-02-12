@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fauna.common.types.Module;
 import com.fauna.common.types.Document;
 import com.fauna.common.types.Module;
 import com.fauna.common.types.NamedDocument;
@@ -203,7 +202,8 @@ public class DeserializerTest {
             "}";
 
         Document actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, Document.class));
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), actual.getTs());
@@ -242,7 +242,8 @@ public class DeserializerTest {
             "}";
 
         NamedDocument actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, NamedDocument.class));
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
         assertEquals("DocName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), actual.getTs());
