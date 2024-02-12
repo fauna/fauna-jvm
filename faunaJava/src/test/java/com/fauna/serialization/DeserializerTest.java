@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fauna.common.types.Document;
+import com.fauna.common.types.Module;
+import com.fauna.common.types.NamedDocument;
 import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -146,4 +149,84 @@ public class DeserializerTest {
             assertEquals(entry.getValue(), result);
         }
     }
+
+    @Test
+    public void deserializeDocument() throws IOException {
+        String given = "{\n" +
+            "    \"@doc\": {\n" +
+            "        \"id\": \"123\",\n" +
+            "        \"coll\": {\"@mod\": \"MyColl\"},\n" +
+            "        \"ts\": {\"@time\": \"2023-12-15T01:01:01.0010010Z\"},\n" +
+            "        \"name\": \"name_value\"\n" +
+            "    }\n" +
+            "}";
+
+        Object actual = deserialize(given, ctx -> Deserializer.DYNAMIC);
+
+        assertTrue(actual instanceof Document);
+        Document typed = (Document) actual;
+        assertEquals("123", typed.getId());
+        assertEquals(new Module("MyColl"), typed.getCollection());
+        assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), typed.getTs());
+        assertEquals("name_value", typed.get("name"));
+    }
+
+    @Test
+    public void deserializeDocumentWithType() throws IOException {
+        String given = "{\n" +
+            "    \"@doc\": {\n" +
+            "        \"id\": \"123\",\n" +
+            "        \"coll\": {\"@mod\": \"MyColl\"},\n" +
+            "        \"ts\": {\"@time\": \"2023-12-15T01:01:01.0010010Z\"},\n" +
+            "        \"name\": \"name_value\"\n" +
+            "    }\n" +
+            "}";
+
+        Document actual = deserialize(given,
+            ctx -> Deserializer.generate(ctx, Document.class));
+        assertEquals("123", actual.getId());
+        assertEquals(new Module("MyColl"), actual.getCollection());
+        assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), actual.getTs());
+        assertEquals("name_value", actual.get("name"));
+    }
+
+    @Test
+    public void deserializeNamedDocument() throws IOException {
+        String given = "{\n" +
+            "    \"@doc\":{\n" +
+            "        \"name\":\"DocName\",\n" +
+            "        \"coll\":{\"@mod\":\"MyColl\"},\n" +
+            "        \"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\n" +
+            "        \"user_field\":\"user_value\"\n" +
+            "    }\n" +
+            "}";
+
+        Object actual = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertTrue(actual instanceof NamedDocument);
+        NamedDocument typed = (NamedDocument) actual;
+        assertEquals("DocName", typed.getName());
+        assertEquals(new Module("MyColl"), typed.getCollection());
+        assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), typed.getTs());
+        assertEquals("user_value", typed.get("user_field"));
+    }
+
+    @Test
+    public void deserializeNamedDocumentWithType() throws IOException {
+        String given = "{\n" +
+            "    \"@doc\":{\n" +
+            "        \"name\":\"DocName\",\n" +
+            "        \"coll\":{\"@mod\":\"MyColl\"},\n" +
+            "        \"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\n" +
+            "        \"user_field\":\"user_value\"\n" +
+            "    }\n" +
+            "}";
+
+        NamedDocument actual = deserialize(given,
+            ctx -> Deserializer.generate(ctx, NamedDocument.class));
+        assertEquals("DocName", actual.getName());
+        assertEquals(new Module("MyColl"), actual.getCollection());
+        assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), actual.getTs());
+        assertEquals("user_value", actual.get("user_field"));
+    }
+
 }
