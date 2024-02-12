@@ -14,6 +14,8 @@ public class Deserializer {
     public static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     public static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
 
+    public static final IDeserializer<Object> DYNAMIC = DynamicDeserializer.getInstance();
+
     public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
         IDeserializer<?> deser = generateImpl(context, targetType);
         return (IDeserializer<T>) deser;

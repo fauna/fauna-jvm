@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
@@ -138,7 +140,7 @@ public class DeserializerTest {
         assertFalse(result);
     }
 
-   /* @Test
+    @Test
     public void deserializeValues() throws IOException {
         Map<String, Object> tests = new HashMap<>();
         tests.put("\"hello\"", "hello");
@@ -153,8 +155,8 @@ public class DeserializerTest {
         tests.put("null", null);
 
         for (Map.Entry<String, Object> entry : tests.entrySet()) {
-            Object result = deserialize(entry.getKey());
+            Object result = deserialize(entry.getKey(), ctx -> Deserializer.DYNAMIC);
             assertEquals(entry.getValue(), result);
         }
-    }*/
+    }
 }
