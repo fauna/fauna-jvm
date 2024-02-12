@@ -55,6 +55,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = deserializeDocument(context, reader);
                 break;
             case MODULE:
+                value = reader.getValueAsModule();
                 break;
             case INT:
                 value = reader.getValueAsInt();
