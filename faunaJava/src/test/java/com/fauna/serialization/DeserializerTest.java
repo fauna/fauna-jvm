@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fauna.exception.SerializationException;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
@@ -53,16 +54,33 @@ public class DeserializerTest {
     }
 
     @Test
-    public void deserializeNullableGeneric() throws IOException {
+    public void deserializeNullable() throws IOException {
         String result = deserializeNullable("null", String.class);
         assertNull(result);
     }
 
     @Test
-    public void deserializeDateGeneric() throws IOException {
+    public void deserializeDate() throws IOException {
         LocalDate result = deserialize("{\"@date\": \"2023-12-03\"}",
             ctx -> Deserializer.generate(ctx, LocalDate.class));
         assertEquals(LocalDate.of(2023, 12, 3), result);
     }
+
+    @Test
+    public void deserializeTime() throws IOException {
+        Instant result = deserialize("{\"@time\": \"2024-01-23T13:33:10.300Z\"}",
+            ctx -> Deserializer.generate(ctx, Instant.class));
+        Instant instant = Instant.parse("2024-01-23T13:33:10.300Z");
+        assertEquals(instant, result);
+    }
+
+    @Test
+    public void deserializeTimeNoUTC() throws IOException {
+        Instant result = deserialize("{\"@time\": \"2023-12-03T05:52:10.000001-09:00\"}",
+            ctx -> Deserializer.generate(ctx, Instant.class));
+        Instant instant = Instant.parse("2023-12-03T05:52:10.000001-09:00");
+        assertEquals(instant, result);
+    }
+
 
 }
