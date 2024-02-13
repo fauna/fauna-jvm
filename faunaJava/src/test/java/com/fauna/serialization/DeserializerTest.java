@@ -252,8 +252,7 @@ public class DeserializerTest {
             "}";
 
         DocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, DocumentRef.class));
 
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -273,8 +272,7 @@ public class DeserializerTest {
             "}";
 
         NullDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, NullDocumentRef.class));
 
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -293,8 +291,7 @@ public class DeserializerTest {
             "}";
 
         NamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, NamedDocumentRef.class));
 
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -314,8 +311,7 @@ public class DeserializerTest {
             "}";
 
         NullNamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, NullNamedDocumentRef.class));
 
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
