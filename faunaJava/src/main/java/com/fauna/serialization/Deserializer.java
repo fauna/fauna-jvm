@@ -8,8 +8,12 @@ import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
+import com.google.common.reflect.TypeToken;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 
 /**
  * Represents methods for deserializing objects to and from Fauna's value format.
@@ -50,8 +54,9 @@ public class Deserializer {
      * @param context The serialization context.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generate(SerializationContext context, Class<T> targetType) {
-        IDeserializer<?> deser = generateImpl(context, targetType);
+    public static <T> IDeserializer<T> generate(SerializationContext context,
+        TypeToken<T> targetTypeToken) {
+        IDeserializer<?> deser = generateImpl(context, targetTypeToken);
         return (IDeserializer<T>) deser;
     }
 
@@ -64,58 +69,82 @@ public class Deserializer {
      * @return An {@code IDeserializer<T>}.
      */
     public static <T> IDeserializer<T> generateNullable(SerializationContext context,
-        Class<T> targetType) {
-        IDeserializer<T> deser = generate(context, targetType);
+        TypeToken<T> targetTypeToken) {
+        IDeserializer<T> deser = generate(context, targetTypeToken);
         NullableDeserializer<T> nullable = new NullableDeserializer<>(deser);
         return nullable;
     }
 
     private static <T> IDeserializer<T> generateImpl(SerializationContext context,
-        Class<T> targetType) {
-        if (targetType == Integer.class || targetType == int.class) {
+        TypeToken<T> targetType) {
+        Type type = targetType.getType();
+        if (type == Integer.class || type == int.class) {
             return (IDeserializer<T>) _integer;
         }
-        if (targetType == String.class) {
+        if (type == String.class) {
             return (IDeserializer<T>) _string;
         }
-        if (targetType == LocalDate.class) {
+        if (type == LocalDate.class) {
             return (IDeserializer<T>) _date;
         }
-        if (targetType == Instant.class) {
+        if (type == Instant.class) {
             return (IDeserializer<T>) _time;
         }
-        if (targetType == double.class || targetType == Double.class) {
+        if (type == double.class || type == Double.class) {
             return (IDeserializer<T>) _double;
         }
-        if (targetType == long.class || targetType == Long.class) {
+        if (type == long.class || type == Long.class) {
             return (IDeserializer<T>) _long;
         }
-        if (targetType == boolean.class || targetType == Boolean.class) {
+        if (type == boolean.class || type == Boolean.class) {
             return (IDeserializer<T>) _boolean;
         }
-        if (targetType == Module.class) {
+        if (type == Module.class) {
             return (IDeserializer<T>) _module;
         }
-        if (targetType == Document.class) {
+        if (type == Document.class) {
             return (IDeserializer<T>) _document;
         }
-        if (targetType == NamedDocument.class) {
+        if (type == NamedDocument.class) {
             return (IDeserializer<T>) _namedDocument;
         }
-        if (targetType == DocumentRef.class) {
+        if (type == DocumentRef.class) {
             return (IDeserializer<T>) _documentRef;
         }
-        if (targetType == NullDocumentRef.class) {
+        if (type == NullDocumentRef.class) {
             return (IDeserializer<T>) _nullDocumentRef;
         }
-        if (targetType == NamedDocumentRef.class) {
+        if (type == NamedDocumentRef.class) {
             return (IDeserializer<T>) _namedDocumentRef;
         }
-        if (targetType == NullNamedDocumentRef.class) {
+        if (type == NullNamedDocumentRef.class) {
             return (IDeserializer<T>) _nullNamedDocumentRef;
         }
 
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Type rawType = parameterizedType.getRawType();
+            if (rawType == Map.class) {
+                Type[] typeArgs = parameterizedType.getActualTypeArguments();
+                Type keyType = typeArgs[0];
+                Type valueType = typeArgs[1];
+
+                if (keyType != String.class) {
+                    throw new IllegalArgumentException(
+                        "Unsupported Map key type. Key must be of type String, but was " + keyType);
+                }
+
+                IDeserializer<?> valueDeserializer = generate(context, TypeToken.of(valueType));
+
+                @SuppressWarnings("unchecked")
+                IDeserializer<T> deser = (IDeserializer<T>) new MapDeserializer<>(
+                    valueDeserializer);
+
+                return deser;
+            }
+        }
+
         throw new IllegalArgumentException(
-            "Unsupported deserialization target type " + targetType.getName());
+            "Unsupported deserialization target type " + type.getTypeName());
     }
 }
