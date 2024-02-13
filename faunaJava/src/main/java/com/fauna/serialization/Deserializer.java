@@ -184,6 +184,8 @@ public class Deserializer {
 
                 return deser;
             }
+        } else {
+            return generateImpl(context, (Class<T>) targetType.getType());
         }
 
         throw new IllegalArgumentException(

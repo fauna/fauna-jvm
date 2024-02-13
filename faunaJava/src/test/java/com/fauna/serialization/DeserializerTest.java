@@ -13,6 +13,7 @@ import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.exception.SerializationException;
+import com.google.common.reflect.TypeToken;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
