@@ -409,7 +409,9 @@ public class DeserializerTest {
         expected.put("k2", 2);
         expected.put("k3", 3);
 
-        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        Map<String, Integer> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
         assertEquals(expected, result);
     }
 

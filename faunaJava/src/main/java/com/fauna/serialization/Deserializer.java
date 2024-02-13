@@ -8,11 +8,12 @@ import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
-import com.fauna.common.types.NamedDocument;
 import com.google.common.reflect.TypeToken;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 
 /**
  * Represents methods for deserializing objects to and from Fauna's value format.
@@ -118,6 +119,29 @@ public class Deserializer {
         }
         if (type == NullNamedDocumentRef.class) {
             return (IDeserializer<T>) _nullNamedDocumentRef;
+        }
+
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Type rawType = parameterizedType.getRawType();
+            if (rawType == Map.class) {
+                Type[] typeArgs = parameterizedType.getActualTypeArguments();
+                Type keyType = typeArgs[0];
+                Type valueType = typeArgs[1];
+
+                if (keyType != String.class) {
+                    throw new IllegalArgumentException(
+                        "Unsupported Map key type. Key must be of type String, but was " + keyType);
+                }
+
+                IDeserializer<?> valueDeserializer = generate(context, TypeToken.of(valueType));
+
+                @SuppressWarnings("unchecked")
+                IDeserializer<T> deser = (IDeserializer<T>) new MapDeserializer<>(
+                    valueDeserializer);
+
+                return deser;
+            }
         }
 
         throw new IllegalArgumentException(
