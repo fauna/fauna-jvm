@@ -13,6 +13,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -139,6 +140,18 @@ public class Deserializer {
                 @SuppressWarnings("unchecked")
                 IDeserializer<T> deser = (IDeserializer<T>) new MapDeserializer<>(
                     valueDeserializer);
+
+                return deser;
+            }
+            if (rawType == List.class) {
+                Type[] typeArgs = parameterizedType.getActualTypeArguments();
+                Type elemType = typeArgs[0];
+
+                IDeserializer<?> elemDeserializer = generate(context, TypeToken.of(elemType));
+
+                @SuppressWarnings("unchecked")
+                IDeserializer<T> deser = (IDeserializer<T>) new ListDeserializer<>(
+                    elemDeserializer);
 
                 return deser;
             }

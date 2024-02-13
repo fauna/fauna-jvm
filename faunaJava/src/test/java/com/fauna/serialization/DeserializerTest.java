@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -430,6 +431,28 @@ public class DeserializerTest {
         String given = "[\"item1\",\"item2\"]";
         List<String> expected = Arrays.asList("item1", "item2");
         Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void DeserializeIntoList() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<Object> expected = new ArrayList<>();
+        expected.add("item1");
+        expected.add("item2");
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void DeserializeIntoGenericListWithPrimitive() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<String> expected = new ArrayList<>();
+        expected.add("item1");
+        expected.add("item2");
+        List<String> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
         assertEquals(expected, result);
     }
 
