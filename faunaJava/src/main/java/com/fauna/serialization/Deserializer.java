@@ -8,6 +8,7 @@ import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
+import com.fauna.common.types.Page;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -193,6 +194,18 @@ public class Deserializer {
 
                 @SuppressWarnings("unchecked")
                 IDeserializer<T> deser = (IDeserializer<T>) new ListDeserializer<>(
+                    elemDeserializer);
+
+                return deser;
+            }
+            if (rawType == Page.class) {
+                Type[] typeArgs = parameterizedType.getActualTypeArguments();
+                Type elemType = typeArgs[0];
+
+                IDeserializer<?> elemDeserializer = generate(context, TypeToken.of(elemType));
+
+                @SuppressWarnings("unchecked")
+                IDeserializer<T> deser = (IDeserializer<T>) new PageDeserializer<>(
                     elemDeserializer);
 
                 return deser;

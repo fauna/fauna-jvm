@@ -25,6 +25,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
     private final MapDeserializer<T> _map;
     private final ListDeserializer<T> _list;
+    private final PageDeserializer<T> _page;
 
     /**
      * Returns the singleton instance of DynamicDeserializer.
@@ -42,6 +43,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
     private DynamicDeserializer() {
         _map = new MapDeserializer<>(this);
         _list = new ListDeserializer<>(this);
+        _page = new PageDeserializer<>(this);
     }
 
     /**
@@ -61,6 +63,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = _list.deserialize(context, reader);
                 break;
             case START_PAGE:
+                value = _page.deserialize(context, reader);
                 break;
             case START_REF:
                 value = deserializeRef(context, reader);
