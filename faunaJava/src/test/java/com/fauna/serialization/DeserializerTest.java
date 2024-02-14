@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -387,7 +386,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void deserializeIntoGenericDictionary() throws IOException {
+    public void deserializeIntoGenericMap() throws IOException {
         String given = "{\n" +
             "    \"k1\": { \"@int\": \"1\" },\n" +
             "    \"k2\": { \"@int\": \"2\" },\n" +
@@ -422,29 +421,30 @@ public class DeserializerTest {
     }
 
     @Test
-    public void DeserializeIntoList() throws IOException {
-        String given = "[\"item1\",\"item2\"]";
-        List<Object> expected = new ArrayList<>();
-        expected.add("item1");
-        expected.add("item2");
-        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
-        assertEquals(expected, result);
-    }
+    public void deserializeIntoListWithPocoWithAttributes() throws IOException {
+        String given = "[\n" +
+            "    {\"first_name\":\"Alice\",\"last_name\":\"Smith\",\"age\":{\"@int\":\"100\"}},\n" +
+            "    {\"first_name\":\"Bob\",\"last_name\":\"Jones\",\"age\":{\"@int\":\"101\"}}\n" +
+            "]";
 
-    @Test
-    public void DeserializeIntoGenericListWithPrimitive() throws IOException {
-        String given = "[\"item1\",\"item2\"]";
-        List<String> expected = new ArrayList<>();
-        expected.add("item1");
-        expected.add("item2");
-        List<String> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+        List<PersonWithAttributes> peeps = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<List<PersonWithAttributes>>() {
             }));
-        assertEquals(expected, result);
+
+        PersonWithAttributes alice = peeps.get(0);
+        PersonWithAttributes bob = peeps.get(1);
+
+        assertEquals("Alice", alice.getFirstName());
+        assertEquals("Smith", alice.getLastName());
+        assertEquals(100, alice.getAge());
+
+        assertEquals("Bob", bob.getFirstName());
+        assertEquals("Jones", bob.getLastName());
+        assertEquals(101, bob.getAge());
     }
 
     @Test
-    public void DeserializeIntoPageWithPrimitive() throws IOException {
+    public void deserializeIntoPageWithPrimitive() throws IOException {
         String given = "{\n" +
             "  \"@set\": {\n" +
             "    \"after\": \"next_page_cursor\",\n" +
@@ -467,7 +467,36 @@ public class DeserializerTest {
     }
 
     @Test
-    public void DeserializeIntoPoco() throws IOException {
+    public void deserializeIntoPageWithUserDefinedClass() throws IOException {
+        String given = "{\n" +
+            "    \"@set\": {\n" +
+            "        \"after\": \"next_page_cursor\",\n" +
+            "        \"data\": [\n" +
+            "            {\"first_name\":\"Alice\",\"last_name\":\"Smith\",\"age\":{\"@int\":\"30\"}},\n"
+            +
+            "            {\"first_name\":\"Bob\",\"last_name\":\"Jones\",\"age\":{\"@int\":\"40\"}}\n"
+            +
+            "        ]\n" +
+            "    }\n" +
+            "}";
+
+        Page<PersonWithAttributes> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<Page<PersonWithAttributes>>() {
+            }));
+
+        assertNotNull(result);
+        assertEquals(2, result.data().size());
+        assertEquals("Alice", result.data().get(0).getFirstName());
+        assertEquals("Smith", result.data().get(0).getLastName());
+        assertEquals(30, result.data().get(0).getAge());
+        assertEquals("Bob", result.data().get(1).getFirstName());
+        assertEquals("Jones", result.data().get(1).getLastName());
+        assertEquals(40, result.data().get(1).getAge());
+        assertEquals("next_page_cursor", result.after());
+    }
+
+    @Test
+    public void deserializeIntoPoco() throws IOException {
         String given = "{" +
             "\"firstName\": \"Baz2\"," +
             "\"lastName\": \"Luhrmann2\"," +
@@ -483,7 +512,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void DeserializeIntoPocoWithAttributes() throws IOException {
+    public void deserializeIntoPocoWithAttributes() throws IOException {
         String given = "{" +
             "\"first_name\": \"Baz2\"," +
             "\"last_name\": \"Luhrmann2\"," +
