@@ -46,7 +46,7 @@ public class FaunaParser {
     private static final String OBJECT_TAG = "@object";
     private final JsonParser jsonParser;
     private final Stack<Object> tokenStack = new Stack<>();
-    private FaunaTokenType currentFaunaTokenType;
+    private FaunaTokenType currentFaunaTokenType = NONE;
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
 
@@ -54,7 +54,6 @@ public class FaunaParser {
         InputStream inputStream = new ByteArrayInputStream(str.getBytes());
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(inputStream);
-        currentFaunaTokenType = NONE;
     }
 
     private enum InternalTokenType {
@@ -64,12 +63,10 @@ public class FaunaParser {
     public FaunaParser(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(body);
-        currentFaunaTokenType = NONE;
     }
 
     public FaunaParser(JsonParser jsonParser) {
         this.jsonParser = jsonParser;
-        currentFaunaTokenType = NONE;
     }
 
     public FaunaTokenType getCurrentTokenType() {
