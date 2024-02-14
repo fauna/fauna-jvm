@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fauna.beans.Person;
+import com.fauna.beans.PersonWithAttributes;
 import com.fauna.common.types.Document;
 import com.fauna.common.types.DocumentRef;
 import com.fauna.common.types.Module;
@@ -462,6 +464,38 @@ public class DeserializerTest {
         assertNotNull(result);
         assertEquals(expected.data(), result.data());
         assertEquals(expected.after(), result.after());
+    }
+
+    @Test
+    public void DeserializeIntoPoco() throws IOException {
+        String given = "{" +
+            "\"firstName\": \"Baz2\"," +
+            "\"lastName\": \"Luhrmann2\"," +
+            "\"age\": { \"@int\": \"612\" }" +
+            "}";
+
+        Person p = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+        assertEquals("Baz2", p.getFirstName());
+        assertEquals("Luhrmann2", p.getLastName());
+        assertEquals(612, p.getAge());
+    }
+
+    @Test
+    public void DeserializeIntoPocoWithAttributes() throws IOException {
+        String given = "{" +
+            "\"first_name\": \"Baz2\"," +
+            "\"last_name\": \"Luhrmann2\"," +
+            "\"age\": { \"@int\": \"612\" }" +
+            "}";
+
+        PersonWithAttributes p = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+        assertEquals("Baz2", p.getFirstName());
+        assertEquals("Luhrmann2", p.getLastName());
+        assertEquals(612, p.getAge());
     }
 
 }

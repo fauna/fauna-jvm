@@ -210,8 +210,15 @@ public class Deserializer {
 
                 return deser;
             }
+        } else if (type instanceof Class<?>) {
+            Map<String, FieldAttribute> fieldMap = context.getFieldMap(targetType);
+
+            IDeserializer<T> deser = (IDeserializer<T>) new ClassDeserializer<>(fieldMap,
+                targetType.getRawType());
+
+            return deser;
         } else {
-            return generateImpl(context, (Class<T>) targetType.getType());
+            return generateImpl(context, (TypeToken<T>) targetType.getType());
         }
 
         throw new IllegalArgumentException(
