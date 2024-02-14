@@ -2,6 +2,7 @@ package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fauna.common.types.Document;
 import com.fauna.common.types.Module;
