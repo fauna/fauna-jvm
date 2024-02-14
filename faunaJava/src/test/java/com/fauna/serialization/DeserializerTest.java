@@ -88,7 +88,7 @@ public class DeserializerTest {
         for (Map.Entry<String, Object> entry : tests.entrySet()) {
             if (entry.getValue() != null) {
                 Object result = deserialize(entry.getKey(),
-                    ctx -> Deserializer.generate(ctx, entry.getValue().getClass()));
+                    ctx -> Deserializer.generate(entry.getValue().getClass()));
                 assertEquals(entry.getValue(), result);
             }
 
