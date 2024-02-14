@@ -16,7 +16,8 @@ import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.common.types.Page;
 import com.fauna.exception.SerializationException;
-import com.google.common.reflect.TypeToken;
+import com.fauna.helper.DeserializerHelpers;
+import com.fauna.interfaces.IDeserializer;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -326,8 +327,8 @@ public class DeserializerTest {
         expected.put("k3", 3);
 
         Map<String, Integer> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx,
+                DeserializerHelpers.mapOf(Integer.class)));
         assertEquals(expected, result);
     }
 
@@ -355,8 +356,8 @@ public class DeserializerTest {
             "]";
 
         List<PersonWithAttributes> peeps = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<List<PersonWithAttributes>>() {
-            }));
+            ctx -> Deserializer.generate(ctx,
+                DeserializerHelpers.listOf(PersonWithAttributes.class)));
 
         PersonWithAttributes alice = peeps.get(0);
         PersonWithAttributes bob = peeps.get(1);
@@ -385,8 +386,7 @@ public class DeserializerTest {
 
         Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
         Page<Integer> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, DeserializerHelpers.pageOf(Integer.class)));
 
         assertNotNull(result);
         assertEquals(expected.data(), result.data());
@@ -408,8 +408,8 @@ public class DeserializerTest {
             "}";
 
         Page<PersonWithAttributes> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<Page<PersonWithAttributes>>() {
-            }));
+            ctx -> Deserializer.generate(ctx,
+                DeserializerHelpers.pageOf(PersonWithAttributes.class)));
 
         assertNotNull(result);
         assertEquals(2, result.data().size());
@@ -431,8 +431,7 @@ public class DeserializerTest {
             "}";
 
         Person p = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, Person.class));
         assertEquals("Baz2", p.getFirstName());
         assertEquals("Luhrmann2", p.getLastName());
         assertEquals(612, p.getAge());
@@ -447,8 +446,7 @@ public class DeserializerTest {
             "}";
 
         PersonWithAttributes p = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, PersonWithAttributes.class));
         assertEquals("Baz2", p.getFirstName());
         assertEquals("Luhrmann2", p.getLastName());
         assertEquals(612, p.getAge());

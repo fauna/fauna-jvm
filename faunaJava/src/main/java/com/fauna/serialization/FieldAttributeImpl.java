@@ -1,5 +1,6 @@
 package com.fauna.serialization;
 
+import com.fauna.annotation.FieldAttribute;
 import com.fauna.common.enums.FaunaType;
 import java.lang.reflect.Field;
 

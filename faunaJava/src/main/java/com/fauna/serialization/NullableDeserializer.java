@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
+import com.fauna.interfaces.IDeserializer;
 import java.io.IOException;
 
 public class NullableDeserializer<T> extends BaseDeserializer<T> {

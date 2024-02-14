@@ -1,7 +1,11 @@
 package com.fauna.serialization;
 
-import com.google.common.reflect.TypeToken;
+import com.fauna.annotation.FaunaObjectAttribute;
+import com.fauna.annotation.FieldAttribute;
+import com.fauna.interfaces.IDeserializer;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,43 +15,55 @@ import java.util.Map;
  */
 public class SerializationContext {
 
-    private final Map<TypeToken<?>, Map<String, FieldAttribute>> registry = new HashMap<>();
+    private final Map<Type, Map<String, FieldAttribute>> registry = new HashMap<>();
+
+    public <T> IDeserializer<T> getDeserializer(Type type) {
+        return Deserializer.generate(this, type);
+    }
 
     /**
      * Retrieves the mapping of property names to their corresponding {@link FieldAttribute} for a
      * given Java type.
      *
-     * @param typeToken The type for which the field map is requested.
+     * @param type The Type for which the field map is requested.
      * @return A map where keys are property names and values are the corresponding
      * {@link FieldAttribute} instances.
      */
-    public <T> Map<String, FieldAttribute> getFieldMap(TypeToken<T> typeToken) {
-        if (registry.containsKey(typeToken)) {
-            return registry.get(typeToken);
+    public Map<String, FieldAttribute> getFieldMap(Type type) {
+        if (registry.containsKey(type)) {
+            return registry.get(type);
         }
 
-        Field[] fields = typeToken.getRawType().getDeclaredFields();
-        Map<String, FieldAttribute> newFieldMap = new HashMap<>();
-        boolean hasAttributes = typeToken.getRawType()
-            .isAnnotationPresent(FaunaObjectAttribute.class);
+        Class<?> clazz = getClassFromType(type);
+        Map<String, FieldAttribute> fieldMap = new HashMap<>();
+        boolean hasAttributes = clazz.isAnnotationPresent(FaunaObjectAttribute.class);
 
-        for (Field field : fields) {
+        for (Field field : clazz.getDeclaredFields()) {
             FieldAttribute attribute;
             if (hasAttributes) {
-                FieldAttribute annotation = field.getAnnotation(FieldAttribute.class);
-                if (annotation != null) {
-                    attribute = new FieldAttributeImpl(field, annotation);
-                } else {
+                FieldAttribute a = field.getAnnotation(FieldAttribute.class);
+                if (a == null) {
                     continue;
                 }
+                attribute = new FieldAttributeImpl(field, a);
             } else {
                 attribute = new FieldAttributeImpl(field, null);
             }
-            newFieldMap.put(attribute.name(), attribute);
+
+            fieldMap.put(attribute.name(), attribute);
         }
 
-        registry.put(typeToken, newFieldMap);
-        return newFieldMap;
+        registry.put(type, fieldMap);
+        return fieldMap;
     }
 
+    private Class<?> getClassFromType(Type type) {
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        } else if (type instanceof ParameterizedType) {
+            return (Class<?>) ((ParameterizedType) type).getRawType();
+        } else {
+            throw new IllegalArgumentException("Unsupported type: " + type.getTypeName());
+        }
+    }
 }

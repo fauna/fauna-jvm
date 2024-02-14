@@ -1,4 +1,4 @@
-package com.fauna.serialization;
+package com.fauna.annotation;
 
 import com.fauna.common.enums.FaunaType;
 import java.lang.annotation.ElementType;

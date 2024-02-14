@@ -1,8 +1,8 @@
 package com.fauna.beans;
 
+import com.fauna.annotation.FaunaObjectAttribute;
+import com.fauna.annotation.FieldAttribute;
 import com.fauna.common.enums.FaunaType;
-import com.fauna.serialization.FaunaObjectAttribute;
-import com.fauna.serialization.FieldAttribute;
 
 @FaunaObjectAttribute
 public class PersonWithAttributes {

@@ -2,6 +2,7 @@ package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.exception.SerializationException;
+import com.fauna.interfaces.IDeserializer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

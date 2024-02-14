@@ -1,4 +1,4 @@
-package com.fauna.serialization;
+package com.fauna.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
