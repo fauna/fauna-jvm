@@ -5,10 +5,14 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fauna.common.types.Module;
+import com.fauna.exception.SerializationException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 public class FaunaGenerator implements AutoCloseable {
 
@@ -49,6 +53,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartObject() throws IOException {
+        jsonGenerator.writeStartObject();
     }
 
     /**
@@ -57,6 +62,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndObject() throws IOException {
+        jsonGenerator.writeEndObject();
     }
 
     /**
@@ -65,6 +71,9 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartEscapedObject() throws IOException {
+        writeStartObject();
+        writeFieldName("@object");
+        writeStartObject();
     }
 
     /**
@@ -73,6 +82,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndEscapedObject() throws IOException {
+        writeEndObject();
+        writeEndObject();
     }
 
     /**
@@ -81,6 +92,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartArray() throws IOException {
+        jsonGenerator.writeStartArray();
     }
 
     /**
@@ -89,6 +101,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndArray() throws IOException {
+        jsonGenerator.writeEndArray();
     }
 
     /**
@@ -97,6 +110,9 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeStartRef() throws IOException {
+        writeStartObject();
+        writeFieldName("@ref");
+        writeStartObject();
     }
 
     /**
@@ -105,6 +121,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeEndRef() throws IOException {
+        writeEndObject();
+        writeEndObject();
     }
 
     /**
@@ -115,6 +133,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeDouble(String fieldName, double value) throws IOException {
+        writeFieldName(fieldName);
+        writeDoubleValue(value);
     }
 
     /**
@@ -125,6 +145,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeInt(String fieldName, int value) throws IOException {
+        writeFieldName(fieldName);
+        writeIntValue(value);
     }
 
     /**
@@ -135,6 +157,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeLong(String fieldName, long value) throws IOException {
+        writeFieldName(fieldName);
+        writeLongValue(value);
     }
 
     /**
@@ -145,6 +169,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeString(String fieldName, String value) throws IOException {
+        writeFieldName(fieldName);
+        writeStringValue(value);
     }
 
     /**
@@ -155,6 +181,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeDate(String fieldName, LocalDate value) throws IOException {
+        writeFieldName(fieldName);
+        writeDateValue(value);
     }
 
     /**
@@ -164,7 +192,9 @@ public class FaunaGenerator implements AutoCloseable {
      * @param value     The LocalDateTime value to write.
      * @throws IOException If an I/O error occurs.
      */
-    public void writeTime(String fieldName, LocalDateTime value) throws IOException {
+    public void writeTime(String fieldName, Instant value) throws IOException {
+        writeFieldName(fieldName);
+        writeTimeValue(value);
     }
 
     /**
@@ -175,6 +205,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeBoolean(String fieldName, boolean value) throws IOException {
+        writeFieldName(fieldName);
+        writeBooleanValue(value);
     }
 
     /**
@@ -184,6 +216,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeNull(String fieldName) throws IOException {
+        writeFieldName(fieldName);
+        writeNullValue();
     }
 
     /**
@@ -194,6 +228,8 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeModule(String fieldName, Module value) throws IOException {
+        writeFieldName(fieldName);
+        writeModuleValue(value);
     }
 
     /**
@@ -203,6 +239,7 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeFieldName(String value) throws IOException {
+        jsonGenerator.writeFieldName(value);
     }
 
     /**
@@ -213,6 +250,109 @@ public class FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeTaggedValue(String tag, String value) throws IOException {
+        writeStartObject();
+        writeString(tag, value);
+        writeEndObject();
+    }
+
+    /**
+     * Writes a double value as a tagged element.
+     *
+     * @param value The double value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeDoubleValue(double value) throws IOException {
+        writeTaggedValue("@double", Double.toString(value));
+    }
+
+    /**
+     * Writes an integer value as a tagged element.
+     *
+     * @param value The integer value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeIntValue(int value) throws IOException {
+        writeTaggedValue("@int", Integer.toString(value));
+    }
+
+    /**
+     * Writes a long integer value as a tagged element.
+     *
+     * @param value The long integer value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeLongValue(long value) throws IOException {
+        writeTaggedValue("@long", Long.toString(value));
+    }
+
+    /**
+     * Writes a string value as a tagged element.
+     *
+     * @param value The string value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeStringValue(String value) throws IOException {
+        jsonGenerator.writeString(value);
+    }
+
+    /**
+     * Writes a date value as a tagged element.
+     *
+     * @param value The date value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeDateValue(LocalDate value) throws IOException {
+        try {
+            String str = value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            writeTaggedValue("@date", str);
+        } catch (DateTimeException e) {
+            throw new SerializationException("Error writing date value", e);
+        }
+    }
+
+    /**
+     * Writes a time value as a tagged element.
+     *
+     * @param value The time value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeTimeValue(Instant value) throws IOException {
+        try {
+            Instant instant = value.atZone(ZoneOffset.UTC).toInstant();
+            String formattedTime = instant.toString();
+            writeTaggedValue("@time", formattedTime);
+        } catch (DateTimeException e) {
+            throw new SerializationException("Error writing time value", e);
+        }
+    }
+
+    /**
+     * Writes a boolean value to the stream.
+     *
+     * @param value The boolean value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeBooleanValue(boolean value) throws IOException {
+        jsonGenerator.writeBoolean(value);
+    }
+
+    /**
+     * Writes a null value to the stream.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeNullValue() throws IOException {
+        jsonGenerator.writeNull();
+    }
+
+    /**
+     * Writes a module value as a tagged element.
+     *
+     * @param value The module value to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeModuleValue(Module value) throws IOException {
+        writeTaggedValue("@mod", value.getName());
     }
 
     @Override
