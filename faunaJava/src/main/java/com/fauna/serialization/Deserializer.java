@@ -1,7 +1,9 @@
 package com.fauna.serialization;
 
 
+import com.fauna.common.types.Document;
 import com.fauna.common.types.Module;
+import com.fauna.common.types.NamedDocument;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -21,6 +23,10 @@ public class Deserializer {
     private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
     private static final IDeserializer<Module> _module = new CheckedDeserializer(Module.class);
+    private static final IDeserializer<Document> _document = new CheckedDeserializer(
+        Document.class);
+    private static final IDeserializer<NamedDocument> _namedDocument = new CheckedDeserializer(
+        NamedDocument.class);
 
     /**
      * The dynamic data deserializer.
@@ -115,6 +121,12 @@ public class Deserializer {
         }
         if (targetType == Module.class) {
             return (IDeserializer<T>) _module;
+        }
+        if (targetType == Document.class) {
+            return (IDeserializer<T>) _document;
+        }
+        if (targetType == NamedDocument.class) {
+            return (IDeserializer<T>) _namedDocument;
         }
 
         throw new IllegalArgumentException(
