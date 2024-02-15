@@ -5,6 +5,7 @@ import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.common.types.Page;
 import com.fauna.exception.SerializationException;
 import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
     }
 
     @Override
-    public Page<T> deserialize(SerializationContext context, FaunaParser reader)
+    public Page<T> deserialize(MappingContext context, FaunaParser reader)
         throws IOException {
         if (reader.getCurrentTokenType() != FaunaTokenType.START_PAGE) {
             throw new SerializationException(

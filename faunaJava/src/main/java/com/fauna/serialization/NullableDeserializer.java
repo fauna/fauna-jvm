@@ -2,6 +2,7 @@ package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 
 public class NullableDeserializer<T> extends BaseDeserializer<T> {
@@ -13,7 +14,7 @@ public class NullableDeserializer<T> extends BaseDeserializer<T> {
     }
 
     @Override
-    public T deserialize(SerializationContext context, FaunaParser reader) throws IOException {
+    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
         if (reader.getCurrentTokenType() == FaunaTokenType.NULL) {
             return null;
         }

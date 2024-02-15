@@ -1,7 +1,6 @@
 package com.fauna.serialization;
 
 
-import com.fauna.annotation.FieldAttribute;
 import com.fauna.common.types.Document;
 import com.fauna.common.types.DocumentRef;
 import com.fauna.common.types.Module;
@@ -11,6 +10,7 @@ import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.common.types.Page;
 import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -82,7 +82,7 @@ public class Deserializer {
      * @param type    The Java type to generate a deserializer for.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generate(SerializationContext context, Type type) {
+    public static <T> IDeserializer<T> generate(MappingContext context, Type type) {
         IDeserializer<?> deser = generateImpl(context, type);
         return castDeserializer(deser);
     }
@@ -131,7 +131,7 @@ public class Deserializer {
             "Unsupported deserialization target type " + type.getTypeName());
     }
 
-    private static <T> IDeserializer<T> generateImpl(SerializationContext context, Type type) {
+    private static <T> IDeserializer<T> generateImpl(MappingContext context, Type type) {
         ParameterizedType parameterizedType = null;
         if (type instanceof ParameterizedType) {
             parameterizedType = (ParameterizedType) type;
@@ -163,13 +163,9 @@ public class Deserializer {
                 }
             }
         } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)) {
-            @SuppressWarnings("unchecked")
-            Class<T> clazz = (Class<T>) type;
-            Map<String, FieldAttribute> fieldMap = context.getFieldMap(clazz);
 
-            IDeserializer<T> deser = new ClassDeserializer<>(fieldMap, clazz);
+            return (IDeserializer<T>) context.getInfo(type).getDeserializer();
 
-            return deser;
         } else if (DESERIALIZERS.containsKey(type)) {
             IDeserializer<?> deserializer = DESERIALIZERS.get(type);
             if (deserializer != null) {

@@ -18,6 +18,7 @@ import com.fauna.common.types.Page;
 import com.fauna.exception.SerializationException;
 import com.fauna.helper.DeserializerHelpers;
 import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class DeserializerTest {
 
     public static <T> T deserialize(String str,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         FaunaParser reader = new FaunaParser(str);
         return deserialize(reader, deserFunc);
@@ -44,10 +45,10 @@ public class DeserializerTest {
     }
 
     private static <T> T deserialize(FaunaParser reader,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         reader.read();
-        SerializationContext context = new SerializationContext();
+        MappingContext context = new MappingContext();
         IDeserializer<T> deser = deserFunc.apply(context);
         T obj = deser.deserialize(context, reader);
 
