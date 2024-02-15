@@ -1,7 +1,6 @@
 package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,10 +16,10 @@ import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.common.types.Page;
 import com.fauna.exception.SerializationException;
-import com.google.common.reflect.TypeToken;
-import java.io.ByteArrayInputStream;
+import com.fauna.helper.DeserializerHelpers;
+import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -34,16 +33,9 @@ import org.junit.jupiter.api.Test;
 public class DeserializerTest {
 
     public static <T> T deserialize(String str,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         FaunaParser reader = new FaunaParser(str);
-        return deserialize(reader, deserFunc);
-    }
-
-    public static <T> T deserialize(InputStream inputStream,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
-        throws IOException {
-        FaunaParser reader = new FaunaParser(inputStream);
         return deserialize(reader, deserFunc);
     }
 
@@ -53,10 +45,10 @@ public class DeserializerTest {
     }
 
     private static <T> T deserialize(FaunaParser reader,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         reader.read();
-        SerializationContext context = new SerializationContext();
+        MappingContext context = new MappingContext();
         IDeserializer<T> deser = deserFunc.apply(context);
         T obj = deser.deserialize(context, reader);
 
@@ -69,83 +61,9 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeInt() throws IOException {
-        int result = deserialize("{\"@int\":\"42\"}",
-            ctx -> Deserializer.generate(Integer.class));
-        assertEquals(42, result);
-    }
-
-    @Test
-    public void testDeserializeString() throws IOException {
-        String result = deserialize("\"hello\"",
-            ctx -> Deserializer.generate(String.class));
-        assertEquals("hello", result);
-    }
-
-    @Test
     public void deserializeNullable() throws IOException {
         String result = deserializeNullable("null", String.class);
         assertNull(result);
-    }
-
-    @Test
-    public void deserializeDate() throws IOException {
-        LocalDate result = deserialize("{\"@date\": \"2023-12-03\"}",
-            ctx -> Deserializer.generate(LocalDate.class));
-        assertEquals(LocalDate.of(2023, 12, 3), result);
-    }
-
-    @Test
-    public void deserializeTime() throws IOException {
-        Instant result = deserialize("{\"@time\": \"2024-01-23T13:33:10.300Z\"}",
-            ctx -> Deserializer.generate(Instant.class));
-        Instant instant = Instant.parse("2024-01-23T13:33:10.300Z");
-        assertEquals(instant, result);
-    }
-
-    @Test
-    public void deserializeTimeNoUTC() throws IOException {
-        Instant result = deserialize("{\"@time\": \"2023-12-03T05:52:10.000001-09:00\"}",
-            ctx -> Deserializer.generate(Instant.class));
-        Instant instant = Instant.parse("2023-12-03T05:52:10.000001-09:00");
-        assertEquals(instant, result);
-    }
-
-    @Test
-    public void testDeserializeDouble() throws IOException {
-        Double result = deserialize("{\"@double\":\"1.23\"}",
-            ctx -> Deserializer.generate(Double.class));
-        assertEquals(1.23d, result);
-    }
-
-    @Test
-    public void testDeserializeLong() throws IOException {
-        Long result = deserialize("{\"@long\":\"123\"}",
-            ctx -> Deserializer.generate(Long.class));
-        assertEquals(123l, result);
-    }
-
-    @Test
-    public void testDeserializeBooleanTrue() throws IOException {
-        InputStream inputStream = new ByteArrayInputStream("true".getBytes());
-        Boolean result = deserialize(inputStream,
-            ctx -> Deserializer.generate(Boolean.class));
-        assertTrue(result);
-    }
-
-    @Test
-    public void testDeserializeBooleanFalse() throws IOException {
-        InputStream inputStream = new ByteArrayInputStream("false".getBytes());
-        Boolean result = deserialize(inputStream,
-            ctx -> Deserializer.generate(Boolean.class));
-        assertFalse(result);
-    }
-
-    @Test
-    public void testDeserializeLModule() throws IOException {
-        Module result = deserialize("{\"@mod\": \"MyModule\"}",
-            ctx -> Deserializer.generate(Module.class));
-        assertEquals(new Module("MyModule"), result);
     }
 
     @Test
@@ -158,6 +76,9 @@ public class DeserializerTest {
         tests.put("{\"@date\": \"2023-12-03\"}", LocalDate.of(2023, 12, 3));
         tests.put("{\"@time\": \"2023-12-03T05:52:10.000001-09:00\"}",
             Instant.parse("2023-12-03T05:52:10.000001-09:00"));
+        tests.put("{\"@time\": \"2024-01-23T13:33:10.300Z\"}",
+            Instant.parse("2024-01-23T13:33:10.300Z"));
+        tests.put("{\"@mod\": \"MyModule\"}", new Module("MyModule"));
         tests.put("true", true);
         tests.put("false", false);
         tests.put("null", null);
@@ -165,6 +86,14 @@ public class DeserializerTest {
         for (Map.Entry<String, Object> entry : tests.entrySet()) {
             Object result = deserialize(entry.getKey(), ctx -> Deserializer.DYNAMIC);
             assertEquals(entry.getValue(), result);
+        }
+        for (Map.Entry<String, Object> entry : tests.entrySet()) {
+            if (entry.getValue() != null) {
+                Object result = deserialize(entry.getKey(),
+                    ctx -> Deserializer.generate(entry.getValue().getClass()));
+                assertEquals(entry.getValue(), result);
+            }
+
         }
     }
 
@@ -399,8 +328,8 @@ public class DeserializerTest {
         expected.put("k3", 3);
 
         Map<String, Integer> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx,
+                DeserializerHelpers.mapOf(Integer.class)));
         assertEquals(expected, result);
     }
 
@@ -428,8 +357,8 @@ public class DeserializerTest {
             "]";
 
         List<PersonWithAttributes> peeps = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<List<PersonWithAttributes>>() {
-            }));
+            ctx -> Deserializer.generate(ctx,
+                DeserializerHelpers.listOf(PersonWithAttributes.class)));
 
         PersonWithAttributes alice = peeps.get(0);
         PersonWithAttributes bob = peeps.get(1);
@@ -458,8 +387,7 @@ public class DeserializerTest {
 
         Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
         Page<Integer> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, DeserializerHelpers.pageOf(Integer.class)));
 
         assertNotNull(result);
         assertEquals(expected.data(), result.data());
@@ -481,8 +409,8 @@ public class DeserializerTest {
             "}";
 
         Page<PersonWithAttributes> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<Page<PersonWithAttributes>>() {
-            }));
+            ctx -> Deserializer.generate(ctx,
+                DeserializerHelpers.pageOf(PersonWithAttributes.class)));
 
         assertNotNull(result);
         assertEquals(2, result.data().size());
@@ -504,8 +432,7 @@ public class DeserializerTest {
             "}";
 
         Person p = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, Person.class));
         assertEquals("Baz2", p.getFirstName());
         assertEquals("Luhrmann2", p.getLastName());
         assertEquals(612, p.getAge());
@@ -520,8 +447,7 @@ public class DeserializerTest {
             "}";
 
         PersonWithAttributes p = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, PersonWithAttributes.class));
         assertEquals("Baz2", p.getFirstName());
         assertEquals("Luhrmann2", p.getLastName());
         assertEquals(612, p.getAge());

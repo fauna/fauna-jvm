@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 import com.fauna.exception.SerializationException;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 
 /**
@@ -29,7 +30,7 @@ public class CheckedDeserializer<T> extends BaseDeserializer<T> {
      * @return The deserialized value.
      * @throws SerializationException If the deserialized value does not match the specified type.
      */
-    public T deserialize(SerializationContext context, FaunaParser reader) throws IOException {
+    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
         Object tokenType = reader.getCurrentTokenType();
         Object obj = DynamicDeserializer.getInstance().deserialize(context, reader);
 

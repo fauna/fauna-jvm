@@ -9,6 +9,7 @@ import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.exception.SerializationException;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
      * @param reader  The FaunaParser instance to read from.
      * @return The deserialized value.
      */
-    public T deserialize(SerializationContext context, FaunaParser reader) throws IOException {
+    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
@@ -107,7 +108,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         return (T) value;
     }
 
-    private Object deserializeDocument(SerializationContext context, FaunaParser reader)
+    private Object deserializeDocument(MappingContext context, FaunaParser reader)
         throws IOException {
         Map<String, Object> data = new HashMap<>();
         String id = null;
@@ -170,7 +171,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         return data;
     }
 
-    private Object deserializeRef(SerializationContext context, FaunaParser reader)
+    private Object deserializeRef(MappingContext context, FaunaParser reader)
         throws IOException {
         String id = null;
         String name = null;
