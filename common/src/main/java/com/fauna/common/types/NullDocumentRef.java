@@ -27,13 +27,4 @@ public class NullDocumentRef extends DocumentRef {
     public String getCause() {
         return cause;
     }
-
-    /**
-     * Sets the cause that the document is null.
-     *
-     * @param cause A string representing the cause that the document is null.
-     */
-    public void setCause(String cause) {
-        this.cause = cause;
-    }
 }
