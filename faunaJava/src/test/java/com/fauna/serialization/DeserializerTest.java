@@ -16,7 +16,10 @@ import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
@@ -320,6 +323,44 @@ public class DeserializerTest {
         expected.put("k3", 3);
 
         Map<String, Integer> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void deserializeIntoList() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<Object> expected = Arrays.asList("item1", "item2");
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void deserializeIntoGenericListWithPrimitive() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<String> expected = Arrays.asList("item1", "item2");
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void DeserializeIntoList() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<Object> expected = new ArrayList<>();
+        expected.add("item1");
+        expected.add("item2");
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void DeserializeIntoGenericListWithPrimitive() throws IOException {
+        String given = "[\"item1\",\"item2\"]";
+        List<String> expected = new ArrayList<>();
+        expected.add("item1");
+        expected.add("item2");
+        List<String> result = deserialize(given,
             ctx -> Deserializer.generate(ctx, new TypeToken<>() {
             }));
         assertEquals(expected, result);
