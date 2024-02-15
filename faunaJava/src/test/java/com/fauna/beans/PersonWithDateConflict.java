@@ -1,12 +1,12 @@
 package com.fauna.beans;
 
 
-import com.fauna.annotation.FieldAttribute;
-import com.fauna.annotation.ObjectAttribute;
+import com.fauna.annotation.FaunaField;
+import com.fauna.annotation.FaunaObject;
 
-@ObjectAttribute
+@FaunaObject
 public class PersonWithDateConflict {
 
-    @FieldAttribute(name = "@date")
+    @FaunaField(name = "@date")
     public String field = "not";
 }

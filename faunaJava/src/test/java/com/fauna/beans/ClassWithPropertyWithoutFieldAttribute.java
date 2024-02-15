@@ -1,8 +1,8 @@
 package com.fauna.beans;
 
-import com.fauna.annotation.ObjectAttribute;
+import com.fauna.annotation.FaunaObject;
 
-@ObjectAttribute
+@FaunaObject
 public class ClassWithPropertyWithoutFieldAttribute {
 
     public String firstName = "NotANumber";
