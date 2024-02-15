@@ -1,19 +1,19 @@
 package com.fauna.beans;
 
-import com.fauna.annotation.FieldAttribute;
-import com.fauna.annotation.ObjectAttribute;
+import com.fauna.annotation.FaunaField;
+import com.fauna.annotation.FaunaObject;
 import com.fauna.common.enums.FaunaType;
 
-@ObjectAttribute
+@FaunaObject
 public class PersonWithAttributes {
 
-    @FieldAttribute(name = "first_name")
+    @FaunaField(name = "first_name")
     private String firstName;
 
-    @FieldAttribute(name = "last_name")
+    @FaunaField(name = "last_name")
     private String lastName;
 
-    @FieldAttribute(name = "age", type = FaunaType.INT, nullable = true)
+    @FaunaField(name = "age", type = FaunaType.INT, nullable = true)
     private Integer age;
 
     public String getFirstName() {

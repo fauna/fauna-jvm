@@ -1,6 +1,6 @@
 package com.fauna.mapping;
 
-import com.fauna.annotation.FieldAttributeImpl;
+import com.fauna.annotation.FaunaFieldImpl;
 import com.fauna.common.enums.FaunaType;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.serialization.Deserializer;
@@ -18,7 +18,7 @@ public final class FieldInfo {
     private final MappingContext ctx;
     private IDeserializer<?> deserializer;
 
-    public FieldInfo(MappingContext ctx, FieldAttributeImpl attr, Field prop) {
+    public FieldInfo(MappingContext ctx, FaunaFieldImpl attr, Field prop) {
         this.ctx = ctx;
         this.name =
             attr != null && attr.name() != null ? attr.name() : FieldName.canonical(prop.getName());
