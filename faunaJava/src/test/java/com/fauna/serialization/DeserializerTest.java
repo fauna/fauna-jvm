@@ -16,7 +16,9 @@ import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.common.types.Page;
 import com.fauna.exception.SerializationException;
-import com.fauna.helper.DeserializerHelpers;
+import com.fauna.helper.ListOf;
+import com.fauna.helper.MapOf;
+import com.fauna.helper.PageOf;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
 import java.io.IOException;
@@ -329,7 +331,7 @@ public class DeserializerTest {
 
         Map<String, Integer> result = deserialize(given,
             ctx -> Deserializer.generate(ctx,
-                DeserializerHelpers.mapOf(Integer.class)));
+                new MapOf(Integer.class)));
         assertEquals(expected, result);
     }
 
@@ -358,7 +360,7 @@ public class DeserializerTest {
 
         List<PersonWithAttributes> peeps = deserialize(given,
             ctx -> Deserializer.generate(ctx,
-                DeserializerHelpers.listOf(PersonWithAttributes.class)));
+                new ListOf(PersonWithAttributes.class)));
 
         PersonWithAttributes alice = peeps.get(0);
         PersonWithAttributes bob = peeps.get(1);
@@ -387,7 +389,7 @@ public class DeserializerTest {
 
         Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
         Page<Integer> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, DeserializerHelpers.pageOf(Integer.class)));
+            ctx -> Deserializer.generate(ctx, new PageOf(Integer.class)));
 
         assertNotNull(result);
         assertEquals(expected.data(), result.data());
@@ -433,7 +435,7 @@ public class DeserializerTest {
 
         Page<PersonWithAttributes> result = deserialize(given,
             ctx -> Deserializer.generate(ctx,
-                DeserializerHelpers.pageOf(PersonWithAttributes.class)));
+                new PageOf(PersonWithAttributes.class)));
 
         assertNotNull(result);
         assertEquals(2, result.data().size());
