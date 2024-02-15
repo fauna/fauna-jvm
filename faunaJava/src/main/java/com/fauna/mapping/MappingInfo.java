@@ -1,8 +1,8 @@
 package com.fauna.mapping;
 
-import com.fauna.annotation.FieldAttribute;
-import com.fauna.annotation.FieldAttributeImpl;
-import com.fauna.annotation.ObjectAttribute;
+import com.fauna.annotation.FaunaField;
+import com.fauna.annotation.FaunaFieldImpl;
+import com.fauna.annotation.FaunaObject;
 import com.fauna.interfaces.IClassDeserializer;
 import com.fauna.serialization.ClassDeserializer;
 import com.fauna.serialization.Serializer;
@@ -27,23 +27,23 @@ public final class MappingInfo {
         this.type = ty;
 
         Class<?> clazz = getClassFromType(type);
-        boolean hasAttributes = clazz.isAnnotationPresent(ObjectAttribute.class);
+        boolean hasAttributes = clazz.isAnnotationPresent(FaunaObject.class);
 
         List<FieldInfo> fieldsList = new ArrayList<>();
         Map<String, FieldInfo> byNameMap = new HashMap<>();
 
         for (Field field : ((Class<?>) ty).getDeclaredFields()) {
-            FieldAttributeImpl attr;
+            FaunaFieldImpl attr;
 
             if (hasAttributes) {
-                if (field.getAnnotation(FieldAttribute.class) != null) {
-                    attr = new FieldAttributeImpl(field,
-                        field.getAnnotation(FieldAttribute.class));
+                if (field.getAnnotation(FaunaField.class) != null) {
+                    attr = new FaunaFieldImpl(field,
+                        field.getAnnotation(FaunaField.class));
                 } else {
                     continue;
                 }
             } else {
-                attr = new FieldAttributeImpl(field, null);
+                attr = new FaunaFieldImpl(field, null);
             }
 
             FieldInfo info = new FieldInfo(ctx, attr, field);
@@ -60,7 +60,6 @@ public final class MappingInfo {
         this.shouldEscapeObject = Serializer.TAGS.stream().anyMatch(byNameMap.keySet()::contains);
         this.fields = List.copyOf(fieldsList);
         this.fieldsByName = Map.copyOf(byNameMap);
-
         this.deserializer = new ClassDeserializer(this);
 
     }

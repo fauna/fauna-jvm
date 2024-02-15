@@ -3,12 +3,12 @@ package com.fauna.annotation;
 import com.fauna.common.enums.FaunaType;
 import java.lang.reflect.Field;
 
-public class FieldAttributeImpl implements FieldAttribute {
+public class FaunaFieldImpl implements FaunaField {
 
     private final Field field;
-    private final FieldAttribute annotation;
+    private final FaunaField annotation;
 
-    public FieldAttributeImpl(Field field, FieldAttribute annotation) {
+    public FaunaFieldImpl(Field field, FaunaField annotation) {
         this.field = field;
         this.annotation = annotation;
     }
@@ -31,6 +31,6 @@ public class FieldAttributeImpl implements FieldAttribute {
 
     @Override
     public Class<? extends java.lang.annotation.Annotation> annotationType() {
-        return FieldAttribute.class;
+        return FaunaField.class;
     }
 }
