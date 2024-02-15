@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class Serializer {
@@ -114,8 +116,44 @@ public class Serializer {
             } else if (obj instanceof Instant) {
                 writer.writeTimeValue((Instant) obj);
             } else {
-                //serializeObjectInternal(writer, obj, context);
+                serializeObjectInternal(writer, obj, context);
             }
+        }
+    }
+
+    private static void serializeObjectInternal(FaunaGenerator writer, Object obj,
+        SerializationContext context) throws IOException {
+        if (obj instanceof Map) {
+            serializeMapInternal(writer, (Map<?, ?>) obj, context);
+        } else if (obj instanceof List) {
+            writer.writeStartArray();
+            for (Object item : (List<?>) obj) {
+                serialize(context, writer, item, null);
+            }
+            writer.writeEndArray();
+        } else {
+            throw new SerializationException(
+                "Not Implemented");
+            //serializeClassInternal(writer, obj, context);
+        }
+    }
+
+    private static <T> void serializeMapInternal(FaunaGenerator writer, Map<?, T> map,
+        SerializationContext context) throws IOException {
+        boolean shouldEscape = map.keySet().stream().anyMatch(TAGS::contains);
+        if (shouldEscape) {
+            writer.writeStartEscapedObject();
+        } else {
+            writer.writeStartObject();
+        }
+        for (Map.Entry<?, T> entry : map.entrySet()) {
+            writer.writeFieldName(entry.getKey().toString());
+            serialize(context, writer, entry.getValue(), null);
+        }
+        if (shouldEscape) {
+            writer.writeEndEscapedObject();
+        } else {
+            writer.writeEndObject();
         }
     }
 }

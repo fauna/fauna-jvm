@@ -7,7 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +52,73 @@ class SerializerTest {
             String result = serialize(test);
             assertEquals(expected, result);
         }
+    }
+
+    @Test
+    public void serializeDictionary() throws IOException {
+        Map<String, Object> test = new HashMap<>();
+        test.put("answer", 42);
+        test.put("foo", "bar");
+        test.put("list", new ArrayList<>());
+        test.put("obj", new HashMap<>());
+
+        String actual = serialize(test);
+        assertEquals("{\"answer\":{\"@int\":\"42\"},\"obj\":{},\"foo\":\"bar\",\"list\":[]}",
+            actual);
+    }
+
+    @Test
+    public void serializeDictionaryWithTagConflicts() throws IOException {
+        Map<Map<String, Object>, String> tests = new HashMap<>();
+        tests.put(new HashMap<>() {{
+            put("@date", "not");
+        }}, "{\"@object\":{\"@date\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@doc", "not");
+        }}, "{\"@object\":{\"@doc\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@double", "not");
+        }}, "{\"@object\":{\"@double\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@int", "not");
+        }}, "{\"@object\":{\"@int\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@long", "not");
+        }}, "{\"@object\":{\"@long\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@mod", "not");
+        }}, "{\"@object\":{\"@mod\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@object", "not");
+        }}, "{\"@object\":{\"@object\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@ref", "not");
+        }}, "{\"@object\":{\"@ref\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@set", "not");
+        }}, "{\"@object\":{\"@set\":\"not\"}}");
+        tests.put(new HashMap<>() {{
+            put("@time", "not");
+        }}, "{\"@object\":{\"@time\":\"not\"}}");
+
+        for (Map.Entry<Map<String, Object>, String> entry : tests.entrySet()) {
+            String expected = entry.getValue();
+            Map<String, Object> test = entry.getKey();
+            String actual = serialize(test);
+            assertEquals(expected, actual);
+        }
+    }
+
+    @Test
+    public void serializeList() throws IOException {
+        List<Object> test = new ArrayList<>();
+        test.add(42);
+        test.add("foo bar");
+        test.add(new ArrayList<>());
+        test.add(new HashMap<>());
+
+        String actual = serialize(test);
+        assertEquals("[{\"@int\":\"42\"},\"foo bar\",[],{}]", actual);
     }
 
 }
