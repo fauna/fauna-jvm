@@ -19,16 +19,24 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
     @Override
     public Page<T> deserialize(SerializationContext context, FaunaParser reader)
         throws IOException {
-        if (reader.getCurrentTokenType() != FaunaTokenType.START_PAGE) {
-            throw new SerializationException(
-                "Unexpected token while deserializing into Page<T>: "
-                    + reader.getCurrentTokenType());
+        FaunaTokenType endToken;
+        switch (reader.getCurrentTokenType()) {
+            case START_PAGE:
+                endToken = FaunaTokenType.END_PAGE;
+                break;
+            case START_OBJECT:
+                endToken = FaunaTokenType.END_OBJECT;
+                break;
+            default:
+                throw new SerializationException(
+                    "Unexpected token while deserializing into " + Page.class + ": "
+                        + reader.getCurrentTokenType());
         }
 
         List<T> data = null;
         String after = null;
 
-        while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_PAGE) {
+        while (reader.read() && reader.getCurrentTokenType() != endToken) {
             String fieldName = reader.getValueAsString();
             reader.read();
 
