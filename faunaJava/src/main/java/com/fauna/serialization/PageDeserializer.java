@@ -18,11 +18,6 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
     @Override
     public Page<T> deserialize(SerializationContext context, FaunaParser reader)
         throws IOException {
-        if (reader.getCurrentTokenType() != FaunaTokenType.START_PAGE) {
-            throw new SerializationException(
-                "Unexpected token while deserializing into Page<T>: "
-                    + reader.getCurrentTokenType());
-        }
         FaunaTokenType endToken;
         switch (reader.getCurrentTokenType()) {
             case START_PAGE:
