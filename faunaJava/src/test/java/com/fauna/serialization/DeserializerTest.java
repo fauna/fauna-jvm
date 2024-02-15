@@ -42,7 +42,7 @@ public class DeserializerTest {
 
     public static <T> T deserializeNullable(String str, Class<T> targetType)
         throws IOException {
-        return deserialize(str, ctx -> Deserializer.generateNullable(targetType));
+        return deserialize(str, ctx -> Deserializer.generateNullable(ctx, targetType));
     }
 
     private static <T> T deserialize(FaunaParser reader,
@@ -91,7 +91,7 @@ public class DeserializerTest {
         for (Map.Entry<String, Object> entry : tests.entrySet()) {
             if (entry.getValue() != null) {
                 Object result = deserialize(entry.getKey(),
-                    ctx -> Deserializer.generate(entry.getValue().getClass()));
+                    ctx -> Deserializer.generate(ctx, entry.getValue().getClass()));
                 assertEquals(entry.getValue(), result);
             }
 
@@ -131,7 +131,7 @@ public class DeserializerTest {
             "}";
 
         Document actual = deserialize(given,
-            ctx -> Deserializer.generate(Document.class));
+            ctx -> Deserializer.generate(ctx, Document.class));
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), actual.getTs());
@@ -170,7 +170,7 @@ public class DeserializerTest {
             "}";
 
         NamedDocument actual = deserialize(given,
-            ctx -> Deserializer.generate(NamedDocument.class));
+            ctx -> Deserializer.generate(ctx, NamedDocument.class));
         assertEquals("DocName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals(Instant.parse("2023-12-15T01:01:01.0010010Z"), actual.getTs());
@@ -189,7 +189,7 @@ public class DeserializerTest {
             "}";
 
         DocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(DocumentRef.class));
+            ctx -> Deserializer.generate(ctx, DocumentRef.class));
 
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -209,7 +209,7 @@ public class DeserializerTest {
             "}";
 
         NullDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(NullDocumentRef.class));
+            ctx -> Deserializer.generate(ctx, NullDocumentRef.class));
 
         assertEquals("123", actual.getId());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -228,7 +228,7 @@ public class DeserializerTest {
             "}";
 
         NamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(NamedDocumentRef.class));
+            ctx -> Deserializer.generate(ctx, NamedDocumentRef.class));
 
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
@@ -248,7 +248,7 @@ public class DeserializerTest {
             "}";
 
         NullNamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(NullNamedDocumentRef.class));
+            ctx -> Deserializer.generate(ctx, NullNamedDocumentRef.class));
 
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());

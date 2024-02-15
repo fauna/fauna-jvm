@@ -88,27 +88,16 @@ public class Deserializer {
     }
 
     /**
-     * Generates a deserializer for the specified non-nullable Java type.
-     *
-     * @param <T>  The type of the object to deserialize to.
-     * @param type The Java type to generate a deserializer for.
-     * @return An {@code IDeserializer<T>}.
-     */
-    public static <T> IDeserializer<T> generate(Type type) {
-        IDeserializer<?> deser = generateImpl(null, type);
-        return castDeserializer(deser);
-    }
-
-    /**
      * Generates a deserializer which returns values of the specified Java type, or the default if
      * the underlying query value is null.
      *
-     * @param <T>             The type of the object to deserialize to.
-     * @param targetTypeToken The Java type to generate a deserializer for.
+     * @param <T>     The type of the object to deserialize to.
+     * @param context The serialization context.
+     * @param type    The Java type to generate a deserializer for.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generateNullable(Class<T> targetTypeToken) {
-        IDeserializer<T> deser = generate(targetTypeToken);
+    public static <T> IDeserializer<T> generateNullable(SerializationContext context, Type type) {
+        IDeserializer<T> deser = generate(context, type);
         return wrapNullable(deser);
     }
 
@@ -128,7 +117,7 @@ public class Deserializer {
             if (deserializer != null) {
                 return (IDeserializer<T>) deserializer;
             }
-        } else if (type instanceof ParameterizedType && context != null) {
+        } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             Type rawType = parameterizedType.getRawType();
             if (rawType == Map.class) {
@@ -157,8 +146,7 @@ public class Deserializer {
                     return (IDeserializer<T>) new PageDeserializer<>(elemDeserializer);
                 }
             }
-        } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)
-            && context != null) {
+        } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)) {
             @SuppressWarnings("unchecked")
             Class<T> clazz = (Class<T>) type;
             Map<String, FieldAttribute> fieldMap = context.getFieldMap(clazz);
