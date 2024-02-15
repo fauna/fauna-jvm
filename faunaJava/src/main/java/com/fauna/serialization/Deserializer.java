@@ -95,7 +95,7 @@ public class Deserializer {
      * @return An {@code IDeserializer<T>}.
      */
     public static <T> IDeserializer<T> generate(Type type) {
-        IDeserializer<?> deser = generateImpl(type);
+        IDeserializer<?> deser = generateImpl(null, type);
         return castDeserializer(deser);
     }
 
@@ -121,20 +121,15 @@ public class Deserializer {
         return new NullableDeserializer<>(deser);
     }
 
-    private static <T> IDeserializer<T> generateImpl(Type type) {
-        IDeserializer<?> deserializer = DESERIALIZERS.get(type);
-        if (deserializer != null) {
-            return (IDeserializer<T>) deserializer;
-        }
-
-        throw new IllegalArgumentException(
-            "Unsupported deserialization target type " + type.getTypeName());
-    }
-
     private static <T> IDeserializer<T> generateImpl(SerializationContext context, Type type) {
-        ParameterizedType parameterizedType = null;
-        if (type instanceof ParameterizedType) {
-            parameterizedType = (ParameterizedType) type;
+
+        if (DESERIALIZERS.containsKey(type)) {
+            IDeserializer<?> deserializer = DESERIALIZERS.get(type);
+            if (deserializer != null) {
+                return (IDeserializer<T>) deserializer;
+            }
+        } else if (type instanceof ParameterizedType && context != null) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
             Type rawType = parameterizedType.getRawType();
             if (rawType == Map.class) {
                 Type[] typeArgs = parameterizedType.getActualTypeArguments();
@@ -162,7 +157,8 @@ public class Deserializer {
                     return (IDeserializer<T>) new PageDeserializer<>(elemDeserializer);
                 }
             }
-        } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)) {
+        } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)
+            && context != null) {
             @SuppressWarnings("unchecked")
             Class<T> clazz = (Class<T>) type;
             Map<String, FieldAttribute> fieldMap = context.getFieldMap(clazz);
@@ -170,11 +166,6 @@ public class Deserializer {
             IDeserializer<T> deser = new ClassDeserializer<>(fieldMap, clazz);
 
             return deser;
-        } else if (DESERIALIZERS.containsKey(type)) {
-            IDeserializer<?> deserializer = DESERIALIZERS.get(type);
-            if (deserializer != null) {
-                return (IDeserializer<T>) deserializer;
-            }
         }
         throw new IllegalArgumentException(
             "Unsupported deserialization target type " + type.getTypeName());
