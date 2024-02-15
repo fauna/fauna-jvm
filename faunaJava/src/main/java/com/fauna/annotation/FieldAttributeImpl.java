@@ -26,7 +26,7 @@ public class FieldAttributeImpl implements FieldAttribute {
 
     @Override
     public FaunaType type() {
-        return (annotation != null) ? annotation.type() : FaunaType.UNKNOWN;
+        return (annotation != null) ? annotation.type() : null;
     }
 
     @Override
