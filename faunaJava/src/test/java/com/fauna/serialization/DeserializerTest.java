@@ -392,7 +392,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void DeserializeIntoPageWithObject() throws IOException {
+    public void deserializeIntoPageWithObject() throws IOException {
         String given = "{\n" +
             "  \"@object\": {\n" +
             "    \"after\": \"next_page_cursor\",\n" +
