@@ -394,14 +394,12 @@ public class DeserializerTest {
     @Test
     public void deserializeIntoPageWithObject() throws IOException {
         String given = "{\n" +
-            "  \"@object\": {\n" +
-            "    \"after\": \"next_page_cursor\",\n" +
-            "    \"data\": [\n" +
-            "      {\"@int\":\"1\"},\n" +
-            "      {\"@int\":\"2\"},\n" +
-            "      {\"@int\":\"3\"}\n" +
-            "    ]\n" +
-            "  }\n" +
+            "  \"after\": \"next_page_cursor\",\n" +
+            "  \"data\": [\n" +
+            "    {\"@int\":\"1\"},\n" +
+            "    {\"@int\":\"2\"},\n" +
+            "    {\"@int\":\"3\"}\n" +
+            "  ]\n" +
             "}";
 
         Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
