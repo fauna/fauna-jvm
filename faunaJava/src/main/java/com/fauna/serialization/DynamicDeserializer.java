@@ -23,6 +23,8 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
     private static DynamicDeserializer<?> instance = new DynamicDeserializer<>();
 
+    private final MapDeserializer<T> _map;
+
     /**
      * Returns the singleton instance of DynamicDeserializer.
      *
@@ -37,7 +39,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
      * Private constructor to prevent instantiation from outside the class.
      */
     private DynamicDeserializer() {
-
+        _map = new MapDeserializer<>(this);
     }
 
     /**
@@ -51,6 +53,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
+                value = _map.deserialize(context, reader);
             case START_ARRAY:
             case START_PAGE:
                 break;

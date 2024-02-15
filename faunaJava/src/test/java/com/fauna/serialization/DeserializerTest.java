@@ -12,6 +12,7 @@ import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.exception.SerializationException;
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -243,6 +244,85 @@ public class DeserializerTest {
         assertEquals("RefName", actual.getName());
         assertEquals(new Module("MyColl"), actual.getCollection());
         assertEquals("not found", actual.getCause());
+    }
+
+    @Test
+    public void deserializeObject() throws IOException {
+        String given = "{\n" +
+            "    \"aString\": \"foo\",\n" +
+            "    \"anObject\": { \"baz\": \"luhrmann\" },\n" +
+            "    \"anInt\": { \"@int\": \"2147483647\" },\n" +
+            "    \"aLong\":{ \"@long\": \"9223372036854775807\" },\n" +
+            "    \"aDouble\":{ \"@double\": \"3.14159\" },\n" +
+            "    \"aDate\":{ \"@date\": \"2023-12-03\" },\n" +
+            "    \"aTime\":{ \"@time\": \"2023-12-03T14:52:10.001001Z\" },\n" +
+            "    \"true\": true,\n" +
+            "    \"false\": false,\n" +
+            "    \"null\": null\n" +
+            "}";
+
+        Map<String, Object> inner = new HashMap<>();
+        inner.put("baz", "luhrmann");
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("aString", "foo");
+        expected.put("anObject", inner);
+        expected.put("anInt", 2147483647);
+        expected.put("aLong", 9223372036854775807L);
+        expected.put("aDouble", 3.14159d);
+        expected.put("aDate", LocalDate.parse("2023-12-03"));
+        expected.put("aTime", Instant.parse("2023-12-03T14:52:10.001001Z"));
+        expected.put("true", true);
+        expected.put("false", false);
+        expected.put("null", null);
+
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+
+        assertEquals(expected, result);
+
+    }
+
+    @Test
+    public void deserializeEscapedObject() throws IOException {
+        String given = "{\n" +
+            "    \"@object\": {\n" +
+            "        \"@int\": \"notanint\",\n" +
+            "        \"anInt\": { \"@int\": \"123\" },\n" +
+            "        \"@object\": \"notanobject\",\n" +
+            "        \"anEscapedObject\": { \"@object\": { \"@long\": \"notalong\" } }\n" +
+            "    }\n" +
+            "}";
+
+        Map<String, Object> inner = new HashMap<>();
+        inner.put("@long", "notalong");
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("@int", "notanint");
+        expected.put("anInt", 123);
+        expected.put("@object", "notanobject");
+        expected.put("anEscapedObject", inner);
+
+        Object result = deserialize(given, ctx -> Deserializer.DYNAMIC);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void deserializeIntoGenericDictionary() throws IOException {
+        String given = "{\n" +
+            "    \"k1\": { \"@int\": \"1\" },\n" +
+            "    \"k2\": { \"@int\": \"2\" },\n" +
+            "    \"k3\": { \"@int\": \"3\" }\n" +
+            "}";
+
+        Map<String, Integer> expected = new HashMap<>();
+        expected.put("k1", 1);
+        expected.put("k2", 2);
+        expected.put("k3", 3);
+
+        Map<String, Integer> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+        assertEquals(expected, result);
     }
 
 }
