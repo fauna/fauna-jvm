@@ -1,10 +1,10 @@
 package com.fauna.beans;
 
+import com.fauna.annotation.FieldAttribute;
+import com.fauna.annotation.ObjectAttribute;
 import com.fauna.common.enums.FaunaType;
-import com.fauna.serialization.FaunaObjectAttribute;
-import com.fauna.serialization.FieldAttribute;
 
-@FaunaObjectAttribute
+@ObjectAttribute
 public class PersonWithAttributes {
 
     @FieldAttribute(name = "first_name")

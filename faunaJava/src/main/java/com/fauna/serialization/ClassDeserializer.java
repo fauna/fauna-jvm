@@ -2,63 +2,117 @@ package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.exception.SerializationException;
-import java.lang.reflect.Field;
-import java.util.Map;
+import com.fauna.interfaces.IClassDeserializer;
+import com.fauna.mapping.FieldInfo;
+import com.fauna.mapping.MappingContext;
+import com.fauna.mapping.MappingInfo;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 
-public class ClassDeserializer<T> extends BaseDeserializer<T> {
+public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassDeserializer<T> {
 
-    private final Map<String, FieldAttribute> _fieldMap;
-    private final Class<T> _targetType;
+    private static final String ID_FIELD = "id";
+    private static final String NAME_FIELD = "name";
 
-    public ClassDeserializer(Map<String, FieldAttribute> fieldMap, Class<T> targetType) {
-        _fieldMap = fieldMap;
-        _targetType = targetType;
+    private final MappingInfo _info;
+
+    public ClassDeserializer(MappingInfo info) {
+        _info = info;
     }
 
     @Override
-    public T deserialize(SerializationContext context, FaunaParser reader) {
-        FaunaTokenType endToken;
-        switch (reader.getCurrentTokenType()) {
-            case START_DOCUMENT:
-                endToken = FaunaTokenType.END_DOCUMENT;
-                break;
-            case START_OBJECT:
-                endToken = FaunaTokenType.END_OBJECT;
-                break;
-            default:
-                throw new SerializationException(
-                    "Unexpected token while deserializing into Class: "
-                        + reader.getCurrentTokenType());
-        }
+    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
+        FaunaTokenType endToken = switch (reader.getCurrentTokenType()) {
+            case START_DOCUMENT -> FaunaTokenType.END_DOCUMENT;
+            case START_OBJECT -> FaunaTokenType.END_OBJECT;
+            default -> throw unexpectedToken(reader.getCurrentTokenType());
+        };
 
+        Object instance = createInstance();
+        setFields(instance, context, reader, endToken);
+        return (T) instance;
+    }
+
+    private Object createInstance() {
         try {
-            T instance = _targetType.getDeclaredConstructor().newInstance();
+            Class<?> clazz = Class.forName(_info.getType().getTypeName());
+            Constructor<?> constructor = clazz.getConstructor();
+            return constructor.newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-            while (reader.read() && reader.getCurrentTokenType() != endToken) {
-                if (reader.getCurrentTokenType() == FaunaTokenType.FIELD_NAME) {
-                    String fieldName = reader.getValueAsString();
-                    reader.read();
-
-                    if (_fieldMap.containsKey(fieldName)) {
-                        FieldAttribute fieldAttribute = _fieldMap.get(fieldName);
-                        Field field = _targetType.getDeclaredField(fieldAttribute.fieldName());
-                        field.setAccessible(true);
-                        field.set(instance,
-                            DynamicDeserializer.getInstance().deserialize(context, reader));
-                    } else {
-                        reader.skip();
-                    }
-                } else {
-                    throw new SerializationException(
-                        "Unexpected token while deserializing into Class: "
-                            + reader.getCurrentTokenType());
-                }
+    private void setFields(Object instance, MappingContext context, FaunaParser reader,
+        FaunaTokenType endToken) throws IOException {
+        while (reader.read() && reader.getCurrentTokenType() != endToken) {
+            if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
+                throw unexpectedToken(reader.getCurrentTokenType());
             }
 
-            return instance;
-        } catch (Exception e) {
-            throw new SerializationException("Error deserializing class " + _targetType.getName(),
-                e);
+            String fieldName = reader.getValueAsString();
+            reader.read();
+
+            if (fieldName.equals(ID_FIELD)
+                && reader.getCurrentTokenType() == FaunaTokenType.STRING) {
+                trySetId(instance, reader.getValueAsString());
+            } else if (fieldName.equals(NAME_FIELD)
+                && reader.getCurrentTokenType() == FaunaTokenType.STRING) {
+                trySetName(instance, reader.getValueAsString());
+            } else {
+                FieldInfo field = _info.getFieldsByName().get(fieldName);
+                if (field != null) {
+                    field.getProperty().setAccessible(true);
+                    try {
+                        field.getProperty()
+                            .set(instance, field.getDeserializer().deserialize(context, reader));
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    reader.skip();
+                }
+            }
         }
+    }
+
+    private void trySetId(Object instance, String id) {
+        FieldInfo field = _info.getFieldsByName().get(ID_FIELD);
+        if (field != null) {
+            field.getProperty().setAccessible(true);
+            try {
+                if (field.getType() == Long.class) {
+                    field.getProperty().set(instance, Long.parseLong(id));
+                } else if (field.getType() == String.class) {
+                    field.getProperty().set(instance, id);
+                } else {
+                    throw unexpectedToken(FaunaTokenType.STRING);
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    private void trySetName(Object instance, String name) {
+        FieldInfo field = _info.getFieldsByName().get(NAME_FIELD);
+        if (field != null) {
+            field.getProperty().setAccessible(true);
+            try {
+                if (field.getType() == String.class) {
+                    field.getProperty().set(instance, name);
+                } else {
+                    throw unexpectedToken(FaunaTokenType.STRING);
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    private SerializationException unexpectedToken(FaunaTokenType tokenType) {
+        return new SerializationException(
+            "Unexpected token while deserializing into class " + _info.getType()
+                + ": " + tokenType);
     }
 }

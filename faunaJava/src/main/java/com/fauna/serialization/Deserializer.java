@@ -9,7 +9,8 @@ import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.common.types.Page;
-import com.google.common.reflect.TypeToken;
+import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -78,22 +79,23 @@ public class Deserializer {
      *
      * @param <T>     The type of the object to deserialize to.
      * @param context The serialization context.
+     * @param type    The Java type to generate a deserializer for.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generate(SerializationContext context,
-        TypeToken<T> targetTypeToken) {
-        IDeserializer<?> deser = generateImpl(context, targetTypeToken);
+    public static <T> IDeserializer<T> generate(MappingContext context, Type type) {
+        IDeserializer<?> deser = generateImpl(context, type);
         return castDeserializer(deser);
     }
 
     /**
      * Generates a deserializer for the specified non-nullable Java type.
      *
-     * @param <T> The type of the object to deserialize to.
+     * @param <T>  The type of the object to deserialize to.
+     * @param type The Java type to generate a deserializer for.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generate(Class<T> targetClass) {
-        IDeserializer<?> deser = generateImpl(targetClass);
+    public static <T> IDeserializer<T> generate(Type type) {
+        IDeserializer<?> deser = generateImpl(null, type);
         return castDeserializer(deser);
     }
 
@@ -101,25 +103,12 @@ public class Deserializer {
      * Generates a deserializer which returns values of the specified Java type, or the default if
      * the underlying query value is null.
      *
-     * @param <T> The type of the object to deserialize to.
+     * @param <T>             The type of the object to deserialize to.
+     * @param targetTypeToken The Java type to generate a deserializer for.
      * @return An {@code IDeserializer<T>}.
      */
     public static <T> IDeserializer<T> generateNullable(Class<T> targetTypeToken) {
         IDeserializer<T> deser = generate(targetTypeToken);
-        return wrapNullable(deser);
-    }
-
-    /**
-     * Generates a deserializer which returns values of the specified Java type, or the default if
-     * the underlying query value is null.
-     *
-     * @param <T>     The type of the object to deserialize to.
-     * @param context The serialization context.
-     * @return An {@code IDeserializer<T>}.
-     */
-    public static <T> IDeserializer<T> generateNullable(SerializationContext context,
-        TypeToken<T> targetTypeToken) {
-        IDeserializer<T> deser = generate(context, targetTypeToken);
         return wrapNullable(deser);
     }
 
@@ -132,21 +121,14 @@ public class Deserializer {
         return new NullableDeserializer<>(deser);
     }
 
-    private static <T> IDeserializer<T> generateImpl(Class<T> targetType) {
-        IDeserializer<?> deserializer = DESERIALIZERS.get(targetType);
-        if (deserializer != null) {
-            return (IDeserializer<T>) deserializer;
-        }
+    private static <T> IDeserializer<T> generateImpl(MappingContext context, Type type) {
 
-        throw new IllegalArgumentException(
-            "Unsupported deserialization target type " + targetType.getName());
-    }
-
-    private static <T> IDeserializer<T> generateImpl(SerializationContext context,
-        TypeToken<T> targetType) {
-        Type type = targetType.getType();
-
-        if (type instanceof ParameterizedType) {
+        if (DESERIALIZERS.containsKey(type)) {
+            IDeserializer<?> deserializer = DESERIALIZERS.get(type);
+            if (deserializer != null) {
+                return (IDeserializer<T>) deserializer;
+            }
+        } else if (type instanceof ParameterizedType && context != null) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             Type rawType = parameterizedType.getRawType();
             if (rawType == Map.class) {
@@ -159,7 +141,7 @@ public class Deserializer {
                         "Unsupported Map key type. Key must be of type String, but was " + keyType);
                 }
 
-                IDeserializer<?> valueDeserializer = generate(context, TypeToken.of(valueType));
+                IDeserializer<?> valueDeserializer = generate(context, valueType);
 
                 return (IDeserializer<T>) new MapDeserializer<>(valueDeserializer);
 
@@ -167,7 +149,7 @@ public class Deserializer {
             if (rawType == List.class || rawType == Page.class) {
                 Type[] typeArgs = parameterizedType.getActualTypeArguments();
                 Type elemType = typeArgs[0];
-                IDeserializer<?> elemDeserializer = generate(context, TypeToken.of(elemType));
+                IDeserializer<?> elemDeserializer = generate(context, elemType);
 
                 if (rawType == List.class) {
                     return (IDeserializer<T>) new ListDeserializer<>(elemDeserializer);
@@ -175,18 +157,13 @@ public class Deserializer {
                     return (IDeserializer<T>) new PageDeserializer<>(elemDeserializer);
                 }
             }
-        } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)) {
-            Map<String, FieldAttribute> fieldMap = context.getFieldMap(targetType);
-
-            IDeserializer<T> deser = (IDeserializer<T>) new ClassDeserializer<>(fieldMap,
-                targetType.getRawType());
-
-            return deser;
-        } else {
-            return (IDeserializer<T>) generateImpl(targetType.getRawType());
+        } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)
+            && context != null) {
+            return (IDeserializer<T>) context.getInfo(type).getDeserializer();
         }
-
         throw new IllegalArgumentException(
             "Unsupported deserialization target type " + type.getTypeName());
+
+
     }
 }
