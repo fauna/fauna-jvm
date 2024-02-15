@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +12,7 @@ import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
+import com.fauna.common.types.Page;
 import com.fauna.exception.SerializationException;
 import com.google.common.reflect.TypeToken;
 import java.io.IOException;
@@ -364,6 +366,50 @@ public class DeserializerTest {
             ctx -> Deserializer.generate(ctx, new TypeToken<>() {
             }));
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void DeserializeIntoPageWithPrimitive() throws IOException {
+        String given = "{\n" +
+            "  \"@set\": {\n" +
+            "    \"after\": \"next_page_cursor\",\n" +
+            "    \"data\": [\n" +
+            "      {\"@int\":\"1\"},\n" +
+            "      {\"@int\":\"2\"},\n" +
+            "      {\"@int\":\"3\"}\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
+
+        Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
+        Page<Integer> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+
+        assertNotNull(result);
+        assertEquals(expected.data(), result.data());
+        assertEquals(expected.after(), result.after());
+    }
+
+    @Test
+    public void deserializeIntoPageWithObject() throws IOException {
+        String given = "{\n" +
+            "  \"after\": \"next_page_cursor\",\n" +
+            "  \"data\": [\n" +
+            "    {\"@int\":\"1\"},\n" +
+            "    {\"@int\":\"2\"},\n" +
+            "    {\"@int\":\"3\"}\n" +
+            "  ]\n" +
+            "}";
+
+        Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
+        Page<Integer> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+
+        assertNotNull(result);
+        assertEquals(expected.data(), result.data());
+        assertEquals(expected.after(), result.after());
     }
 
 }
