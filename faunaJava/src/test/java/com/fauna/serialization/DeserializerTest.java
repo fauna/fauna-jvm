@@ -408,8 +408,7 @@ public class DeserializerTest {
 
         Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
         Page<Integer> result = deserialize(given,
-            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
-            }));
+            ctx -> Deserializer.generate(ctx, new PageOf(Integer.class)));
 
         assertNotNull(result);
         assertEquals(expected.data(), result.data());
