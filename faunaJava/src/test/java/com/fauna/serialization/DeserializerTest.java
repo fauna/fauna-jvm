@@ -395,6 +395,29 @@ public class DeserializerTest {
     }
 
     @Test
+    public void deserializeIntoPageWithObject() throws IOException {
+        String given = "{\n" +
+            "  \"@object\": {\n" +
+            "    \"after\": \"next_page_cursor\",\n" +
+            "    \"data\": [\n" +
+            "      {\"@int\":\"1\"},\n" +
+            "      {\"@int\":\"2\"},\n" +
+            "      {\"@int\":\"3\"}\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
+
+        Page<Integer> expected = new Page<>(Arrays.asList(1, 2, 3), "next_page_cursor");
+        Page<Integer> result = deserialize(given,
+            ctx -> Deserializer.generate(ctx, new TypeToken<>() {
+            }));
+
+        assertNotNull(result);
+        assertEquals(expected.data(), result.data());
+        assertEquals(expected.after(), result.after());
+    }
+
+    @Test
     public void deserializeIntoPageWithUserDefinedClass() throws IOException {
         String given = "{\n" +
             "    \"@set\": {\n" +
