@@ -55,7 +55,6 @@ public final class MappingInfo {
         this.shouldEscapeObject = Serializer.TAGS.stream().anyMatch(byNameMap.keySet()::contains);
         this.fields = List.copyOf(fieldsList);
         this.fieldsByName = Map.copyOf(byNameMap);
-
         this.deserializer = new ClassDeserializer(this);
 
     }

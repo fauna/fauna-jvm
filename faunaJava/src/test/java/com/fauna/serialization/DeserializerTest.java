@@ -475,4 +475,19 @@ public class DeserializerTest {
         assertEquals(612, p.getAge());
     }
 
+    @Test
+    public void deserializeIntoPocoWithAttributesNullable() throws IOException {
+        String given = "{" +
+            "\"first_name\": \"Baz2\"," +
+            "\"last_name\": \"Luhrmann2\"," +
+            "\"age\": null " +
+            "}";
+
+        PersonWithAttributes p = deserialize(given,
+            ctx -> Deserializer.generate(ctx, PersonWithAttributes.class));
+        assertEquals("Baz2", p.getFirstName());
+        assertEquals("Luhrmann2", p.getLastName());
+        assertNull(p.getAge());
+    }
+
 }

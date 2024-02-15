@@ -96,7 +96,7 @@ public class Deserializer {
      * @param type    The Java type to generate a deserializer for.
      * @return An {@code IDeserializer<T>}.
      */
-    public static <T> IDeserializer<T> generateNullable(SerializationContext context, Type type) {
+    public static <T> IDeserializer<T> generateNullable(MappingContext context, Type type) {
         IDeserializer<T> deser = generate(context, type);
         return wrapNullable(deser);
     }
