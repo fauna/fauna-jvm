@@ -3,6 +3,7 @@ package com.fauna.serialization;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fauna.common.types.Module;
+import com.fauna.mapping.MappingContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
@@ -16,7 +17,7 @@ class SerializerTest {
     public static String serialize(Object obj) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
             FaunaGenerator faunaWriter = new FaunaGenerator(stream)) {
-            SerializationContext ctx = new SerializationContext();
+            MappingContext ctx = new MappingContext();
             Serializer.serialize(ctx, faunaWriter, obj);
             faunaWriter.flush();
             return new String(stream.toByteArray());

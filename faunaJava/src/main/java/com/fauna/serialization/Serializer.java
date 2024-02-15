@@ -3,6 +3,7 @@ package com.fauna.serialization;
 import com.fauna.common.enums.FaunaType;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -12,16 +13,16 @@ import java.util.Set;
 
 public class Serializer {
 
-    private static final Set<String> TAGS = new HashSet<>(
+    public static final Set<String> TAGS = new HashSet<>(
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
 
-    public static void serialize(SerializationContext context, FaunaGenerator writer, Object obj)
+    public static void serialize(MappingContext context, FaunaGenerator writer, Object obj)
         throws IOException {
         serialize(context, writer, obj, null);
     }
 
-    public static void serialize(SerializationContext context, FaunaGenerator writer, Object obj,
+    public static void serialize(MappingContext context, FaunaGenerator writer, Object obj,
         FaunaType typeHint) throws IOException {
         if (typeHint != null) {
             if (obj == null) {
