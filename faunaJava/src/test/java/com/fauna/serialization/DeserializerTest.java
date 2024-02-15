@@ -354,7 +354,8 @@ public class DeserializerTest {
     @Test
     public void deserializeIntoListWithPocoWithAttributes() throws IOException {
         String given = "[\n" +
-            "    {\"first_name\":\"Alice\",\"last_name\":\"Smith\",\"age\":{\"@int\":\"100\"}},\n" +
+            "    {\"first_name\":\"Alice\",\"last_name\":\"Smith\",\"age\":{\"@int\":\"100\"}},\n"
+            +
             "    {\"first_name\":\"Bob\",\"last_name\":\"Jones\",\"age\":{\"@int\":\"101\"}}\n" +
             "]";
 

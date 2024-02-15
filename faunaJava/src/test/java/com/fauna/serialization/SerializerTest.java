@@ -1,10 +1,26 @@
 package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fauna.beans.ClassWithFieldAttributeAndWithoutObjectAttribute;
+import com.fauna.beans.ClassWithInvalidPropertyTypeHint;
+import com.fauna.beans.ClassWithPropertyWithoutFieldAttribute;
 import com.fauna.beans.Person;
 import com.fauna.beans.PersonWithAttributes;
+import com.fauna.beans.PersonWithDateConflict;
+import com.fauna.beans.PersonWithDocConflict;
+import com.fauna.beans.PersonWithDoubleConflict;
+import com.fauna.beans.PersonWithIntConflict;
+import com.fauna.beans.PersonWithLongConflict;
+import com.fauna.beans.PersonWithModConflict;
+import com.fauna.beans.PersonWithObjectConflict;
+import com.fauna.beans.PersonWithRefConflict;
+import com.fauna.beans.PersonWithSetConflict;
+import com.fauna.beans.PersonWithTimeConflict;
+import com.fauna.beans.PersonWithTypeOverrides;
 import com.fauna.common.types.Module;
+import com.fauna.exception.SerializationException;
 import com.fauna.mapping.MappingContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -135,84 +151,95 @@ class SerializerTest {
 
     @Test
     public void serializeClassWithAttributes() throws IOException {
-        PersonWithAttributes test = new PersonWithAttributes("Baz", "Luhrmann", 61L);
+        PersonWithAttributes test = new PersonWithAttributes("Baz", "Luhrmann", 61);
         String actual = serialize(test);
         assertEquals(
-            "{\"first_name\":\"Baz\",\"last_name\":\"Luhrmann\",\"age\":{\"@long\":\"61\"}}",
+            "{\"first_name\":\"Baz\",\"last_name\":\"Luhrmann\",\"age\":{\"@int\":\"61\"}}",
             actual);
     }
+    
+    @Test
+    public void serializeClassWithTagConflicts() throws IOException {
+        Map<Object, String> tests = new HashMap<>();
+        tests.put(new PersonWithDateConflict(), "{\"@object\":{\"@date\":\"not\"}}");
+        tests.put(new PersonWithDocConflict(), "{\"@object\":{\"@doc\":\"not\"}}");
+        tests.put(new PersonWithDoubleConflict(), "{\"@object\":{\"@double\":\"not\"}}");
+        tests.put(new PersonWithIntConflict(), "{\"@object\":{\"@int\":\"not\"}}");
+        tests.put(new PersonWithLongConflict(), "{\"@object\":{\"@long\":\"not\"}}");
+        tests.put(new PersonWithModConflict(), "{\"@object\":{\"@mod\":\"not\"}}");
+        tests.put(new PersonWithObjectConflict(), "{\"@object\":{\"@object\":\"not\"}}");
+        tests.put(new PersonWithRefConflict(), "{\"@object\":{\"@ref\":\"not\"}}");
+        tests.put(new PersonWithSetConflict(), "{\"@object\":{\"@set\":\"not\"}}");
+        tests.put(new PersonWithTimeConflict(), "{\"@object\":{\"@time\":\"not\"}}");
 
-    /*
-        @Test
-        public void serializeClassWithTagConflicts() throws IOException {
-            Map<Object, String> tests = new HashMap<>();
-            tests.put(new PersonWithDateConflict(), "{\"@object\":{\"@date\":\"not\"}}");
-            tests.put(new PersonWithDocConflict(), "{\"@object\":{\"@doc\":\"not\"}}");
-            tests.put(new PersonWithDoubleConflict(), "{\"@object\":{\"@double\":\"not\"}}");
-            tests.put(new PersonWithIntConflict(), "{\"@object\":{\"@int\":\"not\"}}");
-            tests.put(new PersonWithLongConflict(), "{\"@object\":{\"@long\":\"not\"}}");
-            tests.put(new PersonWithModConflict(), "{\"@object\":{\"@mod\":\"not\"}}");
-            tests.put(new PersonWithObjectConflict(), "{\"@object\":{\"@object\":\"not\"}}");
-            tests.put(new PersonWithRefConflict(), "{\"@object\":{\"@ref\":\"not\"}}");
-            tests.put(new PersonWithSetConflict(), "{\"@object\":{\"@set\":\"not\"}}");
-            tests.put(new PersonWithTimeConflict(), "{\"@object\":{\"@time\":\"not\"}}");
-
-            for (Map.Entry<Object, String> entry : tests.entrySet()) {
-                Object test = entry.getKey();
-                String expected = entry.getValue();
-                String actual = serialize(test);
-                assertEquals(expected, actual);
-            }
-        }
-        @Test
-        public void serializeClassWithTypeConversions() throws IOException {
-            PersonWithTypeOverrides test = new PersonWithTypeOverrides();
-            String expectedWithWhitespace =
-                "{\"short_to_long\":{\"@long\":\"10\"},\"ushort_to_long\":{\"@long\":\"11\"}," +
-                    "\"byte_to_long\":{\"@long\":\"12\"},\"sbyte_to_long\":{\"@long\":\"13\"},\"int_to_long\":{\"@long\":\"20\"},"
-                    +
-                    "\"uint_to_long\":{\"@long\":\"21\"},\"long_to_long\":{\"@long\":\"30\"},\"short_to_int\":{\"@int\":\"40\"},"
-                    +
-                    "\"ushort_to_int\":{\"@int\":\"41\"},\"byte_to_int\":{\"@int\":\"42\"},\"sbyte_to_int\":{\"@int\":\"43\"},"
-                    +
-                    "\"int_to_int\":{\"@int\":\"50\"},\"short_to_double\":{\"@double\":\"60\"},\"int_to_double\":{\"@double\":\"70\"},"
-                    +
-                    "\"long_to_double\":{\"@double\":\"80\"},\"double_to_double\":{\"@double\":\"10.1\"},\"float_to_double\":{\"@double\":\"1.344499945640564\"},"
-                    +
-                    "\"true_to_true\":true,\"false_to_false\":false,\"class_to_string\":\"TheThing\",\"string_to_string\":\"aString\","
-                    +
-                    "\"datetime_to_date\":{\"@date\":\"2023-12-13\"},\"dateonly_to_date\":{\"@date\":\"2023-12-13\"},"
-                    +
-                    "\"datetimeoffset_to_date\":{\"@date\":\"2023-12-13\"},\"datetime_to_time\":{\"@time\":\"2023-12-13T12:12:12.0010010Z\"},"
-                    +
-                    "\"datetimeoffset_to_time\":{\"@time\":\"2023-12-13T12:12:12.0010010+00:00\"}}";
-            String expected = expectedWithWhitespace.replaceAll("\\s", "");
+        for (Map.Entry<Object, String> entry : tests.entrySet()) {
+            Object test = entry.getKey();
+            String expected = entry.getValue();
             String actual = serialize(test);
             assertEquals(expected, actual);
         }
+    }
 
-        @Test
-        public void serializeObjectWithInvalidTypeHint() {
-            ClassWithInvalidPropertyTypeHint obj = new ClassWithInvalidPropertyTypeHint();
-            assertThrows(SerializationException.class, () -> serialize(obj));
-        }
+    @Test
+    public void serializeClassWithTypeConversions() throws IOException {
+        PersonWithTypeOverrides test = new PersonWithTypeOverrides();
+        String expectedWithWhitespace =
+            "{\n" +
+                "  \"short_to_long\": {\"@long\": \"10\"},\n" +
+                "  \"ushort_to_long\": {\"@long\": \"11\"},\n" +
+                "  \"byte_to_long\": {\"@long\": \"12\"},\n" +
+                "  \"sbyte_to_long\": {\"@long\": \"13\"},\n" +
+                "  \"int_to_long\": {\"@long\": \"20\"},\n" +
+                "  \"uint_to_long\": {\"@long\": \"21\"},\n" +
+                "  \"long_to_long\": {\"@long\": \"30\"},\n" +
+                "  \"short_to_int\": {\"@int\": \"40\"},\n" +
+                "  \"ushort_to_int\": {\"@int\": \"41\"},\n" +
+                "  \"byte_to_int\": {\"@int\": \"42\"},\n" +
+                "  \"sbyte_to_int\": {\"@int\": \"43\"},\n" +
+                "  \"int_to_int\": {\"@int\": \"50\"},\n" +
+                "  \"short_to_double\": {\"@double\": \"60.0\"},\n" +
+                "  \"int_to_double\": {\"@double\": \"70.0\"},\n" +
+                "  \"long_to_double\": {\"@double\": \"80.0\"},\n" +
+                "  \"double_to_double\": {\"@double\": \"10.1\"},\n" +
+                "  \"float_to_double\": {\"@double\": \"1.344499945640564\"},\n" +
+                "  \"true_to_true\": true,\n" +
+                "  \"false_to_false\": false,\n" +
+                "  \"class_to_string\": \"TheThing\",\n" +
+                "  \"string_to_string\": \"aString\",\n" +
+                "  \"datetime_to_date\": {\"@date\": \"2023-12-13\"},\n" +
+                "  \"dateonly_to_date\": {\"@date\": \"2023-12-13\"},\n" +
+                "  \"datetimeoffset_to_date\": {\"@date\": \"2023-12-13\"},\n" +
+                "  \"datetime_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"},\n" +
+                "  \"datetimeoffset_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"}\n"
+                +
+                "}";
+        String expected = expectedWithWhitespace.replaceAll("\\s", "");
+        String actual = serialize(test);
+        assertEquals(expected, actual);
+    }
 
-        @Test
-        public void serializeObjectWithFieldAttributeAndWithoutObjectAttribute() throws IOException {
-            ClassWithFieldAttributeAndWithoutObjectAttribute obj = new ClassWithFieldAttributeAndWithoutObjectAttribute();
-            String expected = "{\"firstName\":\"Baz\"}";
-            String actual = serialize(obj);
-            assertEquals(expected, actual);
-        }
+    @Test
+    public void serializeObjectWithInvalidTypeHint() {
+        ClassWithInvalidPropertyTypeHint obj = new ClassWithInvalidPropertyTypeHint();
+        assertThrows(SerializationException.class, () -> serialize(obj));
+    }
 
-        @Test
-        public void serializeObjectWithPropertyWithoutFieldAttribute() throws IOException {
-            ClassWithPropertyWithoutFieldAttribute obj = new ClassWithPropertyWithoutFieldAttribute();
-            String expected = "{}";
-            String actual = serialize(obj);
-            assertEquals(expected, actual);
-        }
-    */
+    @Test
+    public void serializeObjectWithFieldAttributeAndWithoutObjectAttribute() throws IOException {
+        ClassWithFieldAttributeAndWithoutObjectAttribute obj = new ClassWithFieldAttributeAndWithoutObjectAttribute();
+        String expected = "{\"first_name\":\"Baz\"}";
+        String actual = serialize(obj);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void serializeObjectWithPropertyWithoutFieldAttribute() throws IOException {
+        ClassWithPropertyWithoutFieldAttribute obj = new ClassWithPropertyWithoutFieldAttribute();
+        String expected = "{}";
+        String actual = serialize(obj);
+        assertEquals(expected, actual);
+    }
+
     @Test
     public void serializeAnonymousClassObject() throws IOException {
         Object obj = new Object() {

@@ -13,10 +13,10 @@ public class PersonWithAttributes {
     @FieldAttribute(name = "last_name")
     private String lastName;
 
-    @FieldAttribute(name = "age", type = FaunaType.LONG)
-    private long age;
+    @FieldAttribute(name = "age", type = FaunaType.INT)
+    private int age;
 
-    public PersonWithAttributes(String firstName, String lastName, long age) {
+    public PersonWithAttributes(String firstName, String lastName, int age) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
@@ -34,7 +34,7 @@ public class PersonWithAttributes {
         return lastName;
     }
 
-    public long getAge() {
+    public int getAge() {
         return age;
     }
 

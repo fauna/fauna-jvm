@@ -33,12 +33,17 @@ public final class MappingInfo {
         Map<String, FieldInfo> byNameMap = new HashMap<>();
 
         for (Field field : ((Class<?>) ty).getDeclaredFields()) {
-            FieldAttributeImpl attr = hasAttributes ? new FieldAttributeImpl(field,
-                field.getAnnotation(FieldAttribute.class))
-                : new FieldAttributeImpl(field, null);
+            FieldAttributeImpl attr;
 
-            if (attr == null) {
-                continue;
+            if (hasAttributes) {
+                if (field.getAnnotation(FieldAttribute.class) != null) {
+                    attr = new FieldAttributeImpl(field,
+                        field.getAnnotation(FieldAttribute.class));
+                } else {
+                    continue;
+                }
+            } else {
+                attr = new FieldAttributeImpl(field, null);
             }
 
             FieldInfo info = new FieldInfo(ctx, attr, field);
