@@ -115,6 +115,7 @@ public class Serializer {
             } else if (obj instanceof Instant) {
                 writer.writeTimeValue((Instant) obj);
             } else {
+                throw new SerializationException("Not implemented. Class: " + obj.getClass());
                 //serializeObjectInternal(writer, obj, context);
             }
         }
