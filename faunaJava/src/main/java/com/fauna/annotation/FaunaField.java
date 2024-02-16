@@ -11,21 +11,11 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface FieldAttribute {
+public @interface FaunaField {
 
-    /**
-     * Gets or sets the name of the field represented by this attribute.
-     */
-    String fieldName() default "";
-
-    /**
-     * Gets or sets the name of the field.
-     */
     String name() default "";
 
-    /**
-     * Gets or sets the type of the field.
-     */
-    FaunaType type() default FaunaType.UNKNOWN;
+    boolean nullable() default false;
 
+    FaunaType type() default FaunaType.STRING;
 }

@@ -1,22 +1,16 @@
-package com.fauna.serialization;
+package com.fauna.annotation;
 
-import com.fauna.annotation.FieldAttribute;
 import com.fauna.common.enums.FaunaType;
 import java.lang.reflect.Field;
 
-class FieldAttributeImpl implements FieldAttribute {
+public class FaunaFieldImpl implements FaunaField {
 
     private final Field field;
-    private final FieldAttribute annotation;
+    private final FaunaField annotation;
 
-    public FieldAttributeImpl(Field field, FieldAttribute annotation) {
+    public FaunaFieldImpl(Field field, FaunaField annotation) {
         this.field = field;
         this.annotation = annotation;
-    }
-
-    @Override
-    public String fieldName() {
-        return field.getName();
     }
 
     @Override
@@ -26,12 +20,17 @@ class FieldAttributeImpl implements FieldAttribute {
     }
 
     @Override
+    public boolean nullable() {
+        return annotation != null ? annotation.nullable() : false;
+    }
+
+    @Override
     public FaunaType type() {
         return (annotation != null) ? annotation.type() : FaunaType.UNKNOWN;
     }
 
     @Override
     public Class<? extends java.lang.annotation.Annotation> annotationType() {
-        return FieldAttribute.class;
+        return FaunaField.class;
     }
 }

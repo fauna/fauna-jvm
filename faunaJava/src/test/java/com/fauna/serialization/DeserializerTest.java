@@ -20,6 +20,7 @@ import com.fauna.helper.ListOf;
 import com.fauna.helper.MapOf;
 import com.fauna.helper.PageOf;
 import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,7 +35,7 @@ import org.junit.jupiter.api.Test;
 public class DeserializerTest {
 
     public static <T> T deserialize(String str,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         FaunaParser reader = new FaunaParser(str);
         return deserialize(reader, deserFunc);
@@ -46,10 +47,10 @@ public class DeserializerTest {
     }
 
     private static <T> T deserialize(FaunaParser reader,
-        Function<SerializationContext, IDeserializer<T>> deserFunc)
+        Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         reader.read();
-        SerializationContext context = new SerializationContext();
+        MappingContext context = new MappingContext();
         IDeserializer<T> deser = deserFunc.apply(context);
         T obj = deser.deserialize(context, reader);
 
@@ -472,6 +473,21 @@ public class DeserializerTest {
         assertEquals("Baz2", p.getFirstName());
         assertEquals("Luhrmann2", p.getLastName());
         assertEquals(612, p.getAge());
+    }
+
+    @Test
+    public void deserializeIntoPocoWithAttributesNullable() throws IOException {
+        String given = "{" +
+            "\"first_name\": \"Baz2\"," +
+            "\"last_name\": \"Luhrmann2\"," +
+            "\"age\": null " +
+            "}";
+
+        PersonWithAttributes p = deserialize(given,
+            ctx -> Deserializer.generate(ctx, PersonWithAttributes.class));
+        assertEquals("Baz2", p.getFirstName());
+        assertEquals("Luhrmann2", p.getLastName());
+        assertNull(p.getAge());
     }
 
 }
