@@ -33,7 +33,7 @@ public class Serializer {
         FaunaType typeHint) throws IOException {
         if (typeHint != null) {
             if (obj == null) {
-                throw new NullPointerException("obj");
+                throw new IllegalArgumentException("obj Param");
             }
 
             switch (typeHint) {
@@ -67,7 +67,7 @@ public class Serializer {
                     }
                     break;
                 case STRING:
-                    writer.writeStringValue(obj != null ? obj.toString() : "");
+                    writer.writeStringValue(obj.toString());
                     break;
                 case DATE:
                     writer.writeDateValue(toLocalDate(obj));
