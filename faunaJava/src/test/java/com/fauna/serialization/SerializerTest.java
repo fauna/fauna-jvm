@@ -8,16 +8,16 @@ import com.fauna.beans.ClassWithInvalidPropertyTypeHint;
 import com.fauna.beans.ClassWithPropertyWithoutFieldAttribute;
 import com.fauna.beans.Person;
 import com.fauna.beans.PersonWithAttributes;
-import com.fauna.beans.PersonWithDateConflict;
-import com.fauna.beans.PersonWithDocConflict;
-import com.fauna.beans.PersonWithDoubleConflict;
-import com.fauna.beans.PersonWithIntConflict;
-import com.fauna.beans.PersonWithLongConflict;
-import com.fauna.beans.PersonWithModConflict;
-import com.fauna.beans.PersonWithObjectConflict;
-import com.fauna.beans.PersonWithRefConflict;
-import com.fauna.beans.PersonWithSetConflict;
-import com.fauna.beans.PersonWithTimeConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithDateConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithDocConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithDoubleConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithIntConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithLongConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithModConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithObjectConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithRefConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithSetConflict;
+import com.fauna.beans.PersonWithConflict.PersonWithTimeConflict;
 import com.fauna.beans.PersonWithTypeOverrides;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 class SerializerTest {
@@ -157,7 +158,7 @@ class SerializerTest {
             "{\"first_name\":\"Baz\",\"last_name\":\"Luhrmann\",\"age\":{\"@int\":\"61\"}}",
             actual);
     }
-    
+
     @Test
     public void serializeClassWithTagConflicts() throws IOException {
         Map<Object, String> tests = new HashMap<>();
@@ -206,11 +207,12 @@ class SerializerTest {
                 "  \"false_to_false\": false,\n" +
                 "  \"class_to_string\": \"TheThing\",\n" +
                 "  \"string_to_string\": \"aString\",\n" +
-                "  \"datetime_to_date\": {\"@date\": \"2023-12-13\"},\n" +
-                "  \"dateonly_to_date\": {\"@date\": \"2023-12-13\"},\n" +
-                "  \"datetimeoffset_to_date\": {\"@date\": \"2023-12-13\"},\n" +
-                "  \"datetime_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"},\n" +
-                "  \"datetimeoffset_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"}\n"
+                "  \"instant_to_date\": {\"@date\": \"2023-12-13\"},\n" +
+                "  \"localdate_to_date\": {\"@date\": \"2023-12-13\"},\n" +
+                "  \"zoneddatetime_to_date\": {\"@date\": \"2023-12-13\"},\n" +
+                "  \"instant_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"},\n" +
+                "  \"offsetdatetime_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"},\n" +
+                "  \"zoneddatetime_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"}\n"
                 +
                 "}";
         String expected = expectedWithWhitespace.replaceAll("\\s", "");
@@ -221,7 +223,13 @@ class SerializerTest {
     @Test
     public void serializeObjectWithInvalidTypeHint() {
         ClassWithInvalidPropertyTypeHint obj = new ClassWithInvalidPropertyTypeHint();
-        assertThrows(SerializationException.class, () -> serialize(obj));
+
+        Exception ex = assertThrows(SerializationException.class,
+            () -> serialize(obj));
+
+        Assert.assertEquals(
+            "Unsupported Int conversion. Provided value must be a byte, short, or int.",
+            ex.getMessage());
     }
 
     @Test

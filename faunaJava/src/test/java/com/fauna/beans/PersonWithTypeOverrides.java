@@ -66,18 +66,21 @@ public class PersonWithTypeOverrides {
     public String stringToString = "aString";
 
     // Date conversions
-    @FaunaField(name = "datetime_to_date", type = FaunaType.DATE)
+    @FaunaField(name = "instant_to_date", type = FaunaType.DATE)
     public Instant instantToDate = Instant.parse("2023-12-13T12:12:12.001001Z");
-    @FaunaField(name = "dateonly_to_date", type = FaunaType.DATE)
-    public LocalDate dateOnlyToDate = LocalDate.of(2023, 12, 13);
-    @FaunaField(name = "datetimeoffset_to_date", type = FaunaType.DATE)
-    public ZonedDateTime dateTimeOffsetToDate = ZonedDateTime.parse("2023-12-13T12:12:12.001001Z",
+    @FaunaField(name = "localdate_to_date", type = FaunaType.DATE)
+    public LocalDate localDateToDate = LocalDate.of(2023, 12, 13);
+    @FaunaField(name = "zoneddatetime_to_date", type = FaunaType.DATE)
+    public ZonedDateTime zonedDateTimeToDate = ZonedDateTime.parse("2023-12-13T12:12:12.001001Z",
         DateTimeFormatter.ISO_DATE_TIME);
 
     // Time conversions
-    @FaunaField(name = "datetime_to_time", type = FaunaType.TIME)
-    public Instant InstantToTime = Instant.parse("2023-12-13T12:12:12.001001Z");
-    @FaunaField(name = "datetimeoffset_to_time", type = FaunaType.TIME)
-    public OffsetDateTime dateTimeOffsetToTime = OffsetDateTime.parse("2023-12-13T12:12:12.001001Z",
+    @FaunaField(name = "instant_to_time", type = FaunaType.TIME)
+    public Instant instantToTime = Instant.parse("2023-12-13T12:12:12.001001Z");
+    @FaunaField(name = "offsetdatetime_to_time", type = FaunaType.TIME)
+    public OffsetDateTime offsetDateTimeToTime = OffsetDateTime.parse("2023-12-13T12:12:12.001001Z",
+        DateTimeFormatter.ISO_DATE_TIME);
+    @FaunaField(name = "zoneddatetime_to_time", type = FaunaType.TIME)
+    public ZonedDateTime zonedDateTimeToTime = ZonedDateTime.parse("2023-12-13T12:12:12.001001Z",
         DateTimeFormatter.ISO_DATE_TIME);
 }
