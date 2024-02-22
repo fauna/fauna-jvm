@@ -17,7 +17,7 @@ public class MapDeserializer<T> extends BaseDeserializer<Map<String, T>> {
     }
 
     @Override
-    public Map<String, T> deserialize(MappingContext context, FaunaParser reader)
+    public Map<String, T> doDeserialize(MappingContext context, FaunaParser reader)
         throws IOException {
         if (reader.getCurrentTokenType() != FaunaTokenType.START_OBJECT) {
             throw new SerializationException(

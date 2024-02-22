@@ -21,7 +21,7 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
     }
 
     @Override
-    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
         FaunaTokenType endToken = switch (reader.getCurrentTokenType()) {
             case START_DOCUMENT -> FaunaTokenType.END_DOCUMENT;
             case START_OBJECT -> FaunaTokenType.END_OBJECT;

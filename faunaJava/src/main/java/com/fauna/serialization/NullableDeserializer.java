@@ -14,7 +14,7 @@ public class NullableDeserializer<T> extends BaseDeserializer<T> {
     }
 
     @Override
-    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
         if (reader.getCurrentTokenType() == FaunaTokenType.NULL) {
             return null;
         }
