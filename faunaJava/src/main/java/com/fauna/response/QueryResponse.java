@@ -3,6 +3,7 @@ package com.fauna.response;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.constants.ResponseFields;
+import com.fauna.exception.SerializationException;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
 import java.util.HashMap;
@@ -78,7 +79,7 @@ public abstract class QueryResponse {
 
             return new QueryFailure(statusCode, json);
         } catch (Exception e) {
-            return null;
+            throw new SerializationException("Error occurred while parsing the response body", e);
         }
     }
 

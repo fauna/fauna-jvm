@@ -1,5 +1,6 @@
 package com.fauna.response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.constants.ResponseFields;
@@ -19,22 +20,20 @@ public final class QueryFailure extends QueryResponse {
      * @param statusCode The HTTP status code.
      * @param json       The JSON response body.
      */
-    public QueryFailure(int statusCode, JsonNode json) {
+    public QueryFailure(int statusCode, JsonNode json) throws JsonProcessingException {
         super(json);
         this.statusCode = statusCode;
 
         JsonNode elem;
 
         if ((elem = json.get(ResponseFields.ERROR_FIELD_NAME)) != null) {
-            try {
-                ErrorInfo info = new ObjectMapper().treeToValue(elem, ErrorInfo.class);
-                errorCode = info.getCode() != null ? info.getCode() : "";
-                message = info.getMessage() != null ? info.getMessage() : "";
-                constraintFailures = info.getConstraintFailures();
-                abort = info.getAbort();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            ErrorInfo info = new ObjectMapper().treeToValue(elem, ErrorInfo.class);
+            errorCode = info.getCode() != null ? info.getCode() : "";
+            message = info.getMessage() != null ? info.getMessage() : "";
+            constraintFailures = info.getConstraintFailures();
+            abort = info.getAbort();
+
         }
     }
 

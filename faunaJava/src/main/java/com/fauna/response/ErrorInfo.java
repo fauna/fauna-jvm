@@ -1,22 +1,21 @@
 package com.fauna.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ErrorInfo {
 
-    @JsonProperty("code")
     private String code;
-
-    @JsonProperty("message")
     private String message;
-
-    @JsonProperty("constraintFailures")
     private Object constraintFailures;
-
-    @JsonProperty("abort")
     private Object abort;
 
-    public ErrorInfo(String code, String message, Object constraintFailures, Object abort) {
+    @JsonCreator
+    public ErrorInfo(
+        @JsonProperty("code") String code,
+        @JsonProperty("message") String message,
+        @JsonProperty("constraint_failures") Object constraintFailures,
+        @JsonProperty("abort") Object abort) {
         this.code = code;
         this.message = message;
         this.constraintFailures = constraintFailures;
