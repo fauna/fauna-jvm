@@ -33,12 +33,17 @@ public final class MappingInfo {
         Map<String, FieldInfo> byNameMap = new HashMap<>();
 
         for (Field field : ((Class<?>) ty).getDeclaredFields()) {
-            FaunaFieldImpl attr = hasAttributes ? new FaunaFieldImpl(field,
-                field.getAnnotation(FaunaField.class))
-                : new FaunaFieldImpl(field, null);
+            FaunaFieldImpl attr;
 
-            if (attr == null) {
-                continue;
+            if (hasAttributes) {
+                if (field.getAnnotation(FaunaField.class) != null) {
+                    attr = new FaunaFieldImpl(field,
+                        field.getAnnotation(FaunaField.class));
+                } else {
+                    continue;
+                }
+            } else {
+                attr = new FaunaFieldImpl(field, null);
             }
 
             FieldInfo info = new FieldInfo(ctx, attr, field);

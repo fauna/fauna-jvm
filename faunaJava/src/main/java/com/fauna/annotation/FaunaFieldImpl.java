@@ -26,7 +26,7 @@ public class FaunaFieldImpl implements FaunaField {
 
     @Override
     public FaunaType type() {
-        return (annotation != null) ? annotation.type() : FaunaType.UNKNOWN;
+        return (annotation != null) ? annotation.type() : null;
     }
 
     @Override

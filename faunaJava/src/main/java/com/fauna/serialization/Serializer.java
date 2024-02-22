@@ -3,12 +3,19 @@ package com.fauna.serialization;
 import com.fauna.common.enums.FaunaType;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
+import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class Serializer {
@@ -63,20 +70,10 @@ public class Serializer {
                     writer.writeStringValue(obj.toString());
                     break;
                 case DATE:
-                    if (obj instanceof LocalDate) {
-                        writer.writeDateValue((LocalDate) obj);
-                    } else {
-                        throw new SerializationException(
-                            "Unsupported Date conversion. Provided value must be a Date.");
-                    }
+                    writer.writeDateValue(toLocalDate(obj));
                     break;
                 case TIME:
-                    if (obj instanceof Instant) {
-                        writer.writeTimeValue((Instant) obj);
-                    } else {
-                        throw new SerializationException(
-                            "Unsupported Time conversion. Provided value must be a Date.");
-                    }
+                    writer.writeTimeValue(toInstant(obj));
                     break;
                 case BOOLEAN:
                     if (obj instanceof Boolean) {
@@ -115,9 +112,111 @@ public class Serializer {
             } else if (obj instanceof Instant) {
                 writer.writeTimeValue((Instant) obj);
             } else {
-                throw new SerializationException("Not implemented. Class: " + obj.getClass());
-                //serializeObjectInternal(writer, obj, context);
+                serializeObjectInternal(writer, obj, context);
             }
         }
+    }
+
+    private static void serializeObjectInternal(FaunaGenerator writer, Object obj,
+        MappingContext context) throws IOException {
+        if (obj instanceof Map) {
+            serializeMapInternal(writer, (Map<?, ?>) obj, context);
+        } else if (obj instanceof List) {
+            writer.writeStartArray();
+            for (Object item : (List<?>) obj) {
+                serialize(context, writer, item, null);
+            }
+            writer.writeEndArray();
+        } else {
+            serializeClassInternal(writer, obj, context);
+        }
+    }
+
+    private static <T> void serializeMapInternal(FaunaGenerator writer, Map<?, T> map,
+        MappingContext context) throws IOException {
+        boolean shouldEscape = map.keySet().stream().anyMatch(TAGS::contains);
+        if (shouldEscape) {
+            writer.writeStartEscapedObject();
+        } else {
+            writer.writeStartObject();
+        }
+        for (Map.Entry<?, T> entry : map.entrySet()) {
+            writer.writeFieldName(entry.getKey().toString());
+            serialize(context, writer, entry.getValue(), null);
+        }
+        if (shouldEscape) {
+            writer.writeEndEscapedObject();
+        } else {
+            writer.writeEndObject();
+        }
+    }
+
+    private static void serializeClassInternal(FaunaGenerator writer, Object obj,
+        MappingContext context) throws IOException {
+        Class<?> clazz = obj.getClass();
+        List<FieldInfo> fieldInfoList = context.getInfo(clazz).getFields();
+        boolean shouldEscape = fieldInfoList.stream().map(FieldInfo::getName)
+            .anyMatch(TAGS::contains);
+
+        if (shouldEscape) {
+            writer.writeStartEscapedObject();
+        } else {
+            writer.writeStartObject();
+        }
+        for (FieldInfo field : fieldInfoList) {
+            if (shouldSerializeField(field)) {
+                writer.writeFieldName(field.getName());
+                try {
+                    field.getProperty().setAccessible(true);
+                    Object value = field.getProperty().get(obj);
+                    serialize(context, writer, value, field.getFaunaTypeHint());
+                } catch (IllegalAccessException e) {
+                    throw new SerializationException("Error accessing field: " + field.getName(),
+                        e);
+                }
+            }
+        }
+        if (shouldEscape) {
+            writer.writeEndEscapedObject();
+        } else {
+            writer.writeEndObject();
+        }
+    }
+
+    private static boolean shouldSerializeField(FieldInfo field) {
+        // Exclude synthetic fields
+        return !field.getName().startsWith("this$");
+    }
+
+    public static LocalDate toLocalDate(Object obj) {
+        if (obj instanceof LocalDate) {
+            return (LocalDate) obj;
+        } else if (obj instanceof LocalDateTime) {
+            return ((LocalDateTime) obj).toLocalDate();
+        } else if (obj instanceof OffsetDateTime) {
+            return ((OffsetDateTime) obj).toLocalDate();
+        } else if (obj instanceof ZonedDateTime) {
+            return ((ZonedDateTime) obj).toLocalDate();
+        } else if (obj instanceof Instant) {
+            return ((Instant) obj).atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+        throw new SerializationException(
+            "Unsupported Date conversion. Provided value must be a LocalDateTime, OffsetDateTime, ZonedDateTime or LocalDate but was a "
+                + obj.getClass().getSimpleName());
+    }
+
+    public static Instant toInstant(Object obj) {
+        if (obj instanceof LocalDateTime) {
+            return ((LocalDateTime) obj).atZone(ZoneId.systemDefault()).toInstant();
+        } else if (obj instanceof OffsetDateTime) {
+            return ((OffsetDateTime) obj).toInstant();
+        } else if (obj instanceof ZonedDateTime) {
+            return ((ZonedDateTime) obj).toInstant();
+        } else if (obj instanceof Instant) {
+            return (Instant) obj;
+        }
+        throw new SerializationException(
+            "Unsupported Time conversion. Provided value must be a LocalDateTime, OffsetDateTime, ZonedDateTime but was a "
+                + obj.getClass().getSimpleName());
     }
 }

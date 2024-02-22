@@ -16,6 +16,16 @@ public class PersonWithAttributes {
     @FaunaField(name = "age", type = FaunaType.INT, nullable = true)
     private Integer age;
 
+    public PersonWithAttributes(String firstName, String lastName, int age) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+    }
+
+    public PersonWithAttributes() {
+
+    }
+
     public String getFirstName() {
         return firstName;
     }

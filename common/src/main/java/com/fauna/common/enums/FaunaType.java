@@ -7,6 +7,5 @@ public enum FaunaType {
     STRING,
     DATE,
     TIME,
-    BOOLEAN,
-    UNKNOWN
+    BOOLEAN
 }
