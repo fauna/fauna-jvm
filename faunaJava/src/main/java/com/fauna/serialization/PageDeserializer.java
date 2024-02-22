@@ -18,7 +18,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
     }
 
     @Override
-    public Page<T> deserialize(MappingContext context, FaunaParser reader)
+    public Page<T> doDeserialize(MappingContext context, FaunaParser reader)
         throws IOException {
         FaunaTokenType endToken;
         switch (reader.getCurrentTokenType()) {

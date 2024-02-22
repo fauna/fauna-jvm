@@ -54,7 +54,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
      * @param reader  The FaunaParser instance to read from.
      * @return The deserialized value.
      */
-    public T deserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:

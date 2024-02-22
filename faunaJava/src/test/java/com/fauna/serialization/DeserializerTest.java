@@ -49,7 +49,6 @@ public class DeserializerTest {
     private static <T> T deserialize(FaunaParser reader,
         Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
-        reader.read();
         MappingContext context = new MappingContext();
         IDeserializer<T> deser = deserFunc.apply(context);
         T obj = deser.deserialize(context, reader);
