@@ -15,7 +15,7 @@ subprojects {
     }
 }
 
-project(':faunaJava') {
+project(':fauna') {
     apply plugin: 'java'
     compileJava {
         options.encoding = 'UTF-8'
