@@ -44,6 +44,9 @@ public final class FieldInfo {
         return type;
     }
 
+    /*
+        TODO: Not used.
+     */
     public boolean isNullable() {
         return isNullable;
     }

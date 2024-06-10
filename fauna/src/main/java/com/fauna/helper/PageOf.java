@@ -5,6 +5,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class PageOf implements ParameterizedType {
+    /*
+        TODO: This class is only used in the tests?
+     */
 
     private final Class clazz;
 

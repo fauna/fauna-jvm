@@ -5,6 +5,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class ListOf implements ParameterizedType {
+    /*
+        TODO: This class is only used in the tests?
+     */
 
     private final Class clazz;
 
