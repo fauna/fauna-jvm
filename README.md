@@ -20,7 +20,7 @@ File `fauna-java/pom.xml`:
 
 #### Basic Java Usage
 ```java
-import com.fauna.Client;
+import com.fauna.client.FaunaClient;
 import com.fauna.FQL;
 import com.fauna.QuerySuccess;
 
@@ -30,7 +30,7 @@ import com.fauna.QuerySuccess;
 public class Main {
     public static void main(String[] args) throws Exception {
         // The client defaults to using environment variable FAUNA_SECRET.
-        Client client = Client();
+        FaunaClient client = FaunaClient();
 
         // You can specify the secret using
         // Client.builder().withSecret(...)
