@@ -5,6 +5,7 @@ import java.time.Duration;
 /**
  * HttpClientConfig encapsulates configuration settings for an HTTP client.
  * It includes settings such as connection timeout and maximum number of connections.
+ * TODO: Roll this into FaunaConfig, or delete it.
  */
 public class HttpClientConfig {
 
