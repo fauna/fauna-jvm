@@ -10,6 +10,7 @@ import com.fauna.exception.ProtocolException;
 import com.fauna.exception.ServiceErrorException;
 
 import java.net.http.HttpResponse;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -18,15 +19,38 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FaunaClient {
 
-    private final Connection connection;
+    private final FaunaConfig config;
+    // TODO: Should the connection really be final?
+    private Connection connection;
+
+    public FaunaClient() {
+        this.config = FaunaConfig.builder().build();
+        // Does the connection need to be setup in the constructor?
+        // this.connection = Connection.builder().faunaConfig(FaunaConfig.builder().build()).build();
+    }
+
+    /**
+     * Constructs a new FaunaClient instance with the provided FaunaConfig.
+     * It uses the default HTTP client configuration.
+     *
+     * @param faunaConfig The Fauna configuration settings.
+     */
+    public FaunaClient(FaunaConfig faunaConfig) {
+        this(faunaConfig, HttpClientConfig.builder().build());
+    }
 
     /**
      * Constructs a new FaunaClient instance with the provided FaunaConfig and HttpClientConfig.
      *
      * @param faunaConfig      The Fauna configuration settings.
      * @param httpClientConfig The HTTP client configuration.
+     * @@deprecated TODO: Customers should only need to pass in one config object.
      */
-    public FaunaClient(FaunaConfig faunaConfig, HttpClientConfig httpClientConfig) {
+    protected FaunaClient(FaunaConfig faunaConfig, HttpClientConfig httpClientConfig) {
+        if (Objects.isNull(faunaConfig)) {
+            throw new IllegalArgumentException("FaunaConfig cannot be null.");
+        }
+        this.config = faunaConfig;
         this.connection = Connection.builder()
                 .faunaConfig(faunaConfig)
                 .httpClientConfig(httpClientConfig)
@@ -40,21 +64,14 @@ public class FaunaClient {
      * @param faunaConfig      The Fauna configuration settings.
      * @param httpClientConfig The HTTP client configuration.
      * @param connection       The Connection instance to be used.
+     * @@deprecated TODO: Customers should only need to pass in one config object.
      */
-    FaunaClient(FaunaConfig faunaConfig, HttpClientConfig httpClientConfig, Connection connection) {
-        super();
+    protected FaunaClient(FaunaConfig faunaConfig, HttpClientConfig httpClientConfig, Connection connection) {
+        this.config = faunaConfig;
+        // this.httpClient = httpClient < maybe required for mocking?
         this.connection = connection;
     }
 
-    /**
-     * Constructs a new FaunaClient instance with the provided FaunaConfig.
-     * It uses the default HTTP client configuration.
-     *
-     * @param faunaConfig The Fauna configuration settings.
-     */
-    public FaunaClient(FaunaConfig faunaConfig) {
-        this(faunaConfig, HttpClientConfig.builder().build());
-    }
 
     /**
      * Sends a Fauna Query Language (FQL) query to Fauna.

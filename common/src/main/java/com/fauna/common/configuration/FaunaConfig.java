@@ -1,13 +1,17 @@
 package com.fauna.common.configuration;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
  * It encapsulates various settings such as the endpoint URL, secret key, query timeout, and others.
  */
 public class FaunaConfig {
+
 
     private final String endpoint;
     private final String secret;
@@ -29,8 +33,8 @@ public class FaunaConfig {
      * @param builder The builder used to create the FaunaConfig instance.
      */
     private FaunaConfig(Builder builder) {
-        this.endpoint = builder.endpoint;
-        this.secret = builder.secret;
+        this.endpoint = FaunaEnvironment.faunaEndpoint().orElse(builder.endpoint);
+        this.secret = FaunaEnvironment.faunaSecret().orElse(builder.secret);
         this.queryTimeout = builder.queryTimeout;
         this.linearized = builder.linearized;
         this.typeCheck = builder.typeCheck;
@@ -42,7 +46,7 @@ public class FaunaConfig {
      * Gets the Fauna endpoint URL.
      *
      * @return A String representing the endpoint URL.
-     * The default is https://db.fauna.com
+     * The default is <a href="https://db.fauna.com">https://db.fauna.com</a>
      */
     public String getEndpoint() {
         return endpoint;
@@ -72,8 +76,8 @@ public class FaunaConfig {
      *
      * @return A Boolean indicating whether to unconditionally run the query as strictly serialized.
      */
-    public Boolean getLinearized() {
-        return linearized;
+    public Optional<Boolean> getLinearized() {
+        return Optional.ofNullable(this.linearized);
     }
 
     /**
@@ -81,8 +85,8 @@ public class FaunaConfig {
      *
      * @return A Boolean indicating whether to enable or disable type checking of the query before evaluation.
      */
-    public Boolean getTypeCheck() {
-        return typeCheck;
+    public Optional<Boolean> getTypeCheck() {
+        return Optional.ofNullable(this.typeCheck);
     }
 
     /**
@@ -91,7 +95,7 @@ public class FaunaConfig {
      * @return A Map of Strings representing tags associated with the query.
      */
     public Map<String, String> getQueryTags() {
-        return queryTags;
+        return Objects.requireNonNullElseGet(this.queryTags, HashMap::new);
     }
 
     /**
@@ -99,8 +103,8 @@ public class FaunaConfig {
      *
      * @return A String representing a traceparent associated with the query.
      */
-    public String getTraceParent() {
-        return traceParent;
+    public Optional<String> getTraceParent() {
+        return Optional.ofNullable(this.traceParent);
     }
 
     /**
@@ -117,12 +121,12 @@ public class FaunaConfig {
      */
     public static class Builder {
         private String endpoint = Endpoint.DEFAULT.toString();
-        private String secret;
+        private String secret = "";
         private Duration queryTimeout = DEFAULT_QUERY_TIMEOUT;
-        private Boolean linearized;
-        private Boolean typeCheck;
-        private Map<String, String> queryTags;
-        private String traceParent;
+        private Boolean linearized = null;
+        private Boolean typeCheck = null;
+        private Map<String, String> queryTags = null;
+        private String traceParent = null;
 
         /**
          * Sets the endpoint URL.

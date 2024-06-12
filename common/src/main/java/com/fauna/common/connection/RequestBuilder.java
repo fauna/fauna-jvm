@@ -73,8 +73,10 @@ class RequestBuilder {
      * @return A Map of header names to header values.
      */
     private Map<String, String> buildHeaders() {
+        // TODO: Do we need to rebuild this HashMap every time?
         Map<String, String> headers = new HashMap<>();
         headers.put(AUTHORIZATION, auth.bearer());
+        // TODO: Put these constants somewhere.
         headers.put(FORMAT, "tagged");
         headers.put(ACCEPT_ENCODING, "gzip");
         headers.put(CONTENT_TYPE, "application/json;charset=utf-8");
@@ -82,20 +84,19 @@ class RequestBuilder {
         headers.put(DRIVER_ENV, driverEnvironment.toString());
         headers.put(QUERY_TIMEOUT_MS, String.valueOf(faunaConfig.getQueryTimeout().toMillis()));
 
-        if (faunaConfig.getLinearized() != null) {
-            headers.put(LINEARIZED, faunaConfig.getLinearized().toString());
+        if (faunaConfig.getLinearized().isPresent()) {
+            headers.put(LINEARIZED, faunaConfig.getLinearized().get().toString());
+        }
+        if (faunaConfig.getTypeCheck().isPresent()) {
+            headers.put(TYPE_CHECK, faunaConfig.getTypeCheck().get().toString());
         }
 
-        if (faunaConfig.getTypeCheck() != null) {
-            headers.put(TYPE_CHECK, faunaConfig.getTypeCheck().toString());
-        }
-
-        if (faunaConfig.getQueryTags() != null) {
+        if (!faunaConfig.getQueryTags().isEmpty()) {
             headers.put(QUERY_TAGS, QueryTags.encode(faunaConfig.getQueryTags()));
         }
 
-        if (faunaConfig.getTraceParent() != null) {
-            headers.put(TRACE_PARENT, faunaConfig.getTraceParent());
+        if (faunaConfig.getTraceParent().isPresent()) {
+            headers.put(TRACE_PARENT, faunaConfig.getTraceParent().get());
         }
 
         return headers;

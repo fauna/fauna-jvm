@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 /**
  * The Connection class is responsible for establishing and managing the connection to Fauna.
  * It utilizes the Java HTTP client to send requests and receive responses.
+ * TODO: is this required?
  */
 public class Connection {
 
