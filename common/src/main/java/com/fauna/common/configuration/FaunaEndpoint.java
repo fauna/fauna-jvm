@@ -4,7 +4,7 @@ package com.fauna.common.configuration;
  * Endpoint enumerates the various endpoints available for connecting to Fauna.
  * It includes the default cloud endpoint and a local endpoint for development purposes.
  */
-public enum Endpoint {
+public enum FaunaEndpoint {
 
     /**
      * The default cloud endpoint for connecting to Fauna.
@@ -23,7 +23,7 @@ public enum Endpoint {
      *
      * @param stringValue The string representation of the endpoint URL.
      */
-    Endpoint(String stringValue) {
+    FaunaEndpoint(String stringValue) {
         this.stringValue = stringValue;
     }
 

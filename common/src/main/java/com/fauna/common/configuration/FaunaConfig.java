@@ -120,7 +120,7 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private String endpoint = Endpoint.DEFAULT.toString();
+        private String endpoint = FaunaEndpoint.DEFAULT.toString();
         private String secret = "";
         private Duration queryTimeout = DEFAULT_QUERY_TIMEOUT;
         private Boolean linearized = null;
