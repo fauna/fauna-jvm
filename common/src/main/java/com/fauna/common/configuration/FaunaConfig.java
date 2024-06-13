@@ -6,12 +6,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
  * It encapsulates various settings such as the endpoint URL, secret key, query timeout, and others.
  */
 public class FaunaConfig {
 
+    public static class FaunaEndpoint {
+        public static String DEFAULT = "https://db.fauna.com";
+        public static String LOCAL = "https://localhost:8443";
+    }
 
     private final String endpoint;
     private final String secret;
@@ -120,7 +125,7 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private String endpoint = FaunaEndpoint.DEFAULT.toString();
+        private String endpoint = FaunaEndpoint.DEFAULT;
         private String secret = "";
         private Duration queryTimeout = DEFAULT_QUERY_TIMEOUT;
         private Boolean linearized = null;
@@ -222,4 +227,30 @@ public class FaunaConfig {
         }
     }
 
+    /**
+     * This class handles reading Fauna environment variables for the client.
+     */
+    public static class FaunaEnvironment {
+        private static final String FAUNA_SECRET = "FAUNA_SECRET";
+        private static final String FAUNA_ENDPOINT = "FAUNA_ENDPOINT";
+
+        private static Optional<String> environmentVariable(String name) {
+            Optional<String> var = Optional.ofNullable(System.getenv(name));
+            return var.isPresent() && var.get().isBlank() ? Optional.empty() : var;
+        }
+
+        /**
+         * @return The (non-empty, non-blank) value of the FAUNA_SECRET environment variable, or Optional.empty().
+         */
+        public static Optional<String> faunaSecret() {
+            return environmentVariable(FAUNA_SECRET);
+        }
+
+        /**
+         * @return The (non-empty, non-blank) value of the FAUNA_ENDPOINT environment variable, or Optional.empty().
+         */
+        public static Optional<String> faunaEndpoint() {
+            return environmentVariable(FAUNA_ENDPOINT);
+        }
+    }
 }

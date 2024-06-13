@@ -1,6 +1,5 @@
 package com.fauna.common.connection;
 
-import com.fauna.common.configuration.FaunaEndpoint;
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.HttpClientConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +48,7 @@ class ConnectionTest {
                 .maxConnections(5)
                 .build();
         faunaConfig = FaunaConfig.builder()
-                .endpoint(FaunaEndpoint.LOCAL.toString())
+                .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
                 .secret("secret")
                 .build();
         RequestBuilder requestBuilder = RequestBuilder.builder().faunaConfig(faunaConfig).build();
