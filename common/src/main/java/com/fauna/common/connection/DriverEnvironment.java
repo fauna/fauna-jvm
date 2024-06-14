@@ -1,9 +1,12 @@
 package com.fauna.common.connection;
 
 import com.fauna.common.configuration.JvmDriver;
-import com.fauna.common.configuration.Version;
 
-class DriverEnvironment {
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class DriverEnvironment {
 
     private final String driverVersion;
     private final String env;
@@ -14,9 +17,28 @@ class DriverEnvironment {
         this.env = getRuntimeEnvironment();
         this.os = System.getProperty("os.name") + "-" + System.getProperty("os.version");
         this.runtime = String.format("java-%s", System.getProperty("java.version"));
-        this.driverVersion = Version.getVersion();
+        this.driverVersion = getVersion();
         if (jvmDriver == JvmDriver.SCALA) {
             this.runtime = String.format("%s,scala", this.runtime);
+        }
+    }
+
+    /**
+     * Retrieves the software version from the "version.properties" file.
+     *
+     * @return A String representing the software version.
+     * @throws RuntimeException If the "version.properties" file is not found or if there is an issue reading the file.
+     */
+    public static String getVersion() {
+        Properties properties = new Properties();
+        try (InputStream input = DriverEnvironment.class.getClassLoader().getResourceAsStream("version.properties")) {
+            if (input == null) {
+                throw new RuntimeException("Version not found.");
+            }
+            properties.load(input);
+            return properties.getProperty("version");
+        } catch (IOException ex) {
+            throw new RuntimeException("Failed to retrieve version.");
         }
     }
 
