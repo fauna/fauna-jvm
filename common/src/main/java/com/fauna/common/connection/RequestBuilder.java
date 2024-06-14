@@ -1,7 +1,6 @@
 package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.configuration.JvmDriver;
 import com.fauna.common.encoding.QueryTags;
 
 import java.net.URI;
@@ -115,7 +114,7 @@ public class RequestBuilder {
      */
     public static class Builder {
         private FaunaConfig faunaConfig;
-        private JvmDriver jvmDriver;
+        private DriverEnvironment.JvmDriver jvmDriver;
 
         /**
          * Sets the FaunaConfig for the RequestBuilder.
@@ -134,7 +133,7 @@ public class RequestBuilder {
          * @param jvmDriver The JVM driver information.
          * @return The current Builder instance.
          */
-        public Builder jvmDriver(JvmDriver jvmDriver) {
+        public Builder jvmDriver(DriverEnvironment.JvmDriver jvmDriver) {
             this.jvmDriver = jvmDriver;
             return this;
         }

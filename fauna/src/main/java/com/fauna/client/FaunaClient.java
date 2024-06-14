@@ -1,7 +1,7 @@
 package com.fauna.client;
 
-import com.fauna.common.configuration.JvmDriver;
 import com.fauna.common.configuration.FaunaConfig;
+import com.fauna.common.connection.DriverEnvironment;
 import com.fauna.common.connection.RequestBuilder;
 import com.fauna.exception.*;
 import com.fauna.mapping.MappingContext;
@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -77,7 +76,7 @@ public class FaunaClient {
         }
         RequestBuilder requestBuilder = RequestBuilder.builder()
                 .faunaConfig(this.config)
-                .jvmDriver(JvmDriver.JAVA)
+                .jvmDriver(DriverEnvironment.JvmDriver.JAVA)
                 .build();
         HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
 
@@ -93,7 +92,7 @@ public class FaunaClient {
         try {
             RequestBuilder requestBuilder = RequestBuilder.builder()
                     .faunaConfig(this.config)
-                    .jvmDriver(JvmDriver.JAVA)
+                    .jvmDriver(DriverEnvironment.JvmDriver.JAVA)
                     .build();
             HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
             HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
