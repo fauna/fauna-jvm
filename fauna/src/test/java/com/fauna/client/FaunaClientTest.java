@@ -2,12 +2,10 @@ package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.FaunaConfig.FaunaEndpoint;
-import com.fauna.common.connection.Connection;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -18,9 +16,6 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FaunaClientTest {
-
-    @Mock
-    private Connection connection;
 
     private FaunaClient defaultClient;
     private FaunaClient localClient;
