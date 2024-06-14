@@ -3,6 +3,8 @@ package com.fauna.client;
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.FaunaConfig.FaunaEndpoint;
 import com.fauna.common.connection.Connection;
+import com.fauna.query.builder.Query;
+import com.fauna.response.QueryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -11,6 +13,7 @@ import org.mockito.Mockito;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -121,13 +124,9 @@ class FaunaClientTest {
     }
 
     @Test
-    void query_WithValidFQL_ShouldCall() {
-        IllegalArgumentException thrown = assertThrows(
-                IllegalArgumentException.class,
-                () -> defaultClient.query(null),
-                "Expected query() to throw, but it didn't"
-        );
-        assertTrue(thrown.getMessage().contains("The provided FQL query is null."));
+    void query_WithValidFQL_ShouldCall() throws ExecutionException, InterruptedException {
+        QueryResponse response = defaultClient.query(Query.fql("Collection.create({ name: 'Dogs' })"));
+        assertEquals("", response.getSummary());
     }
 
 }

@@ -1,6 +1,6 @@
 package com.fauna.exception;
 
-public class SerializationException extends RuntimeException {
+public class SerializationException extends FaunaException {
 
     public SerializationException(String message) {
         super(message);

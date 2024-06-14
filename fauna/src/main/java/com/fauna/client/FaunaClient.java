@@ -1,17 +1,21 @@
 package com.fauna.client;
 
 import com.fauna.common.configuration.JvmDriver;
-import com.fauna.common.connection.Connection;
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.configuration.HttpClientConfig;
-import com.fauna.exception.AuthenticationException;
-import com.fauna.exception.InvalidQueryException;
-import com.fauna.exception.ProtocolException;
-import com.fauna.exception.ServiceErrorException;
+import com.fauna.common.connection.RequestBuilder;
+import com.fauna.exception.*;
+import com.fauna.mapping.MappingContext;
+import com.fauna.query.builder.Query;
+import com.fauna.response.QueryResponse;
+import com.fauna.serialization.Deserializer;
 
+import javax.annotation.Nonnull;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -19,75 +23,88 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FaunaClient {
 
+    private static final int DEFAULT_THREAD_POOL = 20;
     private final FaunaConfig config;
-    // TODO: Should the connection really be final?
-    private Connection connection;
-
-    public FaunaClient() {
-        this.config = FaunaConfig.builder().build();
-        // Does the connection need to be setup in the constructor?
-        // this.connection = Connection.builder().faunaConfig(FaunaConfig.builder().build()).build();
-    }
+    private final HttpClient httpClient;
 
     /**
-     * Constructs a new FaunaClient instance with the provided FaunaConfig.
-     * It uses the default HTTP client configuration.
+     * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
+     * complete control over HTTP Configuration, like timeouts, thread pool size, and so-on.
+     *
+     *   * Note that FaunaConfig.queryTimeout will be ignored if using this method directly.
      *
      * @param faunaConfig The Fauna configuration settings.
+     * @param httpClient  A Java HTTP client instance.
      */
-    public FaunaClient(FaunaConfig faunaConfig) {
-        this(faunaConfig, HttpClientConfig.builder().build());
-    }
-
-    /**
-     * Constructs a new FaunaClient instance with the provided FaunaConfig and HttpClientConfig.
-     *
-     * @param faunaConfig      The Fauna configuration settings.
-     * @param httpClientConfig The HTTP client configuration.
-     * @@deprecated TODO: Customers should only need to pass in one config object.
-     */
-    protected FaunaClient(FaunaConfig faunaConfig, HttpClientConfig httpClientConfig) {
+    public FaunaClient(@Nonnull FaunaConfig faunaConfig,
+                       @Nonnull HttpClient httpClient) {
+        this.config = faunaConfig;
+        this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
         }
-        this.config = faunaConfig;
-        this.connection = Connection.builder()
-                .faunaConfig(faunaConfig)
-                .httpClientConfig(httpClientConfig)
-                .jvmDriver(JvmDriver.JAVA)
-                .build();
+        if (Objects.isNull(httpClient)) {
+            throw new IllegalArgumentException("HttpClient cannot be null.");
+        }
     }
 
     /**
-     * Secondary constructor for FaunaClient, primarily used for testing.
+     * Construct a new FaunaClient instance with the provided FaunaConfig, uses a default HTTP client configuration.
      *
-     * @param faunaConfig      The Fauna configuration settings.
-     * @param httpClientConfig The HTTP client configuration.
-     * @param connection       The Connection instance to be used.
-     * @@deprecated TODO: Customers should only need to pass in one config object.
+     * @param faunaConfig The Fauna configuration settings.
      */
-    protected FaunaClient(FaunaConfig faunaConfig, HttpClientConfig httpClientConfig, Connection connection) {
-        this.config = faunaConfig;
-        // this.httpClient = httpClient < maybe required for mocking?
-        this.connection = connection;
+    public FaunaClient(@Nonnull FaunaConfig faunaConfig) {
+        this(faunaConfig, HttpClient.newBuilder().build());
     }
 
+    /**
+     * Construct a new FaunaClient instance with default configuration.
+     */
+    public FaunaClient() {
+        this(FaunaConfig.builder().build());
+    }
 
     /**
      * Sends a Fauna Query Language (FQL) query to Fauna.
      *
      * @param fql The FQL query to be executed.
-     * @return A CompletableFuture that, when completed, will return the HttpResponse.
-     * @throws IllegalArgumentException If the provided FQL query is null.
+     * @return QuerySuccess
+     * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<HttpResponse<String>> query(String fql) {
-
-        if (fql == null) {
+    public CompletableFuture<QueryResponse> asyncQuery(@Nonnull Query fql) {
+        if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
+        RequestBuilder requestBuilder = RequestBuilder.builder()
+                .faunaConfig(this.config)
+                .jvmDriver(JvmDriver.JAVA)
+                .build();
+        HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
 
-        return connection.performRequest(fql).thenApply(this::processResponse);
+
+        return CompletableFuture.supplyAsync(() -> QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC, 200, "{\"hello\"}"));
+
     }
+
+    public QueryResponse query(@Nonnull Query fql) throws FaunaException {
+        if (Objects.isNull(fql)) {
+            throw new IllegalArgumentException("The provided FQL query is null.");
+        }
+        try {
+            RequestBuilder requestBuilder = RequestBuilder.builder()
+                    .faunaConfig(this.config)
+                    .jvmDriver(JvmDriver.JAVA)
+                    .build();
+            HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
+            HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC,
+                    response.statusCode(), response.body());
+        } catch (Exception exc) {
+            throw new FaunaException("TODO proper exception handling");
+        }
+
+    }
+
 
     /**
      * Processes the HTTP response from Fauna, checking for errors and ensuring protocol compliance.

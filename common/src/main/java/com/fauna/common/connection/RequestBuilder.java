@@ -24,7 +24,7 @@ import static com.fauna.common.connection.Headers.TYPE_CHECK;
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
  */
-class RequestBuilder {
+public class RequestBuilder {
 
     private final FaunaConfig faunaConfig;
     private final Auth auth;
@@ -136,7 +136,7 @@ class RequestBuilder {
          *
          * @return A new instance of RequestBuilder.
          */
-        RequestBuilder build() {
+        public RequestBuilder build() {
             return new RequestBuilder(this);
         }
     }

@@ -1,9 +1,9 @@
 package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.configuration.HttpClientConfig;
 import com.fauna.common.configuration.JvmDriver;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -17,8 +17,7 @@ import java.util.concurrent.Executors;
  */
 public class Connection {
 
-    private final RequestBuilder requestBuilder;
-    private final HttpClientConfig httpClientConfig;
+    public final RequestBuilder requestBuilder;
     private final HttpClient httpClient;
 
     /**
@@ -36,7 +35,6 @@ public class Connection {
      * @param builder The builder used to create the Connection instance.
      */
     private Connection(Builder builder) {
-        this.httpClientConfig = builder.httpClientConfig;
         this.requestBuilder = RequestBuilder.builder()
                 .faunaConfig(builder.faunaConfig)
                 .jvmDriver(builder.jvmDriver)
@@ -48,12 +46,10 @@ public class Connection {
      * Secondary constructor for Connection, primarily used for testing.
      *
      * @param requestBuilder   The request builder.
-     * @param httpClientConfig The HTTP client configuration.
      * @param httpClient       The HTTP client.
      */
-    Connection(RequestBuilder requestBuilder, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+    Connection(RequestBuilder requestBuilder, HttpClient httpClient) {
         this.requestBuilder = requestBuilder;
-        this.httpClientConfig = httpClientConfig;
         this.httpClient = httpClient;
     }
 
@@ -64,10 +60,9 @@ public class Connection {
      */
     private HttpClient createHttpClient() {
         return HttpClient.newBuilder()
-                .connectTimeout(httpClientConfig.getConnectTimeout())
-                .executor(Executors.newFixedThreadPool(httpClientConfig.getMaxConnections()))
                 .build();
     }
+
 
     /**
      * Performs an asynchronous HTTP request to Fauna with the provided FQL query.
@@ -75,9 +70,17 @@ public class Connection {
      * @param fql The Fauna Query Language query to be executed.
      * @return A CompletableFuture that, when completed, will return the HttpResponse.
      */
-    public CompletableFuture<HttpResponse<String>> performRequest(String fql) {
+    public CompletableFuture<HttpResponse<String>> performAsyncRequest(String fql) {
         HttpRequest request = requestBuilder.buildRequest(fql);
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    public HttpResponse<String> sendRequest(String fql) throws IOException, InterruptedException {
+        // TODO: Refactor to enable returning QuerySuccess here.
+        HttpRequest request = requestBuilder.buildRequest(fql);
+
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
     }
 
     /**
@@ -85,7 +88,6 @@ public class Connection {
      */
     public static class Builder {
         private FaunaConfig faunaConfig;
-        private HttpClientConfig httpClientConfig;
         private JvmDriver jvmDriver;
 
         /**
@@ -96,17 +98,6 @@ public class Connection {
          */
         public Builder faunaConfig(FaunaConfig faunaConfig) {
             this.faunaConfig = faunaConfig;
-            return this;
-        }
-
-        /**
-         * Sets the HttpClientConfig for the Connection.
-         *
-         * @param httpClientConfig The HTTP client configuration.
-         * @return The current Builder instance.
-         */
-        public Builder httpClientConfig(HttpClientConfig httpClientConfig) {
-            this.httpClientConfig = httpClientConfig;
             return this;
         }
 

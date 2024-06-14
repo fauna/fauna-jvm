@@ -1,7 +1,6 @@
 package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.configuration.HttpClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -10,7 +9,6 @@ import org.mockito.MockitoAnnotations;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,9 +21,6 @@ class ConnectionTest {
 
     @Mock
     private FaunaConfig faunaConfig;
-
-    @Mock
-    private HttpClientConfig httpClientConfig;
 
     @Mock
     private HttpClient httpClient;
@@ -43,17 +38,13 @@ class ConnectionTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        httpClientConfig = HttpClientConfig.builder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .maxConnections(5)
-                .build();
         faunaConfig = FaunaConfig.builder()
                 .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
                 .secret("secret")
                 .build();
         RequestBuilder requestBuilder = RequestBuilder.builder().faunaConfig(faunaConfig).build();
         spyRequestBuilder = spy(requestBuilder);
-        connection = new Connection(spyRequestBuilder, httpClientConfig, httpClient);
+        connection = new Connection(spyRequestBuilder, httpClient);
     }
 
     @Test
@@ -63,7 +54,7 @@ class ConnectionTest {
         when(httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString()))
                 .thenReturn(CompletableFuture.completedFuture(httpResponse));
 
-        CompletableFuture<HttpResponse<String>> futureResponse = connection.performRequest(fql);
+        CompletableFuture<HttpResponse<String>> futureResponse = connection.performAsyncRequest(fql);
 
         assertTrue(futureResponse.isDone());
         assertEquals(httpResponse, futureResponse.get());

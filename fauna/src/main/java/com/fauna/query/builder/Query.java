@@ -3,6 +3,7 @@ package com.fauna.query.builder;
 import com.fauna.query.template.FaunaTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +60,10 @@ public class Query {
             }
         }
         return faunaQuery;
+    }
+
+    public static Query fql(String query) throws IllegalArgumentException {
+        return fql(query, new HashMap<>());
     }
 
     /**
