@@ -9,9 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,9 +70,18 @@ class FaunaClientTest {
     }
 
     @Test
-    void customClientConstructor() {
+    void customConfigConstructor() {
         FaunaConfig config = FaunaConfig.builder().queryTimeout(Duration.ofSeconds(30)).build();
         FaunaClient client = new FaunaClient(config);
+        assertTrue(client.toString().startsWith("com.fauna.client.FaunaClient"));
+    }
+
+    @Test
+    void customConfigAndClientConstructor() {
+        FaunaConfig config = FaunaConfig.builder().queryTimeout(Duration.ofSeconds(10)).build();
+        HttpClient multiThreadedClient = HttpClient.newBuilder().executor(Executors.newFixedThreadPool(20))
+                .connectTimeout(Duration.ofSeconds(15)).build();
+        FaunaClient client = new FaunaClient(config, multiThreadedClient);
         assertTrue(client.toString().startsWith("com.fauna.client.FaunaClient"));
     }
 
