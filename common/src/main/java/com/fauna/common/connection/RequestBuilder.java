@@ -5,29 +5,21 @@ import com.fauna.common.encoding.QueryTags;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
  */
 public class RequestBuilder {
 
+    private static final String BEARER = "Bearer";
 
     private final FaunaConfig faunaConfig;
     private final DriverEnvironment driverEnvironment;
     private final URI uri;
-    private static final String BEARER = "Bearer";
+    private final String[][] headers;
+    private final HttpRequest.Builder httpRequestBuilder;
 
-
-    /**
-     * Creates a new builder for RequestBuilder.
-     *
-     * @return A new instance of Builder.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
 
     class Headers {
         static final String LAST_TXN_TS = "X-Last-Txn-Ts";
@@ -44,15 +36,16 @@ public class RequestBuilder {
         static final String DRIVER_ENV = "X-Driver-Env";
         static final String FORMAT = "X-Format";
     }
-    /**
-     * Private constructor for RequestBuilder.
-     *
-     * @param builder The builder used to create the RequestBuilder instance.
-     */
-    private RequestBuilder(Builder builder) {
-        this.faunaConfig = builder.faunaConfig;
-        uri = URI.create(faunaConfig.getEndpoint());
-        this.driverEnvironment = new DriverEnvironment(builder.jvmDriver);
+
+    public RequestBuilder(FaunaConfig config) {
+        this.faunaConfig = config;
+        this.driverEnvironment = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
+        this.uri = URI.create(faunaConfig.getEndpoint());
+        this.headers = this.buildHeaders();
+        this.httpRequestBuilder = HttpRequest.newBuilder().uri(this.uri);
+        for (String[] hdr : this.headers) {
+            httpRequestBuilder.header(hdr[0], hdr[1]);
+        }
     }
 
     /**
@@ -62,12 +55,7 @@ public class RequestBuilder {
      * @return An HttpRequest object configured for the Fauna query.
      */
     public HttpRequest buildRequest(String fql) {
-        Map<String, String> headers = buildHeaders();
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
-                .uri(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(fql));
-        headers.forEach(httpRequestBuilder::header);
-        return httpRequestBuilder.build();
+        return this.httpRequestBuilder.POST(HttpRequest.BodyPublishers.ofString(fql)).build();
     }
 
     private String buildAuthToken() {
@@ -79,72 +67,32 @@ public class RequestBuilder {
      *
      * @return A Map of header names to header values.
      */
-    private Map<String, String> buildHeaders() {
-        // TODO: Do we need to rebuild this HashMap every time?
-        Map<String, String> headers = new HashMap<>();
-        headers.put(RequestBuilder.Headers.AUTHORIZATION, this.buildAuthToken());
-        // TODO: Put these constants somewhere.
-        headers.put(RequestBuilder.Headers.FORMAT, "tagged");
-        headers.put(RequestBuilder.Headers.ACCEPT_ENCODING, "gzip");
-        headers.put(RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8");
-        headers.put(RequestBuilder.Headers.DRIVER, "Java");
-        headers.put(RequestBuilder.Headers.DRIVER_ENV, driverEnvironment.toString());
-        headers.put(RequestBuilder.Headers.QUERY_TIMEOUT_MS, String.valueOf(faunaConfig.getQueryTimeout().toMillis()));
+    private String[][] buildHeaders() {
+        ArrayList<String[]> headerList = new ArrayList<>(Arrays.asList(
+                new String[] {RequestBuilder.Headers.AUTHORIZATION, this.buildAuthToken()},
+                new String[] {RequestBuilder.Headers.FORMAT, "tagged"},
+                new String[] {RequestBuilder.Headers.ACCEPT_ENCODING, "gzip"},
+                new String[] {RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8"},
+                new String[] {RequestBuilder.Headers.DRIVER, "Java"},
+                new String[] {RequestBuilder.Headers.DRIVER_ENV, driverEnvironment.toString()},
+                new String[] {RequestBuilder.Headers.QUERY_TIMEOUT_MS,
+                        String.valueOf(faunaConfig.getQueryTimeout().toMillis())}
+        ));
 
         if (faunaConfig.getLinearized().isPresent()) {
-            headers.put(RequestBuilder.Headers.LINEARIZED, faunaConfig.getLinearized().get().toString());
+            headerList.add(new String[] {RequestBuilder.Headers.LINEARIZED, faunaConfig.getLinearized().get().toString()});
         }
         if (faunaConfig.getTypeCheck().isPresent()) {
-            headers.put(RequestBuilder.Headers.TYPE_CHECK, faunaConfig.getTypeCheck().get().toString());
+            headerList.add(new String[] {RequestBuilder.Headers.TYPE_CHECK, faunaConfig.getTypeCheck().get().toString()});
         }
 
         if (!faunaConfig.getQueryTags().isEmpty()) {
-            headers.put(RequestBuilder.Headers.QUERY_TAGS, QueryTags.encode(faunaConfig.getQueryTags()));
+            headerList.add(new String[] {RequestBuilder.Headers.QUERY_TAGS, QueryTags.encode(faunaConfig.getQueryTags())});
         }
 
         if (faunaConfig.getTraceParent().isPresent()) {
-            headers.put(RequestBuilder.Headers.TRACE_PARENT, faunaConfig.getTraceParent().get());
+            headerList.add(new String[] {RequestBuilder.Headers.TRACE_PARENT, faunaConfig.getTraceParent().get()});
         }
-
-        return headers;
-    }
-
-    /**
-     * Builder class for RequestBuilder. Follows the Builder Design Pattern.
-     */
-    public static class Builder {
-        private FaunaConfig faunaConfig;
-        private DriverEnvironment.JvmDriver jvmDriver;
-
-        /**
-         * Sets the FaunaConfig for the RequestBuilder.
-         *
-         * @param faunaConfig The configuration settings for Fauna.
-         * @return The current Builder instance.
-         */
-        public Builder faunaConfig(FaunaConfig faunaConfig) {
-            this.faunaConfig = faunaConfig;
-            return this;
-        }
-
-        /**
-         * Sets the JvmDriver for the RequestBuilder.
-         *
-         * @param jvmDriver The JVM driver information.
-         * @return The current Builder instance.
-         */
-        public Builder jvmDriver(DriverEnvironment.JvmDriver jvmDriver) {
-            this.jvmDriver = jvmDriver;
-            return this;
-        }
-
-        /**
-         * Builds and returns a new RequestBuilder instance.
-         *
-         * @return A new instance of RequestBuilder.
-         */
-        public RequestBuilder build() {
-            return new RequestBuilder(this);
-        }
+        return headerList.toArray(new String[headerList.size()][2]);
     }
 }

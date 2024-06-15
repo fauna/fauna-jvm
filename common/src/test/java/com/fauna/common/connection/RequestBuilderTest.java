@@ -2,11 +2,14 @@ package com.fauna.common.connection;
 
 import com.fauna.common.configuration.FaunaConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,6 +21,7 @@ class RequestBuilderTest {
 
     private RequestBuilder requestBuilder;
 
+
     @Test
     void buildRequest_shouldConstructCorrectHttpRequest() {
         String fql = "Sample FQL Query";
@@ -27,7 +31,7 @@ class RequestBuilderTest {
                 .secret("secret")
                 .queryTimeout(Duration.ofSeconds(5))
                 .build();
-        requestBuilder = RequestBuilder.builder().faunaConfig(faunaConfig).build();
+        requestBuilder = new RequestBuilder(faunaConfig);
 
         HttpRequest httpRequest = requestBuilder.buildRequest(fql);
 
@@ -53,7 +57,7 @@ class RequestBuilderTest {
                 .queryTags(queryTags)
                 .traceParent("traceParent")
                 .build();
-        requestBuilder = RequestBuilder.builder().faunaConfig(faunaConfig).build();
+        requestBuilder = new RequestBuilder(faunaConfig);
 
         HttpRequest httpRequest = requestBuilder.buildRequest("Sample FQL Query");
 
@@ -61,5 +65,15 @@ class RequestBuilderTest {
         assertEquals("false", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
         assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.QUERY_TAGS));
         assertEquals("traceParent", httpRequest.headers().firstValue(RequestBuilder.Headers.TRACE_PARENT).get());
+    }
+
+    @Test
+    @Timeout(value=400, unit = TimeUnit.MILLISECONDS)
+    void buildRequest_shouldBeFast() {
+        requestBuilder = new RequestBuilder(FaunaConfig.builder().build());
+
+        // Minimizing the amount of work done in .buildRequest(fql) sped this test up from ~600ms to ~300ms on
+        // my Intel Mac. - @findgriffin
+        IntStream.range(0, 100000).forEach(i -> requestBuilder.buildRequest(String.format("Sample FQL Query %d", i)));
     }
 }
