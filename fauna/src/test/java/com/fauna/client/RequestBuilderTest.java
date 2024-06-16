@@ -1,4 +1,4 @@
-package com.fauna.common.connection;
+package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
 import org.junit.jupiter.api.Test;

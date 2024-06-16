@@ -1,7 +1,6 @@
 package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.connection.RequestBuilder;
 import com.fauna.exception.*;
 import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.Query;

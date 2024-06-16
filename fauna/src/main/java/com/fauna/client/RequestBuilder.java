@@ -1,6 +1,7 @@
-package com.fauna.common.connection;
+package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
+import com.fauna.common.connection.DriverEnvironment;
 import com.fauna.common.encoding.QueryTags;
 
 import java.net.URI;
