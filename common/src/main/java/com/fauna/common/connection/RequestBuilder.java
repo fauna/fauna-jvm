@@ -16,12 +16,10 @@ public class RequestBuilder {
 
     private final FaunaConfig faunaConfig;
     private final DriverEnvironment driverEnvironment;
-    private final URI uri;
-    private final String[][] headers;
     private final HttpRequest.Builder httpRequestBuilder;
 
 
-    class Headers {
+    static class Headers {
         static final String LAST_TXN_TS = "X-Last-Txn-Ts";
         static final String LINEARIZED = "X-Linearized";
         static final String MAX_CONTENTION_RETRIES = "X-Max-Contention-Retries";
@@ -40,10 +38,8 @@ public class RequestBuilder {
     public RequestBuilder(FaunaConfig config) {
         this.faunaConfig = config;
         this.driverEnvironment = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
-        this.uri = URI.create(faunaConfig.getEndpoint());
-        this.headers = this.buildHeaders();
-        this.httpRequestBuilder = HttpRequest.newBuilder().uri(this.uri);
-        for (String[] hdr : this.headers) {
+        this.httpRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint()));
+        for (String[] hdr : this.buildHeaders()) {
             httpRequestBuilder.header(hdr[0], hdr[1]);
         }
     }
@@ -79,19 +75,13 @@ public class RequestBuilder {
                         String.valueOf(faunaConfig.getQueryTimeout().toMillis())}
         ));
 
-        if (faunaConfig.getLinearized().isPresent()) {
-            headerList.add(new String[] {RequestBuilder.Headers.LINEARIZED, faunaConfig.getLinearized().get().toString()});
-        }
-        if (faunaConfig.getTypeCheck().isPresent()) {
-            headerList.add(new String[] {RequestBuilder.Headers.TYPE_CHECK, faunaConfig.getTypeCheck().get().toString()});
-        }
+        faunaConfig.getLinearized().ifPresent(l -> headerList.add(new String[] {Headers.LINEARIZED, l.toString()}));
+        faunaConfig.getTypeCheck().ifPresent(tc -> headerList.add(new String[] {Headers.TYPE_CHECK, tc.toString()}));
+        faunaConfig.getTraceParent().ifPresent(tp -> headerList.add(new String[] {Headers.TRACE_PARENT, tp}));
 
         if (!faunaConfig.getQueryTags().isEmpty()) {
-            headerList.add(new String[] {RequestBuilder.Headers.QUERY_TAGS, QueryTags.encode(faunaConfig.getQueryTags())});
-        }
-
-        if (faunaConfig.getTraceParent().isPresent()) {
-            headerList.add(new String[] {RequestBuilder.Headers.TRACE_PARENT, faunaConfig.getTraceParent().get()});
+            headerList.add(new String[] {RequestBuilder.Headers.QUERY_TAGS,
+                    QueryTags.encode(faunaConfig.getQueryTags())});
         }
         return headerList.toArray(new String[headerList.size()][2]);
     }
