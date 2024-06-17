@@ -17,7 +17,7 @@ class QueryTagsTest {
         tags.put("key2", "value2");
         tags.put("key3", "value3");
 
-        String result = QueryTags.encode(tags);
+        String result = RequestBuilder.QueryTags.encode(tags);
 
         assertTrue(result.contains("key1=value1"));
         assertTrue(result.contains("key2=value2"));
@@ -29,7 +29,7 @@ class QueryTagsTest {
     void encode_shouldHandleEmptyMap() {
         Map<String, String> tags = new HashMap<>();
 
-        String result = QueryTags.encode(tags);
+        String result = RequestBuilder.QueryTags.encode(tags);
 
         assertEquals("", result);
     }
@@ -39,7 +39,7 @@ class QueryTagsTest {
         Map<String, String> tags = new HashMap<>();
         tags.put("key1", "value1");
 
-        String result = QueryTags.encode(tags);
+        String result = RequestBuilder.QueryTags.encode(tags);
 
         assertEquals("key1=value1", result);
     }
@@ -50,7 +50,7 @@ class QueryTagsTest {
         tags.put("key1", "value1,value2");
         tags.put("key2", "value3,value4");
 
-        String result = QueryTags.encode(tags);
+        String result = RequestBuilder.QueryTags.encode(tags);
 
         assertTrue(result.contains("key1=value1,value2"));
         assertTrue(result.contains("key2=value3,value4"));
