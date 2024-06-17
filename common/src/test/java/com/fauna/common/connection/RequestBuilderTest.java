@@ -34,8 +34,8 @@ class RequestBuilderTest {
         assertEquals("http://localhost:8443", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
         assertTrue(httpRequest.bodyPublisher().get().contentLength() > 0);
-        assertNotNull(httpRequest.headers().firstValue(Headers.AUTHORIZATION));
-        assertEquals("Bearer secret", httpRequest.headers().firstValue(Headers.AUTHORIZATION).get());
+        assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.AUTHORIZATION));
+        assertEquals("Bearer secret", httpRequest.headers().firstValue(RequestBuilder.Headers.AUTHORIZATION).get());
     }
 
     @Test
@@ -57,9 +57,9 @@ class RequestBuilderTest {
 
         HttpRequest httpRequest = requestBuilder.buildRequest("Sample FQL Query");
 
-        assertEquals("true", httpRequest.headers().firstValue(Headers.LINEARIZED).get());
-        assertEquals("false", httpRequest.headers().firstValue(Headers.TYPE_CHECK).get());
-        assertNotNull(httpRequest.headers().firstValue(Headers.QUERY_TAGS));
-        assertEquals("traceParent", httpRequest.headers().firstValue(Headers.TRACE_PARENT).get());
+        assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.LINEARIZED).get());
+        assertEquals("false", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
+        assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.QUERY_TAGS));
+        assertEquals("traceParent", httpRequest.headers().firstValue(RequestBuilder.Headers.TRACE_PARENT).get());
     }
 }

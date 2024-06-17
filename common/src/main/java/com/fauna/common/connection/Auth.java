@@ -13,8 +13,8 @@ class Auth {
      * @param secret The secret key used for authentication.
      */
     public Auth(String secret) {
-        if (secret == null || secret.trim().isEmpty()) {
-            throw new IllegalArgumentException("Secret cannot be null or empty");
+        if (secret == null) {
+            throw new IllegalArgumentException("Secret cannot be null.");
         }
         this.secret = secret;
     }
