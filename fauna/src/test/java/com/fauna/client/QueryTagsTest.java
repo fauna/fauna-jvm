@@ -1,4 +1,4 @@
-package com.fauna.common.encoding;
+package com.fauna.client;
 
 import org.junit.jupiter.api.Test;
 

@@ -2,11 +2,11 @@ package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.connection.DriverEnvironment;
-import com.fauna.common.encoding.QueryTags;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
@@ -85,5 +85,17 @@ public class RequestBuilder {
                     QueryTags.encode(faunaConfig.getQueryTags())});
         }
         return headerList.toArray(new String[headerList.size()][2]);
+    }
+
+    public static class QueryTags {
+        private static final String EQUALS = "=";
+        private static final String COMMA = ",";
+
+        public static String encode(Map<String, String> tags) {
+            return tags.entrySet().stream()
+                    .map(entry -> String.join(EQUALS, entry.getKey(), entry.getValue()))
+                    .collect(Collectors.joining(COMMA));
+        }
+
     }
 }
