@@ -1,5 +1,7 @@
 package com.fauna.common.enums;
 
+import java.io.IOException;
+
 /**
  * Enumeration representing token types for Fauna serialization.
  */
@@ -39,5 +41,13 @@ public enum FaunaTokenType {
 
     MODULE,
     END_SET,
-    START_SET
+    START_SET;
+
+    public FaunaTokenType getEndToken() throws IOException {
+        switch (this) {
+            case START_DOCUMENT: return END_DOCUMENT;
+            case START_OBJECT: return END_OBJECT;
+            default: throw new IOException("No end token for " + this.name());
+        }
+    }
 }
