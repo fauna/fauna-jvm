@@ -35,7 +35,6 @@ project(':fauna') {
         implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
         implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
         implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-        implementation "com.google.guava:guava:${guavaVersion}"
 
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
         testImplementation 'junit:junit:4.13.2'

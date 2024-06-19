@@ -11,7 +11,6 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.serialization.Deserializer;
 
-import javax.annotation.Nonnull;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -37,8 +36,8 @@ public class FaunaClient {
      * @param faunaConfig The Fauna configuration settings.
      * @param httpClient  A Java HTTP client instance.
      */
-    public FaunaClient(@Nonnull FaunaConfig faunaConfig,
-                       @Nonnull HttpClient httpClient) {
+    public FaunaClient(FaunaConfig faunaConfig,
+                       HttpClient httpClient) {
         this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
@@ -55,7 +54,7 @@ public class FaunaClient {
      *
      * @param faunaConfig The Fauna configuration settings.
      */
-    public FaunaClient(@Nonnull FaunaConfig faunaConfig) {
+    public FaunaClient(FaunaConfig faunaConfig) {
         this(faunaConfig, HttpClient.newBuilder().build());
     }
 
@@ -73,7 +72,7 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(@Nonnull Query fql) {
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
@@ -84,7 +83,7 @@ public class FaunaClient {
 
     }
 
-    public QueryResponse query(@Nonnull Query fql) throws FaunaException {
+    public QueryResponse query(Query fql) throws FaunaException {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }

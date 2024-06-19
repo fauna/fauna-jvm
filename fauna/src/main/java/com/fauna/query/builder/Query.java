@@ -2,14 +2,11 @@ package com.fauna.query.builder;
 
 import com.fauna.query.template.FaunaTemplate;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -24,7 +21,7 @@ public class Query {
      * Constructs a Query instance from the list of Fragments.
      * @param fragments
      */
-    public Query(@Nonnull Fragment ... fragments) {
+    public Query(Fragment ... fragments) {
         this.fragments = fragments;
     }
 
@@ -38,8 +35,8 @@ public class Query {
      * @return a Query instance representing the complete query.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
-    public static Query fql(@Nonnull String query,
-                            @Nullable Map<String, Object> args) throws IllegalArgumentException {
+    public static Query fql(String query,
+                            Map<String, Object> args) throws IllegalArgumentException {
         return new Query(StreamSupport.stream(
                 new FaunaTemplate(query).spliterator(), true).map(
                         part -> part.toFragment(args)).toArray(Fragment[]::new));
@@ -55,8 +52,8 @@ public class Query {
      * @return a Query instance representing the complete query.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
-    public static Query fql(@Nonnull List<String> literals,
-                            @Nullable Map<String, Object> args) throws IllegalArgumentException {
+    public static Query fql(List<String> literals,
+                            Map<String, Object> args) throws IllegalArgumentException {
         return fql(String.join("\n", literals), args);
     }
 
@@ -68,14 +65,14 @@ public class Query {
      * @return a Query instance representing the complete query.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
-    public static Query fql(@Nonnull String query) throws IllegalArgumentException {
+    public static Query fql(String query) throws IllegalArgumentException {
         return fql(query, null);
     }
 
     /**
      *
      */
-    public static Query fql(@Nonnull String ... literals) throws IllegalArgumentException {
+    public static Query fql(String ... literals) throws IllegalArgumentException {
         return fql(List.of(literals), null);
 
     }
