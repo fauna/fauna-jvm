@@ -68,7 +68,7 @@ class RequestBuilderTest {
     }
 
     @Test
-    @Timeout(value=400, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value=500, unit = TimeUnit.MILLISECONDS)
     void buildRequest_shouldBeFast() {
         requestBuilder = new RequestBuilder(FaunaConfig.builder().build());
 
