@@ -15,14 +15,17 @@ import java.util.stream.StreamSupport;
  */
 public class Query {
 
-    private final Fragment[] fragments;
+    private final String query;
+    private final Map<String, Object> args;
 
     /**
-     * Constructs a Query instance from the list of Fragments.
-     * @param fragments
+     * Construct a Query from the given template String and args.
+     * @param query A Fauna Query Language (FQL) v10 template string.
+     * @param args  A map of variable names -> values.
      */
-    public Query(Fragment ... fragments) {
-        this.fragments = fragments;
+    public Query(String query, Map<String, Object> args) {
+        this.query = query;
+        this.args = args;
     }
 
 
@@ -30,16 +33,17 @@ public class Query {
      * Creates a Query instance from a String and arguments.
      * The template strings can contain literals and variable placeholders.
      *
-     * @param query the string template of the query.
-     * @param args  the arguments to replace the variable placeholders in the query.
+     * @param query A Fauna Query Language (FQL) v10 template string.
+     * @param args  A map of variable names -> values.
      * @return a Query instance representing the complete query.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
     public static Query fql(String query,
                             Map<String, Object> args) throws IllegalArgumentException {
-        return new Query(StreamSupport.stream(
-                new FaunaTemplate(query).spliterator(), true).map(
-                        part -> part.toFragment(args)).toArray(Fragment[]::new));
+
+        Query newQuery = new Query(query, args);
+        newQuery.getFragments(); // Effectively validates that there is an arg for all variables.
+        return newQuery;
     }
 
     /**
@@ -58,8 +62,7 @@ public class Query {
     }
 
     /**
-     * Creates a Query instance from a String.
-     * The template string can only contain literals.
+     * Creates a Query instance from a String. Without any args, the template string cannot contain variables.
      *
      * @param query the string template of the query.
      * @return a Query instance representing the complete query.
@@ -70,7 +73,8 @@ public class Query {
     }
 
     /**
-     *
+     * Creates a query instance from a series of Strings. Without any args, the template Strings cannot contain variables.
+     * the template strings can only contain literals.
      */
     public static Query fql(String ... literals) throws IllegalArgumentException {
         return fql(List.of(literals), null);
@@ -81,9 +85,11 @@ public class Query {
      * Retrieves the list of fragments that make up this query.
      *
      * @return a list of Fragments.
+     * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
     Fragment[] getFragments() {
-        return fragments;
+        return StreamSupport.stream(
+                new FaunaTemplate(query).spliterator(), true).map(
+                part -> part.toFragment(args)).toArray(Fragment[]::new);
     }
-
 }

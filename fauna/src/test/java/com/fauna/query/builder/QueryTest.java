@@ -21,8 +21,8 @@ class QueryTest {
     @Test
     public void testQueryBuilderStrings() {
         Query actual = fql("let x = 11", Collections.emptyMap());
-        Query expected = new Query(new LiteralFragment("let x = 11"));
-        assertArrayEquals(expected.getFragments(), actual.getFragments());
+        Fragment[] expected = new Fragment[]{new LiteralFragment("let x = 11")};
+        assertArrayEquals(expected, actual.getFragments());
     }
 
     @Test
@@ -31,8 +31,7 @@ class QueryTest {
         args.put("n", null);
 
         Query actual = fql("let x = ${n}", args);
-        Query expected = new Query(new LiteralFragment("let x = "), new ValueFragment(null));
-        assertArrayEquals(expected.getFragments(), actual.getFragments());
+        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new ValueFragment(null)}, actual.getFragments());
     }
 
     @Test
@@ -40,11 +39,11 @@ class QueryTest {
         Map<String, Object> variables = new HashMap<>();
         variables.put("n1", 5);
         Query actual = fql("let age = ${n1}\n\"Alice is #{age} years old.\"", variables);
-        Query expected = new Query(
+        Fragment[] expected = new Fragment[] {
                 new LiteralFragment("let age = "),
                 new ValueFragment(5),
-                new LiteralFragment("\n\"Alice is #{age} years old.\""));
-        assertArrayEquals(expected.getFragments(), actual.getFragments());
+                new LiteralFragment("\n\"Alice is #{age} years old.\"")};
+        assertArrayEquals(expected, actual.getFragments());
     }
 
     @Test
@@ -54,8 +53,8 @@ class QueryTest {
                 "age", 0,
                 "birthdate", LocalDate.of(2023, 2, 24));
         Query actual = fql("let x = ${my_var}", Map.of("my_var", user));
-        Query expected = new Query(new LiteralFragment("let x = "), new ValueFragment(user));
-        assertArrayEquals(expected.getFragments(), actual.getFragments());
+        Fragment[] expected = new Fragment[]{new LiteralFragment("let x = "), new ValueFragment(user)};
+        assertArrayEquals(expected, actual.getFragments());
     }
 
     @Test
@@ -67,8 +66,8 @@ class QueryTest {
 
         Query inner = fql("let x = ${my_var}", Map.of("my_var", user));
         Query actual = fql("${inner}\nx { name }", Map.of("inner", inner));
-        Query expected = new Query(new ValueFragment(inner), new LiteralFragment("\nx { name }"));
-        assertArrayEquals(expected.getFragments(), actual.getFragments());
+        Fragment[] expected = new Fragment[]{new ValueFragment(inner), new LiteralFragment("\nx { name }")};
+        assertArrayEquals(expected, actual.getFragments());
     }
 
     @Test
@@ -89,10 +88,10 @@ class QueryTest {
     public void testQueryWithMissingArgs() {
         IllegalArgumentException first = assertThrows(IllegalArgumentException.class,
                 () -> fql("let first = ${first}"));
-        assertEquals("java.lang.IllegalArgumentException: No args provided for Template variable first.", first.getMessage());
+        assertEquals("No args provided for Template variable first.", first.getMessage());
         IllegalArgumentException second = assertThrows(IllegalArgumentException.class,
                 () -> fql("let first = ${first}\n", "let second = ${second}"));
-        assertEquals("java.lang.IllegalArgumentException: No args provided for Template variable first.", first.getMessage());
+        assertEquals("No args provided for Template variable first.", first.getMessage());
     }
 
     @Test
