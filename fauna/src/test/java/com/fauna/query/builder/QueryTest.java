@@ -1,5 +1,7 @@
 package com.fauna.query.builder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
@@ -17,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class QueryTest {
 
+    ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void testQueryBuilderStrings() {
@@ -88,10 +91,10 @@ class QueryTest {
     public void testQueryWithMissingArgs() {
         IllegalArgumentException first = assertThrows(IllegalArgumentException.class,
                 () -> fql("let first = ${first}"));
-        assertEquals("No args provided for Template variable first.", first.getMessage());
+        assertEquals("java.lang.IllegalArgumentException: No args provided for Template variable first.", first.getMessage());
         IllegalArgumentException second = assertThrows(IllegalArgumentException.class,
                 () -> fql("let first = ${first}\n", "let second = ${second}"));
-        assertEquals("No args provided for Template variable first.", first.getMessage());
+        assertEquals("java.lang.IllegalArgumentException: No args provided for Template variable first.", first.getMessage());
     }
 
     @Test
@@ -122,6 +125,28 @@ class QueryTest {
         assertEquals(q1.getFragments()[0].toString(), q3.getFragments()[0].toString());
         assertEquals(q1.getFragments()[1].toString(), q3.getFragments()[1].toString());
         assertNotEquals(q2.getFragments()[2], q3.getFragments()[2]);
+    }
+
+    @Test
+    public void testPrimitiveTypes() throws JsonProcessingException {
+        byte a = 0xf;
+        byte b = -0xf;
+        short c = 0xfff;
+        short d = -0xfff;
+        int e = 0xffffffff;
+        int f = -0xffffffff;
+        long g = 0xfffffffffffffffL;
+        long h = -0xfffffffffffffffL;
+        float i = (float) Math.PI;
+        double j = Math.PI;
+        boolean k = true;
+        boolean l = false;
+        char m= 'm';
+        Map<String, Object> args = new HashMap<>();
+        args.put("a", a);
+
+        Query q1 = fql("let one = ${a}", args);
+        assertEquals("{\"query\":\"let one = ${a}\",\"args\":{\"a\":\"{\\\"@byte\\\":\\\"251\\\"}\"}}", mapper.writeValueAsString(q1));
     }
 
 }

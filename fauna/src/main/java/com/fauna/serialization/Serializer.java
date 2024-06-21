@@ -1,10 +1,13 @@
 package com.fauna.serialization;
 
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fauna.common.enums.FaunaType;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,6 +26,18 @@ public class Serializer {
     public static final Set<String> TAGS = new HashSet<>(
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
+
+    public static String ser(Object obj) throws IllegalArgumentException {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            FaunaGenerator gen = new FaunaGenerator(output);
+            serialize(new MappingContext(), gen, obj);
+            gen.flush();
+            return output.toString();
+        } catch (IOException exc) {
+            throw new IllegalArgumentException("Failed to serialize " + obj.toString(), exc);
+        }
+    }
 
     public static void serialize(MappingContext context, FaunaGenerator writer, Object obj)
         throws IOException {

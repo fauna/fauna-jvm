@@ -9,23 +9,29 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.fauna.serialization.Serializer.ser;
+
 /**
  * Represents a Fauna query that is constructed from fragments.
  * This class allows the building of queries from literal and variable parts.
  */
-public class Query {
+public class Query implements Serializable {
 
     private final String query;
     private final Map<String, Object> args;
+    private final Map<String, String> serializedArgs;
 
     /**
      * Construct a Query from the given template String and args.
      * @param query A Fauna Query Language (FQL) v10 template string.
      * @param args  A map of variable names -> values.
      */
-    public Query(String query, Map<String, Object> args) {
+    public Query(String query, Map<String, Object> args) throws IllegalArgumentException {
         this.query = query;
         this.args = args;
+        Map<String, Object> reallyArgs = Objects.requireNonNullElse(args, Map.of());
+        this.serializedArgs = reallyArgs.entrySet().stream().collect(
+                Collectors.toMap(Map.Entry::getKey, e -> ser(e.getValue())));
     }
 
 
@@ -89,7 +95,17 @@ public class Query {
      */
     Fragment[] getFragments() {
         return StreamSupport.stream(
-                new FaunaTemplate(query).spliterator(), true).map(
-                part -> part.toFragment(args)).toArray(Fragment[]::new);
+                new FaunaTemplate(this.query).spliterator(), true).map(
+                part -> part.toFragment(this.args)).toArray(Fragment[]::new);
     }
+
+    public String getQuery() {
+        return this.query;
+    }
+
+    public Map<String, String> getArgs() {
+        return this.serializedArgs;
+    }
+
+
 }
