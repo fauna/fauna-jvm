@@ -126,6 +126,8 @@ public class Serializer {
                 writer.writeDateValue((LocalDate) obj);
             } else if (obj instanceof Instant) {
                 writer.writeTimeValue((Instant) obj);
+            } else if (obj instanceof byte[]) {
+                writer.writeByteArray((byte[]) obj);
             } else {
                 serializeObjectInternal(writer, obj, context);
             }

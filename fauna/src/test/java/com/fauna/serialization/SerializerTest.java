@@ -76,6 +76,19 @@ class SerializerTest {
     }
 
     @Test
+    public void testSerializeList() throws IOException {
+        List<Object> toSerialize = List.of(0x4, "hello", 1.24, true);
+        String actual = serialize(toSerialize);
+        assertEquals("[{\"@int\":\"4\"},\"hello\",{\"@double\":\"1.24\"},true]", actual);
+    }
+
+    @Test
+    public void testSerializeByteArray() throws IOException {
+        // Demonstrates handling negative values and padding.
+        byte[] byteArr   = new byte[]  {0x0, 0x1, 0x2, 0x4, 0x8, 0xf, 0x7f, 0x0, 0x0, -0x1, -0x80};
+        assertEquals("{\"@bytes\":\"AAECBAgPfwAA/4A=\"}", serialize(byteArr));
+    }
+    @Test
     public void serializeDictionary() throws IOException {
         Map<String, Object> test = new HashMap<>();
         test.put("answer", 42);

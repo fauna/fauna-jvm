@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 public class FaunaGenerator implements AutoCloseable {
 
@@ -255,6 +256,9 @@ public class FaunaGenerator implements AutoCloseable {
         writeEndObject();
     }
 
+    public void writeByteArray(byte[] bytes) throws IOException {
+        writeTaggedValue("@bytes", Base64.getEncoder().encodeToString(bytes));
+    }
     /**
      * Writes a double value as a tagged element.
      *

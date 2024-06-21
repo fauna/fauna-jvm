@@ -128,25 +128,9 @@ class QueryTest {
     }
 
     @Test
-    public void testPrimitiveTypes() throws JsonProcessingException {
-        byte a = 0xf;
-        byte b = -0xf;
-        short c = 0xfff;
-        short d = -0xfff;
-        int e = 0xffffffff;
-        int f = -0xffffffff;
-        long g = 0xfffffffffffffffL;
-        long h = -0xfffffffffffffffL;
-        float i = (float) Math.PI;
-        double j = Math.PI;
-        boolean k = true;
-        boolean l = false;
-        char m= 'm';
-        Map<String, Object> args = new HashMap<>();
-        args.put("a", a);
-
-        Query q1 = fql("let one = ${a}", args);
-        assertEquals("{\"query\":\"let one = ${a}\",\"args\":{\"a\":\"{\\\"@byte\\\":\\\"251\\\"}\"}}", mapper.writeValueAsString(q1));
+    public void testQuerySerialization() throws JsonProcessingException {
+        Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
+        assertEquals("{\"query\":\"let one = ${a}\",\"args\":{\"a\":\"{\\\"@int\\\":\\\"15\\\"}\"}}",
+                mapper.writeValueAsString(q1));
     }
-
 }
