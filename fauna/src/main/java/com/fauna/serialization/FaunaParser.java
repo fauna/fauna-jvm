@@ -283,6 +283,25 @@ public class FaunaParser {
         }
     }
 
+    public Byte getValueAsByte() {
+        validateTaggedType(FaunaTokenType.INT);
+        try {
+            return Byte.parseByte(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Byte", e);
+        }
+
+    }
+    public Short getValueAsShort() {
+        validateTaggedType(FaunaTokenType.INT);
+        try {
+            return Short.parseShort(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Short", e);
+        }
+
+    }
+
     public Integer getValueAsInt() {
         validateTaggedType(FaunaTokenType.INT);
         try {

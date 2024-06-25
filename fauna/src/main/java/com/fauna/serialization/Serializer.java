@@ -27,11 +27,13 @@ public class Serializer {
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
 
+    private static final MappingContext context = new MappingContext();
+
     public static String ser(Object obj) throws IllegalArgumentException {
         try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             FaunaGenerator gen = new FaunaGenerator(output);
-            serialize(new MappingContext(), gen, obj);
+            serialize(Serializer.context, gen, obj);
             gen.flush();
             return output.toString();
         } catch (IOException exc) {
