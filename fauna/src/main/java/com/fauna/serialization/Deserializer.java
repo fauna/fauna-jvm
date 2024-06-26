@@ -35,6 +35,7 @@ public class Deserializer {
     private static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
     private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
+    private static final IDeserializer<Character> _char = new CheckedDeserializer<>(Character.class);
     private static final IDeserializer<Module> _module = new CheckedDeserializer(Module.class);
     private static final IDeserializer<Document> _document = new CheckedDeserializer(
         Document.class);
@@ -60,7 +61,6 @@ public class Deserializer {
         DESERIALIZERS.put(int.class, _integer);
         DESERIALIZERS.put(long.class, _long);
         DESERIALIZERS.put(Long.class, _long);
-
         DESERIALIZERS.put(String.class, _string);
         DESERIALIZERS.put(LocalDate.class, _date);
         DESERIALIZERS.put(Instant.class, _time);
@@ -70,6 +70,8 @@ public class Deserializer {
         DESERIALIZERS.put(Double.class, _double);
         DESERIALIZERS.put(boolean.class, _boolean);
         DESERIALIZERS.put(Boolean.class, _boolean);
+        DESERIALIZERS.put(char.class, _char);
+        DESERIALIZERS.put(Character.class, _char);
         DESERIALIZERS.put(Module.class, _module);
         DESERIALIZERS.put(Document.class, _document);
         DESERIALIZERS.put(NamedDocument.class, _namedDocument);

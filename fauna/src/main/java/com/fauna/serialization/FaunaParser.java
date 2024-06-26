@@ -275,6 +275,19 @@ public class FaunaParser {
         }
     }
 
+    public Character getValueAsCharacter() {
+        try {
+            String val = jsonParser.getValueAsString();
+            if (val.length() >= 1) {
+                return val.charAt(0);
+            } else {
+                throw new SerializationException("Unable to parse char from empty String");
+            }
+        } catch (IOException e) {
+            throw new SerializationException("Error getting the current token as Character.");
+        }
+    }
+
     public String getValueAsString() {
         try {
             return jsonParser.getValueAsString();

@@ -157,9 +157,9 @@ class SerializerTest {
 
     @Test
     public void serializeClass() throws IOException {
-        Person test = new Person("Baz", "Luhrmann", 61);
+        Person test = new Person("Baz", "Luhrmann", 'A', 61);
         String actual = serialize(test);
-        assertEquals("{\"firstName\":\"Baz\",\"lastName\":\"Luhrmann\",\"age\":{\"@int\":\"61\"}}",
+        assertEquals("{\"firstName\":\"Baz\",\"lastName\":\"Luhrmann\",\"middleInitial\":\"A\",\"age\":{\"@int\":\"61\"}}",
             actual);
     }
 
