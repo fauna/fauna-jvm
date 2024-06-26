@@ -3,6 +3,7 @@ package com.fauna.serialization;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.Query;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -97,6 +98,15 @@ public class RoundTripTest {
         String serialized = Serializer.ser(var);
         assertEquals(String.valueOf(var), serialized);
         IDeserializer<Boolean> deserializer = Deserializer.generate(ctx, Boolean.class);
+        assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
+
+    @Test
+    public void testByteArray() throws IOException {
+        byte[] var = new byte[]{-128, 0, 127};
+        String serialized = Serializer.ser(var);
+        assertEquals("{\"@bytes\":\"gAB/\"}", serialized);
+        IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, byte[].class);
         assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
