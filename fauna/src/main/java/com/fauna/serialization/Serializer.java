@@ -1,6 +1,5 @@
 package com.fauna.serialization;
 
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fauna.common.enums.FaunaType;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
@@ -26,7 +25,7 @@ public class Serializer {
     public static final Set<String> TAGS = new HashSet<>(
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
-
+    
     private static final MappingContext context = new MappingContext();
 
     public static String ser(Object obj) throws IllegalArgumentException {
@@ -120,6 +119,8 @@ public class Serializer {
                 writer.writeDoubleValue((Double) obj);
             } else if (obj instanceof Boolean) {
                 writer.writeBooleanValue((Boolean) obj);
+            } else if (obj instanceof Character) {
+                writer.writeCharValue((Character) obj);
             } else if (obj instanceof String) {
                 writer.writeStringValue((String) obj);
             } else if (obj instanceof Module) {

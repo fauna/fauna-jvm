@@ -81,4 +81,15 @@ public class RoundTripTest {
         assertEquals(var, (double) deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
+    @ParameterizedTest
+    @ValueSource(chars = {'a', 'b', 0x2202})
+    public void testChar(char var) throws IOException {
+        String serialized = Serializer.ser(var);
+        assertEquals(3, serialized.length());
+        assertTrue(serialized.contains(String.valueOf(var)));
+        IDeserializer<Character> deserializer = Deserializer.generate(ctx, Character.class);
+        assertEquals(var, (char) deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
+
+
 }
