@@ -91,5 +91,14 @@ public class RoundTripTest {
         assertEquals(var, (char) deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testBoolean(boolean var) throws IOException {
+        String serialized = Serializer.ser(var);
+        assertEquals(String.valueOf(var), serialized);
+        IDeserializer<Boolean> deserializer = Deserializer.generate(ctx, Boolean.class);
+        assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
+
 
 }
