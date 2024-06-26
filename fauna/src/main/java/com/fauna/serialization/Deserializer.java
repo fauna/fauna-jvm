@@ -31,6 +31,7 @@ public class Deserializer {
     private static final IDeserializer<String> _string = new CheckedDeserializer(String.class);
     private static final IDeserializer<LocalDate> _date = new CheckedDeserializer(LocalDate.class);
     private static final IDeserializer<Instant> _time = new CheckedDeserializer(Instant.class);
+    private static final IDeserializer<Float> _float = new CheckedDeserializer(Float.class);
     private static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
     private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
@@ -63,6 +64,8 @@ public class Deserializer {
         DESERIALIZERS.put(String.class, _string);
         DESERIALIZERS.put(LocalDate.class, _date);
         DESERIALIZERS.put(Instant.class, _time);
+        DESERIALIZERS.put(Float.class, _float);
+        DESERIALIZERS.put(float.class, _float);
         DESERIALIZERS.put(double.class, _double);
         DESERIALIZERS.put(Double.class, _double);
         DESERIALIZERS.put(boolean.class, _boolean);

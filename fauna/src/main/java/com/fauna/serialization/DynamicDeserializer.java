@@ -102,7 +102,12 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = null;
                 break;
             case DOUBLE:
-                value = reader.getValueAsDouble();
+                // Fun fact: If you try to use a ternary operator (?) here, it will cast float to double?
+                if (Float.class.equals(type)) {
+                    value = reader.getValueAsFloat();
+                } else {
+                    value = reader.getValueAsDouble();
+                }
                 break;
             case LONG:
                 value = reader.getValueAsLong();

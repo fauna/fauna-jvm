@@ -337,6 +337,15 @@ public class FaunaParser {
         }
     }
 
+    public Float getValueAsFloat() {
+        validateTaggedType(DOUBLE);
+        try {
+            return Float.parseFloat(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Float", e);
+        }
+    }
+
     public Double getValueAsDouble() {
         validateTaggedType(DOUBLE);
         try {
