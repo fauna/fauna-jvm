@@ -5,7 +5,9 @@ import com.fauna.common.connection.DriverEnvironment;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

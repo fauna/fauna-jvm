@@ -3,7 +3,6 @@ package com.fauna.query.builder;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,7 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fauna.query.builder.Query.fql;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class QueryTest {
 
@@ -70,7 +72,8 @@ class QueryTest {
     }
 
     @Test
-    public void testOverloadedFql() {
+    public void testOverloadedFqlBuildingMethods() {
+        // Test that the four different fql(...) methods produce equivalent results.
         Map<String, Object> vars = Map.of("n1", 5);
         Query explicit_vars = fql(List.of("let age = ${n1}", "\"Alice is #{age} years old.\""), vars);
         Query implicit_vars = fql("let age = ${n1}\n\"Alice is #{age} years old.\"", vars);

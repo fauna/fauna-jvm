@@ -1,7 +1,11 @@
 package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.exception.*;
+import com.fauna.exception.AuthenticationException;
+import com.fauna.exception.FaunaException;
+import com.fauna.exception.InvalidQueryException;
+import com.fauna.exception.ProtocolException;
+import com.fauna.exception.ServiceErrorException;
 import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
