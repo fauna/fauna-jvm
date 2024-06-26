@@ -1,7 +1,5 @@
 package com.fauna.common.connection;
 
-import com.fauna.common.configuration.JvmDriver;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -12,6 +10,10 @@ public class DriverEnvironment {
     private final String env;
     private final String os;
     private String runtime;
+
+    public enum JvmDriver {
+        JAVA, SCALA
+    }
 
     public DriverEnvironment(JvmDriver jvmDriver) {
         this.env = getRuntimeEnvironment();

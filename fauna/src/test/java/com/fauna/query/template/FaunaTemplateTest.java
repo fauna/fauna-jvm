@@ -1,9 +1,12 @@
 package com.fauna.query.template;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.StreamSupport;
+
 import org.junit.jupiter.api.Test;
 
 class FaunaTemplateTest {
@@ -60,6 +63,32 @@ class FaunaTemplateTest {
         assertEquals(TemplatePartType.LITERAL, expanded.get(0).getType());
         assertEquals("{not_a_var}'", expanded.get(1).getPart());
         assertEquals(TemplatePartType.LITERAL, expanded.get(1).getType());
+    }
+
+    @Test
+    void testTemplateParts() {
+        // The 4 Fauna line terminators are:
+        //      U+000A \n   Line feed
+        //      U+000D \r   Carriage return
+        //      U+2028      Line separator
+        //      U+2029      Paragraph separator
+        // https://docs.fauna.com/fauna/current/reference/fql_reference/lexical#line-terminators
+        String my_var = "my_var";
+        String fql = String.join("", new String[] {
+                "let x = ${my_var}", Character.toString(0x000a),
+                "let y = ${my_var}", Character.toString(0x000d),
+                "let z = ${my_var}", Character.toString(0x2028),
+                "x * y", Character.toString(0x2029),
+                "x + y"});
+        FaunaTemplate template = new FaunaTemplate(fql);
+        String[] parts = StreamSupport.stream(template.spliterator(), true).map(
+                FaunaTemplate.TemplatePart::getPart).toArray(String[]::new);
+        assertArrayEquals(new String[] {
+                fql.substring(0, 8), my_var,
+                fql.substring(17, 26), my_var,
+                fql.substring(35, 44), my_var,
+                fql.substring(53, 65)}, parts);
+
     }
 
 }

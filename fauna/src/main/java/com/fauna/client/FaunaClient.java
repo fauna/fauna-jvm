@@ -1,9 +1,11 @@
 package com.fauna.client;
 
-import com.fauna.common.configuration.JvmDriver;
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.connection.RequestBuilder;
-import com.fauna.exception.*;
+import com.fauna.exception.AuthenticationException;
+import com.fauna.exception.FaunaException;
+import com.fauna.exception.InvalidQueryException;
+import com.fauna.exception.ProtocolException;
+import com.fauna.exception.ServiceErrorException;
 import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
@@ -15,7 +17,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -23,9 +24,9 @@ import java.util.concurrent.Executors;
  */
 public class FaunaClient {
 
-    private static final int DEFAULT_THREAD_POOL = 20;
-    private final FaunaConfig config;
+    // private final FaunaConfig config;
     private final HttpClient httpClient;
+    private final RequestBuilder requestBuilder;
 
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
@@ -38,10 +39,11 @@ public class FaunaClient {
      */
     public FaunaClient(@Nonnull FaunaConfig faunaConfig,
                        @Nonnull HttpClient httpClient) {
-        this.config = faunaConfig;
         this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
+        } else {
+            this.requestBuilder = new RequestBuilder(faunaConfig);
         }
         if (Objects.isNull(httpClient)) {
             throw new IllegalArgumentException("HttpClient cannot be null.");
@@ -75,10 +77,6 @@ public class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        RequestBuilder requestBuilder = RequestBuilder.builder()
-                .faunaConfig(this.config)
-                .jvmDriver(JvmDriver.JAVA)
-                .build();
         HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
 
 
@@ -91,10 +89,6 @@ public class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         try {
-            RequestBuilder requestBuilder = RequestBuilder.builder()
-                    .faunaConfig(this.config)
-                    .jvmDriver(JvmDriver.JAVA)
-                    .build();
             HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
             HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC,
