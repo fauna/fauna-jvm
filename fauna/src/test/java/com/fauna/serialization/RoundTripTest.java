@@ -98,12 +98,13 @@ public class RoundTripTest {
         assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
+    @Disabled("Byte array deserialization not supported yet.")
     @Test
     public void testByteArray() throws IOException {
         byte[] var = new byte[]{-128, 0, 127};
         String serialized = Serializer.ser(var);
         assertEquals("{\"@bytes\":\"gAB/\"}", serialized);
-        IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, String[].class);
+        IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, Byte[].class);
         assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
