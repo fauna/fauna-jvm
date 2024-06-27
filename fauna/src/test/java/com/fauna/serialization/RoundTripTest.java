@@ -8,6 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -95,6 +97,17 @@ public class RoundTripTest {
         String serialized = Serializer.ser(var);
         assertEquals(String.valueOf(var), serialized);
         IDeserializer<Boolean> deserializer = Deserializer.generate(ctx, Boolean.class);
+        assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
+
+    @Disabled("Map deserialization not supported yet.")
+    @Test
+    public void testMap() throws IOException {
+        Map<String, Object> var = Map.of("foo", 1, "bar", "two");
+        String serialized = Serializer.ser(var);
+        assertTrue(serialized.contains("{\"@int\":\"1\"}"));
+        assertEquals("{\"foo\":{\"@int\":\"1\"},\"bar\":\"two\"}", serialized);
+        IDeserializer<Map> deserializer = Deserializer.generate(ctx, Map.class);
         assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
