@@ -156,6 +156,27 @@ class SerializerTest {
     }
 
     @Test
+    public void serializeObjectArray() throws IOException {
+        Object[] test = {Integer.valueOf(42), "foo bar", List.of("hello"), Map.of("foo", "bar")};
+        String actual = serialize(test);
+        assertEquals("[{\"@int\":\"42\"},\"foo bar\",[\"hello\"],{\"foo\":\"bar\"}]", actual);
+    }
+
+    @Test
+    public void serializeStringArray() throws IOException {
+        String[] test = {"foo", "bar", "baz"};
+        String actual = serialize(test);
+        assertEquals("[\"foo\",\"bar\",\"baz\"]", actual);
+    }
+
+    @Test
+    public void serializeNestedStringArray() throws IOException {
+        String[][] test = {{"foo"}, {"bar", "baz"}};
+        String actual = serialize(test);
+        assertEquals("[[\"foo\"],[\"bar\",\"baz\"]]", actual);
+    }
+
+    @Test
     public void serializeClass() throws IOException {
         Person test = new Person("Baz", "Luhrmann", 'A', 61);
         String actual = serialize(test);

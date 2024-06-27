@@ -8,6 +8,7 @@ import com.fauna.mapping.MappingContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -144,6 +145,12 @@ public class Serializer {
         } else if (obj instanceof List) {
             writer.writeStartArray();
             for (Object item : (List<?>) obj) {
+                serialize(context, writer, item, null);
+            }
+            writer.writeEndArray();
+        } else if (obj instanceof Object[]) {
+            writer.writeStartArray();
+            for (Object item : (Object[]) obj) {
                 serialize(context, writer, item, null);
             }
             writer.writeEndArray();
