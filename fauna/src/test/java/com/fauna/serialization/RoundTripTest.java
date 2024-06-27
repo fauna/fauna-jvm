@@ -2,15 +2,12 @@ package com.fauna.serialization;
 
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
-import com.fauna.query.builder.Query;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
-import java.util.Map;
-
-import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -106,9 +103,38 @@ public class RoundTripTest {
         byte[] var = new byte[]{-128, 0, 127};
         String serialized = Serializer.ser(var);
         assertEquals("{\"@bytes\":\"gAB/\"}", serialized);
-        IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, byte[].class);
+        IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, String[].class);
         assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
     }
 
+    @Disabled("Object array deserialization not supported yet.")
+    @Test
+    public void testObjectArray() throws IOException {
+        Object[] var = new Object[]{-127, 12.5, "hello"};
+        String serialized = Serializer.ser(var);
+        // assertEquals("{\"@shorts\":\"gAB/\"}", serialized);
+        IDeserializer<Object[]> deserializer = Deserializer.generate(ctx, Object[].class);
+        assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
+
+    @Disabled("Primitive arrays not supported yet")
+    @Test
+    public void testShortArray() throws IOException {
+        short[] var = new short[]{-128, 0, 127};
+        String serialized = Serializer.ser(var);
+        assertEquals("{\"@shorts\":\"gAB/\"}", serialized);
+        IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, short[].class);
+        assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
+
+    @Disabled("Primitive arrays not supported yet")
+    @Test
+    public void testIntArray() throws IOException {
+        int[] var = new int[]{-128, 0, 127};
+        String serialized = Serializer.ser(var);
+        assertEquals("{\"@ints\":\"gAB/\"}", serialized);
+        IDeserializer<Integer[]> deserializer = Deserializer.generate(ctx, int[].class);
+        assertEquals(var, deserializer.deserialize(ctx, new FaunaParser(serialized)));
+    }
 
 }
