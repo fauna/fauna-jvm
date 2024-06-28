@@ -1,7 +1,5 @@
 package com.fauna.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.exception.AuthenticationException;
 import com.fauna.exception.FaunaException;
@@ -25,10 +23,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FaunaClient {
 
-    // private final FaunaConfig config;
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
-    private final ObjectMapper mapper;
 
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
@@ -42,7 +38,6 @@ public class FaunaClient {
     public FaunaClient(FaunaConfig faunaConfig,
                        HttpClient httpClient) {
         this.httpClient = httpClient;
-        this.mapper = new ObjectMapper();
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
         } else {
@@ -80,12 +75,7 @@ public class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        try {
-            HttpRequest request = requestBuilder.buildRequest(mapper.writeValueAsString(fql));
-        } catch (JsonProcessingException exc) {
-            throw new FaunaException("TODO proper exception handling.");
-        }
-
+        HttpRequest request = requestBuilder.buildRequest(fql);
 
         return CompletableFuture.supplyAsync(() -> QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC, 200, "{\"hello\"}"));
 
@@ -95,8 +85,8 @@ public class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
+        HttpRequest request = requestBuilder.buildRequest(fql);
         try {
-            HttpRequest request = requestBuilder.buildRequest(mapper.writeValueAsString(fql));
             HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC,
                     response.statusCode(), response.body());

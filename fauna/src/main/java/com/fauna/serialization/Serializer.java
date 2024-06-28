@@ -5,10 +5,10 @@ import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
+import com.fauna.query.builder.LiteralFragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -106,6 +106,8 @@ public class Serializer {
         } else {
             if (obj == null) {
                 writer.writeNullValue();
+            } else if (obj instanceof LiteralFragment) {
+                writer.writeStringValue( ((LiteralFragment) obj).getValue());
             } else if (obj instanceof Byte) {
                 writer.writeIntValue((Byte) obj);
             } else if (obj instanceof Short) {

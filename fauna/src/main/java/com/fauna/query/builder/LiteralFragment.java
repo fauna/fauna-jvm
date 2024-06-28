@@ -1,5 +1,7 @@
 package com.fauna.query.builder;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Objects;
 
 /**
@@ -46,6 +48,11 @@ public class LiteralFragment extends Fragment {
     @Override
     public int hashCode() {
         return value != null ? value.hashCode() : 0;
+    }
+
+    @JsonValue
+    public String getValue() {
+        return this.value;
     }
 
 }

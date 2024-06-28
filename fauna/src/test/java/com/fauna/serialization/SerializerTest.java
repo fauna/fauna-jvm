@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -88,6 +89,8 @@ class SerializerTest {
         byte[] byteArr   = new byte[]  {0x0, 0x1, 0x2, 0x4, 0x8, 0xf, 0x7f, 0x0, 0x0, -0x1, -0x80};
         assertEquals("{\"@bytes\":\"AAECBAgPfwAA/4A=\"}", serialize(byteArr));
     }
+
+
     @Test
     public void serializeDictionary() throws IOException {
         Map<String, Object> test = new HashMap<>();
