@@ -449,7 +449,7 @@ public class DeserializerTest {
         String given = "{" +
             "\"firstName\": \"Baz2\"," +
             "\"lastName\": \"Luhrmann2\"," +
-            "\"middleInitial\": \"A\"," +
+            "\"middleInitial\": {\"@int\":\"65\"}," +
             "\"age\": { \"@int\": \"612\" }" +
             "}";
 
@@ -489,6 +489,13 @@ public class DeserializerTest {
         assertEquals("Baz2", p.getFirstName());
         assertEquals("Luhrmann2", p.getLastName());
         assertNull(p.getAge());
+    }
+
+    @Test
+    public void deserializeIntoChar() throws IOException {
+        String given ="{\"@int\": \"99\"}";
+        assertEquals('c', (char) deserialize(given, ctx -> Deserializer.generate(ctx, Character.class)));
+
     }
 
 }

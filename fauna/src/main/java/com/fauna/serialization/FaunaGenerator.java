@@ -340,10 +340,6 @@ public class FaunaGenerator implements AutoCloseable {
         jsonGenerator.writeBoolean(value);
     }
 
-    public void writeCharValue(Character value) throws IOException {
-        jsonGenerator.writeString(String.valueOf(value));
-    }
-
     /**
      * Writes a null value to the stream.
      *

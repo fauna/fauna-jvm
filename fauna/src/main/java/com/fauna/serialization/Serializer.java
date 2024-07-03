@@ -8,7 +8,6 @@ import com.fauna.mapping.MappingContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -121,7 +120,7 @@ public class Serializer {
             } else if (obj instanceof Boolean) {
                 writer.writeBooleanValue((Boolean) obj);
             } else if (obj instanceof Character) {
-                writer.writeCharValue((Character) obj);
+                writer.writeIntValue(((char) obj));
             } else if (obj instanceof String) {
                 writer.writeStringValue((String) obj);
             } else if (obj instanceof Module) {

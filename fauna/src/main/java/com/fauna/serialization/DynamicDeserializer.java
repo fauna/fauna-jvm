@@ -85,16 +85,14 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                     value = reader.getValueAsByte();
                 } else if (Short.class.equals(type)) {
                     value = reader.getValueAsShort();
+                } else if (Character.class.equals(type)) {
+                    value = reader.getValueAsCharacter();
                 } else {
                     value = reader.getValueAsInt();
                 }
                 break;
             case STRING:
-                if (Character.class.equals(type)) {
-                    value = reader.getValueAsCharacter();
-                } else {
-                    value = reader.getValueAsString();
-                }
+                value = reader.getValueAsString();
                 break;
             case DATE:
                 value = reader.getValueAsLocalDate();
