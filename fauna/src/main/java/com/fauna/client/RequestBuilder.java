@@ -56,7 +56,7 @@ public class RequestBuilder {
      * @return An HttpRequest object configured for the Fauna query.
      */
     public HttpRequest buildRequest(Query fql) {
-        return this.httpRequestBuilder.POST(HttpRequest.BodyPublishers.ofString(Serializer.ser(new FaunaRequest(fql)))).build();
+        return this.httpRequestBuilder.POST(HttpRequest.BodyPublishers.ofString(Serializer.serialize(new FaunaRequest(fql)))).build();
     }
 
     private String buildAuthToken() {

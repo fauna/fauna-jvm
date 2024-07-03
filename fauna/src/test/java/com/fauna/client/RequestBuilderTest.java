@@ -73,6 +73,7 @@ class RequestBuilderTest {
 
         // This was faster, but now I think it's taking time to do things like create the FaunaRequest object.
         // Being able to build 10k requests per second still seems like reasonable performance.
-        IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(fql("Sample FQL Query ${i}", Map.of("i", i))));
+        IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(
+                fql("Sample FQL Query ${i}", Map.of("i", i))));
     }
 }

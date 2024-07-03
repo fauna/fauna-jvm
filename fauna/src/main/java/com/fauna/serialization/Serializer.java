@@ -29,7 +29,7 @@ public class Serializer {
     
     private static final MappingContext context = new MappingContext();
 
-    public static String ser(Object obj) throws IllegalArgumentException {
+    public static String serialize(Object obj) throws IllegalArgumentException {
         try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             FaunaGenerator gen = new FaunaGenerator(output);
