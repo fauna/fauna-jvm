@@ -102,7 +102,7 @@ class QueryTest {
     @Test
     public void testQuerySerialization() throws JsonProcessingException {
         Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
-        assertEquals("{\"fql\":[\"let one = \",{\"value\":15}]}",
+        assertEquals("{\"fql\":[\"let one = \",{\"value\":{\"@int\": 15}}]}",
                 Serializer.serialize(q1));
     }
 }
