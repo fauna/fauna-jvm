@@ -1,7 +1,7 @@
 package com.fauna.query.builder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fauna.serialization.Serializer;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
@@ -17,8 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QueryTest {
-
-    ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void testQueryBuilderStrings() {
@@ -105,6 +103,6 @@ class QueryTest {
     public void testQuerySerialization() throws JsonProcessingException {
         Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
         assertEquals("{\"fql\":[\"let one = \",{\"value\":15}]}",
-                mapper.writeValueAsString(q1));
+                Serializer.serialize(q1));
     }
 }
