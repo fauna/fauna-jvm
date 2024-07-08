@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
+
 /**
  * Represents a Fauna query that is constructed from fragments.
  * This class allows the building of queries from literal and variable parts.

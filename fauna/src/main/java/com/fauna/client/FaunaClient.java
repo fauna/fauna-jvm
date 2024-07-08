@@ -76,7 +76,6 @@ public class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         HttpRequest request = requestBuilder.buildRequest(fql);
-
         return CompletableFuture.supplyAsync(() -> QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC, 200, "{\"hello\"}"));
 
     }

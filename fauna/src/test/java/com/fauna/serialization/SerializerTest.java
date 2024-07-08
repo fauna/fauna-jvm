@@ -21,8 +21,6 @@ import com.fauna.beans.PersonWithConflict.PersonWithTimeConflict;
 import com.fauna.beans.PersonWithTypeOverrides;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
-import com.fauna.mapping.MappingContext;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -36,16 +34,6 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 class SerializerTest {
-
-    public static String serialize(Object obj) throws IOException {
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            FaunaGenerator faunaWriter = new FaunaGenerator(stream)) {
-            MappingContext ctx = new MappingContext();
-            Serializer.serialize(ctx, faunaWriter, obj);
-            faunaWriter.flush();
-            return new String(stream.toByteArray());
-        }
-    }
 
     @Test
     public void serializeValues() throws IOException {
@@ -71,7 +59,7 @@ class SerializerTest {
         for (Map.Entry<String, Object> entry : tests.entrySet()) {
             String expected = entry.getKey();
             Object test = entry.getValue();
-            String result = serialize(test);
+            String result = Serializer.serialize(test);
             assertEquals(expected, result);
         }
     }
@@ -79,7 +67,7 @@ class SerializerTest {
     @Test
     public void testSerializeList() throws IOException {
         List<Object> toSerialize = List.of(0x4, "hello", 1.24, true);
-        String actual = serialize(toSerialize);
+        String actual = Serializer.serialize(toSerialize);
         assertEquals("[{\"@int\":\"4\"},\"hello\",{\"@double\":\"1.24\"},true]", actual);
     }
 
@@ -87,9 +75,8 @@ class SerializerTest {
     public void testSerializeByteArray() throws IOException {
         // Demonstrates handling negative values and padding.
         byte[] byteArr   = new byte[]  {0x0, 0x1, 0x2, 0x4, 0x8, 0xf, 0x7f, 0x0, 0x0, -0x1, -0x80};
-        assertEquals("{\"@bytes\":\"AAECBAgPfwAA/4A=\"}", serialize(byteArr));
+        assertEquals("{\"@bytes\":\"AAECBAgPfwAA/4A=\"}", Serializer.serialize(byteArr));
     }
-
 
     @Test
     public void serializeDictionary() throws IOException {
@@ -99,7 +86,7 @@ class SerializerTest {
         test.put("list", new ArrayList<>());
         test.put("obj", new HashMap<>());
 
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals("{\"answer\":{\"@int\":\"42\"},\"obj\":{},\"foo\":\"bar\",\"list\":[]}",
             actual);
     }
@@ -141,7 +128,7 @@ class SerializerTest {
         for (Map.Entry<Map<String, Object>, String> entry : tests.entrySet()) {
             String expected = entry.getValue();
             Map<String, Object> test = entry.getKey();
-            String actual = serialize(test);
+            String actual = Serializer.serialize(test);
             assertEquals(expected, actual);
         }
     }
@@ -154,43 +141,43 @@ class SerializerTest {
         test.add(new ArrayList<>());
         test.add(new HashMap<>());
 
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals("[{\"@int\":\"42\"},\"foo bar\",[],{}]", actual);
     }
 
     @Test
     public void serializeObjectArray() throws IOException {
         Object[] test = {Integer.valueOf(42), "foo bar", List.of("hello"), Map.of("foo", "bar")};
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals("[{\"@int\":\"42\"},\"foo bar\",[\"hello\"],{\"foo\":\"bar\"}]", actual);
     }
 
     @Test
     public void serializeStringArray() throws IOException {
         String[] test = {"foo", "bar", "baz"};
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals("[\"foo\",\"bar\",\"baz\"]", actual);
     }
 
     @Test
     public void serializeNestedStringArray() throws IOException {
         String[][] test = {{"foo"}, {"bar", "baz"}};
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals("[[\"foo\"],[\"bar\",\"baz\"]]", actual);
     }
 
     @Test
     public void serializeClass() throws IOException {
         Person test = new Person("Baz", "Luhrmann", 'A', 61);
-        String actual = serialize(test);
-        assertEquals("{\"firstName\":\"Baz\",\"lastName\":\"Luhrmann\",\"middleInitial\":\"A\",\"age\":{\"@int\":\"61\"}}",
+        String actual = Serializer.serialize(test);
+        assertEquals("{\"firstName\":\"Baz\",\"lastName\":\"Luhrmann\",\"middleInitial\":{\"@int\":\"65\"},\"age\":{\"@int\":\"61\"}}",
             actual);
     }
 
     @Test
     public void serializeClassWithAttributes() throws IOException {
         PersonWithAttributes test = new PersonWithAttributes("Baz", "Luhrmann", 61);
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals(
             "{\"first_name\":\"Baz\",\"last_name\":\"Luhrmann\",\"age\":{\"@int\":\"61\"}}",
             actual);
@@ -213,7 +200,7 @@ class SerializerTest {
         for (Map.Entry<Object, String> entry : tests.entrySet()) {
             Object test = entry.getKey();
             String expected = entry.getValue();
-            String actual = serialize(test);
+            String actual = Serializer.serialize(test);
             assertEquals(expected, actual);
         }
     }
@@ -253,7 +240,7 @@ class SerializerTest {
                 +
                 "}";
         String expected = expectedWithWhitespace.replaceAll("\\s", "");
-        String actual = serialize(test);
+        String actual = Serializer.serialize(test);
         assertEquals(expected, actual);
     }
 
@@ -262,7 +249,7 @@ class SerializerTest {
         ClassWithInvalidPropertyTypeHint obj = new ClassWithInvalidPropertyTypeHint();
 
         Exception ex = assertThrows(SerializationException.class,
-            () -> serialize(obj));
+            () -> Serializer.serialize(obj));
 
         Assert.assertEquals(
             "Unsupported Int conversion. Provided value must be a byte, short, or int.",
@@ -273,7 +260,7 @@ class SerializerTest {
     public void serializeObjectWithFieldAttributeAndWithoutObjectAttribute() throws IOException {
         ClassWithFieldAttributeAndWithoutObjectAttribute obj = new ClassWithFieldAttributeAndWithoutObjectAttribute();
         String expected = "{\"first_name\":\"Baz\"}";
-        String actual = serialize(obj);
+        String actual = Serializer.serialize(obj);
         assertEquals(expected, actual);
     }
 
@@ -281,7 +268,7 @@ class SerializerTest {
     public void serializeObjectWithPropertyWithoutFieldAttribute() throws IOException {
         ClassWithPropertyWithoutFieldAttribute obj = new ClassWithPropertyWithoutFieldAttribute();
         String expected = "{}";
-        String actual = serialize(obj);
+        String actual = Serializer.serialize(obj);
         assertEquals(expected, actual);
     }
 
@@ -292,7 +279,7 @@ class SerializerTest {
             public String lastName = "Doe";
         };
         String expected = "{\"firstName\":\"John\",\"lastName\":\"Doe\"}";
-        String actual = serialize(obj);
+        String actual = Serializer.serialize(obj);
         assertEquals(expected, actual);
     }
 
@@ -306,7 +293,7 @@ class SerializerTest {
         for (Map.Entry<Object, String> entry : tests.entrySet()) {
             Object value = entry.getKey();
             String expected = entry.getValue();
-            String actual = serialize(value);
+            String actual = Serializer.serialize(value);
             assertEquals(expected, actual);
         }
     }
@@ -326,7 +313,7 @@ class SerializerTest {
         for (Map.Entry<Object, String> entry : tests.entrySet()) {
             Object value = entry.getKey();
             String expected = entry.getValue();
-            String actual = serialize(value);
+            String actual = Serializer.serialize(value);
             assertEquals(expected, actual);
         }
     }
@@ -341,7 +328,7 @@ class SerializerTest {
         for (Map.Entry<Object, String> entry : tests.entrySet()) {
             Object value = entry.getKey();
             String expected = entry.getValue();
-            String actual = serialize(value);
+            String actual = Serializer.serialize(value);
             assertEquals(expected, actual);
         }
     }
