@@ -1,5 +1,7 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.exception.AuthenticationException;
 import com.fauna.exception.FaunaException;
@@ -11,7 +13,6 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.serialization.Deserializer;
 
-import javax.annotation.Nonnull;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -27,6 +28,7 @@ public class FaunaClient {
     // private final FaunaConfig config;
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
+    private final ObjectMapper mapper;
 
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
@@ -37,9 +39,10 @@ public class FaunaClient {
      * @param faunaConfig The Fauna configuration settings.
      * @param httpClient  A Java HTTP client instance.
      */
-    public FaunaClient(@Nonnull FaunaConfig faunaConfig,
-                       @Nonnull HttpClient httpClient) {
+    public FaunaClient(FaunaConfig faunaConfig,
+                       HttpClient httpClient) {
         this.httpClient = httpClient;
+        this.mapper = new ObjectMapper();
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
         } else {
@@ -55,7 +58,7 @@ public class FaunaClient {
      *
      * @param faunaConfig The Fauna configuration settings.
      */
-    public FaunaClient(@Nonnull FaunaConfig faunaConfig) {
+    public FaunaClient(FaunaConfig faunaConfig) {
         this(faunaConfig, HttpClient.newBuilder().build());
     }
 
@@ -73,23 +76,27 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(@Nonnull Query fql) {
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql) throws FaunaException {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
+        try {
+            HttpRequest request = requestBuilder.buildRequest(mapper.writeValueAsString(fql));
+        } catch (JsonProcessingException exc) {
+            throw new FaunaException("TODO proper exception handling.");
+        }
 
 
         return CompletableFuture.supplyAsync(() -> QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC, 200, "{\"hello\"}"));
 
     }
 
-    public QueryResponse query(@Nonnull Query fql) throws FaunaException {
+    public QueryResponse query(Query fql) throws FaunaException {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         try {
-            HttpRequest request = requestBuilder.buildRequest(fql.toString()); // TODO: Properly serialize?
+            HttpRequest request = requestBuilder.buildRequest(mapper.writeValueAsString(fql));
             HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC,
                     response.statusCode(), response.body());

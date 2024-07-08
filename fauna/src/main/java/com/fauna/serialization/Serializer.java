@@ -5,6 +5,8 @@ import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,6 +25,20 @@ public class Serializer {
     public static final Set<String> TAGS = new HashSet<>(
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
+    
+    private static final MappingContext context = new MappingContext();
+
+    public static String ser(Object obj) throws IllegalArgumentException {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            FaunaGenerator gen = new FaunaGenerator(output);
+            serialize(Serializer.context, gen, obj);
+            gen.flush();
+            return output.toString();
+        } catch (IOException exc) {
+            throw new IllegalArgumentException("Failed to serialize " + obj.toString(), exc);
+        }
+    }
 
     public static void serialize(MappingContext context, FaunaGenerator writer, Object obj)
         throws IOException {
@@ -103,6 +119,8 @@ public class Serializer {
                 writer.writeDoubleValue((Double) obj);
             } else if (obj instanceof Boolean) {
                 writer.writeBooleanValue((Boolean) obj);
+            } else if (obj instanceof Character) {
+                writer.writeIntValue(((char) obj));
             } else if (obj instanceof String) {
                 writer.writeStringValue((String) obj);
             } else if (obj instanceof Module) {
@@ -111,6 +129,8 @@ public class Serializer {
                 writer.writeDateValue((LocalDate) obj);
             } else if (obj instanceof Instant) {
                 writer.writeTimeValue((Instant) obj);
+            } else if (obj instanceof byte[]) {
+                writer.writeByteArray((byte[]) obj);
             } else {
                 serializeObjectInternal(writer, obj, context);
             }
@@ -124,6 +144,12 @@ public class Serializer {
         } else if (obj instanceof List) {
             writer.writeStartArray();
             for (Object item : (List<?>) obj) {
+                serialize(context, writer, item, null);
+            }
+            writer.writeEndArray();
+        } else if (obj instanceof Object[]) {
+            writer.writeStartArray();
+            for (Object item : (Object[]) obj) {
                 serialize(context, writer, item, null);
             }
             writer.writeEndArray();

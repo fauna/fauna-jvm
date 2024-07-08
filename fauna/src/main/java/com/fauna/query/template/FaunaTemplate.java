@@ -4,7 +4,6 @@ import com.fauna.query.builder.Fragment;
 import com.fauna.query.builder.LiteralFragment;
 import com.fauna.query.builder.ValueFragment;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -168,7 +167,7 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
             return type;
         }
 
-        public Fragment toFragment(@Nullable Map<String, Object> args) {
+        public Fragment toFragment(Map<String, Object> args) {
             if (this.getType().equals(TemplatePartType.VARIABLE)) {
                 if (Objects.isNull(args)) {
                     throw new IllegalArgumentException(

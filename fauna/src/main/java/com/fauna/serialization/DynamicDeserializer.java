@@ -11,6 +11,7 @@ import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.exception.SerializationException;
 import com.fauna.mapping.MappingContext;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,10 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         _page = new PageDeserializer<>(this);
     }
 
+    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
+        return checkedDeserialize(context, reader, null);
+    }
+
     /**
      * Deserializes the value from the FaunaParser.
      *
@@ -54,7 +59,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
      * @param reader  The FaunaParser instance to read from.
      * @return The deserialized value.
      */
-    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T checkedDeserialize(MappingContext context, FaunaParser reader, Type type) throws IOException {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
@@ -76,7 +81,15 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = reader.getValueAsModule();
                 break;
             case INT:
-                value = reader.getValueAsInt();
+                if (Byte.class.equals(type)) {
+                    value = reader.getValueAsByte();
+                } else if (Short.class.equals(type)) {
+                    value = reader.getValueAsShort();
+                } else if (Character.class.equals(type)) {
+                    value = reader.getValueAsCharacter();
+                } else {
+                    value = reader.getValueAsInt();
+                }
                 break;
             case STRING:
                 value = reader.getValueAsString();
@@ -91,7 +104,12 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = null;
                 break;
             case DOUBLE:
-                value = reader.getValueAsDouble();
+                // Fun fact: If you try to use a ternary operator (?) here, it will cast float to double?
+                if (Float.class.equals(type)) {
+                    value = reader.getValueAsFloat();
+                } else {
+                    value = reader.getValueAsDouble();
+                }
                 break;
             case LONG:
                 value = reader.getValueAsLong();

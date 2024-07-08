@@ -26,12 +26,16 @@ import java.util.Map;
 public class Deserializer {
 
     private static final IDeserializer<Integer> _integer = new CheckedDeserializer(Integer.class);
+    private static final IDeserializer<Byte> _byte = new CheckedDeserializer(Byte.class);
+    private static final IDeserializer<Short> _short = new CheckedDeserializer(Short.class);
     private static final IDeserializer<String> _string = new CheckedDeserializer(String.class);
     private static final IDeserializer<LocalDate> _date = new CheckedDeserializer(LocalDate.class);
     private static final IDeserializer<Instant> _time = new CheckedDeserializer(Instant.class);
+    private static final IDeserializer<Float> _float = new CheckedDeserializer(Float.class);
     private static final IDeserializer<Double> _double = new CheckedDeserializer(Double.class);
     private static final IDeserializer<Long> _long = new CheckedDeserializer(Long.class);
     private static final IDeserializer<Boolean> _boolean = new CheckedDeserializer(Boolean.class);
+    private static final IDeserializer<Character> _char = new CheckedDeserializer<>(Character.class);
     private static final IDeserializer<Module> _module = new CheckedDeserializer(Module.class);
     private static final IDeserializer<Document> _document = new CheckedDeserializer(
         Document.class);
@@ -49,17 +53,25 @@ public class Deserializer {
     private static final Map<Class<?>, IDeserializer<?>> DESERIALIZERS = new HashMap<>();
 
     static {
+        DESERIALIZERS.put(Byte.class, _byte);
+        DESERIALIZERS.put(byte.class, _byte);
+        DESERIALIZERS.put(Short.class, _short);
+        DESERIALIZERS.put(short.class, _short);
         DESERIALIZERS.put(Integer.class, _integer);
         DESERIALIZERS.put(int.class, _integer);
+        DESERIALIZERS.put(long.class, _long);
+        DESERIALIZERS.put(Long.class, _long);
         DESERIALIZERS.put(String.class, _string);
         DESERIALIZERS.put(LocalDate.class, _date);
         DESERIALIZERS.put(Instant.class, _time);
+        DESERIALIZERS.put(Float.class, _float);
+        DESERIALIZERS.put(float.class, _float);
         DESERIALIZERS.put(double.class, _double);
         DESERIALIZERS.put(Double.class, _double);
-        DESERIALIZERS.put(long.class, _long);
-        DESERIALIZERS.put(Long.class, _long);
         DESERIALIZERS.put(boolean.class, _boolean);
         DESERIALIZERS.put(Boolean.class, _boolean);
+        DESERIALIZERS.put(char.class, _char);
+        DESERIALIZERS.put(Character.class, _char);
         DESERIALIZERS.put(Module.class, _module);
         DESERIALIZERS.put(Document.class, _document);
         DESERIALIZERS.put(NamedDocument.class, _namedDocument);

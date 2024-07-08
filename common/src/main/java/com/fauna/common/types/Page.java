@@ -7,14 +7,19 @@ import java.util.List;
  *
  * @param <T> The type of data contained in the page.
  */
-public record Page<T>(List<T> data, String after) {
+public class Page<T>{
+    private final List<T> data;
+    private final String after;
 
-    @Override
+    public Page(List<T> data, String after) {
+        this.data = data;
+        this.after = after;
+    }
+
     public List<T> data() {
         return data;
     }
 
-    @Override
     public String after() {
         return after;
     }

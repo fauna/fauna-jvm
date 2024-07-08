@@ -275,12 +275,36 @@ public class FaunaParser {
         }
     }
 
+    public Character getValueAsCharacter() {
+        validateTaggedType(FaunaTokenType.INT);
+        return Character.valueOf((char) Integer.parseInt(taggedTokenValue));
+    }
+
     public String getValueAsString() {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
             throw new SerializationException("Error getting the current token as String", e);
         }
+    }
+
+    public Byte getValueAsByte() {
+        validateTaggedType(FaunaTokenType.INT);
+        try {
+            return Byte.parseByte(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Byte", e);
+        }
+
+    }
+    public Short getValueAsShort() {
+        validateTaggedType(FaunaTokenType.INT);
+        try {
+            return Short.parseShort(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Short", e);
+        }
+
     }
 
     public Integer getValueAsInt() {
@@ -315,6 +339,15 @@ public class FaunaParser {
             return Instant.parse(taggedTokenValue);
         } catch (DateTimeParseException e) {
             throw new SerializationException("Error getting the current token as LocalDateTime", e);
+        }
+    }
+
+    public Float getValueAsFloat() {
+        validateTaggedType(DOUBLE);
+        try {
+            return Float.parseFloat(taggedTokenValue);
+        } catch (NumberFormatException e) {
+            throw new SerializationException("Error getting the current token as Float", e);
         }
     }
 

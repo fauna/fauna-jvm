@@ -20,17 +20,17 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
         _info = info;
     }
 
+
     @Override
     public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
-        FaunaTokenType endToken = switch (reader.getCurrentTokenType()) {
-            case START_DOCUMENT -> FaunaTokenType.END_DOCUMENT;
-            case START_OBJECT -> FaunaTokenType.END_OBJECT;
-            default -> throw unexpectedToken(reader.getCurrentTokenType());
-        };
-
-        Object instance = createInstance();
-        setFields(instance, context, reader, endToken);
-        return (T) instance;
+        try {
+            FaunaTokenType endToken = reader.getCurrentTokenType().getEndToken();
+            Object instance = createInstance();
+            setFields(instance, context, reader, endToken);
+            return (T) instance;
+        } catch (IOException exc) {
+            throw unexpectedToken(reader.getCurrentTokenType());
+        }
     }
 
     private Object createInstance() {
