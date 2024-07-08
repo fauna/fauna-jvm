@@ -20,12 +20,12 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 
-class FaunaParserTest {
+class UTF8FaunaParserTest {
 
     @Test
     public void testGetValueAsString() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("\"hello\"".getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.STRING, "hello")
@@ -38,7 +38,7 @@ class FaunaParserTest {
     public void testGetValueAsInt() throws IOException {
         String s = "{\"@int\": \"123\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.INT, 123)
@@ -51,7 +51,7 @@ class FaunaParserTest {
     public void testGetValueAsIntFail() throws IOException {
         String invalidJson = "{\"@int\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
-        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+        UTF8FaunaParser invalidReader = new UTF8FaunaParser(invalidInputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.INT, "abc")
@@ -68,7 +68,7 @@ class FaunaParserTest {
 
         String json = "{\"@int\": \"123\"";
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         Exception ex = assertThrows(SerializationException.class,
             () -> reader.read());
@@ -79,7 +79,7 @@ class FaunaParserTest {
     @Test
     public void testGetValueAsBooleanTrue() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("true".getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.TRUE, true)
@@ -91,7 +91,7 @@ class FaunaParserTest {
     @Test
     public void testGetValueAsBooleanFalse() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("false".getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.FALSE, false)
@@ -104,7 +104,7 @@ class FaunaParserTest {
     public void testGetValueAsLocalDate() throws IOException {
         String s = "{\"@date\":\"2024-01-23\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.DATE, LocalDate.of(2024, 1, 23))
@@ -117,7 +117,7 @@ class FaunaParserTest {
     public void testGetValueAsLocalDateFail() throws IOException {
         String invalidJson = "{\"@date\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
-        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+        UTF8FaunaParser invalidReader = new UTF8FaunaParser(invalidInputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.DATE, "abc")
@@ -133,7 +133,7 @@ class FaunaParserTest {
     public void testGetValueAsTime() throws IOException {
         String s = "{\"@time\":\"2024-01-23T13:33:10.300Z\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         Instant instant = Instant.parse("2024-01-23T13:33:10.300Z");
 
@@ -148,7 +148,7 @@ class FaunaParserTest {
     public void testGetValueAsTimeFail() throws IOException {
         String invalidJson = "{\"@time\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
-        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+        UTF8FaunaParser invalidReader = new UTF8FaunaParser(invalidInputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.TIME, "abc")
@@ -164,7 +164,7 @@ class FaunaParserTest {
     public void testeGetValueAsTimeNonUTC() throws IOException {
         String s = "{\"@time\":\"2023-12-03T05:52:10.000001-09:00\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         Instant instant = Instant.parse("2023-12-03T05:52:10.000001-09:00");
 
@@ -180,7 +180,7 @@ class FaunaParserTest {
     public void testGetValueAsDouble() throws IOException {
         String s = "{\"@double\": \"1.23\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.DOUBLE, 1.23D)
@@ -193,7 +193,7 @@ class FaunaParserTest {
     public void testGetValueAsDoubleFail() throws IOException {
         String invalidJson = "{\"@double\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
-        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+        UTF8FaunaParser invalidReader = new UTF8FaunaParser(invalidInputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.DOUBLE, "abc")
@@ -209,7 +209,7 @@ class FaunaParserTest {
     public void testGetValueAsLong() throws IOException {
         String s = "{\"@long\": \"123\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.LONG, 123L)
@@ -222,7 +222,7 @@ class FaunaParserTest {
     public void testGetValueAsLongFail() throws IOException {
         String invalidJson = "{\"@long\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
-        FaunaParser invalidReader = new FaunaParser(invalidInputStream);
+        UTF8FaunaParser invalidReader = new UTF8FaunaParser(invalidInputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.LONG, "abc")
@@ -238,7 +238,7 @@ class FaunaParserTest {
     public void testGetValueAsModule() throws IOException {
         String s = "{\"@mod\": \"MyModule\"}";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.MODULE, new Module("MyModule"))
@@ -251,7 +251,7 @@ class FaunaParserTest {
     public void readArrayWithEmptyObject() throws IOException {
         String s = "[{}]";
         InputStream inputStream = new ByteArrayInputStream(s.getBytes());
-        FaunaParser reader = new FaunaParser(inputStream);
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
@@ -273,7 +273,7 @@ class FaunaParserTest {
             "        \"anEscapedObject\": { \"@object\": { \"@long\": \"notalong\" } }\n" +
             "    }\n" +
             "}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
@@ -304,7 +304,7 @@ class FaunaParserTest {
             "        \"data\": { \"foo\": \"bar\" }\n" +
             "    }\n" +
             "}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_DOCUMENT, null),
@@ -333,7 +333,7 @@ class FaunaParserTest {
             "        \"after\": \"afterme\"\n" +
             "    }\n" +
             "}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_PAGE, null),
@@ -353,7 +353,7 @@ class FaunaParserTest {
     public void testReadRef() throws IOException {
         String s = "{\"@ref\": {\"id\": \"123\", \"coll\": {\"@mod\": \"Col\"}}}";
 
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_REF, null),
@@ -384,7 +384,7 @@ class FaunaParserTest {
             "    \"false\": false,\n" +
             "    \"null\": null\n" +
             "}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
@@ -458,7 +458,7 @@ class FaunaParserTest {
             "    false,\n" +
             "    null\n" +
             "]";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             new AbstractMap.SimpleEntry<>(FaunaTokenType.START_ARRAY, null),
@@ -506,7 +506,7 @@ class FaunaParserTest {
     public void throwsOnMalformedJson() {
         String s = "{";
         assertThrows(SerializationException.class, () -> {
-            FaunaParser reader = new FaunaParser(new ByteArrayInputStream(s.getBytes()));
+            UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
             reader.read();
             reader.read();
         }, "Failed to advance underlying JSON reader.");
@@ -524,7 +524,7 @@ class FaunaParserTest {
         );
 
         for (String test : tests) {
-            FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+            UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
             reader.read();
             reader.skip();
             assertFalse(reader.read());
@@ -534,7 +534,7 @@ class FaunaParserTest {
     @Test
     public void skipNestedEscapedObject() throws IOException {
         String test = "{\"@object\": {\"inner\": {\"@object\": {\"foo\": \"bar\"}}, \"k2\": {}}}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
         reader.read(); // {"@object":{
         assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
         reader.read(); // inner
@@ -551,7 +551,7 @@ class FaunaParserTest {
     @Test
     public void skipNestedObject() throws IOException {
         String test = "{\"k\":{\"inner\":{}},\"k2\":{}}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
         reader.read(); // {
         assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
         reader.read(); // k
@@ -568,7 +568,7 @@ class FaunaParserTest {
     @Test
     public void skipNestedArrays() throws IOException {
         String test = "{\"k\":[\"1\",\"2\"],\"k2\":{}}";
-        FaunaParser reader = new FaunaParser(new ByteArrayInputStream(test.getBytes()));
+        UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
         reader.read(); // {
         assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
         reader.read(); // k
@@ -582,8 +582,8 @@ class FaunaParserTest {
         assertEquals("k2", reader.getValueAsString());
     }
 
-    private static void assertReader(FaunaParser reader,
-        List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
+    private static void assertReader(UTF8FaunaParser reader,
+                                     List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
             reader.read();
             assertNotNull(entry.getKey());

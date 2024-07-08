@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fauna.serialization.Serializer;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -100,7 +101,7 @@ class QueryTest {
     }
 
     @Test
-    public void testQuerySerialization() throws JsonProcessingException {
+    public void testQuerySerialization() throws IOException {
         Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
         assertEquals("{\"fql\":[\"let one = \",{\"value\":{\"@int\":\"15\"}}]}",
                 Serializer.serialize(q1));

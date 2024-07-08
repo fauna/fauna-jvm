@@ -22,7 +22,7 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
 
 
     @Override
-    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T doDeserialize(MappingContext context, UTF8FaunaParser reader) throws IOException {
         try {
             FaunaTokenType endToken = reader.getCurrentTokenType().getEndToken();
             Object instance = createInstance();
@@ -43,7 +43,7 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
         }
     }
 
-    private void setFields(Object instance, MappingContext context, FaunaParser reader,
+    private void setFields(Object instance, MappingContext context, UTF8FaunaParser reader,
         FaunaTokenType endToken) throws IOException {
         while (reader.read() && reader.getCurrentTokenType() != endToken) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {

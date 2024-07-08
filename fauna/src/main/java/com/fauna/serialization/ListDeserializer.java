@@ -17,7 +17,7 @@ public class ListDeserializer<T> extends BaseDeserializer<List<T>> {
     }
 
     @Override
-    public List<T> doDeserialize(MappingContext context, FaunaParser reader)
+    public List<T> doDeserialize(MappingContext context, UTF8FaunaParser reader)
         throws IOException {
         if (reader.getCurrentTokenType() != FaunaTokenType.START_ARRAY) {
             throw new SerializationException(

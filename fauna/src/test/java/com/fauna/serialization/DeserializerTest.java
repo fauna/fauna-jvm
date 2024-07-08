@@ -37,7 +37,7 @@ public class DeserializerTest {
     public static <T> T deserialize(String str,
         Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
-        FaunaParser reader = new FaunaParser(str);
+        UTF8FaunaParser reader = new UTF8FaunaParser(str);
         return deserialize(reader, deserFunc);
     }
 
@@ -46,8 +46,8 @@ public class DeserializerTest {
         return deserialize(str, ctx -> Deserializer.generateNullable(ctx, targetType));
     }
 
-    private static <T> T deserialize(FaunaParser reader,
-        Function<MappingContext, IDeserializer<T>> deserFunc)
+    private static <T> T deserialize(UTF8FaunaParser reader,
+                                     Function<MappingContext, IDeserializer<T>> deserFunc)
         throws IOException {
         MappingContext context = new MappingContext();
         IDeserializer<T> deser = deserFunc.apply(context);

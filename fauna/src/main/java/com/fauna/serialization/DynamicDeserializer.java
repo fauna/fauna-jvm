@@ -48,7 +48,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         _page = new PageDeserializer<>(this);
     }
 
-    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T doDeserialize(MappingContext context, UTF8FaunaParser reader) throws IOException {
         return checkedDeserialize(context, reader, null);
     }
 
@@ -59,7 +59,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
      * @param reader  The FaunaParser instance to read from.
      * @return The deserialized value.
      */
-    public T checkedDeserialize(MappingContext context, FaunaParser reader, Type type) throws IOException {
+    public T checkedDeserialize(MappingContext context, UTF8FaunaParser reader, Type type) throws IOException {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
@@ -130,7 +130,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         return (T) value;
     }
 
-    private Object deserializeDocument(MappingContext context, FaunaParser reader)
+    private Object deserializeDocument(MappingContext context, UTF8FaunaParser reader)
         throws IOException {
         Map<String, Object> data = new HashMap<>();
         String id = null;
@@ -193,7 +193,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         return data;
     }
 
-    private Object deserializeRef(MappingContext context, FaunaParser reader)
+    private Object deserializeRef(MappingContext context, UTF8FaunaParser reader)
         throws IOException {
         String id = null;
         String name = null;

@@ -20,6 +20,7 @@ import com.fauna.exception.SerializationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -32,7 +33,7 @@ import java.util.Stack;
 /**
  * Represents a reader that provides fast, non-cached, forward-only access to serialized data.
  */
-public class FaunaParser {
+public class UTF8FaunaParser {
 
     private static final String INT_TAG = "@int";
     private static final String LONG_TAG = "@long";
@@ -44,14 +45,15 @@ public class FaunaParser {
     private static final String MOD_TAG = "@mod";
     private static final String SET_TAG = "@set";
     private static final String OBJECT_TAG = "@object";
+
     private final JsonParser jsonParser;
     private final Stack<Object> tokenStack = new Stack<>();
     private FaunaTokenType currentFaunaTokenType = NONE;
     private FaunaTokenType bufferedFaunaTokenType;
     private String taggedTokenValue;
 
-    public FaunaParser(String str) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(str.getBytes());
+    public UTF8FaunaParser(String str) throws IOException {
+        InputStream inputStream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(inputStream);
     }
@@ -60,12 +62,12 @@ public class FaunaParser {
         START_ESCAPED_OBJECT
     }
 
-    public FaunaParser(InputStream body) throws IOException {
+    public UTF8FaunaParser(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(body);
     }
 
-    public FaunaParser(JsonParser jsonParser) {
+    public UTF8FaunaParser(JsonParser jsonParser) {
         this.jsonParser = jsonParser;
     }
 

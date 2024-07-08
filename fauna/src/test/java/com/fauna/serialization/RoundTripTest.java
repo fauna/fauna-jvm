@@ -25,7 +25,7 @@ public class RoundTripTest {
         assertEquals(11 + String.valueOf(var).length(), serialized.length());
         assertTrue(serialized.contains("@int"));
         IDeserializer<Byte> deserializer = Deserializer.generate(ctx, Byte.class);
-        byte deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        byte deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -41,7 +41,7 @@ public class RoundTripTest {
         assertEquals(11 + String.valueOf(var).length(), serialized.length());
         assertTrue(serialized.contains("@int"));
         IDeserializer<Short> deserializer = Deserializer.generate(ctx, Short.class);
-        int deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        int deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -56,7 +56,7 @@ public class RoundTripTest {
         assertEquals(11 + String.valueOf(var).length(), serialized.length());
         assertTrue(serialized.contains("@int"));
         IDeserializer<Integer> deserializer = Deserializer.generate(ctx, Integer.class);
-        int deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        int deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -71,7 +71,7 @@ public class RoundTripTest {
         assertEquals(12 + String.valueOf(var).length(), serialized.length());
         assertTrue(serialized.contains("@long"));
         IDeserializer<Long> deserializer = Deserializer.generate(ctx, Long.class);
-        long deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        long deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -85,7 +85,7 @@ public class RoundTripTest {
         // assertEquals(15 + String.valueOf(var).length(), serialized.length());
         assertTrue(serialized.contains("@double"));
         IDeserializer<Float> deserializer = Deserializer.generate(ctx, Float.class);
-        float deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        float deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -98,7 +98,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         assertTrue(serialized.contains("@double"));
         IDeserializer<Double> deserializer = Deserializer.generate(ctx, Double.class);
-        double deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        double deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -111,7 +111,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         assertTrue(serialized.contains("@int"));
         IDeserializer<Character> deserializer = Deserializer.generate(ctx, Character.class);
-        char deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        char deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -124,7 +124,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         assertEquals(String.valueOf(var), serialized);
         IDeserializer<Boolean> deserializer = Deserializer.generate(ctx, Boolean.class);
-        boolean deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        boolean deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -136,7 +136,7 @@ public class RoundTripTest {
         Map<String, Object> var = Map.of("foo", 1, "bar", "two");
         String serialized = Serializer.serialize(var);
         assertTrue(serialized.contains("{\"@int\":\"1\"}"));
-        Map<String, Object> deserialized = (Map<String, Object>) Deserializer.DYNAMIC.deserialize(ctx, new FaunaParser(serialized));
+        Map<String, Object> deserialized = (Map<String, Object>) Deserializer.DYNAMIC.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -150,7 +150,7 @@ public class RoundTripTest {
         assertTrue(serialized.contains("{\"@int\":\"1\"}"));
         assertEquals("[\"foo\",{\"@int\":\"1\"},\"bar\",\"two\"]", serialized);
         IDeserializer deserializer = Deserializer.DYNAMIC;
-        List<Object> deserialized = (List<Object>) deserializer.deserialize(ctx, new FaunaParser(serialized));
+        List<Object> deserialized = (List<Object>) deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -166,7 +166,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         assertEquals("{\"@bytes\":\"gAB/\"}", serialized);
         // IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, Byte[].class);
-        Object deserialized = Deserializer.DYNAMIC.deserialize(ctx, new FaunaParser(serialized));
+        Object deserialized = Deserializer.DYNAMIC.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(Map.of("@bytes", "gAB/"), deserialized);
         // assertEquals(var, deserialized);  TODO: Should get a byte[] or Byte[] not {"@bytes": "gAB\"} back.
@@ -181,7 +181,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         // assertEquals("{\"@shorts\":\"gAB/\"}", serialized);
         IDeserializer<Object[]> deserializer = Deserializer.generate(ctx, Object[].class);
-        Object[] deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        Object[] deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -195,7 +195,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         assertEquals("{\"@shorts\":\"gAB/\"}", serialized);
         IDeserializer<Short[]> deserializer = Deserializer.generate(ctx, short[].class);
-        Short[] deserialized = deserializer.deserialize(ctx, new FaunaParser(serialized));
+        Short[] deserialized = deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
@@ -209,7 +209,7 @@ public class RoundTripTest {
         String serialized = Serializer.serialize(var);
         assertEquals("{\"@ints\":\"gAB/\"}", serialized);
         IDeserializer<Integer[]> deserializer = Deserializer.generate(ctx, int[].class);
-        Integer[] deserialized =  deserializer.deserialize(ctx, new FaunaParser(serialized));
+        Integer[] deserialized =  deserializer.deserialize(ctx, new UTF8FaunaParser(serialized));
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
