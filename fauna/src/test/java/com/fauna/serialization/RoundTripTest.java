@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static com.fauna.serialization.Assertions.assertStringEquivalence;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -140,7 +141,7 @@ public class RoundTripTest {
         // ser -> deser round trip
         assertEquals(var, deserialized);
         // deser -> ser round trip
-        assertEquals(serialized, Serializer.serialize(deserialized));
+        assertStringEquivalence(serialized, Serializer.serialize(deserialized));
     }
 
     @Test
