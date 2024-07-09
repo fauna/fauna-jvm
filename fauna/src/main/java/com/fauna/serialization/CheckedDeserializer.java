@@ -1,6 +1,6 @@
 package com.fauna.serialization;
 
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 
@@ -28,7 +28,7 @@ public class CheckedDeserializer<T> extends BaseDeserializer<T> {
      * @param context The serialization context.
      * @param reader  The FaunaParser instance to read from.
      * @return The deserialized value.
-     * @throws SerializationException If the deserialized value does not match the specified type.
+     * @throws ClientException If the deserialized value does not match the specified type.
      */
     public T doDeserialize(MappingContext context, UTF8FaunaParser reader) throws IOException {
         Object tokenType = reader.getCurrentTokenType();
@@ -37,7 +37,7 @@ public class CheckedDeserializer<T> extends BaseDeserializer<T> {
         if (type.isInstance(obj)) {
             return type.cast(obj);
         } else {
-            throw new SerializationException(
+            throw new ClientException(
                 "Unexpected token while deserializing: " + tokenType);
         }
     }

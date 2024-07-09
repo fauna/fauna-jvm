@@ -8,7 +8,7 @@ import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.mapping.MappingContext;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -123,7 +123,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = reader.getValueAsBoolean();
                 break;
             default:
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing: " + reader.getCurrentTokenType());
         }
 
@@ -140,7 +140,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
         while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_DOCUMENT) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing into Document: "
                         + reader.getCurrentTokenType());
             }
@@ -204,7 +204,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
         while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_REF) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing into DocumentRef: "
                         + reader.getCurrentTokenType());
             }

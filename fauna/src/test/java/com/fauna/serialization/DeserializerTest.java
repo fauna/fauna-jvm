@@ -15,7 +15,7 @@ import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
 import com.fauna.common.types.Page;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.helper.ListOf;
 import com.fauna.helper.MapOf;
 import com.fauna.helper.PageOf;
@@ -54,7 +54,7 @@ public class DeserializerTest {
         T obj = deser.deserialize(context, reader);
 
         if (reader.read()) {
-            throw new SerializationException(
+            throw new ClientException(
                 "Token stream is not exhausted but should be: " + reader.getCurrentTokenType());
         }
 

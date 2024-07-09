@@ -1,6 +1,6 @@
 package com.fauna.exception;
 
-public class FaunaException  extends RuntimeException {
+public class FaunaException extends RuntimeException {
 
     public FaunaException(String message) {
         super(message);
@@ -8,5 +8,9 @@ public class FaunaException  extends RuntimeException {
 
     public FaunaException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public boolean retryable() {
+        return false;
     }
 }

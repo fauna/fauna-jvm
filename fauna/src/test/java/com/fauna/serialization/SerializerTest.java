@@ -20,7 +20,7 @@ import com.fauna.beans.PersonWithConflict.PersonWithSetConflict;
 import com.fauna.beans.PersonWithConflict.PersonWithTimeConflict;
 import com.fauna.beans.PersonWithTypeOverrides;
 import com.fauna.common.types.Module;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -248,7 +248,7 @@ class SerializerTest {
     public void serializeObjectWithInvalidTypeHint() {
         ClassWithInvalidPropertyTypeHint obj = new ClassWithInvalidPropertyTypeHint();
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> Serializer.serialize(obj));
 
         Assert.assertEquals(

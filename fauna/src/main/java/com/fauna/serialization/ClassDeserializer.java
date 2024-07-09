@@ -1,7 +1,7 @@
 package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IClassDeserializer;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
@@ -110,8 +110,8 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
         }
     }
 
-    private SerializationException unexpectedToken(FaunaTokenType tokenType) {
-        return new SerializationException(
+    private ClientException unexpectedToken(FaunaTokenType tokenType) {
+        return new ClientException(
             "Unexpected token while deserializing into class " + _info.getType()
                 + ": " + tokenType);
     }

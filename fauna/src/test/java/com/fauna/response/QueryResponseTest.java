@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.common.constants.ResponseFields;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.mapping.MappingContext;
 import com.fauna.serialization.Deserializer;
 import java.util.Map;
@@ -98,7 +98,7 @@ class QueryResponseTest {
         MappingContext ctx = new MappingContext();
         String body = "Invalid JSON";
 
-        SerializationException exception = assertThrows(SerializationException.class, () -> {
+        ClientException exception = assertThrows(ClientException.class, () -> {
             QueryResponse.getFromResponseBody(ctx, Deserializer.DYNAMIC, 200, body);
         });
 

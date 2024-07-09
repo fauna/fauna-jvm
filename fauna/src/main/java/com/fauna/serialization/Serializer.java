@@ -2,7 +2,7 @@ package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaType;
 import com.fauna.common.types.Module;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.LiteralFragment;
@@ -58,7 +58,7 @@ public class Serializer {
                         int intValue = ((Number) obj).intValue();
                         writer.writeIntValue(intValue);
                     } else {
-                        throw new SerializationException(
+                        throw new ClientException(
                             "Unsupported Int conversion. Provided value must be a byte, short, or int.");
                     }
                     break;
@@ -68,7 +68,7 @@ public class Serializer {
                         long longValue = ((Number) obj).longValue();
                         writer.writeLongValue(longValue);
                     } else {
-                        throw new SerializationException(
+                        throw new ClientException(
                             "Unsupported Long conversion. Provided value must be a byte, short, int, or long.");
                     }
                     break;
@@ -78,7 +78,7 @@ public class Serializer {
                         double doubleValue = ((Number) obj).doubleValue();
                         writer.writeDoubleValue(doubleValue);
                     } else {
-                        throw new SerializationException(
+                        throw new ClientException(
                             "Unsupported Double conversion. Provided value must be a short, int, long, float, or double.");
                     }
                     break;
@@ -95,7 +95,7 @@ public class Serializer {
                     if (obj instanceof Boolean) {
                         writer.writeBooleanValue((Boolean) obj);
                     } else {
-                        throw new SerializationException(
+                        throw new ClientException(
                             "Unsupported Boolean conversion. Provided value must be a Boolean.");
                     }
                     break;
@@ -199,7 +199,7 @@ public class Serializer {
                     Object value = field.getProperty().get(obj);
                     serialize(context, writer, value, field.getFaunaTypeHint());
                 } catch (IllegalAccessException e) {
-                    throw new SerializationException("Error accessing field: " + field.getName(),
+                    throw new ClientException("Error accessing field: " + field.getName(),
                         e);
                 }
             }
@@ -228,7 +228,7 @@ public class Serializer {
         } else if (obj instanceof Instant) {
             return ((Instant) obj).atZone(ZoneId.systemDefault()).toLocalDate();
         }
-        throw new SerializationException(
+        throw new ClientException(
             "Unsupported Date conversion. Provided value must be a LocalDateTime, OffsetDateTime, ZonedDateTime or LocalDate but was a "
                 + obj.getClass().getSimpleName());
     }
@@ -243,7 +243,7 @@ public class Serializer {
         } else if (obj instanceof Instant) {
             return (Instant) obj;
         }
-        throw new SerializationException(
+        throw new ClientException(
             "Unsupported Time conversion. Provided value must be a LocalDateTime, OffsetDateTime, ZonedDateTime but was a "
                 + obj.getClass().getSimpleName());
     }
