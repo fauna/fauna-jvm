@@ -5,7 +5,7 @@ import com.fauna.exception.AuthenticationException;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.InvalidQueryException;
 import com.fauna.exception.ProtocolException;
-import com.fauna.exception.ServiceErrorException;
+import com.fauna.exception.ServiceError;
 import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
@@ -104,7 +104,7 @@ public class FaunaClient {
      * @throws ProtocolException       If the response is in an unknown format.
      * @throws AuthenticationException If there was an authentication error.
      * @throws InvalidQueryException   If the query was invalid.
-     * @throws ServiceErrorException   For other types of errors.
+     * @throws ServiceError   For other types of errors.
      */
     private HttpResponse<String> processResponse(HttpResponse<String> response) {
         int statusCode = response.statusCode();
@@ -135,7 +135,7 @@ public class FaunaClient {
      * @param statusCode The HTTP status code.
      * @throws AuthenticationException If there was an authentication error.
      * @throws InvalidQueryException   If the query was invalid.
-     * @throws ServiceErrorException   For other types of errors.
+     * @throws ServiceError   For other types of errors.
      */
     private void handleErrorResponse(String body, int statusCode) {
 
@@ -151,7 +151,7 @@ public class FaunaClient {
                 throw new AuthenticationException("message");
 
             default:
-                throw new ServiceErrorException("message");
+                throw new ServiceError("message");
         }
     }
 
@@ -160,10 +160,10 @@ public class FaunaClient {
      *
      * @param ex The exception that was thrown.
      * @return Does not return anything as it always throws an exception.
-     * @throws ServiceErrorException Wrapping the original exception, indicating a failure to process the request.
+     * @throws ServiceError Wrapping the original exception, indicating a failure to process the request.
      */
     private HttpResponse<String> handleException(Throwable ex) {
-        throw new ServiceErrorException("Failed to process the request" + ex);
+        throw new ServiceError("Failed to process the request" + ex);
     }
 
 }
