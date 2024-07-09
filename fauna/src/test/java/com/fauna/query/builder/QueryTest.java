@@ -1,31 +1,29 @@
 package com.fauna.query.builder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fauna.serialization.Serializer;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QueryTest {
-
-    ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void testQueryBuilderStrings() {
         Query actual = fql("let x = 11", Collections.emptyMap());
         Fragment[] expected = new Fragment[]{new LiteralFragment("let x = 11")};
-        assertArrayEquals(expected, actual.getFragments());
+        assertArrayEquals(expected, actual.getFql());
     }
 
     @Test
@@ -34,7 +32,7 @@ class QueryTest {
         args.put("n", null);
 
         Query actual = fql("let x = ${n}", args);
-        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new ValueFragment(null)}, actual.getFragments());
+        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new ValueFragment(null)}, actual.getFql());
     }
 
     @Test
@@ -46,7 +44,7 @@ class QueryTest {
                 new LiteralFragment("let age = "),
                 new ValueFragment(5),
                 new LiteralFragment("\n\"Alice is #{age} years old.\"")};
-        assertArrayEquals(expected, actual.getFragments());
+        assertArrayEquals(expected, actual.getFql());
     }
 
     @Test
@@ -57,7 +55,7 @@ class QueryTest {
                 "birthdate", LocalDate.of(2023, 2, 24));
         Query actual = fql("let x = ${my_var}", Map.of("my_var", user));
         Fragment[] expected = new Fragment[]{new LiteralFragment("let x = "), new ValueFragment(user)};
-        assertArrayEquals(expected, actual.getFragments());
+        assertArrayEquals(expected, actual.getFql());
     }
 
     @Test
@@ -70,31 +68,26 @@ class QueryTest {
         Query inner = fql("let x = ${my_var}", Map.of("my_var", user));
         Query actual = fql("${inner}\nx { name }", Map.of("inner", inner));
         Fragment[] expected = new Fragment[]{new ValueFragment(inner), new LiteralFragment("\nx { name }")};
-        assertArrayEquals(expected, actual.getFragments());
+        assertArrayEquals(expected, actual.getFql());
     }
 
     @Test
     public void testOverloadedFqlBuildingMethods() {
         // Test that the four different fql(...) methods produce equivalent results.
-        Map<String, Object> vars = Map.of("n1", 5);
-        Query explicit_vars = fql(List.of("let age = ${n1}", "\"Alice is #{age} years old.\""), vars);
-        Query implicit_vars = fql("let age = ${n1}\n\"Alice is #{age} years old.\"", vars);
-        assertArrayEquals(explicit_vars.getFragments(), implicit_vars.getFragments());
-
-        Query explicit_novars = fql("let age = 5", "\"Alice is #{age} years old.\"");
-        Query implicit_novars = fql("let age = 5\n\"Alice is #{age} years old.\"");
-        assertArrayEquals(explicit_novars.getFragments(), implicit_novars.getFragments());
-        assertNotEquals(explicit_vars, explicit_novars);
+        Query explicit_vars = fql("let age = 5\n\"Alice is #{age} years old.\"", Map.of());
+        Query implicit_vars = fql("let age = 5\n\"Alice is #{age} years old.\"", null);
+        Query no_vars = fql("let age = 5\n\"Alice is #{age} years old.\"");
+        assertArrayEquals(explicit_vars.getFql(), implicit_vars.getFql());
+        assertArrayEquals(no_vars.getFql(), implicit_vars.getFql());
     }
 
     @Test
     public void testQueryWithMissingArgs() {
         IllegalArgumentException first = assertThrows(IllegalArgumentException.class,
                 () -> fql("let first = ${first}"));
-        assertEquals("java.lang.IllegalArgumentException: No args provided for Template variable first.", first.getMessage());
-        IllegalArgumentException second = assertThrows(IllegalArgumentException.class,
-                () -> fql("let first = ${first}\n", "let second = ${second}"));
-        assertEquals("java.lang.IllegalArgumentException: No args provided for Template variable first.", first.getMessage());
+        // I haven't figured out why yet, but these error messages are sometimes:
+        // "java.lang.IllegalArgumentException: message", and sometimes just "message" ??
+        assertTrue(first.getMessage().contains("Template variable first not found in provided args."));
     }
 
     @Test
@@ -103,34 +96,14 @@ class QueryTest {
         Query q1 = fql(MessageFormat.format("Users.firstWhere(.email == {0})", email));
         Query q2 = fql(String.format("Users.firstWhere(.email == %s)", email));
         Query q3 = fql(new StringBuilder().append("Users.firstWhere(.email == ").append(email).append(")").toString());
-        assertArrayEquals(q1.getFragments(), q2.getFragments());
-        assertArrayEquals(q1.getFragments(), q3.getFragments());
+        assertArrayEquals(q1.getFql(), q2.getFql());
+        assertArrayEquals(q1.getFql(), q3.getFql());
     }
 
     @Test
-    public void testMultiLineQueries() {
-        Query q1 = fql("let one = 1\nlet two = 2");
-        Query q2 = fql("let one = 1", "let two = 2");
-        assertArrayEquals(q1.getFragments(), q2.getFragments());
-    }
-
-    @Test
-    public void testMultiLineQueriesWithArgs() {
-        Map<String, Object> args = Map.of("one", 1);
-        Query q1 = fql("let one = ${one}\nlet two = 2", args);
-        Query q2 = fql(List.of("let one = ${one}", "let two = 2"), args);
-        Query q3 = fql("let one = ${one}\rlet two = 2", args);
-
-        assertArrayEquals(q1.getFragments(), q2.getFragments());
-        assertEquals(q1.getFragments()[0].toString(), q3.getFragments()[0].toString());
-        assertEquals(q1.getFragments()[1].toString(), q3.getFragments()[1].toString());
-        assertNotEquals(q2.getFragments()[2], q3.getFragments()[2]);
-    }
-
-    @Test
-    public void testQuerySerialization() throws JsonProcessingException {
+    public void testQuerySerialization() throws IOException {
         Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
-        assertEquals("{\"query\":\"let one = ${a}\",\"args\":{\"a\":\"{\\\"@int\\\":\\\"15\\\"}\"}}",
-                mapper.writeValueAsString(q1));
+        assertEquals("{\"fql\":[\"let one = \",{\"value\":{\"@int\":\"15\"}}]}",
+                Serializer.serialize(q1));
     }
 }

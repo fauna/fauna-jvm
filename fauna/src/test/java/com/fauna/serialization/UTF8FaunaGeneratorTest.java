@@ -3,30 +3,26 @@ package com.fauna.serialization;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fauna.common.types.Module;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FaunaGeneratorTest {
+public class UTF8FaunaGeneratorTest {
 
-    private FaunaGenerator writer;
-    private ByteArrayOutputStream stream;
+    private UTF8FaunaGenerator writer;
 
     @BeforeEach
     public void setUp() throws IOException {
-        stream = new ByteArrayOutputStream();
-        writer = new FaunaGenerator(stream);
+        writer = new UTF8FaunaGenerator();
     }
 
     @AfterEach
     public void tearDown() throws IOException {
         writer.close();
-        stream.close();
     }
 
     @Test
@@ -181,7 +177,7 @@ public class FaunaGeneratorTest {
 
     private void assertWriter(String expected) throws IOException {
         writer.flush();
-        String actual = new String(stream.toByteArray(), StandardCharsets.UTF_8);
+        String actual = writer.serialize();
         assertEquals(expected, actual);
     }
 }

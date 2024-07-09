@@ -3,11 +3,11 @@ package com.fauna.serialization;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,28 +15,22 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
-public class FaunaGenerator implements AutoCloseable {
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+public class UTF8FaunaGenerator implements AutoCloseable {
 
     private final JsonGenerator jsonGenerator;
-
-    /**
-     * Initializes a new instance of the FaunaGenerator class with a specified buffer writer.
-     *
-     * @param bufferWriter The buffer writer to write to.
-     */
-    public FaunaGenerator(ByteArrayBuilder bufferWriter) throws IOException {
-        JsonFactory factory = new JsonFactory();
-        this.jsonGenerator = factory.createGenerator(bufferWriter);
-    }
+    private final ByteArrayOutputStream output;
 
     /**
      * Initializes a new instance of the FaunaGenerator class with a specified stream.
      *
-     * @param outputStream The stream to write to.
      */
-    public FaunaGenerator(OutputStream outputStream) throws IOException {
+    public UTF8FaunaGenerator() throws IOException {
+
         JsonFactory factory = new JsonFactory();
-        this.jsonGenerator = factory.createGenerator(outputStream);
+        this.output = new ByteArrayOutputStream();
+        this.jsonGenerator = factory.createGenerator(this.output);
     }
 
     /**
@@ -47,6 +41,14 @@ public class FaunaGenerator implements AutoCloseable {
     public void flush() throws IOException {
         jsonGenerator.flush();
     }
+
+    public String serialize() throws IOException {
+        this.flush();
+        return this.output.toString(UTF_8);
+
+    }
+
+
 
     /**
      * Writes the beginning of an object.
@@ -340,6 +342,10 @@ public class FaunaGenerator implements AutoCloseable {
         jsonGenerator.writeBoolean(value);
     }
 
+    public void writeCharValue(Character value) throws IOException {
+        jsonGenerator.writeString(String.valueOf(value));
+    }
+
     /**
      * Writes a null value to the stream.
      *
@@ -362,5 +368,6 @@ public class FaunaGenerator implements AutoCloseable {
     @Override
     public void close() throws IOException {
         jsonGenerator.close();
+        output.close();
     }
 }

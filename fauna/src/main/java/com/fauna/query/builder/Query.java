@@ -3,13 +3,10 @@ package com.fauna.query.builder;
 import com.fauna.query.template.FaunaTemplate;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.fauna.serialization.Serializer.ser;
 
 /**
  * Represents a Fauna query that is constructed from fragments.
@@ -17,9 +14,7 @@ import static com.fauna.serialization.Serializer.ser;
  */
 public class Query implements Serializable {
 
-    private final String query;
-    private final Map<String, Object> args;
-    private final Map<String, String> serializedArgs;
+    private final Fragment[] fql;
 
     /**
      * Construct a Query from the given template String and args.
@@ -27,11 +22,8 @@ public class Query implements Serializable {
      * @param args  A map of variable names -> values.
      */
     public Query(String query, Map<String, Object> args) throws IllegalArgumentException {
-        this.query = query;
-        this.args = args;
-        Map<String, Object> reallyArgs = Objects.requireNonNullElse(args, Map.of());
-        this.serializedArgs = reallyArgs.entrySet().stream().collect(
-                Collectors.toMap(Map.Entry::getKey, e -> ser(e.getValue())));
+        this.fql = StreamSupport.stream(new FaunaTemplate(query).spliterator(), true).map(
+                part -> part.toFragment(Objects.requireNonNullElse(args, Map.of()))).toArray(Fragment[]::new);
     }
 
 
@@ -46,25 +38,7 @@ public class Query implements Serializable {
      */
     public static Query fql(String query,
                             Map<String, Object> args) throws IllegalArgumentException {
-
-        Query newQuery = new Query(query, args);
-        newQuery.getFragments(); // Effectively validates that there is an arg for all variables.
-        return newQuery;
-    }
-
-    /**
-     * Creates a Query instance from a list of Strings and arguments. The strings will be joined with
-     * the newline
-     * The template strings can contain literals and variable placeholders.
-     *
-     * @param literals A list of literals. Literals will be split if they contain newline characters.
-     * @param args  the arguments to replace the variable placeholders in the literals.
-     * @return a Query instance representing the complete query.
-     * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
-     */
-    public static Query fql(List<String> literals,
-                            Map<String, Object> args) throws IllegalArgumentException {
-        return fql(String.join("\n", literals), args);
+        return new Query(query, args);
     }
 
     /**
@@ -79,33 +53,12 @@ public class Query implements Serializable {
     }
 
     /**
-     * Creates a query instance from a series of Strings. Without any args, the template Strings cannot contain variables.
-     * the template strings can only contain literals.
-     */
-    public static Query fql(String ... literals) throws IllegalArgumentException {
-        return fql(List.of(literals), null);
-
-    }
-
-    /**
      * Retrieves the list of fragments that make up this query.
      *
      * @return a list of Fragments.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
-    Fragment[] getFragments() {
-        return StreamSupport.stream(
-                new FaunaTemplate(this.query).spliterator(), true).map(
-                part -> part.toFragment(this.args)).toArray(Fragment[]::new);
+    public Fragment[] getFql() {
+        return this.fql;
     }
-
-    public String getQuery() {
-        return this.query;
-    }
-
-    public Map<String, String> getArgs() {
-        return this.serializedArgs;
-    }
-
-
 }

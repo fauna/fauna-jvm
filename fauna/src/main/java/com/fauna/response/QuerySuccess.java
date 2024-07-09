@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fauna.common.constants.ResponseFields;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
-import com.fauna.serialization.FaunaParser;
+import com.fauna.serialization.UTF8FaunaParser;
 import java.io.IOException;
 
 public final class QuerySuccess<T> extends QueryResponse {
@@ -25,7 +25,7 @@ public final class QuerySuccess<T> extends QueryResponse {
         super(json);
         JsonNode elem;
         if ((elem = json.get(ResponseFields.DATA_FIELD_NAME)) != null) {
-            FaunaParser reader = new FaunaParser(elem.asText());
+            UTF8FaunaParser reader = new UTF8FaunaParser(elem.asText());
             reader.read();
             this.data = deserializer.deserialize(ctx, reader);
         }

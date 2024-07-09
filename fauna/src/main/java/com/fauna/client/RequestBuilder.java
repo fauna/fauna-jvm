@@ -2,7 +2,10 @@ package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.connection.DriverEnvironment;
+import com.fauna.query.builder.Query;
+import com.fauna.serialization.Serializer;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.ArrayList;
@@ -53,8 +56,13 @@ public class RequestBuilder {
      * @param fql The Fauna query string.
      * @return An HttpRequest object configured for the Fauna query.
      */
-    public HttpRequest buildRequest(String fql) {
-        return this.httpRequestBuilder.POST(HttpRequest.BodyPublishers.ofString(fql)).build();
+    public HttpRequest buildRequest(Query fql) {
+
+        try {
+            return this.httpRequestBuilder.POST(HttpRequest.BodyPublishers.ofString(Serializer.serialize(new FaunaRequest(fql)))).build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String buildAuthToken() {

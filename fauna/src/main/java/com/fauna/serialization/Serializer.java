@@ -5,8 +5,8 @@ import com.fauna.common.types.Module;
 import com.fauna.exception.SerializationException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;
+import com.fauna.query.builder.LiteralFragment;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,28 +25,28 @@ public class Serializer {
     public static final Set<String> TAGS = new HashSet<>(
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
-    
-    private static final MappingContext context = new MappingContext();
 
-    public static String ser(Object obj) throws IllegalArgumentException {
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            FaunaGenerator gen = new FaunaGenerator(output);
-            serialize(Serializer.context, gen, obj);
-            gen.flush();
-            return output.toString();
-        } catch (IOException exc) {
-            throw new IllegalArgumentException("Failed to serialize " + obj.toString(), exc);
-        }
+    public static String serialize(Object obj) throws IOException {
+        UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
+        MappingContext context = new MappingContext();
+        Serializer.serialize(context, gen, obj, null);
+        return gen.serialize();
     }
 
-    public static void serialize(MappingContext context, FaunaGenerator writer, Object obj)
+    public static String serialize(Object obj, FaunaType typeHint) throws IOException {
+        UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
+        MappingContext context = new MappingContext();
+        Serializer.serialize(context, gen, obj, typeHint);
+        return gen.serialize();
+    }
+
+    public static void serialize(MappingContext context, UTF8FaunaGenerator writer, Object obj)
         throws IOException {
         serialize(context, writer, obj, null);
     }
 
-    public static void serialize(MappingContext context, FaunaGenerator writer, Object obj,
-        FaunaType typeHint) throws IOException {
+    public static void serialize(MappingContext context, UTF8FaunaGenerator writer, Object obj,
+                                 FaunaType typeHint) throws IOException {
         if (typeHint != null) {
             if (obj == null) {
                 throw new IllegalArgumentException("obj Param");
@@ -105,6 +105,8 @@ public class Serializer {
         } else {
             if (obj == null) {
                 writer.writeNullValue();
+            } else if (obj instanceof LiteralFragment) {
+                writer.writeStringValue( ((LiteralFragment) obj).getValue());
             } else if (obj instanceof Byte) {
                 writer.writeIntValue((Byte) obj);
             } else if (obj instanceof Short) {
@@ -137,8 +139,8 @@ public class Serializer {
         }
     }
 
-    private static void serializeObjectInternal(FaunaGenerator writer, Object obj,
-        MappingContext context) throws IOException {
+    private static void serializeObjectInternal(UTF8FaunaGenerator writer, Object obj,
+                                                MappingContext context) throws IOException {
         if (obj instanceof Map) {
             serializeMapInternal(writer, (Map<?, ?>) obj, context);
         } else if (obj instanceof List) {
@@ -158,8 +160,8 @@ public class Serializer {
         }
     }
 
-    private static <T> void serializeMapInternal(FaunaGenerator writer, Map<?, T> map,
-        MappingContext context) throws IOException {
+    private static <T> void serializeMapInternal(UTF8FaunaGenerator writer, Map<?, T> map,
+                                                 MappingContext context) throws IOException {
         boolean shouldEscape = map.keySet().stream().anyMatch(TAGS::contains);
         if (shouldEscape) {
             writer.writeStartEscapedObject();
@@ -177,8 +179,8 @@ public class Serializer {
         }
     }
 
-    private static void serializeClassInternal(FaunaGenerator writer, Object obj,
-        MappingContext context) throws IOException {
+    private static void serializeClassInternal(UTF8FaunaGenerator writer, Object obj,
+                                               MappingContext context) throws IOException {
         Class<?> clazz = obj.getClass();
         List<FieldInfo> fieldInfoList = context.getInfo(clazz).getFields();
         boolean shouldEscape = fieldInfoList.stream().map(FieldInfo::getName)

@@ -30,7 +30,7 @@ public class CheckedDeserializer<T> extends BaseDeserializer<T> {
      * @return The deserialized value.
      * @throws SerializationException If the deserialized value does not match the specified type.
      */
-    public T doDeserialize(MappingContext context, FaunaParser reader) throws IOException {
+    public T doDeserialize(MappingContext context, UTF8FaunaParser reader) throws IOException {
         Object tokenType = reader.getCurrentTokenType();
         Object obj = DynamicDeserializer.getInstance().checkedDeserialize(context, reader, type);
 

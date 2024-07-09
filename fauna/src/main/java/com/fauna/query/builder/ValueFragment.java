@@ -44,4 +44,8 @@ public class ValueFragment extends Fragment {
         return value != null ? value.hashCode() : 0;
     }
 
+    public Object getValue() {
+        return this.value;
+    }
+
 }
