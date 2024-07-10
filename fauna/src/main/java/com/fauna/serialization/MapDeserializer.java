@@ -3,7 +3,7 @@ package com.fauna.serialization;
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IDeserializer;
-import com.fauna.mapping.MappingContext;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class MapDeserializer<T> extends BaseDeserializer<Map<String, T>> {
     }
 
     @Override
-    public Map<String, T> doDeserialize(MappingContext context, UTF8FaunaParser reader)
+    public Map<String, T> doDeserialize(UTF8FaunaParser reader)
         throws IOException {
         if (reader.getCurrentTokenType() != FaunaTokenType.START_OBJECT) {
             throw new ClientException(
@@ -35,7 +35,7 @@ public class MapDeserializer<T> extends BaseDeserializer<Map<String, T>> {
 
             String fieldName = reader.getValueAsString();
             reader.read();
-            T value = _elemDeserializer.deserialize(context, reader);
+            T value = _elemDeserializer.deserialize(reader);
             map.put(fieldName, value);
         }
 

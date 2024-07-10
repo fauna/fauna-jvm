@@ -20,8 +20,8 @@ public final class QueryFailure extends QueryResponse {
      * @param statusCode The HTTP status code.
      * @param json       The JSON response body.
      */
-    public QueryFailure(int statusCode, JsonNode json) throws JsonProcessingException {
-        super(json);
+    public QueryFailure(int statusCode, JsonNode json, QueryStats stats) throws JsonProcessingException {
+        super(json, stats);
         this.statusCode = statusCode;
 
         JsonNode elem;

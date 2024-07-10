@@ -1,7 +1,9 @@
 package com.fauna.exception;
 
-public class AuthenticationException extends FaunaException {
-    public AuthenticationException(String message) {
-        super(message);
+import com.fauna.response.QueryFailure;
+
+public class AuthenticationException extends ServiceException {
+    public AuthenticationException(QueryFailure response) {
+        super(response);
     }
 }

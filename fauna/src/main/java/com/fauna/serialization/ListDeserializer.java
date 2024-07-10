@@ -3,7 +3,7 @@ package com.fauna.serialization;
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IDeserializer;
-import com.fauna.mapping.MappingContext;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class ListDeserializer<T> extends BaseDeserializer<List<T>> {
     }
 
     @Override
-    public List<T> doDeserialize(MappingContext context, UTF8FaunaParser reader)
+    public List<T> doDeserialize(UTF8FaunaParser reader)
         throws IOException {
         if (reader.getCurrentTokenType() != FaunaTokenType.START_ARRAY) {
             throw new ClientException(
@@ -27,7 +27,7 @@ public class ListDeserializer<T> extends BaseDeserializer<List<T>> {
         List<T> list = new ArrayList<>();
 
         while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_ARRAY) {
-            T value = _elemDeserializer.deserialize(context, reader);
+            T value = _elemDeserializer.deserialize(reader);
             list.add(value);
         }
 

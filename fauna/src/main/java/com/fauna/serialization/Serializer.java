@@ -22,30 +22,19 @@ import java.util.Set;
 
 public class Serializer {
 
+    private static final MappingContext context = new MappingContext();
+
     public static final Set<String> TAGS = new HashSet<>(
         Arrays.asList("@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set",
             "@object"));
 
     public static String serialize(Object obj) throws IOException {
         UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
-        MappingContext context = new MappingContext();
-        Serializer.serialize(context, gen, obj, null);
+        Serializer.serialize(gen, obj, null);
         return gen.serialize();
     }
 
-    public static String serialize(Object obj, FaunaType typeHint) throws IOException {
-        UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
-        MappingContext context = new MappingContext();
-        Serializer.serialize(context, gen, obj, typeHint);
-        return gen.serialize();
-    }
-
-    public static void serialize(MappingContext context, UTF8FaunaGenerator writer, Object obj)
-        throws IOException {
-        serialize(context, writer, obj, null);
-    }
-
-    public static void serialize(MappingContext context, UTF8FaunaGenerator writer, Object obj,
+    public static void serialize(UTF8FaunaGenerator writer, Object obj,
                                  FaunaType typeHint) throws IOException {
         if (typeHint != null) {
             if (obj == null) {
@@ -134,25 +123,24 @@ public class Serializer {
             } else if (obj instanceof byte[]) {
                 writer.writeByteArray((byte[]) obj);
             } else {
-                serializeObjectInternal(writer, obj, context);
+                serializeObjectInternal(writer, obj);
             }
         }
     }
 
-    private static void serializeObjectInternal(UTF8FaunaGenerator writer, Object obj,
-                                                MappingContext context) throws IOException {
+    private static void serializeObjectInternal(UTF8FaunaGenerator writer, Object obj) throws IOException {
         if (obj instanceof Map) {
             serializeMapInternal(writer, (Map<?, ?>) obj, context);
         } else if (obj instanceof List) {
             writer.writeStartArray();
             for (Object item : (List<?>) obj) {
-                serialize(context, writer, item, null);
+                serialize(writer, item, null);
             }
             writer.writeEndArray();
         } else if (obj instanceof Object[]) {
             writer.writeStartArray();
             for (Object item : (Object[]) obj) {
-                serialize(context, writer, item, null);
+                serialize(writer, item, null);
             }
             writer.writeEndArray();
         } else {
@@ -170,7 +158,7 @@ public class Serializer {
         }
         for (Map.Entry<?, T> entry : map.entrySet()) {
             writer.writeFieldName(entry.getKey().toString());
-            serialize(context, writer, entry.getValue(), null);
+            serialize(writer, entry.getValue(), null);
         }
         if (shouldEscape) {
             writer.writeEndEscapedObject();
@@ -197,7 +185,7 @@ public class Serializer {
                 try {
                     field.getProperty().setAccessible(true);
                     Object value = field.getProperty().get(obj);
-                    serialize(context, writer, value, field.getFaunaTypeHint());
+                    serialize(writer, value, field.getFaunaTypeHint());
                 } catch (IllegalAccessException e) {
                     throw new ClientException("Error accessing field: " + field.getName(),
                         e);

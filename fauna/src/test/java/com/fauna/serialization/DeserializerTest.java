@@ -51,7 +51,7 @@ public class DeserializerTest {
         throws IOException {
         MappingContext context = new MappingContext();
         IDeserializer<T> deser = deserFunc.apply(context);
-        T obj = deser.deserialize(context, reader);
+        T obj = deser.deserialize(reader);
 
         if (reader.read()) {
             throw new ClientException(

@@ -4,7 +4,6 @@ import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IClassDeserializer;
 import com.fauna.mapping.FieldInfo;
-import com.fauna.mapping.MappingContext;
 import com.fauna.mapping.MappingInfo;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -22,11 +21,11 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
 
 
     @Override
-    public T doDeserialize(MappingContext context, UTF8FaunaParser reader) throws IOException {
+    public T doDeserialize(UTF8FaunaParser reader) throws IOException {
         try {
             FaunaTokenType endToken = reader.getCurrentTokenType().getEndToken();
             Object instance = createInstance();
-            setFields(instance, context, reader, endToken);
+            setFields(instance, reader, endToken);
             return (T) instance;
         } catch (IOException exc) {
             throw unexpectedToken(reader.getCurrentTokenType());
@@ -43,8 +42,8 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
         }
     }
 
-    private void setFields(Object instance, MappingContext context, UTF8FaunaParser reader,
-        FaunaTokenType endToken) throws IOException {
+    private void setFields(Object instance, UTF8FaunaParser reader,
+                           FaunaTokenType endToken) throws IOException {
         while (reader.read() && reader.getCurrentTokenType() != endToken) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
                 throw unexpectedToken(reader.getCurrentTokenType());
@@ -65,7 +64,7 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
                     field.getProperty().setAccessible(true);
                     try {
                         field.getProperty()
-                            .set(instance, field.getDeserializer().deserialize(context, reader));
+                            .set(instance, field.getDeserializer().deserialize(reader));
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     }

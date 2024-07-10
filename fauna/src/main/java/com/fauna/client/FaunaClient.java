@@ -1,21 +1,27 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.exception.AuthenticationException;
+import com.fauna.common.constants.ResponseFields;
+import com.fauna.exception.ClientException;
+import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
-import com.fauna.exception.InvalidQueryException;
-import com.fauna.exception.ProtocolException;
-import com.fauna.exception.ServiceError;
-import com.fauna.mapping.MappingContext;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
+import com.fauna.response.QueryStats;
+import com.fauna.response.QuerySuccess;
 import com.fauna.serialization.Deserializer;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -23,9 +29,10 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FaunaClient {
 
+    private static final ObjectMapper mapper = new ObjectMapper();
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
-
+    private static final QueryStats DEFAULT_STATS = new QueryStats(0, 0, 0, 0, 0, 0, 0,List.of());
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
      * complete control over HTTP Configuration, like timeouts, thread pool size, and so-on.
@@ -71,99 +78,36 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(Query fql) throws FaunaException {
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         HttpRequest request = requestBuilder.buildRequest(fql);
-        return CompletableFuture.supplyAsync(() -> QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC, 200, "{\"hello\"}"));
-
+        return this.httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(FaunaClient::handleResponse);
     }
 
     public QueryResponse query(Query fql) throws FaunaException {
-        if (Objects.isNull(fql)) {
-            throw new IllegalArgumentException("The provided FQL query is null.");
-        }
-        HttpRequest request = requestBuilder.buildRequest(fql);
         try {
-            HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return QueryResponse.getFromResponseBody(new MappingContext(), Deserializer.DYNAMIC,
-                    response.statusCode(), response.body());
-        } catch (Exception exc) {
-            throw new FaunaException("TODO proper exception handling");
-        }
-
-    }
-
-
-    /**
-     * Processes the HTTP response from Fauna, checking for errors and ensuring protocol compliance.
-     *
-     * @param response The HTTP response from Fauna.
-     * @return The original HttpResponse if no errors were detected.
-     * @throws ProtocolException       If the response is in an unknown format.
-     * @throws AuthenticationException If there was an authentication error.
-     * @throws InvalidQueryException   If the query was invalid.
-     * @throws ServiceError   For other types of errors.
-     */
-    private HttpResponse<String> processResponse(HttpResponse<String> response) {
-        int statusCode = response.statusCode();
-        checkProtocol(response.body(), statusCode);
-        if (statusCode > 399) {
-            handleErrorResponse(response.body(), statusCode);
-        }
-        return response;
-    }
-
-    /**
-     * Checks if the response body is in the expected format based on the status code.
-     *
-     * @param body       The response body.
-     * @param statusCode The HTTP status code.
-     * @throws ProtocolException If the response is in an unknown format.
-     */
-    private void checkProtocol(String body, int statusCode) {
-        if ((statusCode <= 399 && !body.contains("data")) || (statusCode > 399 && !body.contains("error"))) {
-            throw new ProtocolException("Response is in an unknown format: " + body);
+            return this.asyncQuery(fql).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ClientException("Failed to ", e);
         }
     }
 
-    /**
-     * Handles errors based on the HTTP status code and response body.
-     *
-     * @param body       The response body.
-     * @param statusCode The HTTP status code.
-     * @throws AuthenticationException If there was an authentication error.
-     * @throws InvalidQueryException   If the query was invalid.
-     * @throws ServiceError   For other types of errors.
-     */
-    private void handleErrorResponse(String body, int statusCode) {
-
-        //TODO: code and message from body
-
-        switch (statusCode) {
-            case 400:
-                if ("invalid_query".equals("code")) {
-                    throw new InvalidQueryException("message");
-                }
-                break;
-            case 401:
-                throw new AuthenticationException("message");
-
-            default:
-                throw new ServiceError("message");
+    public static QueryResponse handleResponse(HttpResponse<String> response) {
+        try {
+            JsonNode json = mapper.readTree(response.body());
+            JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
+            QueryStats stats = statsNode != null ? mapper.convertValue(statsNode, QueryStats.class) : DEFAULT_STATS;
+            if (response.statusCode() >= 400) {
+                ErrorHandler.handleErrorResponse(response.statusCode(), json, stats);
+            }
+            return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
+        } catch (JsonProcessingException e) {
+            throw new ClientException("Unable to decode JSON.", e);
+        } catch (IOException e) {
+            throw new ClientException("Client threw IOException.", e);
         }
-    }
-
-    /**
-     * Handles exceptions during the HTTP request processing.
-     *
-     * @param ex The exception that was thrown.
-     * @return Does not return anything as it always throws an exception.
-     * @throws ServiceError Wrapping the original exception, indicating a failure to process the request.
-     */
-    private HttpResponse<String> handleException(Throwable ex) {
-        throw new ServiceError("Failed to process the request" + ex);
     }
 
 }

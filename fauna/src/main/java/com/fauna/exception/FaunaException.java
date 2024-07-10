@@ -6,11 +6,7 @@ public class FaunaException extends RuntimeException {
         super(message);
     }
 
-    public FaunaException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public boolean retryable() {
-        return false;
+    public FaunaException(String message, Throwable err) {
+        super(message, err);
     }
 }
