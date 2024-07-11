@@ -90,7 +90,11 @@ public class FaunaClient {
         try {
             return this.asyncQuery(fql).get();
         } catch (InterruptedException | ExecutionException e) {
-            throw new ClientException("Failed to ", e);
+            if (e.getCause() instanceof FaunaException) {
+                throw (FaunaException) e.getCause();
+            } else {
+                throw new ClientException("Unhandled exception.", e);
+            }
         }
     }
 

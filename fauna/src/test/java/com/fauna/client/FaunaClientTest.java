@@ -2,6 +2,7 @@ package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.FaunaConfig.FaunaEndpoint;
+import com.fauna.exception.QueryCheckException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -170,6 +171,32 @@ class FaunaClientTest {
         assertEquals("success", response.getSummary());
         assertEquals(0, response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
+    }
+
+    @Test
+    void query_withFailure_ShouldThrow() throws ExecutionException, InterruptedException {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"error\":{\"code\":\"invalid_query\"}}");
+        when(resp.statusCode()).thenReturn(400);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        QueryCheckException exc = assertThrows(QueryCheckException.class,
+                () -> defaultClient.query(Query.fql("Collection.create({ name: 'Dogs' })")));
+        assertEquals("invalid_query", exc.getResponse().getErrorCode());
+        assertEquals(400, exc.getResponse().getStatusCode());
+
+    }
+    @Test
+    void asyncQuery_withFailure_ShouldThrow() throws ExecutionException, InterruptedException {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"error\":{\"code\":\"invalid_query\"}}");
+        when(resp.statusCode()).thenReturn(400);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
+        QueryCheckException cause = (QueryCheckException) exc.getCause();
+        assertEquals("invalid_query", cause.getResponse().getErrorCode());
+        assertEquals(400, cause.getResponse().getStatusCode());
+
     }
 
 }
