@@ -1,19 +1,30 @@
 package com.fauna.response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.constants.ResponseFields;
+import com.fauna.exception.ClientException;
+import com.fauna.exception.ErrorHandler;
+import com.fauna.exception.FaunaException;
+import com.fauna.serialization.Deserializer;
 
+import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class QueryResponse {
 
+    private static final ObjectMapper mapper = new ObjectMapper();
     private final JsonNode rawJson;
     private long lastSeenTxn;
     private long schemaVersion;
     private String summary = "";
     private final Map<String, String> queryTags = new HashMap<>();
     private QueryStats stats;
+    public static final QueryStats DEFAULT_STATS = new QueryStats(0, 0, 0, 0, 0, 0, 0, List.of());
 
     QueryResponse(JsonNode json, QueryStats stats) {
         this.rawJson = json;
@@ -45,6 +56,22 @@ public abstract class QueryResponse {
             }
         }
 
+    }
+
+    public static QueryResponse handleResponse(HttpResponse<String> response) throws FaunaException {
+        try {
+            JsonNode json = mapper.readTree(response.body());
+            JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
+            QueryStats stats = statsNode != null ? mapper.convertValue(statsNode, QueryStats.class) : DEFAULT_STATS;
+            if (response.statusCode() >= 400) {
+                ErrorHandler.handleErrorResponse(response.statusCode(), json, stats);
+            }
+            return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
+        } catch (JsonProcessingException e) {
+            throw new ClientException("Unable to decode JSON.", e);
+        } catch (IOException e) {
+            throw new ClientException("Client threw IOException.", e);
+        }
     }
 
     public JsonNode getRawJson() {

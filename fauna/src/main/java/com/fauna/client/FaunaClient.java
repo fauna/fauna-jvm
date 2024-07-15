@@ -1,24 +1,14 @@
 package com.fauna.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.constants.ResponseFields;
 import com.fauna.exception.ClientException;
-import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
-import com.fauna.response.QueryStats;
-import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.Deserializer;
 
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -29,10 +19,8 @@ import java.util.concurrent.ExecutionException;
  */
 public class FaunaClient {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
-    private static final QueryStats DEFAULT_STATS = new QueryStats(0, 0, 0, 0, 0, 0, 0,List.of());
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
      * complete control over HTTP Configuration, like timeouts, thread pool size, and so-on.
@@ -83,7 +71,8 @@ public class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         HttpRequest request = requestBuilder.buildRequest(fql);
-        return this.httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(FaunaClient::handleResponse);
+        return this.httpClient.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
     }
 
     public QueryResponse query(Query fql) throws FaunaException {
@@ -98,21 +87,6 @@ public class FaunaClient {
         }
     }
 
-    public static QueryResponse handleResponse(HttpResponse<String> response) {
-        try {
-            JsonNode json = mapper.readTree(response.body());
-            JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
-            QueryStats stats = statsNode != null ? mapper.convertValue(statsNode, QueryStats.class) : DEFAULT_STATS;
-            if (response.statusCode() >= 400) {
-                ErrorHandler.handleErrorResponse(response.statusCode(), json, stats);
-            }
-            return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
-        } catch (JsonProcessingException e) {
-            throw new ClientException("Unable to decode JSON.", e);
-        } catch (IOException e) {
-            throw new ClientException("Client threw IOException.", e);
-        }
-    }
 
 }
 
