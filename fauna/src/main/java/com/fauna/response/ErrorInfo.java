@@ -3,6 +3,8 @@ package com.fauna.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Optional;
+
 public class ErrorInfo {
 
     private String code;
@@ -34,8 +36,8 @@ public class ErrorInfo {
         return constraintFailures;
     }
 
-    public Object getAbort() {
-        return abort;
+    public Optional<Object> getAbort() {
+        return Optional.ofNullable(this.abort);
     }
 
 }

@@ -17,6 +17,8 @@ import com.fauna.serialization.Deserializer;
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.Map;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 
 class QueryResponseTest {
@@ -91,7 +93,7 @@ class QueryResponseTest {
         assertEquals("ErrorCode", failureResponse.getErrorCode());
         assertEquals("ErrorMessage", failureResponse.getMessage());
         assertEquals("ConstraintFailures", failureResponse.getConstraintFailures());
-        assertEquals("AbortData", failureResponse.getAbort());
+        assertEquals(Optional.of("AbortData"), failureResponse.getAbort());
     }
 
     @Test

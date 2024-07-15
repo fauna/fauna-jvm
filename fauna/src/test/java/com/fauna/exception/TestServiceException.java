@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
-import com.fauna.response.QueryStats;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

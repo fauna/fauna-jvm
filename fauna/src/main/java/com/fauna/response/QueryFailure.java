@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.constants.ResponseFields;
 
+import java.util.Optional;
+
 public final class QueryFailure extends QueryResponse {
 
     private int statusCode;
@@ -32,7 +34,7 @@ public final class QueryFailure extends QueryResponse {
             errorCode = info.getCode() != null ? info.getCode() : "";
             message = info.getMessage() != null ? info.getMessage() : "";
             constraintFailures = info.getConstraintFailures();
-            abort = info.getAbort();
+            abort = info.getAbort().isPresent() ? info.getAbort().get() : null;
 
         }
     }
@@ -53,7 +55,7 @@ public final class QueryFailure extends QueryResponse {
         return constraintFailures;
     }
 
-    public Object getAbort() {
-        return abort;
+    public Optional<Object> getAbort() {
+        return Optional.ofNullable(this.abort);
     }
 }
