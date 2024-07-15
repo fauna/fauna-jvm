@@ -43,7 +43,7 @@ public class ErrorHandler {
                     case INVALID_REQUEST: throw new InvalidRequestException(failure);
                     case ABORT: throw new AbortException(failure);
                     case CONSTRAINT_FAILURE: throw new ConstraintFailureException(failure);
-                    default: throw new QueryException(failure);
+                    default: throw new QueryRuntimeException(failure);
                 }
             case HTTP_UNAUTHORIZED:
                 if (UNAUTHORIZED.equals(failure.getErrorCode())) {
@@ -69,6 +69,6 @@ public class ErrorHandler {
                     throw new ServiceInternalException(failure);
                 }
         }
-        throw new QueryException(failure);
+        throw new QueryRuntimeException(failure);
     }
 }

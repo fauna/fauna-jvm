@@ -30,7 +30,7 @@ public class TestErrorHandler {
 
     public static Stream<TestArgs> testArgStream() {
         return Stream.of(
-                new TestArgs(400, "unbound_variable", QueryException.class),
+                new TestArgs(400, "unbound_variable", QueryRuntimeException.class),
                 new TestArgs(400, "invalid_query", QueryCheckException.class),
                 new TestArgs(400, "limit_exceeded", ThrottlingException.class),
                 new TestArgs(400, "invalid_request", InvalidRequestException.class),
