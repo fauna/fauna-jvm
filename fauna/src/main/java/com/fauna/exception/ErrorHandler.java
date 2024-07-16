@@ -27,6 +27,25 @@ public class ErrorHandler {
      private static final String INTERNAL_ERROR = "internal_error";
 
 
+    /**
+     * Handles errors based on the HTTP status code and response body.
+     *
+     * @param statusCode        The HTTP status code.
+     * @param body              The deserialized QueryFailure body.
+     * @param mapper            Jackson ObjectMapper.
+     * @throws AbortException
+     * @throws AuthenticationException
+     * @throws AuthorizationException
+     * @throws ConstraintFailureException
+     * @throws ContendedTransactionException
+     * @throws InvalidRequestException
+     * @throws ProtocolException
+     * @throws QueryCheckException
+     * @throws QueryRuntimeException
+     * @throws QueryTimeoutException
+     * @throws ThrottlingException
+     *
+     */
      public static void handleErrorResponse(int statusCode, String body, ObjectMapper mapper) {
          try {
              JsonNode json = mapper.readTree(body);
@@ -43,13 +62,23 @@ public class ErrorHandler {
          }
          throw new ProtocolException(statusCode, body);
      }
+
     /**
-     * Handles errors based on the HTTP status code and response body.
+     * Handles errors based on the HTTP status code and error code.
      *
-     * @param statusCode The HTTP status code.
-     * @throws AuthenticationException If there was an authentication error.
-     * @throws FaunaInvalidQuery   If the query was invalid.
-     * @throws ServiceException   For other types of errors.
+     * @param statusCode    The HTTP status code.
+     * @param failure       The deserialized QueryFailure body.
+     * @throws AbortException
+     * @throws AuthenticationException
+     * @throws AuthorizationException
+     * @throws ConstraintFailureException
+     * @throws ContendedTransactionException
+     * @throws InvalidRequestException
+     * @throws QueryCheckException
+     * @throws QueryRuntimeException
+     * @throws QueryTimeoutException
+     * @throws ThrottlingException
+     *
      */
     public static void handleQueryFailure(int statusCode, QueryFailure failure) {
         switch (statusCode) {
