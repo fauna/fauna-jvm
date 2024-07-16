@@ -7,6 +7,7 @@ import com.fauna.common.constants.ResponseFields;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
+import com.fauna.exception.ProtocolException;
 import com.fauna.serialization.Deserializer;
 
 import java.io.IOException;
@@ -59,18 +60,21 @@ public abstract class QueryResponse {
     }
 
     public static QueryResponse handleResponse(HttpResponse<String> response) throws FaunaException {
+        String body = response.body();
         try {
+            if (response.statusCode() >= 400) {
+                ErrorHandler.handleErrorResponse(response.statusCode(), body, mapper);
+            }
             JsonNode json = mapper.readTree(response.body());
             JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
-            QueryStats stats = statsNode != null ? mapper.convertValue(statsNode, QueryStats.class) : DEFAULT_STATS;
-            if (response.statusCode() >= 400) {
-                ErrorHandler.handleErrorResponse(response.statusCode(), json, stats);
+            if (statsNode != null) {
+                QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
+                return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
+            } else {
+                throw new ProtocolException(response.statusCode(), body);
             }
-            return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
-        } catch (JsonProcessingException e) {
-            throw new ClientException("Unable to decode JSON.", e);
-        } catch (IOException e) {
-            throw new ClientException("Client threw IOException.", e);
+        } catch (IOException exc) { // Jackson JsonProcessingException subclasses IOException
+            throw new ProtocolException(exc, response.statusCode(), body);
         }
     }
 

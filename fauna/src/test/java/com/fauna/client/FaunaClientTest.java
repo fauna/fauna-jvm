@@ -153,7 +153,7 @@ class FaunaClientTest {
     @Test
     void query_WithValidFQL_ShouldCall() throws IOException, InterruptedException {
         HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\"}");
+        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QueryResponse response = defaultClient.query(Query.fql("Collection.create({ name: 'Dogs' })"));
         assertEquals("success", response.getSummary());
@@ -164,7 +164,7 @@ class FaunaClientTest {
     @Test
     void asyncQuery_WithValidFQL_ShouldCall() throws ExecutionException, InterruptedException {
         HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\"}");
+        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
         QueryResponse response = future.get();
@@ -174,9 +174,9 @@ class FaunaClientTest {
     }
 
     @Test
-    void query_withFailure_ShouldThrow() throws ExecutionException, InterruptedException {
+    void query_withFailure_ShouldThrow() {
         HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"error\":{\"code\":\"invalid_query\"}}");
+        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
         when(resp.statusCode()).thenReturn(400);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QueryCheckException exc = assertThrows(QueryCheckException.class,
@@ -186,9 +186,9 @@ class FaunaClientTest {
 
     }
     @Test
-    void asyncQuery_withFailure_ShouldThrow() throws ExecutionException, InterruptedException {
+    void asyncQuery_withFailure_ShouldThrow() {
         HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"error\":{\"code\":\"invalid_query\"}}");
+        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
         when(resp.statusCode()).thenReturn(400);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));

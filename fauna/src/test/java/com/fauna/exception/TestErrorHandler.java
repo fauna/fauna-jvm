@@ -1,5 +1,6 @@
 package com.fauna.exception;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.response.QueryStats;
@@ -41,17 +42,36 @@ public class TestErrorHandler {
                 new TestArgs(409, "contended_transaction", ContendedTransactionException.class),
                 new TestArgs(440, "time_out", QueryTimeoutException.class),
                 new TestArgs(500, "internal_error", ServiceInternalException.class),
-                new TestArgs(503, "time_out", QueryTimeoutException.class)
+                new TestArgs(503, "time_out", QueryTimeoutException.class),
+                // Unknown error code results in ProtocolException, except in case of 400.
+                new TestArgs(400, "unknown_code", QueryRuntimeException.class),
+                new TestArgs(401, "unknown_code", ProtocolException.class),
+                new TestArgs(500, "unknown_code", ProtocolException.class)
         );
     }
 
     @ParameterizedTest
     @MethodSource("testArgStream")
-    public void testHandleBadRequest(TestArgs args) {
+    public void testHandleBadRequest(TestArgs args) throws JsonProcessingException {
         ObjectNode root = mapper.createObjectNode();
-        ObjectNode error = mapper.createObjectNode();
+        ObjectNode error = root.putObject("error");
+        ObjectNode stats = root.putObject("stats");
         error.put("code", args.code);
-        root.put("error", error);
-        assertThrows(args.exception, () -> ErrorHandler.handleErrorResponse(args.httpStatus,  root, stats));
+        String body = mapper.writeValueAsString(root);
+        assertThrows(args.exception, () -> ErrorHandler.handleErrorResponse(args.httpStatus, body, mapper));
+    }
+
+    public void testHandleInvalidJson() {
+        assertThrows(ProtocolException.class,
+                () -> ErrorHandler.handleErrorResponse(400, "{not json", mapper));
+    }
+
+    public void testMissingStats() throws JsonProcessingException {
+        ObjectNode root = mapper.createObjectNode();
+        ObjectNode error = root.putObject("error");
+        error.put("code", "invalid_query");
+        String body = mapper.writeValueAsString(root);
+        assertThrows(ProtocolException.class,
+                () -> ErrorHandler.handleErrorResponse(400, body, mapper));
     }
 }

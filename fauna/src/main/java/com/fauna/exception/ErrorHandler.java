@@ -2,6 +2,8 @@ package com.fauna.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fauna.common.constants.ResponseFields;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
 
@@ -24,6 +26,23 @@ public class ErrorHandler {
      private static final String TIME_OUT = "time_out";
      private static final String INTERNAL_ERROR = "internal_error";
 
+
+     public static void handleErrorResponse(int statusCode, String body, ObjectMapper mapper) {
+         try {
+             JsonNode json = mapper.readTree(body);
+             JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
+             QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
+             if (stats != null) {
+                 QueryFailure failure = new QueryFailure(statusCode, json, stats);
+                 handleQueryFailure(statusCode, failure);
+             } else {
+                 throw new ProtocolException(statusCode, body);
+             }
+         } catch (JsonProcessingException e) {
+             throw new ProtocolException(statusCode, body);
+         }
+         throw new ProtocolException(statusCode, body);
+     }
     /**
      * Handles errors based on the HTTP status code and response body.
      *
@@ -32,9 +51,7 @@ public class ErrorHandler {
      * @throws FaunaInvalidQuery   If the query was invalid.
      * @throws ServiceException   For other types of errors.
      */
-    public static void handleErrorResponse(int statusCode, JsonNode json, QueryStats stats) throws JsonProcessingException {
-        QueryFailure failure = new QueryFailure(statusCode, json, stats);
-
+    public static void handleQueryFailure(int statusCode, QueryFailure failure) {
         switch (statusCode) {
             case HTTP_BAD_REQUEST:
                 switch (failure.getErrorCode()) {
@@ -43,6 +60,11 @@ public class ErrorHandler {
                     case INVALID_REQUEST: throw new InvalidRequestException(failure);
                     case ABORT: throw new AbortException(failure);
                     case CONSTRAINT_FAILURE: throw new ConstraintFailureException(failure);
+                    // There are ~30 more error codes that map to a QueryRuntimeException.
+                    // By using a default here, one of them is not strictly required. But we
+                    // _do_ require a valid JSON body that can be deserialized to a
+                    // QueryFailure. Defaulting here also slightly future-proofs this client
+                    // because Fauna can throw 400s with new error codes.
                     default: throw new QueryRuntimeException(failure);
                 }
             case HTTP_UNAUTHORIZED:
@@ -57,10 +79,14 @@ public class ErrorHandler {
                 if (CONTENDED_TRANSACTION.equals(failure.getErrorCode())) {
                     throw new ContendedTransactionException(failure);
                 }
-            // TODO: Will 429 from firewall, routers etc have the correct response body?
-            case 429: throw new ThrottlingException(failure);
+            case 429:
+                // 400 (above), or 429 with "limit_exceeded" -> ThrottlingException.
+                if (LIMIT_EXCEEDED.equals(failure.getErrorCode())) {
+                    throw new ThrottlingException(failure);
+                }
             case 440:
             case HTTP_UNAVAILABLE:
+                // 400 or 503 with "time_out" -> QueryTimeoutException.
                 if (TIME_OUT.equals(failure.getErrorCode())) {
                     throw new QueryTimeoutException(failure);
                 }
@@ -69,6 +95,5 @@ public class ErrorHandler {
                     throw new ServiceInternalException(failure);
                 }
         }
-        throw new QueryRuntimeException(failure);
     }
 }

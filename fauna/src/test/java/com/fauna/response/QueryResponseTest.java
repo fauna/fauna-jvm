@@ -4,13 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fauna.client.FaunaClient;
 import com.fauna.common.constants.ResponseFields;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ProtocolException;
 import com.fauna.mapping.MappingContext;
 import com.fauna.serialization.Deserializer;
 
@@ -24,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class QueryResponseTest {
 
     @Test
-    void getFromResponseBody_Success() throws IOException {
+    public void getFromResponseBody_Success() throws IOException {
         String data = "{\n" +
             "    \"@object\": {\n" +
             "        \"@int\": \"notanint\",\n" +
@@ -70,7 +72,7 @@ class QueryResponseTest {
     }
 
     @Test
-    void getFromResponseBody_Failure() throws JsonProcessingException {
+    public void getFromResponseBody_Failure() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
         ObjectNode errorData = mapper.createObjectNode();
@@ -94,6 +96,20 @@ class QueryResponseTest {
         assertEquals("ErrorMessage", failureResponse.getMessage());
         assertEquals("ConstraintFailures", failureResponse.getConstraintFailures());
         assertEquals(Optional.of("AbortData"), failureResponse.getAbort());
+    }
+
+    @Test
+    public void handleResponseWithInvalidJsonThrowsProtocolException() {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"not valid json\"");
+        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+    }
+
+    @Test
+    public void handleResponseWithMissingStatsThrowsProtocolException() {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"not valid json\"");
+        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
     }
 
     @Test
