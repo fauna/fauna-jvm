@@ -2,35 +2,50 @@ package com.fauna.client;
 
 import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.configuration.FaunaConfig.FaunaEndpoint;
+import com.fauna.exception.QueryCheckException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
+import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
+@ExtendWith(MockitoExtension.class)
 class FaunaClientTest {
 
     private FaunaClient defaultClient;
     private FaunaClient localClient;
+    @Mock
+    public HttpClient mockClient;
 
     @BeforeEach
     void setUp() {
-        defaultClient = new FaunaClient();
+        defaultClient = new FaunaClient(FaunaConfig.builder().build(), mockClient);
         localClient = new FaunaClient(FaunaConfig.builder().endpoint(FaunaEndpoint.LOCAL).build());
     }
 
@@ -136,9 +151,52 @@ class FaunaClientTest {
     }
 
     @Test
-    void query_WithValidFQL_ShouldCall() throws ExecutionException, InterruptedException {
+    void query_WithValidFQL_ShouldCall() throws IOException, InterruptedException {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QueryResponse response = defaultClient.query(Query.fql("Collection.create({ name: 'Dogs' })"));
-        assertEquals("", response.getSummary());
+        assertEquals("success", response.getSummary());
+        assertEquals(0, response.getLastSeenTxn());
+        verify(resp, atLeastOnce()).statusCode();
+    }
+
+    @Test
+    void asyncQuery_WithValidFQL_ShouldCall() throws ExecutionException, InterruptedException {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        QueryResponse response = future.get();
+        assertEquals("success", response.getSummary());
+        assertEquals(0, response.getLastSeenTxn());
+        verify(resp, atLeastOnce()).statusCode();
+    }
+
+    @Test
+    void query_withFailure_ShouldThrow() {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
+        when(resp.statusCode()).thenReturn(400);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        QueryCheckException exc = assertThrows(QueryCheckException.class,
+                () -> defaultClient.query(Query.fql("Collection.create({ name: 'Dogs' })")));
+        assertEquals("invalid_query", exc.getResponse().getErrorCode());
+        assertEquals(400, exc.getResponse().getStatusCode());
+
+    }
+    @Test
+    void asyncQuery_withFailure_ShouldThrow() {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
+        when(resp.statusCode()).thenReturn(400);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
+        QueryCheckException cause = (QueryCheckException) exc.getCause();
+        assertEquals("invalid_query", cause.getResponse().getErrorCode());
+        assertEquals(400, cause.getResponse().getStatusCode());
+
     }
 
 }

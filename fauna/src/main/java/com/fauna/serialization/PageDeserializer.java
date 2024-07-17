@@ -3,9 +3,9 @@ package com.fauna.serialization;
 
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.common.types.Page;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IDeserializer;
-import com.fauna.mapping.MappingContext;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
     }
 
     @Override
-    public Page<T> doDeserialize(MappingContext context, UTF8FaunaParser reader)
+    public Page<T> doDeserialize(UTF8FaunaParser reader)
         throws IOException {
         FaunaTokenType endToken;
         switch (reader.getCurrentTokenType()) {
@@ -29,7 +29,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
                 endToken = FaunaTokenType.END_OBJECT;
                 break;
             default:
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing into " + Page.class + ": "
                         + reader.getCurrentTokenType());
         }
@@ -43,7 +43,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
 
             switch (fieldName) {
                 case "data":
-                    data = _dataDeserializer.deserialize(context, reader);
+                    data = _dataDeserializer.deserialize(reader);
                     break;
                 case "after":
                     after = reader.getValueAsString();
@@ -52,7 +52,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
         }
 
         if (data == null) {
-            throw new SerializationException("No page data found while deserializing into Page<T>");
+            throw new ClientException("No page data found while deserializing into Page<T>");
         }
 
         return new Page<>(data, after);

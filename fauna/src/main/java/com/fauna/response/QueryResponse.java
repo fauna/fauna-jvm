@@ -3,23 +3,31 @@ package com.fauna.response;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.common.constants.ResponseFields;
-import com.fauna.exception.SerializationException;
-import com.fauna.interfaces.IDeserializer;
-import com.fauna.mapping.MappingContext;
+import com.fauna.exception.ErrorHandler;
+import com.fauna.exception.FaunaException;
+import com.fauna.exception.ProtocolException;
+import com.fauna.serialization.Deserializer;
+
+import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class QueryResponse {
 
-    private JsonNode rawJson;
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private final JsonNode rawJson;
     private long lastSeenTxn;
     private long schemaVersion;
     private String summary = "";
-    private Map<String, String> queryTags = new HashMap<>();
+    private final Map<String, String> queryTags = new HashMap<>();
     private QueryStats stats;
+    public static final QueryStats DEFAULT_STATS = new QueryStats(0, 0, 0, 0, 0, 0, 0, List.of());
 
-    QueryResponse(JsonNode json) {
-        rawJson = json;
+    QueryResponse(JsonNode json, QueryStats stats) {
+        this.rawJson = json;
+        this.stats = stats;
 
         JsonNode elem;
 
@@ -47,39 +55,24 @@ public abstract class QueryResponse {
             }
         }
 
-        if ((elem = json.get(ResponseFields.STATS_FIELD_NAME)) != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            stats = mapper.convertValue(elem, QueryStats.class);
-        }
     }
 
-    /**
-     * Asynchronously parses the HTTP response message to create a QueryResponse instance.
-     *
-     * @param <T>          The expected data type of the query response.
-     * @param ctx          Serialization context for handling response data.
-     * @param deserializer A deserializer for the success data type.
-     * @param statusCode   The HTTP status code.
-     * @param body         The response body.
-     * @return A Task that resolves to a QueryResponse instance.
-     */
-    public static <T> QueryResponse getFromResponseBody(
-        MappingContext ctx,
-        IDeserializer<T> deserializer,
-        int statusCode,
-        String body) {
+    public static QueryResponse handleResponse(HttpResponse<String> response) throws FaunaException {
+        String body = response.body();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode json = mapper.readTree(body);
-
-            if (statusCode >= 200
-                && statusCode <= 299) {
-                return new QuerySuccess<>(ctx, deserializer, json);
+            if (response.statusCode() >= 400) {
+                ErrorHandler.handleErrorResponse(response.statusCode(), body, mapper);
             }
-
-            return new QueryFailure(statusCode, json);
-        } catch (Exception e) {
-            throw new SerializationException("Error occurred while parsing the response body", e);
+            JsonNode json = mapper.readTree(response.body());
+            JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
+            if (statsNode != null) {
+                QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
+                return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
+            } else {
+                throw new ProtocolException(response.statusCode(), body);
+            }
+        } catch (IOException exc) { // Jackson JsonProcessingException subclasses IOException
+            throw new ProtocolException(exc, response.statusCode(), body);
         }
     }
 

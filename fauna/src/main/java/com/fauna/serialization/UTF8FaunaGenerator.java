@@ -4,7 +4,7 @@ package com.fauna.serialization;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fauna.common.types.Module;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -312,7 +312,7 @@ public class UTF8FaunaGenerator implements AutoCloseable {
             String str = value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             writeTaggedValue("@date", str);
         } catch (DateTimeException e) {
-            throw new SerializationException("Error writing date value", e);
+            throw new ClientException("Error writing date value", e);
         }
     }
 
@@ -328,7 +328,7 @@ public class UTF8FaunaGenerator implements AutoCloseable {
             String formattedTime = instant.toString();
             writeTaggedValue("@time", formattedTime);
         } catch (DateTimeException e) {
-            throw new SerializationException("Error writing time value", e);
+            throw new ClientException("Error writing time value", e);
         }
     }
 

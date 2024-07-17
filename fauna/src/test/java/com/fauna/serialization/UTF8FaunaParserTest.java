@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.common.enums.FaunaTokenType;
 import com.fauna.common.types.Module;
-import com.fauna.exception.SerializationException;
+import com.fauna.exception.ClientException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +57,7 @@ class UTF8FaunaParserTest {
             Map.entry(FaunaTokenType.INT, "abc")
         );
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> assertReader(invalidReader, expectedTokens));
 
         assertEquals("Error getting the current token as Integer", ex.getMessage());
@@ -70,7 +70,7 @@ class UTF8FaunaParserTest {
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
         UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> reader.read());
 
         assertEquals("Failed to advance underlying JSON reader.", ex.getMessage());
@@ -123,7 +123,7 @@ class UTF8FaunaParserTest {
             Map.entry(FaunaTokenType.DATE, "abc")
         );
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> assertReader(invalidReader, expectedTokens));
 
         assertEquals("Error getting the current token as LocalDate", ex.getMessage());
@@ -154,7 +154,7 @@ class UTF8FaunaParserTest {
             Map.entry(FaunaTokenType.TIME, "abc")
         );
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> assertReader(invalidReader, expectedTokens));
 
         assertEquals("Error getting the current token as LocalDateTime", ex.getMessage());
@@ -199,7 +199,7 @@ class UTF8FaunaParserTest {
             Map.entry(FaunaTokenType.DOUBLE, "abc")
         );
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> assertReader(invalidReader, expectedTokens));
 
         assertEquals("Error getting the current token as Double", ex.getMessage());
@@ -228,7 +228,7 @@ class UTF8FaunaParserTest {
             Map.entry(FaunaTokenType.LONG, "abc")
         );
 
-        Exception ex = assertThrows(SerializationException.class,
+        Exception ex = assertThrows(ClientException.class,
             () -> assertReader(invalidReader, expectedTokens));
 
         assertEquals("Error getting the current token as Long", ex.getMessage());
@@ -505,7 +505,7 @@ class UTF8FaunaParserTest {
     @Test
     public void throwsOnMalformedJson() {
         String s = "{";
-        assertThrows(SerializationException.class, () -> {
+        assertThrows(ClientException.class, () -> {
             UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(s.getBytes()));
             reader.read();
             reader.read();

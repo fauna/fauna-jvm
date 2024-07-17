@@ -8,8 +8,8 @@ import com.fauna.common.types.NamedDocument;
 import com.fauna.common.types.NamedDocumentRef;
 import com.fauna.common.types.NullDocumentRef;
 import com.fauna.common.types.NullNamedDocumentRef;
-import com.fauna.exception.SerializationException;
-import com.fauna.mapping.MappingContext;
+import com.fauna.exception.ClientException;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -48,34 +48,33 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         _page = new PageDeserializer<>(this);
     }
 
-    public T doDeserialize(MappingContext context, UTF8FaunaParser reader) throws IOException {
-        return checkedDeserialize(context, reader, null);
+    public T doDeserialize(UTF8FaunaParser reader) throws IOException {
+        return checkedDeserialize(reader, null);
     }
 
     /**
      * Deserializes the value from the FaunaParser.
      *
-     * @param context The serialization context.
-     * @param reader  The FaunaParser instance to read from.
+     * @param reader The FaunaParser instance to read from.
      * @return The deserialized value.
      */
-    public T checkedDeserialize(MappingContext context, UTF8FaunaParser reader, Type type) throws IOException {
+    public T checkedDeserialize(UTF8FaunaParser reader, Type type) throws IOException {
         Object value = null;
         switch (reader.getCurrentTokenType()) {
             case START_OBJECT:
-                value = _map.deserialize(context, reader);
+                value = _map.deserialize(reader);
                 break;
             case START_ARRAY:
-                value = _list.deserialize(context, reader);
+                value = _list.deserialize(reader);
                 break;
             case START_PAGE:
-                value = _page.deserialize(context, reader);
+                value = _page.deserialize(reader);
                 break;
             case START_REF:
-                value = deserializeRef(context, reader);
+                value = deserializeRef(reader);
                 break;
             case START_DOCUMENT:
-                value = deserializeDocument(context, reader);
+                value = deserializeDocument(reader);
                 break;
             case MODULE:
                 value = reader.getValueAsModule();
@@ -123,14 +122,14 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                 value = reader.getValueAsBoolean();
                 break;
             default:
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing: " + reader.getCurrentTokenType());
         }
 
         return (T) value;
     }
 
-    private Object deserializeDocument(MappingContext context, UTF8FaunaParser reader)
+    private Object deserializeDocument(UTF8FaunaParser reader)
         throws IOException {
         Map<String, Object> data = new HashMap<>();
         String id = null;
@@ -140,7 +139,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
         while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_DOCUMENT) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing into Document: "
                         + reader.getCurrentTokenType());
             }
@@ -162,7 +161,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                     break;
                 default:
                     data.put(fieldName,
-                        DynamicDeserializer.getInstance().deserialize(context, reader));
+                        DynamicDeserializer.getInstance().deserialize(reader));
                     break;
             }
         }
@@ -193,7 +192,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
         return data;
     }
 
-    private Object deserializeRef(MappingContext context, UTF8FaunaParser reader)
+    private Object deserializeRef(UTF8FaunaParser reader)
         throws IOException {
         String id = null;
         String name = null;
@@ -204,7 +203,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
 
         while (reader.read() && reader.getCurrentTokenType() != FaunaTokenType.END_REF) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new SerializationException(
+                throw new ClientException(
                     "Unexpected token while deserializing into DocumentRef: "
                         + reader.getCurrentTokenType());
             }
@@ -234,7 +233,7 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
                     break;
                 default:
                     allProps.put(fieldName,
-                        DynamicDeserializer.getInstance().deserialize(context, reader));
+                        DynamicDeserializer.getInstance().deserialize(reader));
                     break;
             }
         }
