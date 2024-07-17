@@ -1,6 +1,5 @@
 package com.fauna.client;
 
-import com.fauna.common.configuration.FaunaConfig;
 import com.fauna.common.connection.DriverEnvironment;
 import com.fauna.query.builder.Query;
 import com.fauna.serialization.Serializer;

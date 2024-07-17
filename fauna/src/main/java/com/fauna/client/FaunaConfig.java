@@ -1,4 +1,4 @@
-package com.fauna.common.configuration;
+package com.fauna.client;
 
 import java.time.Duration;
 import java.util.HashMap;

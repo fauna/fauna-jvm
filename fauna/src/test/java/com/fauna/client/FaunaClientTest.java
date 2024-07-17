@@ -1,7 +1,6 @@
 package com.fauna.client;
 
-import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.configuration.FaunaConfig.FaunaEndpoint;
+import com.fauna.client.FaunaConfig.FaunaEndpoint;
 import com.fauna.exception.QueryCheckException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
