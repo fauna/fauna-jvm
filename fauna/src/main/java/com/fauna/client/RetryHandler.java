@@ -5,13 +5,10 @@ public class RetryHandler {
     private final long startTimeMillis;
     private int requestCount = 0;
 
+
     public RetryHandler(RetryStrategy strategy) {
         this.strategy = strategy;
         this.startTimeMillis = System.currentTimeMillis();
-    }
-
-    public static RetryHandler noRetries() {
-        return new RetryHandler(ExponentialBackoffStrategy.)
     }
 
     public int getDelayMillis() {

@@ -9,6 +9,8 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
     private final int maxElapsedTimeMillis;
     private final float jitterFactor;
 
+    public static final RetryStrategy DEFAULT = ExponentialBackoffStrategy.builder().build();
+
     ExponentialBackoffStrategy(float exponent, int maxAttepts, int initialIntervalMillis,  int maxElapsedTimeMillis,
                                float jitterFactor) {
         this.exponent = exponent;
@@ -19,8 +21,7 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
     }
 
     private double getDeterministicDelay(int requestCount) {
-        return Math.pow(this.exponent * this.initialIntervalMillis, requestCount);
-
+        return Math.pow(this.exponent, requestCount-1) * initialIntervalMillis;
     }
 
     private double getJitterPercent() {
@@ -29,7 +30,9 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
 
     @Override
     public int getDelayMillis(long initialRequestMillis, int requestCount) {
-        if (initialRequestMillis + this.maxElapsedTimeMillis < System.currentTimeMillis()) {
+        if (requestCount == 0) {
+            return 0;
+        } else if (initialRequestMillis + this.maxElapsedTimeMillis < System.currentTimeMillis()) {
             throw new FaunaException("Exceeded maxElapsedTimeMillis.");
         } else if (requestCount >= maxAttempts) {
             throw new FaunaException("Exceeded maxAttempts");
