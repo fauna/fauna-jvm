@@ -1,5 +1,6 @@
 package com.fauna.client;
 
+import com.fauna.query.QueryOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -27,7 +28,7 @@ class RequestBuilderTest {
         faunaConfig = FaunaConfig.builder()
                 .endpoint("http://localhost:8443")
                 .secret("secret")
-                .queryTimeout(Duration.ofSeconds(5))
+                .defaultQueryOptions(QueryOptions.builder().timeout(Duration.ofSeconds(10)).build())
                 .build();
         requestBuilder = new RequestBuilder(faunaConfig);
 
@@ -45,22 +46,20 @@ class RequestBuilderTest {
         Map<String, String> queryTags = new HashMap<>();
         queryTags.put("tag1", "value1");
         queryTags.put("tag2", "value2");
+        QueryOptions options = QueryOptions.builder().timeout(Duration.ofSeconds(15))
+                .linearized(true).typeCheck(true).traceParent("traceParent").build();
 
         faunaConfig = FaunaConfig.builder()
                 .endpoint("http://localhost:8443")
                 .secret("secret")
-                .queryTimeout(Duration.ofSeconds(5))
-                .linearized(true)
-                .typeCheck(false)
-                .queryTags(queryTags)
-                .traceParent("traceParent")
+                .defaultQueryOptions(options)
                 .build();
         requestBuilder = new RequestBuilder(faunaConfig);
 
         HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"));
 
         assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.LINEARIZED).get());
-        assertEquals("false", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
+        assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
         assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.QUERY_TAGS));
         assertEquals("traceParent", httpRequest.headers().firstValue(RequestBuilder.Headers.TRACE_PARENT).get());
     }
