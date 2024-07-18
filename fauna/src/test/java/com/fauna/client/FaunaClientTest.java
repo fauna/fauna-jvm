@@ -54,7 +54,6 @@ class FaunaClientTest {
         FaunaConfig config = FaunaConfig.builder().build();
         assertEquals("https://db.fauna.com", config.getEndpoint());
         assertEquals("", config.getSecret());
-        assertEquals(QueryOptions.DEFAULT, config.defaultQueryOptions());
     }
 
     @Test
@@ -68,12 +67,10 @@ class FaunaClientTest {
         FaunaConfig config = FaunaConfig.builder()
                 .endpoint("endpoint")
                 .secret("secret")
-                .defaultQueryOptions(opts)
                 .build();
 
         assertEquals("endpoint", config.getEndpoint());
         assertEquals("secret", config.getSecret());
-        assertEquals(opts, config.defaultQueryOptions());
 
     }
 
@@ -93,7 +90,7 @@ class FaunaClientTest {
     @Test
     void customConfigAndClientConstructor() {
         QueryOptions opts = QueryOptions.builder().timeout(Duration.ofSeconds(10)).build();
-        FaunaConfig config = FaunaConfig.builder().defaultQueryOptions(opts).build();
+        FaunaConfig config = FaunaConfig.builder().build();
         HttpClient multiThreadedClient = HttpClient.newBuilder().executor(Executors.newFixedThreadPool(20))
                 .connectTimeout(Duration.ofSeconds(15)).build();
         FaunaClient client = new FaunaClient(config, multiThreadedClient);

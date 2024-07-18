@@ -28,11 +28,10 @@ class RequestBuilderTest {
         faunaConfig = FaunaConfig.builder()
                 .endpoint("http://localhost:8443")
                 .secret("secret")
-                .defaultQueryOptions(QueryOptions.builder().timeout(Duration.ofSeconds(10)).build())
                 .build();
         requestBuilder = new RequestBuilder(faunaConfig);
 
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"));
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null);
 
         assertEquals("http://localhost:8443", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
@@ -52,11 +51,10 @@ class RequestBuilderTest {
         faunaConfig = FaunaConfig.builder()
                 .endpoint("http://localhost:8443")
                 .secret("secret")
-                .defaultQueryOptions(options)
                 .build();
         requestBuilder = new RequestBuilder(faunaConfig);
 
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"));
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options);
 
         assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.LINEARIZED).get());
         assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
@@ -72,6 +70,6 @@ class RequestBuilderTest {
         // This was faster, but now I think it's taking time to do things like create the FaunaRequest object.
         // Being able to build 10k requests per second still seems like reasonable performance.
         IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(
-                fql("Sample FQL Query ${i}", Map.of("i", i))));
+                fql("Sample FQL Query ${i}", Map.of("i", i)), null));
     }
 }

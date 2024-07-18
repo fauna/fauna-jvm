@@ -30,8 +30,8 @@ public class QueryOptions {
         return Optional.ofNullable(this.typeCheck);
     }
 
-    public Duration getTimeout() {
-        return this.timeout;
+    public Optional<Duration> getTimeout() {
+        return Optional.ofNullable(this.timeout);
     }
 
     public Optional<Map<String, String>> getQueryTags() {

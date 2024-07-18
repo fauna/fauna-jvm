@@ -1,6 +1,7 @@
 package com.fauna.client;
 
 import com.fauna.common.connection.DriverEnvironment;
+import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.serialization.Serializer;
@@ -22,7 +23,7 @@ public class RequestBuilder {
 
     private final FaunaConfig faunaConfig;
     private final DriverEnvironment driverEnvironment;
-    private final HttpRequest.Builder httpRequestBuilder;
+    private final HttpRequest.Builder baseRequestBuilder;
 
 
     static class Headers {
@@ -44,10 +45,14 @@ public class RequestBuilder {
     public RequestBuilder(FaunaConfig config) {
         this.faunaConfig = config;
         this.driverEnvironment = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
-        this.httpRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint()));
-        for (String[] hdr : this.buildHeaders(null)) {
-            httpRequestBuilder.header(hdr[0], hdr[1]);
-        }
+        this.baseRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint())).headers(
+                RequestBuilder.Headers.FORMAT, "tagged",
+                RequestBuilder.Headers.ACCEPT_ENCODING, "gzip",
+                RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
+                RequestBuilder.Headers.DRIVER, "Java",
+                RequestBuilder.Headers.DRIVER_ENV, driverEnvironment.toString(),
+                Headers.AUTHORIZATION, buildAuthToken()
+        );
     }
 
     /**
@@ -56,46 +61,34 @@ public class RequestBuilder {
      * @param fql The Fauna query string.
      * @return An HttpRequest object configured for the Fauna query.
      */
-    public HttpRequest buildRequest(Query fql) {
-
+    public HttpRequest buildRequest(Query fql, QueryOptions options) {
+        HttpRequest.Builder builder = baseRequestBuilder.copy();
+        if (options != null) {
+            addOptionalHeaders(builder, options);
+        }
         try {
-            return this.httpRequestBuilder.POST(HttpRequest.BodyPublishers.ofString(Serializer.serialize(new FaunaRequest(fql)))).build();
+            return builder.POST(HttpRequest.BodyPublishers.ofString(
+                    Serializer.serialize(new FaunaRequest(fql)))).build();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ClientException("Unable to build request.", e);
         }
     }
 
     private String buildAuthToken() {
-        return String.join(" ", new String[]{RequestBuilder.BEARER, this.faunaConfig.getSecret()});
+        return String.join(" ", RequestBuilder.BEARER, this.faunaConfig.getSecret());
     }
 
     /**
-     * Builds and returns a map of HTTP headers required for the Fauna request.
-     *
-     * @return A Map of header names to header values.
+     * Adds optional headers to the HttpRequest.Builder from the given QueryOptions.
+     * @param builder A HttpRequest.Builder that will have headers added to it.
+     * @param options The QueryOptions (must not be null).
      */
-    private String[][] buildHeaders(QueryOptions options) {
-        QueryOptions opts = options != null ? options : this.faunaConfig.defaultQueryOptions();
-        ArrayList<String[]> headerList = new ArrayList<>(Arrays.asList(
-                new String[] {RequestBuilder.Headers.AUTHORIZATION, this.buildAuthToken()},
-                new String[] {RequestBuilder.Headers.FORMAT, "tagged"},
-                new String[] {RequestBuilder.Headers.ACCEPT_ENCODING, "gzip"},
-                new String[] {RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8"},
-                new String[] {RequestBuilder.Headers.DRIVER, "Java"},
-                new String[] {RequestBuilder.Headers.DRIVER_ENV, driverEnvironment.toString()},
-                new String[] {RequestBuilder.Headers.QUERY_TIMEOUT_MS,
-                        String.valueOf(opts.getTimeout().toMillis())}
-        ));
-
-        opts.isLinearized().ifPresent(l -> headerList.add(new String[] {Headers.LINEARIZED, l.toString()}));
-        opts.getTypeCheck().ifPresent(tc -> headerList.add(new String[] {Headers.TYPE_CHECK, tc.toString()}));
-        opts.getTraceParent().ifPresent(tp -> headerList.add(new String[] {Headers.TRACE_PARENT, tp}));
-
-        if (opts.getQueryTags().isPresent()) {
-            headerList.add(new String[] {RequestBuilder.Headers.QUERY_TAGS,
-                    QueryTags.encode(opts.getQueryTags().get())});
-        }
-        return headerList.toArray(new String[headerList.size()][2]);
+    private static void addOptionalHeaders(HttpRequest.Builder builder, QueryOptions options) {
+        options.getTimeout().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
+        options.isLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
+        options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
+        options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
+        options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, QueryTags.encode(val)));
     }
 
     public static class QueryTags {

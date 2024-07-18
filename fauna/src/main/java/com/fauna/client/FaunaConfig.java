@@ -22,7 +22,6 @@ public class FaunaConfig {
 
     private final String endpoint;
     private final String secret;
-    private final QueryOptions defaultQueryOptions;
 
 //    private Integer maxContentionRetries;
 //    private int maxAttempts;
@@ -37,7 +36,6 @@ public class FaunaConfig {
     private FaunaConfig(Builder builder) {
         this.endpoint = FaunaEnvironment.faunaEndpoint().orElse(builder.endpoint);
         this.secret = FaunaEnvironment.faunaSecret().orElse(builder.secret);
-        this.defaultQueryOptions = builder.defaultQueryOptions;
     }
 
     /**
@@ -59,10 +57,6 @@ public class FaunaConfig {
         return secret;
     }
 
-    public QueryOptions defaultQueryOptions() {
-        return this.defaultQueryOptions;
-    }
-
     /**
      * Creates a new builder for FaunaConfig.
      *
@@ -78,7 +72,6 @@ public class FaunaConfig {
     public static class Builder {
         private String endpoint = FaunaEndpoint.DEFAULT;
         private String secret = "";
-        private QueryOptions defaultQueryOptions = QueryOptions.DEFAULT;
 
         /**
          * Sets the endpoint URL.
@@ -99,11 +92,6 @@ public class FaunaConfig {
          */
         public Builder secret(String secret) {
             this.secret = secret;
-            return this;
-        }
-
-        public Builder defaultQueryOptions(QueryOptions options) {
-            this.defaultQueryOptions = options;
             return this;
         }
 
