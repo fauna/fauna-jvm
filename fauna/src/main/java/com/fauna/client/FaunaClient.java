@@ -21,6 +21,7 @@ public class FaunaClient {
 
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
+    private final RetryStrategy retryStrategy;
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
      * the user to have complete control over HTTP Configuration, like timeouts, thread pool size,
@@ -39,6 +40,7 @@ public class FaunaClient {
         } else {
             this.requestBuilder = new RequestBuilder(faunaConfig);
         }
+        this.retryStrategy = ExponentialBackoffStrategy.DEFAULT;
     }
 
     /**
@@ -70,9 +72,8 @@ public class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         HttpRequest request = requestBuilder.buildRequest(fql, options);
-
-        return this.httpClient.sendAsync(request,
-                HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+        RetryHandler retryHandler = new RetryHandler(this.httpClient, request, this.retryStrategy);
+        return retryHandler.execute();
     }
 
     /**

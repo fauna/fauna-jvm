@@ -2,6 +2,7 @@ package com.fauna.client;
 
 import com.fauna.client.FaunaConfig.FaunaEndpoint;
 import com.fauna.exception.QueryCheckException;
+import com.fauna.exception.ThrottlingException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
@@ -184,6 +185,20 @@ class FaunaClientTest {
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
         QueryCheckException cause = (QueryCheckException) exc.getCause();
         assertEquals("invalid_query", cause.getResponse().getErrorCode());
+        assertEquals(400, cause.getResponse().getStatusCode());
+
+    }
+
+    @Test
+    void asyncQuery_withRetryableException_ShouldRetry() {
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
+        when(resp.statusCode()).thenReturn(400);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
+        ThrottlingException cause = (ThrottlingException) exc.getCause();
+        assertEquals("limit_exceeded", cause.getResponse().getErrorCode());
         assertEquals(400, cause.getResponse().getStatusCode());
 
     }
