@@ -22,7 +22,7 @@ public class QueryOptions {
         this.traceParent = builder.traceParent;
     }
 
-    public Optional<Boolean> isLinearized() {
+    public Optional<Boolean> getLinearized() {
         return Optional.ofNullable(this.linearized);
     }
 
@@ -46,7 +46,7 @@ public class QueryOptions {
         public Boolean linearized = null;
         public Boolean typeCheck = null;
         public Duration timeout = DEFAULT_TIMEOUT;
-        public Map<String, String> queryTags;
+        public Map<String, String> queryTags = null;
         public String traceParent = null;
 
         public Builder linearized(boolean linearized) {
@@ -55,7 +55,7 @@ public class QueryOptions {
         }
 
         public Builder typeCheck(boolean typeCheck) {
-            this.typeCheck = linearized;
+            this.typeCheck = typeCheck;
             return this;
         }
 

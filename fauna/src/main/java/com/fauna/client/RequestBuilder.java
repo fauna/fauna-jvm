@@ -84,7 +84,7 @@ public class RequestBuilder {
      */
     private static void addOptionalHeaders(HttpRequest.Builder builder, QueryOptions options) {
         options.getTimeout().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
-        options.isLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
+        options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
         options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
         options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
         options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, QueryTags.encode(val)));
