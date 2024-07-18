@@ -9,8 +9,6 @@ import com.fauna.serialization.Serializer;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -66,11 +64,12 @@ public class RequestBuilder {
         if (options != null) {
             addOptionalHeaders(builder, options);
         }
+        // TODO: set last-txn-ts and max-contention-retries.
         try {
             return builder.POST(HttpRequest.BodyPublishers.ofString(
                     Serializer.serialize(new FaunaRequest(fql)))).build();
         } catch (IOException e) {
-            throw new ClientException("Unable to build request.", e);
+            throw new ClientException("Unable to build Fauna Query request.", e);
         }
     }
 

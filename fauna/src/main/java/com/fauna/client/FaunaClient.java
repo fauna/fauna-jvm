@@ -23,9 +23,8 @@ public class FaunaClient {
     private final RequestBuilder requestBuilder;
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
-     * complete control over HTTP Configuration, like timeouts, thread pool size, and so-on.
-     *
-     *   * Note that FaunaConfig.queryTimeout will be ignored if using this method directly.
+     * the user to have complete control over HTTP Configuration, like timeouts, thread pool size,
+     * and so-on.
      *
      * @param faunaConfig The Fauna configuration settings.
      * @param httpClient  A Java HTTP client instance.
@@ -35,11 +34,10 @@ public class FaunaClient {
         this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
+        } else if (Objects.isNull(httpClient)) {
+            throw new IllegalArgumentException("HttpClient cannot be null.");
         } else {
             this.requestBuilder = new RequestBuilder(faunaConfig);
-        }
-        if (Objects.isNull(httpClient)) {
-            throw new IllegalArgumentException("HttpClient cannot be null.");
         }
     }
 
@@ -53,7 +51,7 @@ public class FaunaClient {
     }
 
     /**
-     * Construct a new FaunaClient instance with default configuration.
+     * Construct a new FaunaClient instance with default Fauna and HTTP configuration.
      */
     public FaunaClient() {
         this(FaunaConfig.builder().build());
@@ -71,9 +69,6 @@ public class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        if (Objects.isNull(options)) {
-            throw new IllegalArgumentException("The provided queryOptions is null.");
-        }
         HttpRequest request = requestBuilder.buildRequest(fql, options);
 
         return this.httpClient.sendAsync(request,
@@ -88,17 +83,12 @@ public class FaunaClient {
      * @throws FaunaException If the provided FQL query is null.
      */
     public CompletableFuture<QueryResponse> asyncQuery(Query fql) {
-        if (Objects.isNull(fql)) {
-            throw new IllegalArgumentException("The provided FQL query is null.");
-        }
-        HttpRequest request = requestBuilder.buildRequest(fql, null);
-        return this.httpClient.sendAsync(request,
-                HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+        return asyncQuery(fql, null);
     }
 
-    public QueryResponse query(Query fql) throws FaunaException {
+    public QueryResponse query(Query fql, QueryOptions options) throws FaunaException {
         try {
-            return this.asyncQuery(fql).get();
+            return this.asyncQuery(fql, options).get();
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof FaunaException) {
                 throw (FaunaException) e.getCause();
@@ -106,6 +96,10 @@ public class FaunaClient {
                 throw new ClientException("Unhandled exception.", e);
             }
         }
+    }
+
+    public QueryResponse query(Query fql) throws FaunaException {
+        return this.query(fql, null);
     }
 
 
