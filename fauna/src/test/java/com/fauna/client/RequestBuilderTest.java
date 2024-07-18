@@ -1,6 +1,6 @@
 package com.fauna.client;
 
-import com.fauna.common.configuration.FaunaConfig;
+import com.fauna.query.QueryOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -28,11 +28,10 @@ class RequestBuilderTest {
         faunaConfig = FaunaConfig.builder()
                 .endpoint("http://localhost:8443")
                 .secret("secret")
-                .queryTimeout(Duration.ofSeconds(5))
                 .build();
         requestBuilder = new RequestBuilder(faunaConfig);
 
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"));
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null);
 
         assertEquals("http://localhost:8443", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
@@ -46,22 +45,19 @@ class RequestBuilderTest {
         Map<String, String> queryTags = new HashMap<>();
         queryTags.put("tag1", "value1");
         queryTags.put("tag2", "value2");
+        QueryOptions options = QueryOptions.builder().timeout(Duration.ofSeconds(15))
+                .linearized(true).typeCheck(true).traceParent("traceParent").build();
 
         faunaConfig = FaunaConfig.builder()
                 .endpoint("http://localhost:8443")
                 .secret("secret")
-                .queryTimeout(Duration.ofSeconds(5))
-                .linearized(true)
-                .typeCheck(false)
-                .queryTags(queryTags)
-                .traceParent("traceParent")
                 .build();
         requestBuilder = new RequestBuilder(faunaConfig);
 
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"));
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options);
 
         assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.LINEARIZED).get());
-        assertEquals("false", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
+        assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
         assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.QUERY_TAGS));
         assertEquals("traceParent", httpRequest.headers().firstValue(RequestBuilder.Headers.TRACE_PARENT).get());
     }
@@ -74,6 +70,6 @@ class RequestBuilderTest {
         // This was faster, but now I think it's taking time to do things like create the FaunaRequest object.
         // Being able to build 10k requests per second still seems like reasonable performance.
         IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(
-                fql("Sample FQL Query ${i}", Map.of("i", i))));
+                fql("Sample FQL Query ${i}", Map.of("i", i)), null));
     }
 }

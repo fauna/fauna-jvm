@@ -1,8 +1,8 @@
 package com.fauna.client;
 
-import com.fauna.common.configuration.FaunaConfig;
-import com.fauna.common.configuration.FaunaConfig.FaunaEndpoint;
+import com.fauna.client.FaunaConfig.FaunaEndpoint;
 import com.fauna.exception.QueryCheckException;
+import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +16,8 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -54,33 +52,23 @@ class FaunaClientTest {
         FaunaConfig config = FaunaConfig.builder().build();
         assertEquals("https://db.fauna.com", config.getEndpoint());
         assertEquals("", config.getSecret());
-        // The default values are never null.
-        assertEquals(Optional.empty(), config.getLinearized());
-        assertEquals(Optional.empty(), config.getTypeCheck());
-        assertEquals(Optional.empty(), config.getTraceParent());
-        assertEquals(new HashMap<>(), config.getQueryTags());
-        assertEquals(Duration.ofSeconds(5), config.getQueryTimeout());
     }
 
     @Test
     void customConfigBuilder() {
-        FaunaConfig config = FaunaConfig.builder()
-                .endpoint("endpoint")
-                .secret("secret")
+        QueryOptions opts = QueryOptions.builder()
                 .linearized(false)
                 .typeCheck(false)
                 .traceParent("parent")
                 .queryTags(Map.of("t1", "v1", "t2", "v2"))
-                .queryTimeout(Duration.ofMinutes(1))
+                .timeout(Duration.ofMinutes(1)).build();
+        FaunaConfig config = FaunaConfig.builder()
+                .endpoint("endpoint")
+                .secret("secret")
                 .build();
 
         assertEquals("endpoint", config.getEndpoint());
         assertEquals("secret", config.getSecret());
-        assertEquals(Optional.of(false), config.getLinearized());
-        assertEquals(Optional.of(false), config.getTypeCheck());
-        assertEquals(Optional.of("parent"), config.getTraceParent());
-        assertEquals(Set.of("t1", "t2"), config.getQueryTags().keySet());
-        assertEquals(Duration.ofSeconds(60), config.getQueryTimeout());
 
     }
 
@@ -92,14 +80,15 @@ class FaunaClientTest {
 
     @Test
     void customConfigConstructor() {
-        FaunaConfig config = FaunaConfig.builder().queryTimeout(Duration.ofSeconds(30)).build();
+        FaunaConfig config = FaunaConfig.builder().secret("foo").build();
         FaunaClient client = new FaunaClient(config);
         assertTrue(client.toString().startsWith("com.fauna.client.FaunaClient"));
     }
 
     @Test
     void customConfigAndClientConstructor() {
-        FaunaConfig config = FaunaConfig.builder().queryTimeout(Duration.ofSeconds(10)).build();
+        QueryOptions opts = QueryOptions.builder().timeout(Duration.ofSeconds(10)).build();
+        FaunaConfig config = FaunaConfig.builder().build();
         HttpClient multiThreadedClient = HttpClient.newBuilder().executor(Executors.newFixedThreadPool(20))
                 .connectTimeout(Duration.ofSeconds(15)).build();
         FaunaClient client = new FaunaClient(config, multiThreadedClient);
