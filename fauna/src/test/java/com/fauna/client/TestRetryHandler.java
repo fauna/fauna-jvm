@@ -38,8 +38,8 @@ public class TestRetryHandler {
         RetryHandler handler = new RetryHandler(HttpClient.newBuilder().build(),
                 HttpRequest.newBuilder().uri(URI.create("http://foo")).build(),
                 ExponentialBackoffStrategy.builder().build());
-        assertEquals(1125.0, handler.getDelayMillis(), 125);
-        assertEquals(2250.0, handler.getDelayMillis(), 250.0);
+        assertEquals(750, handler.getDelayMillis(), 250);
+        assertEquals(1500, handler.getDelayMillis(), 500);
     }
 
     @Test

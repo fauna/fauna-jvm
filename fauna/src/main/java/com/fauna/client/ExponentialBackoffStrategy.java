@@ -1,83 +1,109 @@
 package com.fauna.client;
 
-import com.fauna.exception.FaunaException;
 
 public class ExponentialBackoffStrategy implements RetryStrategy {
-    private final float exponent;
+    private final float backoffFactor;
     private final int maxAttempts;
     private final int initialIntervalMillis;
-    private final int maxElapsedTimeMillis;
+    private final int maxBackoffMillis;
     private final float jitterFactor;
 
     public static final RetryStrategy DEFAULT = ExponentialBackoffStrategy.builder().build();
+    public static final RetryStrategy NO_RETRIES = ExponentialBackoffStrategy.builder().setMaxAttempts(0).build();
 
-    ExponentialBackoffStrategy(float exponent, int maxAttepts, int initialIntervalMillis,  int maxElapsedTimeMillis,
-                               float jitterFactor) {
-        this.exponent = exponent;
-        this.maxAttempts = maxAttepts;
+    /**
+     * Construct an Exponential backoff strategy.
+     *
+     *  The basic formula for exponential backoff is b^(a-1) where b is the backoff factor, and a is the retry
+     *  attempt number. So for a backoff factor of 2, you get:
+     *  2^0=1, 2^1=2, 2^3=4, 2^4=8 ...
+     *
+     * @param maxAttempts           The maximum amount of retry attempts. Defaults to 3 retry attempts which means
+     *                              the client will make a total of 4 requests before giving up.
+     * @param backoffFactor         Defines how quickly the client will back off, default is 2.
+     *                              A value of 1 would not backoff (not recommended).
+     * @param initialIntervalMillis Defines the interval for the first wait. Default is 1000ms.
+     * @param maxBackoffMillis      Set a cap on the delay between requests. The default is 20,000ms
+     * @param jitterFactor          A value between 0 (0%) and 1 (100%) that controls how much to jitter the delay.
+     *                              The default is 0.5.
+     */
+    ExponentialBackoffStrategy(int maxAttempts, float backoffFactor, int initialIntervalMillis,
+                               int maxBackoffMillis, float jitterFactor) {
+        this.maxAttempts = maxAttempts;
+        this.backoffFactor = backoffFactor;
         this.initialIntervalMillis = initialIntervalMillis;
-        this.maxElapsedTimeMillis = maxElapsedTimeMillis;
+        this.maxBackoffMillis = maxBackoffMillis;
         this.jitterFactor = jitterFactor;
+        if (jitterFactor < 0.0 || jitterFactor > 1.0) {
+            throw new IllegalArgumentException("Jitter factor must be between 0 and 1.");
+        }
+        if (backoffFactor < 0.0) {
+            throw new IllegalArgumentException("Backoff factor must be positive.");
+        }
+        if (maxAttempts < 0) {
+            throw new IllegalArgumentException("Max attempts must be a natural number (not negative).");
+        }
+        if (initialIntervalMillis < 0) {
+            throw new IllegalArgumentException("Initial interval must be positive.");
+        }
+        if (maxBackoffMillis < 0) {
+            throw new IllegalArgumentException("Max backoff must be positive.");
+        }
     }
 
-    private double getDeterministicDelay(int requestCount) {
-        return Math.pow(this.exponent, requestCount-1) * initialIntervalMillis;
-    }
-
+    /**
+     * Get the % to jitter the backoff, will be a value between 0 and jitterFactor.
+     * @return
+     */
     private double getJitterPercent() {
         return Math.random() * jitterFactor;
     }
 
     @Override
-    public int getDelayMillis(long initialRequestMillis, int requestCount) {
-        if (requestCount == 0) {
+    public boolean canRetry(int retryAttempt) {
+        if (retryAttempt < 0) {
+            throw new IllegalArgumentException("Retry attempt must be a natural number (not negative).");
+        }
+        return retryAttempt <= maxAttempts;
+    }
+
+    @Override
+    public int getDelayMillis(int retryAttempt) {
+        if (retryAttempt < 0) {
+            throw new IllegalArgumentException("Retry attempt must be a natural number (not negative).");
+        } else if (retryAttempt == 0) {
             return 0;
-        } else if (initialRequestMillis + this.maxElapsedTimeMillis < System.currentTimeMillis()) {
-            throw new FaunaException("Exceeded maxElapsedTimeMillis.");
-        } else if (requestCount >= maxAttempts) {
-            throw new FaunaException("Exceeded maxAttempts");
         } else {
-            double delay = getDeterministicDelay(requestCount);
-            return (int) (delay + delay * getJitterPercent());
+            double deterministicBackoff = Math.pow(this.backoffFactor, retryAttempt - 1);
+            double calculatedBackoff = deterministicBackoff * (1-getJitterPercent()) * initialIntervalMillis;
+            return (int) Math.min(calculatedBackoff, this.maxBackoffMillis);
         }
     }
 
+
+    /**
+     * Build a new ExponentialBackoffStrategy. This builder only supports setting maxAttempts, because that's the only
+     * variable that we recommend users change in production. If you need to modify other values for debugging, or other
+     * purposes, then you can use the constructor directly.
+     */
     public static class Builder {
-        public float exponent = 2.0f;
-        public int maxAttempts = 3;
-        public int initialIntervalMillis = 1000;
-        public int maxElapsedTimeMillis = 10_000;
-        public float jitterFactor = 0.25f;
+        private float backoffFactor = 2.0f;   // Results in delay of 1, 2, 4, 8, 16... seconds.
+        private int maxAttempts = 3;     // Limits number of retry attempts.
+        private int initialIntervalMillis = 1000; // The
+        private int maxBackoffMillis = 20_000;
+        // A jitterFactor of 0.5, combined with a backoffFactor of 2 ensures that the delay is always increasing.
+        private float jitterFactor = 0.5f;
 
-        public Builder exponent(float exponent) {
-            this.exponent = exponent;
-            return this;
-        }
 
-        public Builder maxAttempts(int maxAttempts) {
+        public Builder setMaxAttempts(int maxAttempts) {
             this.maxAttempts = maxAttempts;
-            return this;
-        }
-
-        public Builder initialIntervalMillis(int initialIntervalMillis) {
-            this.initialIntervalMillis = initialIntervalMillis;
-            return this;
-        }
-
-        public Builder maxElapsedTimeMillis(int maxElapsedTimeMillis) {
-            this.maxElapsedTimeMillis = maxElapsedTimeMillis;
-            return this;
-        }
-
-        public Builder jitterFactor(float jitterFactor) {
-            this.jitterFactor = jitterFactor;
             return this;
         }
 
         public ExponentialBackoffStrategy build() {
             return new ExponentialBackoffStrategy(
-                    this.exponent, this.maxAttempts, this.initialIntervalMillis,
-                    this.maxElapsedTimeMillis, this.jitterFactor);
+                    this.maxAttempts, this.backoffFactor, this.initialIntervalMillis,
+                    this.maxBackoffMillis, this.jitterFactor);
         }
     }
 

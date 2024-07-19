@@ -9,24 +9,31 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+/**
+ * A retry handler controls the retries for a particular request.
+ */
 public class RetryHandler {
     private final RetryStrategy strategy;
-    private final long startTimeMillis;
     private int requestCount = 0;
     private final HttpClient client;
     private final HttpRequest request;
 
 
+    /**
+     * Construct a new retry handler instance.
+     * @param client    The HTTP client.
+     * @param request   The HttpRequest that to execute and possibly retry.
+     * @param strategy  The retry strategy to use.
+     */
     public RetryHandler(HttpClient client, HttpRequest request, RetryStrategy strategy) {
         this.strategy = strategy;
-        this.startTimeMillis = System.currentTimeMillis();
         this.client = client;
         this.request = request;
     }
 
     public int getDelayMillis() {
         this.requestCount += 1;
-        return this.strategy.getDelayMillis(startTimeMillis, requestCount);
+        return this.strategy.getDelayMillis(requestCount);
     }
 
     public CompletableFuture<Integer> delayRequest() {
