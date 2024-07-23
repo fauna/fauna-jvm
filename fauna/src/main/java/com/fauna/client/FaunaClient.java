@@ -59,6 +59,10 @@ public class FaunaClient {
         this(FaunaConfig.builder().build());
     }
 
+    public static CompletableFuture<QueryResponse> sendAsync(HttpClient client, HttpRequest request) {
+        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+    }
+
     /**
      * Sends a Fauna Query Language (FQL) query to Fauna.
      *
@@ -66,14 +70,12 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(
-            Query fql, QueryOptions options) {
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        HttpRequest request = requestBuilder.buildRequest(fql, options);
-        RetryHandler retryHandler = new RetryHandler(this.httpClient, request, this.retryStrategy);
-        return retryHandler.execute();
+        return new RetryHandler(this.retryStrategy).execute(sendAsync(
+                this.httpClient, requestBuilder.buildRequest(fql, options)));
     }
 
     /**

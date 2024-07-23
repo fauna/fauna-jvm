@@ -1,10 +1,8 @@
 package com.fauna.client;
 
+import com.fauna.exception.RetryableException;
 import com.fauna.response.QueryResponse;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -15,20 +13,14 @@ import java.util.function.Function;
 public class RetryHandler {
     private final RetryStrategy strategy;
     private int requestCount = 0;
-    private final HttpClient client;
-    private final HttpRequest request;
 
 
     /**
      * Construct a new retry handler instance.
-     * @param client    The HTTP client.
-     * @param request   The HttpRequest that to execute and possibly retry.
      * @param strategy  The retry strategy to use.
      */
-    public RetryHandler(HttpClient client, HttpRequest request, RetryStrategy strategy) {
+    public RetryHandler(RetryStrategy strategy) {
         this.strategy = strategy;
-        this.client = client;
-        this.request = request;
     }
 
     public int getDelayMillis() {
@@ -36,27 +28,26 @@ public class RetryHandler {
         return this.strategy.getDelayMillis(requestCount);
     }
 
-    public CompletableFuture<Integer> delayRequest() {
-        Integer delayed = this.getDelayMillis();
-        return CompletableFuture.supplyAsync(() -> delayed, CompletableFuture.delayedExecutor(delayed, TimeUnit.MILLISECONDS));
+    public CompletableFuture<Void> delayRequest() {
+        return CompletableFuture.supplyAsync(() -> null, CompletableFuture.delayedExecutor(this.getDelayMillis(), TimeUnit.MILLISECONDS));
     }
 
-    public static CompletableFuture<QueryResponse> sendAsync(HttpClient client, HttpRequest request) {
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+
+    private CompletableFuture<QueryResponse> retry(Throwable first, int retryAttempt,
+                                                   CompletableFuture<QueryResponse> send) {
+        if (first instanceof RetryableException && this.strategy.canRetry(retryAttempt)) {
+            return this.delayRequest().thenCompose(request -> send)
+                    .thenApply(CompletableFuture::completedFuture)
+                    .exceptionally(t -> retry(first, retryAttempt+1, send))
+                    .thenCompose(Function.identity());
+        } else {
+            return CompletableFuture.failedFuture(first);
+        }
     }
 
-    private CompletableFuture<QueryResponse> retry(Throwable first, int retry) {
-        if(retry >= 4) return CompletableFuture.failedFuture(first);
-        return this.delayRequest().thenCompose(foo -> this.sendAsync(client, request))
-                .thenApply(CompletableFuture::completedFuture)
-                .exceptionally(t -> { first.addSuppressed(t); return retry(first, retry+1); })
-                .thenCompose(Function.identity());
-    }
-
-    public CompletableFuture<QueryResponse> execute() {
-        return this.sendAsync(client, request)
-                .thenApply(CompletableFuture::completedFuture)
-                .exceptionally(t -> retry(t, 0))
+    public CompletableFuture<QueryResponse> execute(CompletableFuture<QueryResponse> send) {
+        return send.thenApply(CompletableFuture::completedFuture)
+                .exceptionally(t -> retry(t, 0, send))
                 .thenCompose(Function.identity());
     }
 

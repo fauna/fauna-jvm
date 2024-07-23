@@ -1,18 +1,18 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.response.QueryResponse;
+import com.fauna.response.QuerySuccess;
+import com.fauna.serialization.Deserializer;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.text.MessageFormat;
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,28 +22,32 @@ public class TestRetryHandler {
         return ZonedDateTime.now().format(DateTimeFormatter.ISO_TIME);
     }
 
-    public static CompletableFuture<String> justDelay(String input, int seconds) {
-        Executor delayed = CompletableFuture.delayedExecutor(seconds, TimeUnit.SECONDS);
-        return CompletableFuture.supplyAsync(() -> input, delayed);
+    public static QuerySuccess successResponse() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode successNode = mapper.createObjectNode();
+            return new QuerySuccess<>(Deserializer.DYNAMIC, successNode, null);
+        } catch (IOException exc) {
+            throw new RuntimeException();
+        }
     }
 
-    public static CompletableFuture<String> sendAsync(String input) {
-        return CompletableFuture.supplyAsync(() -> MessageFormat.format("{0} -> done ({1})",
-                input, timestamp()));
+    @Test
+    public void testExecute() {
+        RetryHandler handler = new RetryHandler(ExponentialBackoffStrategy.builder().build());
+        handler.execute(CompletableFuture.supplyAsync(() -> successResponse()));
 
     }
 
     @Test
     public void testDefaultHandler() {
-        RetryHandler handler = new RetryHandler(HttpClient.newBuilder().build(),
-                HttpRequest.newBuilder().uri(URI.create("http://foo")).build(),
-                ExponentialBackoffStrategy.builder().build());
+        RetryHandler handler = new RetryHandler(ExponentialBackoffStrategy.builder().build());
         assertEquals(750, handler.getDelayMillis(), 250);
         assertEquals(1500, handler.getDelayMillis(), 500);
     }
 
     @Test
     public void testDelay() throws ExecutionException, InterruptedException {
-        this.sendAsync(timestamp()).thenCompose(TestRetryHandler::sendAsync);
+        //this.sendAsync(timestamp()).thenCompose( CompletableFuture.supplyAsync(() -> successResponse()));
     }
 }
