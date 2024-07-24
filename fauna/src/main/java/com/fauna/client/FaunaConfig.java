@@ -34,8 +34,8 @@ public class FaunaConfig {
      * @param builder The builder used to create the FaunaConfig instance.
      */
     private FaunaConfig(Builder builder) {
-        this.endpoint = FaunaEnvironment.faunaEndpoint().orElse(builder.endpoint);
-        this.secret = FaunaEnvironment.faunaSecret().orElse(builder.secret);
+        this.endpoint = builder.endpoint.orElseGet(() -> FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT));
+        this.secret = builder.secret.orElseGet(() -> FaunaEnvironment.faunaSecret().orElse(""));
     }
 
     /**
@@ -70,8 +70,8 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private String endpoint = FaunaEndpoint.DEFAULT;
-        private String secret = "";
+        private Optional<String> endpoint = Optional.empty();
+        private Optional<String> secret = Optional.empty();
 
         /**
          * Sets the endpoint URL.
@@ -80,7 +80,7 @@ public class FaunaConfig {
          * @return The current Builder instance.
          */
         public Builder endpoint(String endpoint) {
-            this.endpoint = endpoint;
+            this.endpoint = Optional.ofNullable(endpoint);
             return this;
         }
 
@@ -91,7 +91,7 @@ public class FaunaConfig {
          * @return The current Builder instance.
          */
         public Builder secret(String secret) {
-            this.secret = secret;
+            this.secret = Optional.ofNullable(secret);
             return this;
         }
 

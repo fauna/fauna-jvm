@@ -27,17 +27,17 @@ class QueryResponseTest {
 
     @Test
     public void getFromResponseBody_Success() throws IOException {
-        String data = "{\n" +
-            "    \"@object\": {\n" +
-            "        \"@int\": \"notanint\",\n" +
-            "        \"anInt\": { \"@int\": \"123\" },\n" +
-            "        \"@object\": \"notanobject\",\n" +
-            "        \"anEscapedObject\": { \"@object\": { \"@long\": \"notalong\" } }\n" +
-            "    }\n" +
-            "}";
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode data = mapper.createObjectNode();
+        ObjectNode obj = data.putObject("@object");
+        obj.put("@int", "notanint");
+        obj.put("anInt", mapper.createObjectNode().put("@int", "123"));
+        obj.put("@object", "notanobject");
+        obj.putObject("anEscapedObject")
+                .putObject("@object")
+                .put("@long", "notalong");
 
         MappingContext ctx = new MappingContext();
-        ObjectMapper mapper = new ObjectMapper();
         ObjectNode successNode = mapper.createObjectNode();
         successNode.put("data", data);
         String body = successNode.toString();
