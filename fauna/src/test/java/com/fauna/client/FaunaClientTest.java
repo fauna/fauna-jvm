@@ -102,8 +102,8 @@ class FaunaClientTest {
             env.when(FaunaConfig.FaunaEnvironment::faunaSecret).thenReturn(Optional.of("secret"));
             env.when(FaunaConfig.FaunaEnvironment::faunaEndpoint).thenReturn(Optional.of("endpoint"));
             FaunaConfig faunaConfig = FaunaConfig.builder().secret("overridden").endpoint("overridden").build();
-            assertEquals("secret", faunaConfig.getSecret());
-            assertEquals("endpoint", faunaConfig.getEndpoint());
+            assertEquals("overridden", faunaConfig.getSecret());
+            assertEquals("overridden", faunaConfig.getEndpoint());
         }
     }
 
