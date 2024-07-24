@@ -10,7 +10,6 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
 
     /**
      * Construct an Exponential backoff strategy.
-     *
      *  The basic formula for exponential backoff is b^(a-1) where b is the backoff factor, and a is the retry
      *  attempt number. So for a backoff factor of 2, you get:
      *  2^0=1, 2^1=2, 2^3=4, 2^4=8 ...
@@ -91,7 +90,7 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
     public static class Builder {
         private float backoffFactor = 2.0f;   // Results in delay of 1, 2, 4, 8, 16... seconds.
         private int maxAttempts = 3;     // Limits number of retry attempts.
-        private int initialIntervalMillis = 1000; // The
+        private int initialIntervalMillis = 1000;
         private int maxBackoffMillis = 20_000;
         // A jitterFactor of 0.5, combined with a backoffFactor of 2 ensures that the delay is always increasing.
         private float jitterFactor = 0.5f;
