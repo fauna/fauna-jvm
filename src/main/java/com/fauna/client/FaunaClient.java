@@ -23,7 +23,7 @@ public class FaunaClient {
     public static final RetryStrategy DEFAULT_RETRY_STRATEGY = ExponentialBackoffStrategy.builder().build();
     public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
     private final HttpClient httpClient;
-    private final RequestBuilder requestBuilder;
+    private final RequestBuilder queryRequestBuilder;
     private final RetryStrategy retryStrategy;
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
@@ -41,7 +41,7 @@ public class FaunaClient {
         } else if (Objects.isNull(httpClient)) {
             throw new IllegalArgumentException("HttpClient cannot be null.");
         } else {
-            this.requestBuilder = new RequestBuilder(faunaConfig);
+            this.queryRequestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
         }
         this.retryStrategy = DEFAULT_RETRY_STRATEGY;
     }
@@ -78,7 +78,7 @@ public class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         return new RetryHandler<QueryResponse>(strategy).execute(makeAsyncRequest(
-                this.httpClient, requestBuilder.buildRequest(fql, options)));
+                this.httpClient, queryRequestBuilder.buildRequest(fql, options)));
     }
 
     public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
@@ -98,7 +98,8 @@ public class FaunaClient {
 
     public QueryResponse query(Query fql, QueryOptions options) throws FaunaException {
         try {
-            return this.asyncQuery(fql, options).get();
+            QueryResponse response = this.asyncQuery(fql, options).get();
+            return response;
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof FaunaException) {
                 throw (FaunaException) e.getCause();

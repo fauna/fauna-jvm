@@ -11,7 +11,7 @@ public class FaunaConfig {
 
     public static class FaunaEndpoint {
         public static String DEFAULT = "https://db.fauna.com";
-        public static String LOCAL = "https://localhost:8443";
+        public static String LOCAL = "http://localhost:8443";
     }
 
     private final String endpoint;
