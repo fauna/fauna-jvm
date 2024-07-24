@@ -1,6 +1,6 @@
 package com.fauna.annotation;
 
-import com.fauna.common.enums.FaunaType;
+import com.fauna.enums.FaunaType;
 import java.lang.reflect.Field;
 
 public class FaunaFieldImpl implements FaunaField {

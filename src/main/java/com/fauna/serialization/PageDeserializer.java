@@ -1,8 +1,8 @@
 package com.fauna.serialization;
 
 
-import com.fauna.common.enums.FaunaTokenType;
-import com.fauna.common.types.Page;
+import com.fauna.enums.FaunaTokenType;
+import com.fauna.types.Page;
 import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IDeserializer;
 

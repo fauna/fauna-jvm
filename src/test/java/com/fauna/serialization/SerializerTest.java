@@ -19,7 +19,7 @@ import com.fauna.beans.PersonWithConflict.PersonWithRefConflict;
 import com.fauna.beans.PersonWithConflict.PersonWithSetConflict;
 import com.fauna.beans.PersonWithConflict.PersonWithTimeConflict;
 import com.fauna.beans.PersonWithTypeOverrides;
-import com.fauna.common.types.Module;
+import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 import java.io.IOException;
 import java.time.Instant;

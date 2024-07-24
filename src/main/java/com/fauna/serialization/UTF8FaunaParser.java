@@ -1,21 +1,21 @@
 package com.fauna.serialization;
 
-import static com.fauna.common.enums.FaunaTokenType.DATE;
-import static com.fauna.common.enums.FaunaTokenType.DOUBLE;
-import static com.fauna.common.enums.FaunaTokenType.END_ARRAY;
-import static com.fauna.common.enums.FaunaTokenType.END_DOCUMENT;
-import static com.fauna.common.enums.FaunaTokenType.END_OBJECT;
-import static com.fauna.common.enums.FaunaTokenType.END_PAGE;
-import static com.fauna.common.enums.FaunaTokenType.END_REF;
-import static com.fauna.common.enums.FaunaTokenType.LONG;
-import static com.fauna.common.enums.FaunaTokenType.NONE;
-import static com.fauna.common.enums.FaunaTokenType.TIME;
+import static com.fauna.enums.FaunaTokenType.DATE;
+import static com.fauna.enums.FaunaTokenType.DOUBLE;
+import static com.fauna.enums.FaunaTokenType.END_ARRAY;
+import static com.fauna.enums.FaunaTokenType.END_DOCUMENT;
+import static com.fauna.enums.FaunaTokenType.END_OBJECT;
+import static com.fauna.enums.FaunaTokenType.END_PAGE;
+import static com.fauna.enums.FaunaTokenType.END_REF;
+import static com.fauna.enums.FaunaTokenType.LONG;
+import static com.fauna.enums.FaunaTokenType.NONE;
+import static com.fauna.enums.FaunaTokenType.TIME;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fauna.common.enums.FaunaTokenType;
-import com.fauna.common.types.Module;
+import com.fauna.enums.FaunaTokenType;
+import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

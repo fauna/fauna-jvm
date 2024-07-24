@@ -1,6 +1,6 @@
-package com.fauna.common.configuration;
+package com.fauna.configuration;
 
-import com.fauna.common.connection.DriverEnvironment;
+import com.fauna.env.DriverEnvironment;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

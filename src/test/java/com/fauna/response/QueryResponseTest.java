@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fauna.common.constants.ResponseFields;
+import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.ProtocolException;
 import com.fauna.mapping.MappingContext;

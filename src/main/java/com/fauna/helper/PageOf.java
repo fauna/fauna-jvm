@@ -1,6 +1,6 @@
 package com.fauna.helper;
 
-import com.fauna.common.types.Page;
+import com.fauna.types.Page;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 

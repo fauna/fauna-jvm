@@ -1,4 +1,4 @@
-package com.fauna.common.enums;
+package com.fauna.enums;
 
 import java.io.IOException;
 

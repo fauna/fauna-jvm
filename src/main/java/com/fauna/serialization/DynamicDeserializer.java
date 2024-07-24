@@ -1,13 +1,13 @@
 package com.fauna.serialization;
 
-import com.fauna.common.enums.FaunaTokenType;
-import com.fauna.common.types.Document;
-import com.fauna.common.types.DocumentRef;
-import com.fauna.common.types.Module;
-import com.fauna.common.types.NamedDocument;
-import com.fauna.common.types.NamedDocumentRef;
-import com.fauna.common.types.NullDocumentRef;
-import com.fauna.common.types.NullNamedDocumentRef;
+import com.fauna.enums.FaunaTokenType;
+import com.fauna.types.Document;
+import com.fauna.types.DocumentRef;
+import com.fauna.types.Module;
+import com.fauna.types.NamedDocument;
+import com.fauna.types.NamedDocumentRef;
+import com.fauna.types.NullDocumentRef;
+import com.fauna.types.NullNamedDocumentRef;
 import com.fauna.exception.ClientException;
 
 import java.io.IOException;

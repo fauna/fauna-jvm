@@ -1,7 +1,7 @@
 package com.fauna.serialization;
 
-import com.fauna.common.enums.FaunaType;
-import com.fauna.common.types.Module;
+import com.fauna.enums.FaunaType;
+import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingContext;

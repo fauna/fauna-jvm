@@ -3,7 +3,7 @@ package com.fauna.exception;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fauna.common.constants.ResponseFields;
+import com.fauna.constants.ResponseFields;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
 

@@ -1,7 +1,7 @@
 package com.fauna.mapping;
 
 import com.fauna.annotation.FaunaFieldImpl;
-import com.fauna.common.enums.FaunaType;
+import com.fauna.enums.FaunaType;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.serialization.Deserializer;
 import com.fauna.serialization.NullableDeserializer;

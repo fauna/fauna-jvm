@@ -1,6 +1,6 @@
 package com.fauna.client;
 
-import com.fauna.common.connection.DriverEnvironment;
+import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;

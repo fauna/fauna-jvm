@@ -1,4 +1,4 @@
-package com.fauna.common.connection;
+package com.fauna.env;
 
 import java.io.IOException;
 import java.io.InputStream;

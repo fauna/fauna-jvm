@@ -3,7 +3,7 @@ package com.fauna.beans;
 
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaObject;
-import com.fauna.common.enums.FaunaType;
+import com.fauna.enums.FaunaType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

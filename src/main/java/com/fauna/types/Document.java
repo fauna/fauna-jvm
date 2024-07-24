@@ -1,4 +1,4 @@
-package com.fauna.common.types;
+package com.fauna.types;
 
 import java.time.Instant;
 import java.util.Map;

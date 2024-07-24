@@ -3,7 +3,7 @@ package com.fauna.serialization;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fauna.common.types.Module;
+import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 
 import java.io.ByteArrayOutputStream;

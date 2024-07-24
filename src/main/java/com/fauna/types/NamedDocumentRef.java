@@ -1,4 +1,4 @@
-package com.fauna.common.types;
+package com.fauna.types;
 
 /**
  * Represents a document ref that has a "name" instead of an "id". For example, a Role document

@@ -1,4 +1,4 @@
-package com.fauna.common.types;
+package com.fauna.types;
 
 import java.util.List;
 

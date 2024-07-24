@@ -2,7 +2,7 @@ package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fauna.common.types.Module;
+import com.fauna.types.Module;
 
 import java.io.IOException;
 import java.time.Instant;

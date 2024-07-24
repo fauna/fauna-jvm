@@ -1,4 +1,4 @@
-package com.fauna.common.constants;
+package com.fauna.constants;
 
 public final class ResponseFields {
 

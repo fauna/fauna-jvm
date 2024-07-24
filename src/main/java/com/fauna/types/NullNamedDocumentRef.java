@@ -1,4 +1,4 @@
-package com.fauna.common.types;
+package com.fauna.types;
 
 /**
  * Represents a reference to a named document that is null, including a reason for its null state.
