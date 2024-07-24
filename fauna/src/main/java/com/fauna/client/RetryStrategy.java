@@ -21,5 +21,7 @@ public interface RetryStrategy {
      */
     int getDelayMillis(int retryAttempt);
 
+    int getMaxRetryAttempts();
+
 
 }

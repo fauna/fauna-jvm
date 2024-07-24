@@ -10,8 +10,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -59,8 +61,8 @@ public class FaunaClient {
         this(FaunaConfig.builder().build());
     }
 
-    public static CompletableFuture<QueryResponse> sendAsync(HttpClient client, HttpRequest request) {
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+    public static Supplier<CompletableFuture<QueryResponse>> makeAsyncRequest(HttpClient client, HttpRequest request) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
     }
 
     /**
@@ -74,7 +76,7 @@ public class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        return new RetryHandler(this.retryStrategy).execute(sendAsync(
+        return new RetryHandler<QueryResponse>(this.retryStrategy).execute(makeAsyncRequest(
                 this.httpClient, requestBuilder.buildRequest(fql, options)));
     }
 

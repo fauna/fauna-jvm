@@ -80,6 +80,11 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
         }
     }
 
+    @Override
+    public int getMaxRetryAttempts() {
+        return this.maxAttempts;
+    }
+
 
     /**
      * Build a new ExponentialBackoffStrategy. This builder only supports setting maxAttempts, because that's the only
