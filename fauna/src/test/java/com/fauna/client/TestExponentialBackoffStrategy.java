@@ -10,10 +10,8 @@ public class TestExponentialBackoffStrategy {
 
     @Test
     public void testNoRetriesBehavior() {
-        RetryStrategy strategy = ExponentialBackoffStrategy.NO_RETRIES;
-
-        assertTrue(strategy.canRetry(0));
-        assertFalse(strategy.canRetry(1));
+        assertTrue(FaunaClient.NO_RETRY_STRATEGY.canRetry(0));
+        assertFalse(FaunaClient.NO_RETRY_STRATEGY.canRetry(1));
     }
 
     @Test
@@ -32,7 +30,7 @@ public class TestExponentialBackoffStrategy {
     }
     @Test
     public void testDefaultBehaviour() {
-        RetryStrategy strategy = ExponentialBackoffStrategy.DEFAULT;
+        RetryStrategy strategy = FaunaClient.DEFAULT_RETRY_STRATEGY;
         assertTrue(strategy.canRetry(0));
         assertEquals(0, strategy.getDelayMillis(0), 0);
 

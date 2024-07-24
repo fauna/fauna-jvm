@@ -8,9 +8,6 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
     private final int maxBackoffMillis;
     private final float jitterFactor;
 
-    public static final RetryStrategy DEFAULT = ExponentialBackoffStrategy.builder().build();
-    public static final RetryStrategy NO_RETRIES = ExponentialBackoffStrategy.builder().setMaxAttempts(0).build();
-
     /**
      * Construct an Exponential backoff strategy.
      *

@@ -57,7 +57,7 @@ public class TestRetryHandler {
 
     @Test
     public void testFailWithNoRetries() {
-        RetryHandler<String> handler  = new RetryHandler<>(ExponentialBackoffStrategy.NO_RETRIES);
+        RetryHandler<String> handler  = new RetryHandler<>(FaunaClient.NO_RETRY_STRATEGY);
         FakeResponder responder = new FakeResponder(1);
         CompletableFuture<String> future = handler.execute(respond(responder));
         ExecutionException exc = assertThrows(ExecutionException.class, future::get);

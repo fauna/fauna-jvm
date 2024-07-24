@@ -10,7 +10,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -21,6 +20,8 @@ import java.util.function.Supplier;
  */
 public class FaunaClient {
 
+    public static final RetryStrategy DEFAULT_RETRY_STRATEGY = ExponentialBackoffStrategy.builder().build();
+    public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
     private final RetryStrategy retryStrategy;
@@ -42,7 +43,7 @@ public class FaunaClient {
         } else {
             this.requestBuilder = new RequestBuilder(faunaConfig);
         }
-        this.retryStrategy = ExponentialBackoffStrategy.DEFAULT;
+        this.retryStrategy = DEFAULT_RETRY_STRATEGY;
     }
 
     /**
