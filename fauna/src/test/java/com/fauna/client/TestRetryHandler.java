@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
@@ -55,13 +53,6 @@ public class TestRetryHandler {
         RetryHandler<String> handler = new RetryHandler<>(ExponentialBackoffStrategy.builder().build());
         handler.execute(() -> CompletableFuture.supplyAsync(TestRetryHandler::timestamp));
 
-    }
-
-    @Test
-    public void testDefaultHandler() {
-        RetryHandler<Void> handler = new RetryHandler<>(ExponentialBackoffStrategy.builder().build());
-        assertEquals(750, handler.getDelayMillis(), 250);
-        assertEquals(1500, handler.getDelayMillis(), 500);
     }
 
     @Test

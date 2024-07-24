@@ -72,12 +72,16 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        return new RetryHandler<QueryResponse>(this.retryStrategy).execute(makeAsyncRequest(
+        return new RetryHandler<QueryResponse>(strategy).execute(makeAsyncRequest(
                 this.httpClient, requestBuilder.buildRequest(fql, options)));
+    }
+
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
+        return asyncQuery(fql, options, this.retryStrategy);
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.fauna.client;
 
-import com.fauna.client.FaunaConfig.FaunaEndpoint;
 import com.fauna.exception.QueryCheckException;
 import com.fauna.exception.ThrottlingException;
 import com.fauna.query.QueryOptions;
@@ -30,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,14 +38,12 @@ import static org.mockito.Mockito.when;
 class FaunaClientTest {
 
     private FaunaClient defaultClient;
-    private FaunaClient localClient;
     @Mock
     public HttpClient mockClient;
 
     @BeforeEach
     void setUp() {
         defaultClient = new FaunaClient(FaunaConfig.builder().build(), mockClient);
-        localClient = new FaunaClient(FaunaConfig.builder().endpoint(FaunaEndpoint.LOCAL).build());
     }
 
     @Test
@@ -191,16 +189,49 @@ class FaunaClientTest {
 
     @Test
     void asyncQuery_withRetryableException_ShouldRetry() {
+        // GIVEN
         HttpResponse resp = mock(HttpResponse.class);
+        int retryAttempts = 10;
+        RetryStrategy fastRetry = new ExponentialBackoffStrategy(retryAttempts,
+                1f, 10, 10, 0.1f);
         when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         when(resp.statusCode()).thenReturn(400);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
-        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        // WHEN
+        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(
+                Query.fql("Collection.create({ name: 'Dogs' })"),
+                QueryOptions.builder().build(), fastRetry);
+        // THEN
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
         ThrottlingException cause = (ThrottlingException) exc.getCause();
         assertEquals("limit_exceeded", cause.getResponse().getErrorCode());
         assertEquals(400, cause.getResponse().getStatusCode());
+        verify(mockClient, times(retryAttempts + 1)).sendAsync(any(), any());
+    }
 
+    @Test
+    void asyncQuery_shouldSucceedOnRetry() throws ExecutionException, InterruptedException {
+        // GIVEN
+        RetryStrategy fastRetry = new ExponentialBackoffStrategy(3,
+                1f, 10, 10, 0.1f);
+        HttpResponse retryableResp = mock(HttpResponse.class);
+        when(retryableResp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
+        when(retryableResp.statusCode()).thenReturn(400);
+
+        HttpResponse successResp = mock(HttpResponse.class);
+        when(successResp.body()).thenReturn("{\"stats\": {}}");
+        when(successResp.statusCode()).thenReturn(200);
+        when(mockClient.sendAsync(any(), any())).thenReturn(
+                CompletableFuture.supplyAsync(() -> retryableResp), CompletableFuture.supplyAsync(() -> successResp));
+
+        // WHEN
+        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(
+                Query.fql("Collection.create({ name: 'Dogs' })"),
+                QueryOptions.builder().build(), fastRetry);
+        // THEN
+        QueryResponse success = future.get();
+        assertEquals("", success.getSummary());
+        verify(mockClient, times(2)).sendAsync(any(), any());
     }
 
 }

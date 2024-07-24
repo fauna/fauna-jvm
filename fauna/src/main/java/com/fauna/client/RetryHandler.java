@@ -14,8 +14,6 @@ import java.util.function.Supplier;
  */
 public class RetryHandler<T> {
     private final RetryStrategy strategy;
-    private int requestCount = 0;
-
 
     /**
      * Construct a new retry handler instance.
@@ -25,14 +23,11 @@ public class RetryHandler<T> {
         this.strategy = strategy;
     }
 
-    public int getDelayMillis() {
-        this.requestCount += 1;
-        return this.strategy.getDelayMillis(requestCount);
+    public CompletableFuture<T> delayRequest(Supplier<CompletableFuture<T>> action, int delayMillis) {
+        return CompletableFuture.supplyAsync(
+                () -> action.get(), CompletableFuture.delayedExecutor(delayMillis, TimeUnit.MILLISECONDS)).join();
     }
 
-    public CompletableFuture<T> delayRequest(Supplier<T> req) {
-        return CompletableFuture.supplyAsync(req, CompletableFuture.delayedExecutor(this.getDelayMillis(), TimeUnit.MILLISECONDS));
-    }
     public static boolean isRetryable(Throwable exc) {
         return exc instanceof RetryableException || exc.getCause() instanceof RetryableException;
     }
@@ -46,36 +41,10 @@ public class RetryHandler<T> {
         return CompletableFuture.failedFuture(throwable);
     }
 
-    public Supplier<T> toSupplier(Callable<CompletableFuture<T>> future) {
-        return () -> {
-            try {
-                return future.call().get();
-            } catch (Exception e) {
-                if (e instanceof FaunaException) {
-                    throw (FaunaException) e;
-                } else {
-                    throw new FaunaException("Caught non-Fauna exception", e);
-                }
-            }
-        };
-    }
-
-    public CompletableFuture<T> doCall(Callable<CompletableFuture<T>> future) {
-        try {
-            return future.call();
-        } catch (Exception exc) {
-            if (exc instanceof FaunaException) {
-                throw (FaunaException) exc;
-            } else {
-                throw new FaunaException("Unexpected exception.", exc);
-            }
-        }
-    }
-
-    private CompletableFuture<T> retry(Throwable throwable, int retryAttempt, Supplier<T> supplier) {
+    private CompletableFuture<T> retry(Throwable throwable, int retryAttempt, Supplier<CompletableFuture<T>> supplier) {
         try {
             if (isRetryable(throwable) && this.strategy.canRetry(retryAttempt)) {
-                return delayRequest(supplier);
+                return delayRequest(supplier, this.strategy.getDelayMillis(retryAttempt));
             } else {
                 return rethrow(throwable);
             }
@@ -88,10 +57,10 @@ public class RetryHandler<T> {
 
     public CompletableFuture<T> execute(Supplier<CompletableFuture<T>> action) {
         CompletableFuture<T> f = action.get();
-
         for(int i = 1; i <= this.strategy.getMaxRetryAttempts(); i++) {
+            int finalI = i;
             f=f.thenApply(CompletableFuture::completedFuture)
-                    .exceptionally(t -> action.get())
+                    .exceptionally(t -> retry(t, finalI, action))
                     .thenCompose(Function.identity());
         }
         return f;
