@@ -10,7 +10,7 @@ public class TestExponentialBackoffStrategy {
 
     @Test
     public void testNoRetriesBehavior() {
-        assertTrue(FaunaClient.NO_RETRY_STRATEGY.canRetry(0));
+        assertFalse(FaunaClient.NO_RETRY_STRATEGY.canRetry(0));
         assertFalse(FaunaClient.NO_RETRY_STRATEGY.canRetry(1));
     }
 
