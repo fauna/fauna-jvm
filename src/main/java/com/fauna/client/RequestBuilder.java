@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class RequestBuilder {
 
     private static final String BEARER = "Bearer";
+    private static final String QUERY_PATH = "/query/1";
 
     private final FaunaConfig faunaConfig;
     private final DriverEnvironment driverEnvironment;
@@ -40,10 +41,10 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(FaunaConfig config) {
+    public RequestBuilder(FaunaConfig config, String suffix) {
         this.faunaConfig = config;
         this.driverEnvironment = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
-        this.baseRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint())).headers(
+        this.baseRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint() + suffix)).headers(
                 RequestBuilder.Headers.FORMAT, "tagged",
                 RequestBuilder.Headers.ACCEPT_ENCODING, "gzip",
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
@@ -51,6 +52,10 @@ public class RequestBuilder {
                 RequestBuilder.Headers.DRIVER_ENV, driverEnvironment.toString(),
                 Headers.AUTHORIZATION, buildAuthToken()
         );
+    }
+
+    public static RequestBuilder queryRequestBuilder(FaunaConfig config) {
+        return new RequestBuilder(config, QUERY_PATH);
     }
 
     /**

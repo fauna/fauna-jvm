@@ -18,22 +18,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RequestBuilderTest {
 
-    private FaunaConfig faunaConfig;
+    private final FaunaConfig faunaConfig = FaunaConfig.builder()
+                .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
+                .secret("secret").build();;
 
-    private RequestBuilder requestBuilder;
+    private final RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
 
 
     @Test
     void buildRequest_shouldConstructCorrectHttpRequest() {
-        faunaConfig = FaunaConfig.builder()
-                .endpoint("http://localhost:8443")
-                .secret("secret")
-                .build();
-        requestBuilder = new RequestBuilder(faunaConfig);
-
         HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null);
 
-        assertEquals("http://localhost:8443", httpRequest.uri().toString());
+        assertEquals("http://localhost:8443/query/1", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
         assertTrue(httpRequest.bodyPublisher().get().contentLength() > 0);
         assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.AUTHORIZATION));
@@ -42,17 +38,8 @@ class RequestBuilderTest {
 
     @Test
     void buildRequest_shouldIncludeOptionalHeadersWhenPresent() {
-        Map<String, String> queryTags = new HashMap<>();
-        queryTags.put("tag1", "value1");
-        queryTags.put("tag2", "value2");
         QueryOptions options = QueryOptions.builder().timeout(Duration.ofSeconds(15))
                 .linearized(true).typeCheck(true).traceParent("traceParent").build();
-
-        faunaConfig = FaunaConfig.builder()
-                .endpoint("http://localhost:8443")
-                .secret("secret")
-                .build();
-        requestBuilder = new RequestBuilder(faunaConfig);
 
         HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options);
 
@@ -65,8 +52,6 @@ class RequestBuilderTest {
     @Test
     @Timeout(value=1000, unit = TimeUnit.MILLISECONDS)
     void buildRequest_shouldBeFast() {
-        requestBuilder = new RequestBuilder(FaunaConfig.builder().build());
-
         // This was faster, but now I think it's taking time to do things like create the FaunaRequest object.
         // Being able to build 10k requests per second still seems like reasonable performance.
         IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(

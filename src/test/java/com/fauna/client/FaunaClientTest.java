@@ -176,6 +176,7 @@ class FaunaClientTest {
         assertEquals(400, exc.getResponse().getStatusCode());
 
     }
+
     @Test
     void asyncQuery_withFailure_ShouldThrow() {
         HttpResponse resp = mock(HttpResponse.class);

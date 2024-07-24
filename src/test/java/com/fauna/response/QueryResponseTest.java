@@ -101,8 +101,14 @@ class QueryResponseTest {
     @Test
     public void handleResponseWithInvalidJsonThrowsProtocolException() {
         HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"not valid json\"");
-        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+        String body = "{\"not valid json\"";
+        when(resp.statusCode()).thenReturn(400);
+        when(resp.body()).thenReturn(body);
+
+        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+        assertEquals("ProtocolException HTTP 400 with body: " + body, exc.getMessage());
+        assertEquals(400, exc.getStatusCode());
+        assertEquals(body, exc.getBody());
     }
 
     @Test
