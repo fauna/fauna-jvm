@@ -1,72 +1,30 @@
-allprojects {
-    repositories {
-        mavenCentral()
-    }
+version = project.version
+
+apply plugin: 'java'
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+test {
+    useJUnitPlatform()
 }
 
-subprojects {
-    version = project.version
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-    }
+repositories {
+    mavenCentral()
 }
 
-project(':fauna') {
-    apply plugin: 'java'
-    compileJava {
-        options.encoding = 'UTF-8'
-    }
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    test {
-        useJUnitPlatform()
-    }
+dependencies {
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 
-
-    dependencies {
-        implementation project(':common')
-
-        implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-        implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-
-        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
-        testImplementation 'junit:junit:4.13.2'
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-        testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-        testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
-    }
-}
-
-project(':common') {
-    apply plugin: 'java'
-    compileJava {
-        options.encoding = 'UTF-8'
-    }
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    test {
-        useJUnitPlatform()
-    }
-
-    dependencies {
-        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-        testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-
-    }
-
-    processResources {
-        filesMatching('version.properties') {
-            expand 'version': project.version
-        }
-    }
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
+    testImplementation 'junit:junit:4.13.2'
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
 }
