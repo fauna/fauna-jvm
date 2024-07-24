@@ -3,17 +3,27 @@ package com.fauna.response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.common.constants.ResponseFields;
 
 import java.util.Optional;
 
 public final class QueryFailure extends QueryResponse {
 
+    private static ObjectMapper fallbackMapper = new ObjectMapper();
     private int statusCode;
     private String errorCode = "";
     private String message = "";
     private Object constraintFailures;
     private Object abort;
+
+    public static QueryFailure fallback() {
+        try {
+            return new QueryFailure(500, fallbackMapper.createObjectNode(), null);
+        } catch (JsonProcessingException exc) {
+            throw new RuntimeException(exc);
+        }
+    }
 
     /**
      * Initializes a new instance of the {@link QueryFailure} class, parsing the provided raw

@@ -12,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -19,8 +20,11 @@ import java.util.concurrent.ExecutionException;
  */
 public class FaunaClient {
 
+    public static final RetryStrategy DEFAULT_RETRY_STRATEGY = ExponentialBackoffStrategy.builder().build();
+    public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
     private final HttpClient httpClient;
     private final RequestBuilder requestBuilder;
+    private final RetryStrategy retryStrategy;
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
      * the user to have complete control over HTTP Configuration, like timeouts, thread pool size,
@@ -39,6 +43,7 @@ public class FaunaClient {
         } else {
             this.requestBuilder = new RequestBuilder(faunaConfig);
         }
+        this.retryStrategy = DEFAULT_RETRY_STRATEGY;
     }
 
     /**
@@ -57,6 +62,10 @@ public class FaunaClient {
         this(FaunaConfig.builder().build());
     }
 
+    public static Supplier<CompletableFuture<QueryResponse>> makeAsyncRequest(HttpClient client, HttpRequest request) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+    }
+
     /**
      * Sends a Fauna Query Language (FQL) query to Fauna.
      *
@@ -64,15 +73,16 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(
-            Query fql, QueryOptions options) {
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        HttpRequest request = requestBuilder.buildRequest(fql, options);
+        return new RetryHandler<QueryResponse>(strategy).execute(makeAsyncRequest(
+                this.httpClient, requestBuilder.buildRequest(fql, options)));
+    }
 
-        return this.httpClient.sendAsync(request,
-                HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
+        return asyncQuery(fql, options, this.retryStrategy);
     }
 
     /**

@@ -1,11 +1,5 @@
 package com.fauna.client;
 
-import com.fauna.query.QueryOptions;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 
