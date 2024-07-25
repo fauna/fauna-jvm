@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Must run this from the root project dir
+
 set -euo pipefail
 
 ORIGINAL_DIR=$(pwd)
@@ -10,7 +12,6 @@ PACKAGE_VERSION=$(./gradlew -q printVersion | tail -n 1)
 
 echo "Current docs version: $PACKAGE_VERSION"
 
-# Check if the Javadoc directory exists
 if [ ! -d "$ORIGINAL_DIR/build/docs/javadoc" ]; then
     echo "Error: Javadoc directory not found at $ORIGINAL_DIR/build/docs/javadoc"
     exit 1
