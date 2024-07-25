@@ -1,0 +1,23 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: eclipse-temurin
+    tag: 11
+
+params:
+  MAVENCENTRAL_USER:
+  MAVENCENTRAL_PASSWORD:
+  SIGNING_KEYID:
+  SIGNING_KEY:
+  SIGNING_KEYPASSWORD:
+
+inputs:
+  - name: fauna-jvm-repository
+
+outputs:
+  - name: slack-message
+
+run:
+  path: ./fauna-jvm-repository/concourse/scripts/publish.sh
