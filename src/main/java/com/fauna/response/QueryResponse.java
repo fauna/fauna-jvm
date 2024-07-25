@@ -6,7 +6,6 @@ import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ProtocolException;
-import com.fauna.serialization.Deserializer;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
@@ -57,7 +56,7 @@ public abstract class QueryResponse {
 
     }
 
-    public static QueryResponse handleResponse(HttpResponse<String> response) throws FaunaException {
+    public static QuerySuccess handleResponse(HttpResponse<String> response) throws FaunaException {
         String body = response.body();
         try {
             if (response.statusCode() >= 400) {
@@ -67,7 +66,7 @@ public abstract class QueryResponse {
             JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
             if (statsNode != null) {
                 QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
-                return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
+                return new QuerySuccess(json, stats);
             } else {
                 throw new ProtocolException(response.statusCode(), body);
             }

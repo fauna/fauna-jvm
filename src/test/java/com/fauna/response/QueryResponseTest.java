@@ -42,14 +42,12 @@ class QueryResponseTest {
         successNode.put("data", data);
         String body = successNode.toString();
 
-        QueryResponse response = new QuerySuccess<>(Deserializer.DYNAMIC, successNode, null);
+        QuerySuccess response = new QuerySuccess(successNode, null);
 
         assertEquals(successNode, response.getRawJson());
 
-        QuerySuccess<Map<String, Object>> successResponse = (QuerySuccess<Map<String, Object>>) response;
-        assertNotNull(successResponse.getData());
-
-        Map<String, Object> actualData = successResponse.getData();
+        QuerySuccess successResponse = response;
+        Map<String, Object> actualData = (Map<String, Object>) successResponse.toDynamic();
 
         assertNotNull(actualData);
 
@@ -62,8 +60,8 @@ class QueryResponseTest {
         assertNotNull(actualData.get("@object"));
         assertEquals("notanobject", actualData.get("@object"));
 
-        assertNotNull(successResponse.getData().get("anEscapedObject"));
-        Map<String, Object> escapedObj = (Map<String, Object>) successResponse.getData()
+        assertNotNull(actualData.get("anEscapedObject"));
+        Map<String, Object> escapedObj = (Map<String, Object>) actualData
             .get("anEscapedObject");
 
         assertNotNull(escapedObj.get("@long"));
