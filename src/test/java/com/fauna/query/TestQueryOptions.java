@@ -18,7 +18,7 @@ public class TestQueryOptions {
         assertTrue(options.getQueryTags().isEmpty());
         assertTrue(options.getTraceParent().isEmpty());
 
-        assertEquals(Duration.ofSeconds(5), options.getTimeout().get());
+        assertEquals(5_000, options.getTimeoutMillis().get());
     }
 
     @Test
@@ -31,7 +31,7 @@ public class TestQueryOptions {
         assertEquals(false, options.getLinearized().get());
         assertEquals(true, options.getTypeCheck().get());
         assertEquals("parent", options.getTraceParent().get());
-        assertEquals(Duration.ofMinutes(5), options.getTimeout().get());
+        assertEquals(5 * 60 * 1000, options.getTimeoutMillis().get());
         assertEquals("world", options.getQueryTags().get().get("hello"));
     }
 }
