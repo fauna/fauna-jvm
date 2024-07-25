@@ -82,7 +82,7 @@ import com.fauna.types.Page;
 public class App {
     public static void main(String[] args) {
         try {
-            // Configure the Fauna client
+            // Configure the Fauna client.
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
                     .build();
@@ -146,7 +146,7 @@ import com.fauna.types.Page;
 public class App {
     public static void main(String[] args) {
         try {
-            // Configure the Fauna client
+            // Configure the Fauna client.
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
                     .build();
@@ -162,10 +162,10 @@ public class App {
                 }
             """);
 
-            // Run the query asynchronously
+            // Run the query asynchronously.
             CompletableFuture<QueryResponse> futureResult = client.asyncQuery(query);
 
-            // Handle the future result when it's available
+            // Handle the future result when it's available.
             futureResult.thenAccept(res -> {
                 if (res instanceof QueryFailure) {
                     throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
@@ -184,7 +184,7 @@ public class App {
 
                 // Print the `after` cursor to paginate through results.
                 System.out.println("After: " + page.after());
-            }).join(); // This blocks the main thread until the query completes
+            }).join(); // This blocks the main thread until the query completes.
 
         } catch (Exception e) {
             e.printStackTrace();
