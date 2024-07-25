@@ -1,5 +1,6 @@
 package com.fauna.client;
 
+import com.fauna.beans.Person;
 import com.fauna.exception.QueryCheckException;
 import com.fauna.exception.ThrottlingException;
 import com.fauna.query.QueryOptions;
@@ -147,6 +148,26 @@ class FaunaClientTest {
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QueryResponse response = defaultClient.query(Query.fql("Collection.create({ name: 'Dogs' })"));
+        assertEquals("success", response.getSummary());
+        assertEquals(0, response.getLastSeenTxn());
+        verify(resp, atLeastOnce()).statusCode();
+    }
+
+    @Test
+    void query_WithTypedResponse() throws IOException, InterruptedException {
+        HttpResponse resp = mock(HttpResponse.class);
+        String baz = "{" +
+                "\"firstName\": \"Baz2\"," +
+                "\"lastName\": \"Luhrmann2\"," +
+                "\"middleInitial\": {\"@int\":\"65\"}," +
+                "\"age\": { \"@int\": \"612\" }" +
+                "}";
+        ;
+        String body = "{\"summary\":\"success\",\"stats\":{},\"data\":" + baz + "}";
+        when(resp.body()).thenReturn(body);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        Query fql = Query.fql("Collection.create({ name: 'Dogs' })");
+        QueryResponse response = defaultClient.query(fql);
         assertEquals("success", response.getSummary());
         assertEquals(0, response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();

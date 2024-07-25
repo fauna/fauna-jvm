@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class QueryResponse {
+public abstract class QueryResponse<T> {
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private final JsonNode rawJson;
