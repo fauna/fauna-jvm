@@ -1,6 +1,10 @@
-version = project.version
+plugins {
+    id 'java'
+    // this is a hopefully temporary plugin until maven central can add official gradle support
+    id 'com.vanniktech.maven.publish' version '0.29.0'
+}
 
-apply plugin: 'java'
+group = 'com.fauna'
 
 compileJava {
     options.encoding = 'UTF-8'
@@ -27,4 +31,44 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+}
+
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+
+    coordinates(project.group, project.name, project.version)
+
+    def githubRepo = "github.com/fauna/${project.name}"
+
+    pom {
+        name = project.name
+        description = 'JVM driver for Fauna'
+        url = "https://${githubRepo}"
+        licenses {
+            license {
+                name = 'MPL 2.0'
+                url = 'https://www.mozilla.org/en-US/MPL/2.0/'
+                distribution = 'repo'
+            }
+        }
+        developers {
+            developer {
+                name = 'Fauna Engineering'
+                id = 'production@fauna.com'
+                organization = 'fauna.com'
+                organizationUrl = 'https://fauna.com'
+            }
+        }
+        scm {
+            url = 'https://${githubRepo}'
+            connection = "scm:git:git://${githubRepo}.git"
+            developerConnection = "scm:git:git://${githubRepo}.git"
+        }
+
+        issueManagement {
+            system = 'GitHub'
+            url = "https://${githubRepo}/issues"
+        }
+    }
 }
