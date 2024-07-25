@@ -6,6 +6,7 @@ import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ProtocolException;
+import com.fauna.interfaces.IDeserializer;
 import com.fauna.serialization.Deserializer;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class QueryResponse<T> {
+public abstract class QueryResponse {
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private final JsonNode rawJson;
@@ -57,7 +58,13 @@ public abstract class QueryResponse<T> {
 
     }
 
-    public static QuerySuccess handleResponse(HttpResponse<String> response) throws FaunaException {
+    /**
+     * Handle a HTTPResponse and return a QuerySucces, or throw a FaunaException.
+     * @param response          The HTTPResponse object.
+     * @return                  A successful response from Fauna.
+     * @throws FaunaException
+     */
+    public static <T>  QuerySuccess<T> handleResponse(HttpResponse<String> response, IDeserializer<T> deserializer) throws FaunaException {
         String body = response.body();
         try {
             if (response.statusCode() >= 400) {
@@ -67,7 +74,7 @@ public abstract class QueryResponse<T> {
             JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
             if (statsNode != null) {
                 QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
-                return new QuerySuccess<>(Deserializer.DYNAMIC, json, stats);
+                return new QuerySuccess<T>(deserializer, json, stats);
             } else {
                 throw new ProtocolException(response.statusCode(), body);
             }

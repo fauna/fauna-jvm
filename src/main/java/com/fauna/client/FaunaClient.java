@@ -2,15 +2,19 @@ package com.fauna.client;
 
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
+import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
+import com.fauna.serialization.Deserializer;
 import com.fauna.types.Document;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -64,8 +68,8 @@ public class FaunaClient {
         this(FaunaConfig.builder().build());
     }
 
-    public static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request) {
-        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+    public static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, IDeserializer<T> deserializer) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, deserializer));
     }
 
     /**
@@ -79,8 +83,9 @@ public class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
+        IDeserializer<T> deserializer = Deserializer.generate(new MappingContext(), resultClass);
         return new RetryHandler<QuerySuccess<T>>(strategy).execute(makeAsyncRequest(
-                this.httpClient, queryRequestBuilder.buildRequest(fql, options)));
+                this.httpClient, queryRequestBuilder.buildRequest(fql, options), deserializer));
     }
 
     public CompletableFuture<QuerySuccess<Document>> asyncQuery(Query fql) {
@@ -102,10 +107,9 @@ public class FaunaClient {
         return asyncQuery(fql, null, this.retryStrategy, resultClass);
     }
 
-    public QuerySuccess<Document> query(Query fql, QueryOptions options) throws FaunaException {
+    public <T> QuerySuccess<T> query(Query fql, Class<T> resultClass) throws FaunaException {
         try {
-            QuerySuccess<Document> response = this.asyncQuery(fql, options, Document.class).get();
-            return response;
+            return this.asyncQuery(fql, null, resultClass).get();
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof FaunaException) {
                 throw (FaunaException) e.getCause();
@@ -116,7 +120,7 @@ public class FaunaClient {
     }
 
     public QuerySuccess<Document> query(Query fql) throws FaunaException {
-        return this.query(fql, null);
+        return this.query(fql, Document.class);
     }
 
 

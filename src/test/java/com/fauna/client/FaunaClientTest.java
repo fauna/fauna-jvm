@@ -169,7 +169,7 @@ class FaunaClientTest {
         when(resp.body()).thenReturn(body);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         Query fql = Query.fql("Collection.create({ name: 'Dogs' })");
-        QueryResponse response = defaultClient.query(fql);
+        QuerySuccess<Person> response = defaultClient.query(fql, Person.class);
         assertEquals("success", response.getSummary());
         assertEquals(0, response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
