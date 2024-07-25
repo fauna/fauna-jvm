@@ -57,7 +57,7 @@ public abstract class QueryResponse<T> {
 
     }
 
-    public static QueryResponse handleResponse(HttpResponse<String> response) throws FaunaException {
+    public static QuerySuccess handleResponse(HttpResponse<String> response) throws FaunaException {
         String body = response.body();
         try {
             if (response.statusCode() >= 400) {

@@ -5,6 +5,7 @@ import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
+import com.fauna.response.QuerySuccess;
 import com.fauna.types.Document;
 
 import java.net.http.HttpClient;
@@ -63,7 +64,7 @@ public class FaunaClient {
         this(FaunaConfig.builder().build());
     }
 
-    public static <T> Supplier<CompletableFuture<QueryResponse<T>>> makeAsyncRequest(HttpClient client, HttpRequest request) {
+    public static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request) {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
     }
 
@@ -74,15 +75,15 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public <T> CompletableFuture<QueryResponse<T>> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy, Class<T> resultClass) {
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy, Class<T> resultClass) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        return new RetryHandler<QueryResponse<T>>(strategy).execute(makeAsyncRequest(
+        return new RetryHandler<QuerySuccess<T>>(strategy).execute(makeAsyncRequest(
                 this.httpClient, queryRequestBuilder.buildRequest(fql, options)));
     }
 
-    public CompletableFuture<QueryResponse<Document>> asyncQuery(Query fql) {
+    public CompletableFuture<QuerySuccess<Document>> asyncQuery(Query fql) {
         return asyncQuery(fql, null, this.retryStrategy, Document.class);
     }
 
@@ -93,17 +94,17 @@ public class FaunaClient {
      * @return QuerySuccess
      * @throws FaunaException If the provided FQL query is null.
      */
-    public <T> CompletableFuture<QueryResponse<T>> asyncQuery(Query fql, QueryOptions options, Class<T> resultClass) {
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, QueryOptions options, Class<T> resultClass) {
         return asyncQuery(fql, options, this.retryStrategy, resultClass);
     }
 
-    public <T> CompletableFuture<QueryResponse<T>> asyncQuery(Query fql, Class<T> resultClass) {
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, Class<T> resultClass) {
         return asyncQuery(fql, null, this.retryStrategy, resultClass);
     }
 
-    public QueryResponse<Document> query(Query fql, QueryOptions options) throws FaunaException {
+    public QuerySuccess<Document> query(Query fql, QueryOptions options) throws FaunaException {
         try {
-            QueryResponse<Document> response = this.asyncQuery(fql, options, Document.class).get();
+            QuerySuccess<Document> response = this.asyncQuery(fql, options, Document.class).get();
             return response;
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof FaunaException) {
@@ -114,7 +115,7 @@ public class FaunaClient {
         }
     }
 
-    public QueryResponse<Document> query(Query fql) throws FaunaException {
+    public QuerySuccess<Document> query(Query fql) throws FaunaException {
         return this.query(fql, null);
     }
 

@@ -6,6 +6,8 @@ import com.fauna.exception.ThrottlingException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
+import com.fauna.response.QuerySuccess;
+import com.fauna.types.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -178,7 +180,7 @@ class FaunaClientTest {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
-        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        CompletableFuture<QuerySuccess<Document>> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
         QueryResponse response = future.get();
         assertEquals("success", response.getSummary());
         assertEquals(0, response.getLastSeenTxn());
@@ -204,7 +206,7 @@ class FaunaClientTest {
         when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
         when(resp.statusCode()).thenReturn(400);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
-        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
+        CompletableFuture<QuerySuccess<Document>> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"));
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
         QueryCheckException cause = (QueryCheckException) exc.getCause();
         assertEquals("invalid_query", cause.getResponse().getErrorCode());
@@ -218,7 +220,9 @@ class FaunaClientTest {
         when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         when(resp.statusCode()).thenReturn(429);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
-        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"), defaultOptions, FaunaClient.NO_RETRY_STRATEGY);
+        CompletableFuture<QuerySuccess<Document>> future = defaultClient.asyncQuery(
+                Query.fql("Collection.create({ name: 'Dogs' })"), defaultOptions,
+                FaunaClient.NO_RETRY_STRATEGY, Document.class);
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
         ThrottlingException cause = (ThrottlingException) exc.getCause();
         assertEquals("limit_exceeded", cause.getResponse().getErrorCode());
@@ -237,9 +241,9 @@ class FaunaClientTest {
         when(resp.statusCode()).thenReturn(429);
         when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         // WHEN
-        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(
+        CompletableFuture<QuerySuccess<Document>> future = defaultClient.asyncQuery(
                 Query.fql("Collection.create({ name: 'Dogs' })"),
-                QueryOptions.builder().build(), fastRetry);
+                QueryOptions.builder().build(), fastRetry, Document.class);
         // THEN
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
         ThrottlingException cause = (ThrottlingException) exc.getCause();
@@ -264,11 +268,11 @@ class FaunaClientTest {
                 CompletableFuture.supplyAsync(() -> retryableResp), CompletableFuture.supplyAsync(() -> successResp));
 
         // WHEN
-        CompletableFuture<QueryResponse> future = defaultClient.asyncQuery(
+        CompletableFuture<QuerySuccess<Document>> future = defaultClient.asyncQuery(
                 Query.fql("Collection.create({ name: 'Dogs' })"),
-                QueryOptions.builder().build(), fastRetry);
+                QueryOptions.builder().build(), fastRetry, Document.class);
         // THEN
-        QueryResponse success = future.get();
+        QuerySuccess<Document> success = future.get();
         assertEquals("", success.getSummary());
         verify(mockClient, times(2)).sendAsync(any(), any());
     }
