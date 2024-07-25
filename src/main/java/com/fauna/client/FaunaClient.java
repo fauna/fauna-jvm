@@ -2,10 +2,13 @@ package com.fauna.client;
 
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
+import com.fauna.mapping.MappingContext;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
+import com.fauna.serialization.Deserializer;
 
+import java.lang.reflect.Type;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -62,8 +65,9 @@ public class FaunaClient {
         this(FaunaConfig.builder().build());
     }
 
-    public static Supplier<CompletableFuture<QueryResponse>> makeAsyncRequest(HttpClient client, HttpRequest request) {
-        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
+    public static Supplier<CompletableFuture<QueryResponse>> makeAsyncRequest(HttpClient client, HttpRequest request, Type t) {
+        var ser = Deserializer.generate(new MappingContext(), t);
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(r -> QueryResponse.handleResponse(r, ser));
     }
 
     /**
@@ -74,15 +78,41 @@ public class FaunaClient {
      * @throws FaunaException If the provided FQL query is null.
      */
     public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy) {
+        return asyncQuery(fql, options, strategy, Object.class);
+    }
+
+    /**
+     * Sends a Fauna Query Language (FQL) query to Fauna.
+     *
+     * @param fql The FQL query to be executed.
+     * @return QuerySuccess
+     * @throws FaunaException If the provided FQL query is null.
+     */
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy, Type returnType) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         return new RetryHandler<QueryResponse>(strategy).execute(makeAsyncRequest(
-                this.httpClient, queryRequestBuilder.buildRequest(fql, options)));
+                this.httpClient, queryRequestBuilder.buildRequest(fql, options), returnType));
+    }
+
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options, Type returnType) {
+        return asyncQuery(fql, options, this.retryStrategy, returnType);
     }
 
     public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
-        return asyncQuery(fql, options, this.retryStrategy);
+        return asyncQuery(fql, options, this.retryStrategy, Object.class);
+    }
+
+    /**
+     * Sends a Fauna Query Language (FQL) query to Fauna.
+     *
+     * @param fql The FQL query to be executed.
+     * @return QuerySuccess
+     * @throws FaunaException If the provided FQL query is null.
+     */
+    public CompletableFuture<QueryResponse> asyncQuery(Query fql, Type returnType) {
+        return asyncQuery(fql, null, returnType);
     }
 
     /**
@@ -93,7 +123,7 @@ public class FaunaClient {
      * @throws FaunaException If the provided FQL query is null.
      */
     public CompletableFuture<QueryResponse> asyncQuery(Query fql) {
-        return asyncQuery(fql, null);
+        return asyncQuery(fql, (QueryOptions) null);
     }
 
     public QueryResponse query(Query fql, QueryOptions options) throws FaunaException {

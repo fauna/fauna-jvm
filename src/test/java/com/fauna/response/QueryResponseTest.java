@@ -21,6 +21,7 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fauna.serialization.DynamicDeserializer;
 import org.junit.jupiter.api.Test;
 
 class QueryResponseTest {
@@ -105,7 +106,7 @@ class QueryResponseTest {
         when(resp.statusCode()).thenReturn(400);
         when(resp.body()).thenReturn(body);
 
-        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, DynamicDeserializer.getInstance()));
         assertEquals("ProtocolException HTTP 400 with body: " + body, exc.getMessage());
         assertEquals(400, exc.getStatusCode());
         assertEquals(body, exc.getBody());
@@ -115,7 +116,7 @@ class QueryResponseTest {
     public void handleResponseWithMissingStatsThrowsProtocolException() {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"not valid json\"");
-        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, DynamicDeserializer.getInstance()));
     }
 
     @Test
