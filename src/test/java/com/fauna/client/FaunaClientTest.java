@@ -176,6 +176,32 @@ class FaunaClientTest {
     }
 
     @Test
+    void asyncQuery_WithTypedResponse() throws IOException, InterruptedException, ExecutionException {
+        // Given
+        HttpResponse resp = mock(HttpResponse.class);
+        String baz = "{" +
+                "\"firstName\": \"Baz\"," +
+                "\"lastName\": \"Luhrmann2\"," +
+                "\"middleInitial\": {\"@int\":\"65\"}," +
+                "\"age\": { \"@int\": \"612\" }" +
+                "}";
+        ;
+        String body = "{\"summary\":\"success\",\"stats\":{},\"data\":" + baz + "}";
+        when(resp.body()).thenReturn(body);
+        when(mockClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        Query fql = Query.fql("Collection.create({ name: 'Dogs' })");
+        // When
+        CompletableFuture<QuerySuccess<Person>> future = defaultClient.asyncQuery(fql, Person.class);
+        QuerySuccess<Person> response = future.get();
+        Person data = response.getData();
+        // Then
+        assertEquals("Baz", data.getFirstName());
+        assertEquals("success", response.getSummary());
+        assertEquals(0, response.getLastSeenTxn());
+        verify(resp, atLeastOnce()).statusCode();
+    }
+
+    @Test
     void asyncQuery_WithValidFQL_ShouldCall() throws ExecutionException, InterruptedException {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
