@@ -2,6 +2,7 @@ package com.fauna.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fauna.codec.Codec;
 import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
@@ -64,7 +65,7 @@ public abstract class QueryResponse {
      * @return                  A successful response from Fauna.
      * @throws FaunaException
      */
-    public static <T>  QuerySuccess<T> handleResponse(HttpResponse<String> response, IDeserializer<T> deserializer) throws FaunaException {
+    public static <T>  QuerySuccess<T> handleResponse(HttpResponse<String> response, Codec<T> codec) throws FaunaException {
         String body = response.body();
         try {
             if (response.statusCode() >= 400) {
@@ -74,7 +75,7 @@ public abstract class QueryResponse {
             JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
             if (statsNode != null) {
                 QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
-                return new QuerySuccess<T>(deserializer, json, stats);
+                return new QuerySuccess<T>(codec, json, stats);
             } else {
                 throw new ProtocolException(response.statusCode(), body);
             }

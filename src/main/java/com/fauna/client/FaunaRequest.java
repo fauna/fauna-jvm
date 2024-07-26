@@ -17,4 +17,8 @@ public class FaunaRequest implements Serializable {
     public Query getQuery() {
         return this.query;
     }
+
+    public String serialize() {
+        return query.serialize();
+    }
 }

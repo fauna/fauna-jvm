@@ -15,6 +15,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,12 +148,12 @@ public class Deserializer {
                 return (IDeserializer<T>) new MapDeserializer<>(valueDeserializer);
 
             }
-            if (rawType == List.class || rawType == Page.class) {
+            if (rawType == ArrayList.class || rawType == Page.class) {
                 Type[] typeArgs = parameterizedType.getActualTypeArguments();
                 Type elemType = typeArgs[0];
                 IDeserializer<?> elemDeserializer = generate(context, elemType);
 
-                if (rawType == List.class) {
+                if (rawType == ArrayList.class) {
                     return (IDeserializer<T>) new ListDeserializer<>(elemDeserializer);
                 } else if (rawType == Page.class) {
                     return (IDeserializer<T>) new PageDeserializer<>(elemDeserializer);

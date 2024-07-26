@@ -1,6 +1,7 @@
 package com.fauna.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fauna.codec.Codec;
 import com.fauna.constants.ResponseFields;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.serialization.UTF8FaunaParser;
@@ -19,7 +20,7 @@ public final class QuerySuccess<T> extends QueryResponse {
      * @param deserializer A deserializer for the response data type.
      * @param json         The parsed JSON response body.
      */
-    public QuerySuccess(IDeserializer<T> deserializer, JsonNode json, QueryStats stats)
+    public QuerySuccess(Codec<T> codec, JsonNode json, QueryStats stats)
         throws IOException {
         super(json, stats);
         JsonNode elem;
@@ -27,7 +28,7 @@ public final class QuerySuccess<T> extends QueryResponse {
             // FIXME: avoid converting the parsed `elem` to a string and re-parsing the JSON.
             UTF8FaunaParser reader = new UTF8FaunaParser(elem.toString());
             reader.read();
-            this.data = deserializer.deserialize(reader);
+            this.data = codec.decode(reader);
         }
 
         if ((elem = json.get(ResponseFields.STATIC_TYPE_FIELD_NAME)) != null) {

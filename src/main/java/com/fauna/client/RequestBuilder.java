@@ -1,10 +1,12 @@
 package com.fauna.client;
 
+import com.fauna.codec.DynamicCodec;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.serialization.Serializer;
+import com.fauna.serialization.UTF8FaunaGenerator;
 
 import java.io.IOException;
 import java.net.URI;
@@ -72,7 +74,8 @@ public class RequestBuilder {
         // TODO: set last-txn-ts and max-contention-retries.
         try {
             return builder.POST(HttpRequest.BodyPublishers.ofString(
-                    Serializer.serialize(new FaunaRequest(fql)))).build();
+                    DynamicCodec.encode(new FaunaRequest(fql)))
+            ).build();
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Query request.", e);
         }
