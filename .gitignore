@@ -28,3 +28,6 @@ hs_err_pid*
 replay_pid*
 /build/
 /.gradle/
+
+#macOs
+.DS_STORE
