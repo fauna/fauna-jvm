@@ -133,14 +133,12 @@ public class App {
         // Use `query()` to run a synchronous query.
         // Synchronous queries block the current thread until the query completes.
         // Accepts the query, expected result class, and a nullable set of query options.
-        // Returns a `QueryResponse`.
         QuerySuccess<Page<Product>> result = client.query(query, new PageOf<>(Product.class));
         printResults(result.getData().data());
     }
 
     // Use `asyncQuery()` to run an asynchronous, non-blocking query.
     // Accepts the query, expected result class, and a nullable set of query options.
-    // Returns a `CompletableFuture<QueryResponse>`.
     private static void runAsynchronousQuery(FaunaClient client, Query query) throws ExecutionException, InterruptedException {
         CompletableFuture<QuerySuccess<Page<Product>>> futureResult = client.asyncQuery(query, new PageOf<>(Product.class));
 
