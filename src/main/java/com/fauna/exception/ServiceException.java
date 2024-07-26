@@ -45,7 +45,7 @@ public class ServiceException extends FaunaException {
 
     /**
      * Returns the
-     * {@link <a href="https://docs.fauna.com/fauna/current/reference/fql/error-codes/">Fauna error code</a>}
+     * <a href="https://docs.fauna.com/fauna/current/reference/fql/error-codes/">Fauna error code</a>
      * associated with the failure.
      *
      * <p>Codes indicate the cause of the error. It is safe to write
