@@ -23,18 +23,17 @@ Link to Javadocs here  -->
 
 ## Installation
 
-The driver is available on the Maven central repository.
+The driver is available on the [Maven central
+repository](https://central.sonatype.com/artifact/com.fauna/fauna-jvm).
 You can add the driver to your Java project using Gradle or Maven.
 
 ### Gradle
-
-<!-- TODO: Verify artifacts -->
 
 File `build.gradle`:
 ```
 dependencies {
     ...
-    implementation "com.fauna:fauna-jvm:1.0.0"
+    implementation "com.fauna:fauna-jvm:X.Y.Z"
     ...
 }
 ```
@@ -48,7 +47,7 @@ File `fauna-java/pom.xml`:
     <dependency>
       <groupId>com.fauna</groupId>
       <artifactId>fauna-jvm</artifactId>
-      <version>1.0.0</version>
+      <version>X.Y.Z</version>
     </dependency>
     ...
 </dependencies>
