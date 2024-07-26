@@ -4,7 +4,10 @@ image_resource:
   type: registry-image
   source:
     repository: eclipse-temurin
-    tag: 11
+    tag: 11-noble
+
+params:
+  GIT_PRIVATE_KEY:
 
 inputs:
   - name: fauna-jvm-repository
