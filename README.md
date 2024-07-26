@@ -57,11 +57,11 @@ File `fauna-java/pom.xml`:
 
 ## Basic usage
 
-The following applications:
+The following application:
 
 * Initialize a client instance to connect to Fauna.
 * Compose a basic FQL query using an FQL template.
-* Run the query using `query()`  or `asyncQuery()`.
+* Run the query using `query()`  and `asyncQuery()`.
 
 ```java
 package org.example;
