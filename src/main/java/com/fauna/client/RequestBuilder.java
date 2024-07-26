@@ -21,7 +21,6 @@ public class RequestBuilder {
     private static final String QUERY_PATH = "/query/1";
 
     private final FaunaConfig faunaConfig;
-    private final DriverEnvironment driverEnvironment;
     private final HttpRequest.Builder baseRequestBuilder;
 
 
@@ -43,13 +42,14 @@ public class RequestBuilder {
 
     public RequestBuilder(FaunaConfig config, String suffix) {
         this.faunaConfig = config;
-        this.driverEnvironment = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
+        // DriverEnvironment is not needed outside the constructor for now.
+        DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint() + suffix)).headers(
                 RequestBuilder.Headers.FORMAT, "tagged",
                 RequestBuilder.Headers.ACCEPT_ENCODING, "gzip",
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
                 RequestBuilder.Headers.DRIVER, "Java",
-                RequestBuilder.Headers.DRIVER_ENV, driverEnvironment.toString(),
+                RequestBuilder.Headers.DRIVER_ENV, env.toString(),
                 Headers.AUTHORIZATION, buildAuthToken()
         );
     }
@@ -88,7 +88,7 @@ public class RequestBuilder {
      * @param options The QueryOptions (must not be null).
      */
     private static void addOptionalHeaders(HttpRequest.Builder builder, QueryOptions options) {
-        options.getTimeout().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
+        options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
         options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
         options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
         options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
