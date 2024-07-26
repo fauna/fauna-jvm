@@ -59,9 +59,9 @@ File `fauna-java/pom.xml`:
 
 The following application:
 
-* Initialize a client instance to connect to Fauna.
-* Compose a basic FQL query using an FQL template.
-* Run the query using `query()`  and `asyncQuery()`.
+* Initializes a client instance to connect to Fauna.
+* Composes a basic FQL query using an FQL template.
+* Runs the query using `query()`  and `asyncQuery()`.
 
 ```java
 package org.example;
