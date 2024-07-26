@@ -1,6 +1,6 @@
 # The Official Java Driver for [Fauna](https://fauna.com).
 
-The Fauna Java driver is a lightweight, open-source wrapper for Fauna’s [HTTP
+The Fauna Java driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
 use the driver to run FQL queries and get results from a Java application.
 
@@ -15,7 +15,7 @@ additional information on how to configure and query your databases.
 
 ## Requirements
 
-- Java 11 or greater
+- Java 11 or later
 
 <!-- TODO: ## Javadocs
 
@@ -57,11 +57,11 @@ File `fauna-java/pom.xml`:
 
 ## Basic usage
 
-The following applications:
+The following application:
 
-* Initialize a client instance to connect to Fauna.
-* Compose a basic FQL query using an FQL template.
-* Run the query using `query()`  or `asyncQuery()`.
+* Initializes a client instance to connect to Fauna.
+* Composes a basic FQL query using an FQL template.
+* Runs the query using `query()` and `asyncQuery()`.
 
 ```java
 package org.example;
@@ -85,6 +85,7 @@ public class App {
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
                     .build();
+
             // Initialize the client.
             var client = new FaunaClient(config);
 
@@ -97,10 +98,11 @@ public class App {
                 }
             """);
 
-            // Run synchronous query
+            // Run the query synchronously.
             System.out.println("Running synchronous query:");
             runSynchronousQuery(client, query);
 
+            // Run the query asynchronously.
             System.out.println("\nRunning asynchronous query:");
             runAsynchronousQuery(client, query);
 
@@ -110,10 +112,9 @@ public class App {
         }
     }
 
-    // Use `query()` to run an synchronous query.
+    // Use `query()` to run a synchronous query.
     // Synchronous queries block the current thread until the query completes.
     // Returns a `QueryResponse`.
-[`QueryResponse`](src/main/java/com/fauna/response/QueryResponse.java).
     private static void runSynchronousQuery(FaunaClient client, Query query) {
         var res = client.query(query);
         if (res instanceof QueryFailure) {
@@ -136,11 +137,11 @@ public class App {
 
             var success = (QuerySuccess<Page<Map<String, Object>>>) res;
             printResults(success.getData());
-        }).join(); // This blocks the main thread until the query completes.
+        }).join();
     }
 
+    // Iterate through the products in the page.
     private static void printResults(Page<Map<String, Object>> page) {
-        // Iterate through the products in the page.
         for (Map<String, Object> product : page.data()) {
             System.out.println("Name: " + product.get("name"));
             System.out.println("Description: " + product.get("description"));
@@ -180,7 +181,7 @@ var client = new FaunaClient();
 ### Multiple connections
 
 You can use a single client instance to run multiple asynchronous queries at
-once. The driver manages HTTP connections as needed. Your app doesn’t need to
+once. The driver manages HTTP connections as needed. Your app doesn't need to
 implement connection pools or other connection management strategies.
 
 You can create multiple client instances to connect to Fauna using different
@@ -198,7 +199,7 @@ client.asyncQuery(query);
 ```
 
 You can pass [query options](#query-options) to `query()` or `asyncQuery()` to control how
-the query runs in Fauna. See [query options](#query-options).
+the query runs in Fauna. See [Query options](#query-options).
 
 
 ### Variable interpolation
@@ -220,7 +221,7 @@ var query = Query.fql("""
     ));
 ```
 
-Passed variables are encoded to an appropriate type and passed to Fauna’s HTTP
+Passed variables are encoded to an appropriate type and passed to Fauna's HTTP
 API. This helps prevent injection attacks.
 
 <!-- TODO: Subqueries -->
@@ -293,14 +294,14 @@ defaults.
 
 | Property   | Type   | Required | Description                                                                                                                                                                       |
 | ---------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `secret`   | String |          | Fauna authentication secret used to authorize requests. Defaults to the `FAUNA_SECRET `environment variable.                                                                      |
-| `endpoint` | String |          | Base URL used by the driver for Fauna HTTP API requests. Defaults to the `FAUNA_ENDPOINT` environment variable. If `FAUNA_ENDPOINT `is not set, defaults to https://db.fauna.com. |
+| `secret`   | String |          | Fauna authentication secret used to authorize requests. Defaults to the `FAUNA_SECRET` environment variable.                                                                      |
+| `endpoint` | String |          | Base URL used by the driver for Fauna HTTP API requests. Defaults to the `FAUNA_ENDPOINT` environment variable. If `FAUNA_ENDPOINT` is not set, defaults to https://db.fauna.com. |
 
 
 ### Environment variables
 
 By default, `secret` and `endpoint` default to the respective `FAUNA_SECRET` and
-`FAUNA_ENDPOINT `environment variables.
+`FAUNA_ENDPOINT` environment variables.
 
 For example, if you set the following environment variables:
 
@@ -347,8 +348,8 @@ defaults.
 
 | Property      | Type                     | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ------------- | ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `linearize`   | Boolean                  |          | If `true`, the query is linearized, ensuring strict serialization of reads and writes. Defaults to `null` (false).<br><p>Maps to the [`x-inearized` HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).</p>                                                                                                                                                                |
-| `queryTags`   | `<Map<String, String>> ` |          | Key-value tags used to identify the query. Defaults to `null` (none). Query tags are included in [query logs](https://docs.fauna.com/fauna/current/tools/query-logs/reference/schema/) and the response body for successful queries. The tags are typically used for monitoring.<br><p>Maps to the [`x-query-tags` HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).</p> |
-| `timeout`     | Duration                 |          | Maximum amount of time Fauna runs the query before marking it as failed. Defaults to 5 seconds. Maps to the [`x-query-timeout-ms `HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).                                                                                                                                                                                  |
+| `linearize`   | Boolean                  |          | If `true`, the query is linearized, ensuring strict serialization of reads and writes. Defaults to `null` (false).<br><p>Maps to the [`x-linearized`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                                                                |
+| `queryTags`   | `<Map<String, String>> ` |          | Key-value tags used to identify the query. Defaults to `null` (none). Query tags are included in [query logs](https://docs.fauna.com/fauna/current/tools/query-logs/reference/schema/) and the response body for successful queries. The tags are typically used for monitoring.<br><p>Maps to the [`x-query-tags`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p> |
+| `timeout`     | Duration                 |          | Maximum amount of time Fauna runs the query before marking it as failed. Defaults to 5 seconds. Maps to the [`x-query-timeout-ms`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.                                                                                                                                                                                  |
 | `traceParent` | String                   |          | W3C-compliant traceparent ID for the request. Defaults to `null` (none). <br><p>If you omit the traceparent ID or provide an invalid ID, Fauna generates a valid one. The traceparent ID is included in query logs. Traceparent IDs are typically used for monitoring.</p>                                                                                                                                             |
-| `typeCheck`   | Boolean                  |          | If `true`, enables type checking for the query. Defaults to the database’s type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck` HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).</p>                                                                                                                       |
+| `typeCheck`   | Boolean                  |          | If `true`, enables type checking for the query. Defaults to the database's type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                       |
