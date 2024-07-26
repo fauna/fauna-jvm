@@ -40,7 +40,7 @@ public class TestServiceException {
         // Then
         assertEquals(500, exc.getStatusCode());
         assertEquals("bad_thing", exc.getErrorCode());
-        assertEquals("message in a bottle", exc.getMessage());
+        assertEquals("500 (bad_thing): message in a bottle\n---\nsummarized", exc.getMessage());
         assertEquals("summarized", exc.getSummary());
         assertEquals(0, exc.getStats().computeOps);
         assertEquals(10, exc.getSchemaVersion());
