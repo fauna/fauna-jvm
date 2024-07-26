@@ -1,0 +1,19 @@
+package com.fauna.serialization.generic;
+
+/**
+ * A helper class for static access to parameterized generics for deserialization.
+ */
+public class Parameterized {
+
+    public static <T> ListOf<T> listOf(Class<T> clazz) {
+        return new ListOf<>(clazz);
+    }
+
+    public static <T> MapOf<T> mapOf(Class<T> clazz) {
+        return new MapOf<>(clazz);
+    }
+
+    public static <T> PageOf<T> pageOf(Class<T> clazz) {
+        return new PageOf<>(clazz);
+    }
+}

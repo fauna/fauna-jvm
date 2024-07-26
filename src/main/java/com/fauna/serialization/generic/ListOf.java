@@ -1,17 +1,18 @@
-package com.fauna.helper;
+package com.fauna.serialization.generic;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class ListOf implements ParameterizedType {
-    /*
-        TODO: This class is only used in the tests?
-     */
 
-    private final Class clazz;
+/**
+ * ListOf stores the generic parameter class to evade type erasure during deserialization.
+ * @param <E> The element class of the list.
+ */
+public class ListOf<E> implements ParameterizedOf<List<E>> {
 
-    public ListOf(Class clazz) {
+    private final Class<E> clazz;
+
+    public ListOf(Class<E> clazz) {
         this.clazz = clazz;
     }
 
