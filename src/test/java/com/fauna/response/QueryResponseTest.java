@@ -10,64 +10,41 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.beans.Person;
 import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.ProtocolException;
+import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
 import com.fauna.serialization.Deserializer;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
-import java.util.Map;
 import java.util.Optional;
 
+import com.fauna.serialization.Serializer;
+import com.fauna.serialization.UTF8FaunaParser;
+import com.fauna.types.Document;
 import org.junit.jupiter.api.Test;
 
 class QueryResponseTest {
+    MappingContext context = new MappingContext();
+    IDeserializer<Document> docDeserializer = Deserializer.generate(context, Document.class);
 
     @Test
     public void getFromResponseBody_Success() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode data = mapper.createObjectNode();
-        ObjectNode obj = data.putObject("@object");
-        obj.put("@int", "notanint");
-        obj.put("anInt", mapper.createObjectNode().put("@int", "123"));
-        obj.put("@object", "notanobject");
-        obj.putObject("anEscapedObject")
-                .putObject("@object")
-                .put("@long", "notalong");
+        Person baz = new Person("baz", "luhrman", 'A', 64);
+        String data = Serializer.serialize(baz);
+        String body = "{\"stats\":{},\"static_type\":\"Person\",\"data\":" + data + "}";
+        HttpResponse resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn(body);
+        when(resp.statusCode()).thenReturn(200);
 
-        MappingContext ctx = new MappingContext();
-        ObjectNode successNode = mapper.createObjectNode();
-        successNode.put("data", data);
-        String body = successNode.toString();
+        QuerySuccess<Person> success = QueryResponse.handleResponse(resp, Deserializer.generate(context, Person.class));
 
-        QueryResponse response = new QuerySuccess<>(Deserializer.DYNAMIC, successNode, null);
+        assertEquals(baz.getFirstName(), success.getData().getFirstName());
+        assertEquals("Person", success.getStaticType().get());
 
-        assertEquals(successNode, response.getRawJson());
-
-        QuerySuccess<Map<String, Object>> successResponse = (QuerySuccess<Map<String, Object>>) response;
-        assertNotNull(successResponse.getData());
-
-        Map<String, Object> actualData = successResponse.getData();
-
-        assertNotNull(actualData);
-
-        assertNotNull(actualData.get("@int"));
-        assertEquals("notanint", actualData.get("@int"));
-
-        assertNotNull(actualData.get("anInt"));
-        assertEquals(123, actualData.get("anInt"));
-
-        assertNotNull(actualData.get("@object"));
-        assertEquals("notanobject", actualData.get("@object"));
-
-        assertNotNull(successResponse.getData().get("anEscapedObject"));
-        Map<String, Object> escapedObj = (Map<String, Object>) successResponse.getData()
-            .get("anEscapedObject");
-
-        assertNotNull(escapedObj.get("@long"));
-        assertEquals("notalong", escapedObj.get("@long"));
 
     }
 
@@ -105,7 +82,7 @@ class QueryResponseTest {
         when(resp.statusCode()).thenReturn(400);
         when(resp.body()).thenReturn(body);
 
-        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, docDeserializer));
         assertEquals("ProtocolException HTTP 400 with body: " + body, exc.getMessage());
         assertEquals(400, exc.getStatusCode());
         assertEquals(body, exc.getBody());
@@ -115,7 +92,7 @@ class QueryResponseTest {
     public void handleResponseWithMissingStatsThrowsProtocolException() {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"not valid json\"");
-        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp));
+        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, docDeserializer));
     }
 
     @Test

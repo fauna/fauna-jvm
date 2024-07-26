@@ -5,6 +5,7 @@ import com.fauna.constants.ResponseFields;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.serialization.UTF8FaunaParser;
 import java.io.IOException;
+import java.util.Optional;
 
 public final class QuerySuccess<T> extends QueryResponse {
 
@@ -31,6 +32,8 @@ public final class QuerySuccess<T> extends QueryResponse {
 
         if ((elem = json.get(ResponseFields.STATIC_TYPE_FIELD_NAME)) != null) {
             this.staticType = elem.asText();
+        } else {
+            this.staticType = null;
         }
     }
 
@@ -38,8 +41,8 @@ public final class QuerySuccess<T> extends QueryResponse {
         return data;
     }
 
-    public String getStaticType() {
-        return staticType;
+    public Optional<String> getStaticType() {
+        return Optional.ofNullable(staticType);
     }
 
 }

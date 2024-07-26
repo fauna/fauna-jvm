@@ -2,9 +2,14 @@ package com.fauna.client;
 
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
+import com.fauna.interfaces.IDeserializer;
+import com.fauna.mapping.MappingContext;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
+import com.fauna.response.QuerySuccess;
+import com.fauna.serialization.Deserializer;
+import com.fauna.types.Document;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -25,16 +30,18 @@ public class FaunaClient {
     private final HttpClient httpClient;
     private final RequestBuilder queryRequestBuilder;
     private final RetryStrategy retryStrategy;
+
     /**
      * Construct a new FaunaClient instance with the provided FaunaConfig and HttpClient. This allows
      * the user to have complete control over HTTP Configuration, like timeouts, thread pool size,
      * and so-on.
      *
-     * @param faunaConfig The Fauna configuration settings.
-     * @param httpClient  A Java HTTP client instance.
+     * @param faunaConfig   The Fauna configuration settings.
+     * @param httpClient    A Java HTTP client instance.
+     * @param retryStrategy
      */
     public FaunaClient(FaunaConfig faunaConfig,
-                       HttpClient httpClient) {
+                       HttpClient httpClient, RetryStrategy retryStrategy) {
         this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
@@ -43,63 +50,76 @@ public class FaunaClient {
         } else {
             this.queryRequestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
         }
-        this.retryStrategy = DEFAULT_RETRY_STRATEGY;
+        this.retryStrategy = retryStrategy;
     }
 
     /**
-     * Construct a new FaunaClient instance with the provided FaunaConfig, uses a default HTTP client configuration.
+     * Construct a new FaunaClient instance with the provided FaunaConfig, using default HTTP config and retry
+     * strategy.
      *
      * @param faunaConfig The Fauna configuration settings.
      */
     public FaunaClient(FaunaConfig faunaConfig) {
-        this(faunaConfig, HttpClient.newBuilder().build());
+        this(faunaConfig, HttpClient.newBuilder().build(), DEFAULT_RETRY_STRATEGY);
+    }
+
+
+    private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, IDeserializer<T> deserializer) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, deserializer));
     }
 
     /**
-     * Construct a new FaunaClient instance with default Fauna and HTTP configuration.
-     */
-    public FaunaClient() {
-        this(FaunaConfig.builder().build());
-    }
-
-    public static Supplier<CompletableFuture<QueryResponse>> makeAsyncRequest(HttpClient client, HttpRequest request) {
-        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(QueryResponse::handleResponse);
-    }
-
-    /**
-     * Sends a Fauna Query Language (FQL) query to Fauna.
+     * Sends an asynchronous Fauna Query Language (FQL) query to Fauna.
      *
-     * @param fql The FQL query to be executed.
-     * @return QuerySuccess
-     * @throws FaunaException If the provided FQL query is null.
+     *     CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql, Document.class, null);
+     *     ... do some other stuff ...
+     *     Document doc = future.get().getData();
+     *
+     * @param fql               The FQL query to be executed.
+     * @param resultClass       The expected class of the query result.
+     * @param options           A (nullable) set of options to pass to the query.
+     * @return QuerySuccess     The successful query result.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options, RetryStrategy strategy) {
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, Class<T> resultClass, QueryOptions options) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        return new RetryHandler<QueryResponse>(strategy).execute(makeAsyncRequest(
-                this.httpClient, queryRequestBuilder.buildRequest(fql, options)));
-    }
-
-    public CompletableFuture<QueryResponse> asyncQuery(Query fql, QueryOptions options) {
-        return asyncQuery(fql, options, this.retryStrategy);
+        IDeserializer<T> deserializer = Deserializer.generate(new MappingContext(), resultClass);
+        return new RetryHandler<QuerySuccess<T>>(this.retryStrategy).execute(makeAsyncRequest(
+                this.httpClient, queryRequestBuilder.buildRequest(fql, options), deserializer));
     }
 
     /**
-     * Sends a Fauna Query Language (FQL) query to Fauna.
+     * Sends an asynchronous Fauna Query Language (FQL) query to Fauna.
      *
-     * @param fql The FQL query to be executed.
-     * @return QuerySuccess
-     * @throws FaunaException If the provided FQL query is null.
+     *     CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql, Document.class, null);
+     *     ... do some other stuff ...
+     *     Document doc = future.get().getData();
+     *
+     * @param fql               The FQL query to be executed.
+     * @param resultClass       The expected class of the query result.
+     * @return QuerySuccess     The successful query result.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
-    public CompletableFuture<QueryResponse> asyncQuery(Query fql) {
-        return asyncQuery(fql, null);
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, Class<T> resultClass) {
+        return asyncQuery(fql, resultClass, null);
     }
 
-    public QueryResponse query(Query fql, QueryOptions options) throws FaunaException {
+    /**
+     * Sends a Fauna Query Language (FQL) query to Fauna and returns the result.
+     *
+     *     QuerySuccess<Document> result = client.query(fql, Document.class, null);
+     *     Document doc = result.getData();
+     *
+     * @param fql               The FQL query to be executed.
+     * @param resultClass       The expected class of the query result.
+     * @return QuerySuccess     The successful query result.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
+     */
+    public <T> QuerySuccess<T> query(Query fql, Class<T> resultClass) throws FaunaException {
         try {
-            QueryResponse response = this.asyncQuery(fql, options).get();
-            return response;
+            return this.asyncQuery(fql, resultClass, null).get();
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof FaunaException) {
                 throw (FaunaException) e.getCause();
@@ -108,11 +128,5 @@ public class FaunaClient {
             }
         }
     }
-
-    public QueryResponse query(Query fql) throws FaunaException {
-        return this.query(fql, null);
-    }
-
-
 }
 
