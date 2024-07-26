@@ -24,11 +24,7 @@ import com.fauna.exception.ClientException;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -39,26 +35,28 @@ class SerializerTest {
     public void serializeValues() throws IOException {
         Instant dt = Instant.parse("2024-01-23T13:33:10.300Z");
 
-        HashMap<String, Object> tests = new HashMap<>();
-        tests.put("\"hello\"", "hello");
-        tests.put("true", true);
-        tests.put("false", false);
-        tests.put("null", null);
-        tests.put("{\"@date\":\"2023-12-13\"}", LocalDate.of(2023, 12, 13));
-        tests.put("{\"@double\":\"1.2\"}", 1.2d);
-        tests.put("{\"@double\":\"1.340000033378601\"}", 1.34f);
-        tests.put("{\"@int\":\"1\"}", Byte.parseByte("1"));
-        tests.put("{\"@int\":\"2\"}", Byte.parseByte("2"));
-        tests.put("{\"@int\":\"40\"}", Short.parseShort("40"));
-        tests.put("{\"@int\":\"41\"}", Short.parseShort("41"));
-        tests.put("{\"@int\":\"42\"}", 42);
-        tests.put("{\"@long\":\"43\"}", 43L);
-        tests.put("{\"@mod\":\"module\"}", new Module("module"));
-        tests.put("{\"@time\":\"2024-01-23T13:33:10.300Z\"}", dt);
+        HashMap<Object, String> tests = new HashMap<>();
+        tests.put("hello", "\"hello\"");
+        tests.put(true, "true");
+        tests.put(false, "false");
+        tests.put(null, "null");
+        tests.put(LocalDate.of(2023, 12, 13), "{\"@date\":\"2023-12-13\"}");
+        tests.put(1.2d, "{\"@double\":\"1.2\"}");
+        tests.put(1.34f, "{\"@double\":\"1.340000033378601\"}");
+        tests.put(Byte.parseByte("1"), "{\"@int\":\"1\"}");
+        tests.put(Byte.parseByte("2"), "{\"@int\":\"2\"}");
+        tests.put(Short.parseShort("40"), "{\"@int\":\"40\"}");
+        tests.put(Short.parseShort("41"), "{\"@int\":\"41\"}");
+        tests.put(42, "{\"@int\":\"42\"}");
+        tests.put(42L, "{\"@long\":\"42\"}");
+        tests.put(new Module("module"), "{\"@mod\":\"module\"}");
+        tests.put(dt, "{\"@time\":\"2024-01-23T13:33:10.300Z\"}");
+        tests.put(Optional.of(42), "{\"@int\":\"42\"}");
+        tests.put(Optional.empty(), "null");
 
-        for (Map.Entry<String, Object> entry : tests.entrySet()) {
-            String expected = entry.getKey();
-            Object test = entry.getValue();
+        for (Map.Entry<Object, String> entry : tests.entrySet()) {
+            Object test = entry.getKey();
+            String expected = entry.getValue();
             String result = Serializer.serialize(test);
             assertEquals(expected, result);
         }

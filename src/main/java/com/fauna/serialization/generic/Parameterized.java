@@ -16,4 +16,8 @@ public class Parameterized {
     public static <T> PageOf<T> pageOf(Class<T> clazz) {
         return new PageOf<>(clazz);
     }
+
+    public static <T> OptionalOf<T> optionalOf(Class<T> clazz) {
+        return new OptionalOf<>(clazz);
+    }
 }
