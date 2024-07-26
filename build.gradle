@@ -21,6 +21,12 @@ repositories {
     mavenCentral()
 }
 
+task printVersion {
+    doLast {
+        println project.version
+    }
+}
+
 dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
