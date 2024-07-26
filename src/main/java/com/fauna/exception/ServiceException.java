@@ -21,7 +21,7 @@ public class ServiceException extends FaunaException {
      * @param response the QueryFailure object containing details about the failed query
      */
     public ServiceException(QueryFailure response) {
-        super(response.getMessage());
+        super(response.getFullMessage());
         this.response = response;
     }
 

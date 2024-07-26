@@ -17,6 +17,8 @@ public final class QueryFailure extends QueryResponse {
     private Object constraintFailures;
     private Object abort;
 
+    private String fullMessage = "";
+
     public static QueryFailure fallback() {
         try {
             return new QueryFailure(500, fallbackMapper.createObjectNode(), null);
@@ -45,8 +47,16 @@ public final class QueryFailure extends QueryResponse {
             message = info.getMessage() != null ? info.getMessage() : "";
             constraintFailures = info.getConstraintFailures();
             abort = info.getAbort().isPresent() ? info.getAbort().get() : null;
-
         }
+
+        var maybeSummary = !this.getSummary().isEmpty() ? "\n---\n" + this.getSummary() : "";
+        fullMessage = String.format(
+                "%d (%s): %s%s",
+                this.getStatusCode(),
+                this.getErrorCode(),
+                this.getMessage(),
+                maybeSummary);
+
     }
 
     public int getStatusCode() {
@@ -59,6 +69,10 @@ public final class QueryFailure extends QueryResponse {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getFullMessage() {
+        return fullMessage;
     }
 
     public Object getConstraintFailures() {
