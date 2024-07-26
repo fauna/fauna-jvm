@@ -34,7 +34,7 @@ File `build.gradle`:
 ```
 dependencies {
     ...
-    implementation "com.fauna:fauna-jvm-1.0.0"
+    implementation "com.fauna:fauna-jvm:1.0.0"
     ...
 }
 ```
