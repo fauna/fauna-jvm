@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 
+import com.fauna.serialization.generic.ParameterizedOf;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
@@ -79,6 +80,7 @@ public class Deserializer {
         DESERIALIZERS.put(NullDocumentRef.class, _nullDocumentRef);
         DESERIALIZERS.put(NamedDocumentRef.class, _namedDocumentRef);
         DESERIALIZERS.put(NullNamedDocumentRef.class, _nullNamedDocumentRef);
+        DESERIALIZERS.put(Object.class, DynamicDeserializer.getInstance());
     }
 
     /**
@@ -129,8 +131,8 @@ public class Deserializer {
             if (deserializer != null) {
                 return (IDeserializer<T>) deserializer;
             }
-        } else if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
+        } else if (type instanceof ParameterizedOf) {
+            ParameterizedOf parameterizedType = (ParameterizedOf) type;
             Type rawType = parameterizedType.getRawType();
             if (rawType == Map.class) {
                 Type[] typeArgs = parameterizedType.getActualTypeArguments();

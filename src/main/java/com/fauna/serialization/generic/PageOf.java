@@ -1,17 +1,16 @@
-package com.fauna.helper;
+package com.fauna.serialization.generic;
 
 import com.fauna.types.Page;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class PageOf implements ParameterizedType {
-    /*
-        TODO: This class is only used in the tests?
-     */
+/**
+ * PageOf stores the generic parameter class to evade type erasure during deserialization.
+ * @param <E> The element class of the page.
+ */
+public class PageOf<E> implements ParameterizedOf<Page<E>> {
+    private final Class<E> clazz;
 
-    private final Class clazz;
-
-    public PageOf(Class clazz) {
+    public PageOf(Class<E> clazz) {
         this.clazz = clazz;
     }
 

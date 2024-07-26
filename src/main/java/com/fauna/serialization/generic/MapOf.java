@@ -1,17 +1,16 @@
-package com.fauna.helper;
+package com.fauna.serialization.generic;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class MapOf<T> implements ParameterizedType {
-    /*
-        TODO: This class is only used in the tests?
-     */
+/**
+ * MapOf stores the generic parameter class to evade type erasure during deserialization.
+ * @param <E> The value class of the Map.
+ */
+public class MapOf<E> implements ParameterizedOf<Map<String,E>> {
+    private final Class<E> valueClass;
 
-    private final Class valueClass;
-
-    public MapOf(Class valueClass) {
+    public MapOf(Class<E> valueClass) {
         this.valueClass = valueClass;
     }
 
