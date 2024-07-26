@@ -1,4 +1,7 @@
-# The Official Java Driver for [Fauna](https://fauna.com).
+# The Official Java Driver for [Fauna](https://fauna.com). (alpha)
+
+> [!CAUTION]
+> This driver is currently in alpha and should not be used in production.
 
 The Fauna Java driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
@@ -7,10 +10,9 @@ use the driver to run FQL queries and get results from a Java application.
 See the [Fauna docs](https://docs.fauna.com/fauna/current/) for
 additional information on how to configure and query your databases.
 
-> [!IMPORTANT]
-> This driver can only be used with FQL v10 and is not compatible with earlier
-> versions of FQL. To query your databases with earlier API versions, use the
-> [faunadb-jvm](https://github.com/fauna/faunadb-jvm) driver.
+This driver can only be used with FQL v10 and is not compatible with earlier
+versions of FQL. To query your databases with earlier API versions, use the
+[faunadb-jvm](https://github.com/fauna/faunadb-jvm) driver.
 
 
 ## Requirements
