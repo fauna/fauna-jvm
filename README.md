@@ -15,7 +15,7 @@ additional information on how to configure and query your databases.
 
 ## Requirements
 
-- Java 11 or greater
+- Java 11 or later
 
 <!-- TODO: ## Javadocs
 
