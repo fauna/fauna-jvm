@@ -66,27 +66,44 @@ The following application:
 ```java
 package org.example;
 
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
+import com.fauna.annotation.FaunaField;
+import com.fauna.annotation.FaunaObject;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.builder.Query;
-import com.fauna.response.QueryFailure;
-import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
+import com.fauna.serialization.generic.PageOf;
 import com.fauna.types.Page;
 
 public class App {
+
+    // Define class for `Product` documents
+    // in expected results.
+    @FaunaObject
+    public static class Product {
+        @FaunaField(name = "name")
+        public String name;
+
+        @FaunaField(name = "description")
+        public String description;
+
+        @FaunaField(name = "price")
+        public double price;
+    }
+
     public static void main(String[] args) {
         try {
             // Configure the Fauna client.
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
                     .build();
-
             // Initialize the client.
+
             var client = new FaunaClient(config);
 
             // Compose a query.
@@ -112,43 +129,33 @@ public class App {
         }
     }
 
-    // Use `query()` to run a synchronous query.
-    // Synchronous queries block the current thread until the query completes.
-    // Returns a `QueryResponse`.
-    private static void runSynchronousQuery(FaunaClient client, Query query) {
-        var res = client.query(query);
-        if (res instanceof QueryFailure) {
-            throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
-        }
-
-        var success = (QuerySuccess<Page<Map<String, Object>>>) res;
-        printResults(success.getData());
+    private static void runSynchronousQuery(FaunaClient client, Query query) throws FaunaException {
+        // Use `query()` to run a synchronous query.
+        // Synchronous queries block the current thread until the query completes.
+        // Accepts the query, expected result class, and a nullable set of query options.
+        // Returns a `QueryResponse`.
+        QuerySuccess<Page<Product>> result = client.query(query, new PageOf<>(Product.class));
+        printResults(result.getData().data());
     }
 
     // Use `asyncQuery()` to run an asynchronous, non-blocking query.
+    // Accepts the query, expected result class, and a nullable set of query options.
     // Returns a `CompletableFuture<QueryResponse>`.
-    private static void runAsynchronousQuery(FaunaClient client, Query query) {
-        CompletableFuture<QueryResponse> futureResult = client.asyncQuery(query);
+    private static void runAsynchronousQuery(FaunaClient client, Query query) throws ExecutionException, InterruptedException {
+        CompletableFuture<QuerySuccess<Page<Product>>> futureResult = client.asyncQuery(query, new PageOf<>(Product.class));
 
-        futureResult.thenAccept(res -> {
-            if (res instanceof QueryFailure) {
-                throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
-            }
-
-            var success = (QuerySuccess<Page<Map<String, Object>>>) res;
-            printResults(success.getData());
-        }).join();
+        QuerySuccess<Page<Product>> result = futureResult.get();
+        printResults(result.getData().data());
     }
 
     // Iterate through the products in the page.
-    private static void printResults(Page<Map<String, Object>> page) {
-        for (Map<String, Object> product : page.data()) {
-            System.out.println("Name: " + product.get("name"));
-            System.out.println("Description: " + product.get("description"));
-            System.out.println("Price: " + product.get("price"));
+    private static void printResults(List<Product> products) {
+        for (Product product : products) {
+            System.out.println("Name: " + product.name);
+            System.out.println("Description: " + product.description);
+            System.out.println("Price: " + product.price);
             System.out.println("--------");
         }
-
         // Print the `after` cursor to paginate through results.
         System.out.println("After: " + page.after());
     }
@@ -190,16 +197,27 @@ secrets or client configurations.
 
 ## Run FQL queries
 
-Use `fql` templates to compose FQL queries. Run the queries using `query()`
-or `asyncQuery()`:
+Use `fql` templates to compose FQL queries. To run the query, pass the template
+and an expected result class to `query()` or `asyncQuery()`:
 
 ```java
 var query = Query.fql("Product.sortedByPriceLowToHigh()");
-client.asyncQuery(query);
+client.asyncQuery(query, new PageOf<>(Product.class));
 ```
 
-You can pass [query options](#query-options) to `query()` or `asyncQuery()` to control how
-the query runs in Fauna. See [Query options](#query-options).
+You can also pass a nullable set of [query options](#query-options) to `query()`
+or `asyncQuery()`. These options control how the query runs in Fauna. See [Query
+options](#query-options).
+
+
+### Define a result class
+
+You can use the `com.fauna.annotation`  package to define a result class for a
+Fauna document. The package provides annotations like `@FaunaObject` and
+`@FaunaField` to map Fauna documents to Java classes and fields.
+
+Use the `com.fauna.serialization` package to handle deserialization for
+generics, such as `PageOf`, `ListOf`, and `MapOf`.
 
 
 ### Variable interpolation
@@ -234,15 +252,16 @@ statistics:
 ```java
 package org.example;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import com.fauna.response.QuerySuccess;
 
 public class App {
     public static void main(String[] args)
@@ -255,7 +274,7 @@ public class App {
 
             var query = Query.fql("'Hello world'");
 
-            CompletableFuture<QueryResponse> futureResponse = client.asyncQuery(query);
+            CompletableFuture<QuerySuccess<String>> futureResponse = client.asyncQuery(query, String.class);
 
             QueryResponse response = futureResponse.get();
 
@@ -340,7 +359,7 @@ var options = QueryOptions.builder()
     .typeCheck(false)
     .build();
 
-client.query(query, options)
+client.query(query, String.class, options)
 ```
 
 The following table outlines properties of the `QueryOptions` class and their
