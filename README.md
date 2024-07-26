@@ -61,7 +61,7 @@ The following application:
 
 * Initializes a client instance to connect to Fauna.
 * Composes a basic FQL query using an FQL template.
-* Runs the query using `query()`  and `asyncQuery()`.
+* Runs the query using `query()` and `asyncQuery()`.
 
 ```java
 package org.example;
