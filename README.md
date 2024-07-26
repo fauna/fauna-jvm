@@ -1,6 +1,6 @@
 # The Official Java Driver for [Fauna](https://fauna.com).
 
-The Fauna Java driver is a lightweight, open-source wrapper for Fauna’s [HTTP
+The Fauna Java driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
 use the driver to run FQL queries and get results from a Java application.
 
@@ -181,7 +181,7 @@ var client = new FaunaClient();
 ### Multiple connections
 
 You can use a single client instance to run multiple asynchronous queries at
-once. The driver manages HTTP connections as needed. Your app doesn’t need to
+once. The driver manages HTTP connections as needed. Your app doesn't need to
 implement connection pools or other connection management strategies.
 
 You can create multiple client instances to connect to Fauna using different
@@ -221,7 +221,7 @@ var query = Query.fql("""
     ));
 ```
 
-Passed variables are encoded to an appropriate type and passed to Fauna’s HTTP
+Passed variables are encoded to an appropriate type and passed to Fauna's HTTP
 API. This helps prevent injection attacks.
 
 <!-- TODO: Subqueries -->
@@ -352,4 +352,4 @@ defaults.
 | `queryTags`   | `<Map<String, String>> ` |          | Key-value tags used to identify the query. Defaults to `null` (none). Query tags are included in [query logs](https://docs.fauna.com/fauna/current/tools/query-logs/reference/schema/) and the response body for successful queries. The tags are typically used for monitoring.<br><p>Maps to the [`x-query-tags` HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).</p> |
 | `timeout`     | Duration                 |          | Maximum amount of time Fauna runs the query before marking it as failed. Defaults to 5 seconds. Maps to the [`x-query-timeout-ms `HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).                                                                                                                                                                                  |
 | `traceParent` | String                   |          | W3C-compliant traceparent ID for the request. Defaults to `null` (none). <br><p>If you omit the traceparent ID or provide an invalid ID, Fauna generates a valid one. The traceparent ID is included in query logs. Traceparent IDs are typically used for monitoring.</p>                                                                                                                                             |
-| `typeCheck`   | Boolean                  |          | If `true`, enables type checking for the query. Defaults to the database’s type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck` HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).</p>                                                                                                                       |
+| `typeCheck`   | Boolean                  |          | If `true`, enables type checking for the query. Defaults to the database's type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck` HTTP header](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header).</p>                                                                                                                       |
