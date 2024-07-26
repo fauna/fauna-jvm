@@ -5,6 +5,7 @@ import com.fauna.query.template.FaunaTemplate;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Spliterator;
 import java.util.stream.StreamSupport;
 
 
@@ -22,8 +23,12 @@ public class Query implements Serializable {
      * @param args  A map of variable names -> values.
      */
     public Query(String query, Map<String, Object> args) throws IllegalArgumentException {
-        this.fql = StreamSupport.stream(new FaunaTemplate(query).spliterator(), true).map(
-                part -> part.toFragment(Objects.requireNonNullElse(args, Map.of()))).toArray(Fragment[]::new);
+        Spliterator<FaunaTemplate.TemplatePart> iter = new FaunaTemplate(query).spliterator();
+        this.fql = StreamSupport.stream(iter, true).map(
+                part -> {
+                    Map<String, Object> foo = Objects.requireNonNullElse(args, Map.of());
+                    return part.toFragment(foo);
+                }).toArray(Fragment[]::new);
     }
 
 

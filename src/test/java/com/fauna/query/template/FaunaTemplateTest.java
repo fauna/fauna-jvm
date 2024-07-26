@@ -5,9 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterator;
 import java.util.stream.StreamSupport;
 
+import com.fauna.query.builder.Fragment;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class FaunaTemplateTest {
 
@@ -21,6 +27,19 @@ class FaunaTemplateTest {
         assertEquals(TemplatePartType.LITERAL, expanded.get(0).getType());
         assertEquals("my_var", expanded.get(1).getPart());
         assertEquals(TemplatePartType.VARIABLE, expanded.get(1).getType());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"let x = $my_var", "let x = \\$my_var"})
+    void testTemplate_WithDollarSignDoesNotInfiniteLoop(String literal) {
+        FaunaTemplate template = new FaunaTemplate(literal);
+        FaunaTemplate.TemplatePart[] parts = StreamSupport.stream(
+                template.spliterator(), true).toArray(FaunaTemplate.TemplatePart[]::new);
+        // The dollar sign gets swallowed, even if it's escaped?
+        assertEquals(2, parts.length);
+        for (FaunaTemplate.TemplatePart part : parts) {
+            assertEquals(TemplatePartType.LITERAL, part.getType());
+        }
     }
 
     @Test

@@ -36,6 +36,15 @@ class QueryTest {
     }
 
     @Test
+    public void testInfiniteLoop() {
+        HashMap<String, Object> args = new HashMap<>();
+        args.put("n", 1);
+
+        Query actual = fql("let x = $n", args);
+        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new ValueFragment(null)}, actual.getFql());
+    }
+
+    @Test
     public void testQueryBuilderInterpolatedStrings() {
         Map<String, Object> variables = new HashMap<>();
         variables.put("n1", 5);
