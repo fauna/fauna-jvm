@@ -1,5 +1,13 @@
 package com.fauna.client;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.interfaces.IDeserializer;
@@ -9,15 +17,6 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 import com.fauna.serialization.Deserializer;
-import com.fauna.types.Document;
-
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 
 /**
  * FaunaClient is the main client for interacting with Fauna.
@@ -71,7 +70,7 @@ public class FaunaClient {
     /**
      * Sends an asynchronous Fauna Query Language (FQL) query to Fauna.
      *
-     *     CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql, Document.class, null);
+     *     CompletableFuture&lt;QuerySuccess&lt;Document&gt;&gt; future = client.asyncQuery(fql, Document.class, null);
      *     ... do some other stuff ...
      *     Document doc = future.get().getData();
      *
@@ -93,7 +92,7 @@ public class FaunaClient {
     /**
      * Sends an asynchronous Fauna Query Language (FQL) query to Fauna.
      *
-     *     CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql, Document.class, null);
+     *     CompletableFuture&lt;QuerySuccess&lt;Document&gt;&gt; future = client.asyncQuery(fql, Document.class, null);
      *     ... do some other stuff ...
      *     Document doc = future.get().getData();
      *
@@ -129,4 +128,3 @@ public class FaunaClient {
         }
     }
 }
-
