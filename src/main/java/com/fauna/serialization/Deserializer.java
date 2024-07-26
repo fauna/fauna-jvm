@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Represents methods for deserializing objects to and from Fauna's value format.
@@ -159,6 +160,13 @@ public class Deserializer {
                 } else if (rawType == Page.class) {
                     return (IDeserializer<T>) new PageDeserializer<>(elemDeserializer);
                 }
+            }
+
+            if (rawType == Optional.class) {
+                Type[] typeArgs = parameterizedType.getActualTypeArguments();
+                Type elemType = typeArgs[0];
+                IDeserializer<?> elemDeserializer = generate(context, elemType);
+                return (IDeserializer<T>) new OptionalDeserializer<>(elemDeserializer);
             }
         } else if (type instanceof Class<?> && !DESERIALIZERS.containsKey(type)
             && context != null) {

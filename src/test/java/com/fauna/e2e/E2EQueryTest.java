@@ -9,12 +9,15 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static com.fauna.serialization.generic.Parameterized.listOf;
 import static com.fauna.serialization.generic.Parameterized.mapOf;
 import static com.fauna.serialization.generic.Parameterized.pageOf;
+import static com.fauna.serialization.generic.Parameterized.optionalOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class E2EQueryTest {
     public static final FaunaClient c = com.fauna.e2e.LocalFauna.get();
@@ -140,5 +143,32 @@ public class E2EQueryTest {
 
         assertEquals(2, actual.size());
         assertEquals("Alice", actual.get(0).getFirstName());
+    }
+
+    @Test
+    public void query_optionalNull() {
+        var empty = Optional.empty();
+        var q = Query.fql("${empty}", new HashMap<>(){{
+            put("empty", empty);
+        }});
+
+        var qs = c.query(q, optionalOf(int.class));
+        var actual = qs.getData();
+
+        assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    public void query_optionalNotNull() {
+        var val = Optional.of(42);
+        var q = Query.fql("${val}", new HashMap<>(){{
+            put("val", val);
+        }});
+
+        var qs = c.query(q, optionalOf(int.class));
+        var actual = qs.getData();
+
+        assertTrue(actual.isPresent());
+        assertEquals(42, actual.get());
     }
 }

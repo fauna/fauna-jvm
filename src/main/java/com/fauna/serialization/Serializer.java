@@ -14,11 +14,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Serializer {
 
@@ -143,6 +139,13 @@ public class Serializer {
                 serialize(writer, item, null);
             }
             writer.writeEndArray();
+        } else if (obj instanceof Optional) {
+            var opt = ((Optional<?>) obj);
+            if (opt.isEmpty()) {
+                writer.writeNullValue();
+            } else {
+                serialize(writer, opt.get(), null);
+            }
         } else {
             serializeClassInternal(writer, obj, context);
         }
