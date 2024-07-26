@@ -199,7 +199,7 @@ client.asyncQuery(query);
 ```
 
 You can pass [query options](#query-options) to `query()` or `asyncQuery()` to control how
-the query runs in Fauna. See [query options](#query-options).
+the query runs in Fauna. See [Query options](#query-options).
 
 
 ### Variable interpolation
