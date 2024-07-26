@@ -85,6 +85,7 @@ public class App {
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
                     .build();
+
             // Initialize the client.
             var client = new FaunaClient(config);
 
@@ -97,10 +98,11 @@ public class App {
                 }
             """);
 
-            // Run synchronous query
+            // Run the query synchronously.
             System.out.println("Running synchronous query:");
             runSynchronousQuery(client, query);
 
+            // Run the query asynchronously.
             System.out.println("\nRunning asynchronous query:");
             runAsynchronousQuery(client, query);
 
@@ -110,10 +112,9 @@ public class App {
         }
     }
 
-    // Use `query()` to run an synchronous query.
+    // Use `query()` to run a synchronous query.
     // Synchronous queries block the current thread until the query completes.
     // Returns a `QueryResponse`.
-[`QueryResponse`](src/main/java/com/fauna/response/QueryResponse.java).
     private static void runSynchronousQuery(FaunaClient client, Query query) {
         var res = client.query(query);
         if (res instanceof QueryFailure) {
@@ -136,11 +137,11 @@ public class App {
 
             var success = (QuerySuccess<Page<Map<String, Object>>>) res;
             printResults(success.getData());
-        }).join(); // This blocks the main thread until the query completes.
+        }).join();
     }
 
+    // Iterate through the products in the page.
     private static void printResults(Page<Map<String, Object>> page) {
-        // Iterate through the products in the page.
         for (Map<String, Object> product : page.data()) {
             System.out.println("Name: " + product.get("name"));
             System.out.println("Description: " + product.get("description"));
