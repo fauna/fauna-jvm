@@ -1,9 +1,9 @@
 package com.fauna.exception;
 
+import java.util.Map;
+
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
-
-import java.util.Map;
 
 /**
  * An exception representing a query failure returned by Fauna.
@@ -44,7 +44,9 @@ public class ServiceException extends FaunaException {
     }
 
     /**
-     * Returns the error code associated with the failure.
+     * Returns the
+     * {@link <a href="https://docs.fauna.com/fauna/current/reference/fql/error-codes/">Fauna error code/a>}
+     * associated with the failure.
      *
      * <p>Codes indicate the cause of the error. It is safe to write
      * programmatic logic against the code. They are part of the API contract.</p>
