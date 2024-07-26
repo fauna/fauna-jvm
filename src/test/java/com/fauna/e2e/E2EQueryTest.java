@@ -1,4 +1,3 @@
-
 package com.fauna.e2e;
 
 import com.fauna.client.FaunaClient;
