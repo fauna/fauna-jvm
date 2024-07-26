@@ -1,0 +1,17 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: eclipse-temurin
+    tag: 11
+
+inputs:
+  - name: fauna-jvm-repository
+  - name: fauna-jvm-repository-docs
+
+outputs:
+  - name: fauna-jvm-repository-updated-docs
+
+run:
+  path: ./fauna-jvm-repository/concourse/scripts/publish-docs.sh
