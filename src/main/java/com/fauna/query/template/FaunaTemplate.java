@@ -95,7 +95,7 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
                         }
                     } else {
                         part = new TemplatePart(template.substring(curPos, spanStartPos), TemplatePartType.LITERAL);
-                        curPos = spanStartPos;
+                        curPos = spanEndPos;
                     }
                     foundMatch = false; // Reset after processing a match
                     return part;

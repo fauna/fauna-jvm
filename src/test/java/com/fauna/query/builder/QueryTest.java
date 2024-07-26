@@ -36,6 +36,16 @@ class QueryTest {
     }
 
     @Test
+    public void testMalformedFQL() {
+        HashMap<String, Object> args = new HashMap<>();
+        args.put("n", 1);
+
+        // Bug BT-5003, this would get into an infinite loop.
+        Query actual = fql("let x = $n", args);
+        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new LiteralFragment("n")}, actual.getFql());
+    }
+
+    @Test
     public void testQueryBuilderInterpolatedStrings() {
         Map<String, Object> variables = new HashMap<>();
         variables.put("n1", 5);
