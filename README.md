@@ -63,72 +63,6 @@ The following applications:
 * Compose a basic FQL query using an FQL template.
 * Run the query using `query()`  or `asyncQuery()`.
 
-Use `query()` to run a synchronous query. Synchronous queries block the current
-thread until the query completes. `query()` returns a
-[`QueryResponse`](src/main/java/com/fauna/response/QueryResponse.java).
-
-```java
-package org.example;
-
-import java.util.Map;
-
-import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
-import com.fauna.query.builder.Query;
-import com.fauna.response.QueryFailure;
-import com.fauna.response.QuerySuccess;
-import com.fauna.types.Page;
-
-public class App {
-    public static void main(String[] args) {
-        try {
-            // Configure the Fauna client.
-            var config = new FaunaConfig.Builder()
-                    .secret("FAUNA_SECRET")
-                    .build();
-            // Initialize the client.
-            var client = new FaunaClient(config);
-
-            // Compose a query.
-            var query = Query.fql("""
-                Product.sortedByPriceLowToHigh() {
-                    name,
-                    description,
-                    price
-                }
-            """);
-
-            // Run the query.
-            var res = client.query(query);
-            if (res instanceof QueryFailure) {
-                throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
-            }
-
-            var success = (QuerySuccess<Page<Map<String, Object>>>) res;
-            var page = success.getData();
-
-            // Iterate through the products in the page.
-            for (Map<String, Object> product : page.data()) {
-                System.out.println("Name: " + product.get("name"));
-                System.out.println("Description: " + product.get("description"));
-                System.out.println("Price: " + product.get("price"));
-                System.out.println("--------");
-            }
-
-            // Print the `after` cursor to paginate through results.
-            System.out.println("After: " + page.after());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-Use `asyncQuery()` to run an asynchronous query. Asynchronous are non-blocking
-and let you continue processing while the query completes. `asyncQuery()`
-returns a `CompletableFuture<QueryResponse>`.
-
 ```java
 package org.example;
 
@@ -137,6 +71,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
+import com.fauna.exception.FaunaException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
@@ -162,36 +97,61 @@ public class App {
                 }
             """);
 
-            // Run the query asynchronously.
-            CompletableFuture<QueryResponse> futureResult = client.asyncQuery(query);
+            // Run synchronous query
+            System.out.println("Running synchronous query:");
+            runSynchronousQuery(client, query);
 
-            // Handle the future result when it's available.
-            futureResult.thenAccept(res -> {
-                if (res instanceof QueryFailure) {
-                    throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
-                }
+            System.out.println("\nRunning asynchronous query:");
+            runAsynchronousQuery(client, query);
 
-                var success = (QuerySuccess<Page<Map<String, Object>>>) res;
-                var page = success.getData();
-
-                // Iterate through the products in the page.
-                for (Map<String, Object> product : page.data()) {
-                    System.out.println("Name: " + product.get("name"));
-                    System.out.println("Description: " + product.get("description"));
-                    System.out.println("Price: " + product.get("price"));
-                    System.out.println("--------");
-                }
-
-                // Print the `after` cursor to paginate through results.
-                System.out.println("After: " + page.after());
-            }).join(); // This blocks the main thread until the query completes.
-
-        } catch (Exception e) {
+        } catch (FaunaException e) {
+            System.err.println("Fauna error occurred: " + e.getMessage());
             e.printStackTrace();
         }
     }
-}
 
+    // Use `query()` to run an synchronous query.
+    // Synchronous queries block the current thread until the query completes.
+    // Returns a `QueryResponse`.
+[`QueryResponse`](src/main/java/com/fauna/response/QueryResponse.java).
+    private static void runSynchronousQuery(FaunaClient client, Query query) {
+        var res = client.query(query);
+        if (res instanceof QueryFailure) {
+            throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
+        }
+
+        var success = (QuerySuccess<Page<Map<String, Object>>>) res;
+        printResults(success.getData());
+    }
+
+    // Use `asyncQuery()` to run an asynchronous, non-blocking query.
+    // Returns a `CompletableFuture<QueryResponse>`.
+    private static void runAsynchronousQuery(FaunaClient client, Query query) {
+        CompletableFuture<QueryResponse> futureResult = client.asyncQuery(query);
+
+        futureResult.thenAccept(res -> {
+            if (res instanceof QueryFailure) {
+                throw new IllegalStateException("Query failed with: " + ((QueryFailure) res).getMessage());
+            }
+
+            var success = (QuerySuccess<Page<Map<String, Object>>>) res;
+            printResults(success.getData());
+        }).join(); // This blocks the main thread until the query completes.
+    }
+
+    private static void printResults(Page<Map<String, Object>> page) {
+        // Iterate through the products in the page.
+        for (Map<String, Object> product : page.data()) {
+            System.out.println("Name: " + product.get("name"));
+            System.out.println("Description: " + product.get("description"));
+            System.out.println("Price: " + product.get("price"));
+            System.out.println("--------");
+        }
+
+        // Print the `after` cursor to paginate through results.
+        System.out.println("After: " + page.after());
+    }
+}
 ```
 
 
