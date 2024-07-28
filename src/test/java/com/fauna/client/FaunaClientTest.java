@@ -11,12 +11,14 @@ import com.fauna.types.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
@@ -30,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -48,7 +51,7 @@ class FaunaClientTest {
 
     @BeforeEach
     void setUp() {
-        client = Fauna.client(FaunaConfig.DEFAULT, mockHttpClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
+        client = Fauna.client(FaunaConfig.LOCAL, mockHttpClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
     }
 
     @Test
@@ -142,7 +145,8 @@ class FaunaClientTest {
     void query_WithValidFQL_ShouldCall() throws IOException, InterruptedException {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
-        when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret"));
+        when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QuerySuccess<Document> response = client.query(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
         assertEquals("success", response.getSummary());
         assertEquals(0, response.getLastSeenTxn());

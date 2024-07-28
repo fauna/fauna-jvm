@@ -47,7 +47,7 @@ public class RequestBuilder {
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
                 RequestBuilder.Headers.DRIVER, "Java",
                 RequestBuilder.Headers.DRIVER_ENV, env.toString(),
-                Headers.AUTHORIZATION, buildAuthToken(token)
+                Headers.AUTHORIZATION, buildAuthHeader(token)
         );
     }
 
@@ -61,8 +61,8 @@ public class RequestBuilder {
 
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
-        // .setHeader(..) clears existing headers (which we want) while .header(..) would not :)
-        newBuilder.setHeader(Headers.AUTHORIZATION, token);
+        // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
+        newBuilder.setHeader(Headers.AUTHORIZATION, buildAuthHeader(token));
         return new RequestBuilder(newBuilder);
     }
 
@@ -80,14 +80,14 @@ public class RequestBuilder {
         }
         // TODO: set last-txn-ts and max-contention-retries.
         try {
-            return builder.POST(HttpRequest.BodyPublishers.ofString(
-                    Serializer.serialize(new FaunaRequest(fql)))).build();
+            String body = Serializer.serialize(new FaunaRequest(fql));
+            return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Query request.", e);
         }
     }
 
-    private static String buildAuthToken(String token) {
+    private static String buildAuthHeader(String token) {
         return String.join(" ", RequestBuilder.BEARER, token);
     }
 

@@ -48,7 +48,7 @@ public class ScopedFaunaClientTest {
     void query_shouldHaveScopedAuthHeader() throws IOException, InterruptedException {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
-        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "secret:myDB:@role/server-readonly"));
+        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret:myDB:@role/server-readonly"));
 
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QuerySuccess<Document> response = scopedClient.query(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
@@ -61,7 +61,7 @@ public class ScopedFaunaClientTest {
     void asyncQuery_shouldHaveScopedAuthHeader() throws InterruptedException, ExecutionException {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
-        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "secret:myDB:@role/server-readonly"));
+        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret:myDB:@role/server-readonly"));
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QuerySuccess<Document>> future = scopedClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
         QueryResponse response = future.get();
@@ -76,7 +76,7 @@ public class ScopedFaunaClientTest {
         FaunaClient recursive = Fauna.scoped(scopedClient, "myOtherDB");
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
-        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "secret:myOtherDB:@role/server"));
+        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret:myOtherDB:@role/server"));
 
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         recursive.query(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);

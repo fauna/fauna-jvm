@@ -5,6 +5,11 @@ import static com.fauna.query.builder.Query.fql;
 
 public class Fixtures {
 
+    public static void PeopleDatabase(FaunaClient client) {
+        client.query(fql("Database.byName('People')?.delete()"));
+        client.query(fql("Database.create({name: 'People'})"));
+    }
+
     public static void PersonCollection(FaunaClient client) {
         client.query(fql("Collection.byName('Author')?.delete()"));
         client.query(fql("Collection.create({name: 'Author'})"));
