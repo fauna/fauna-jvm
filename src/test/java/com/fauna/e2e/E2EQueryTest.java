@@ -1,5 +1,6 @@
 package com.fauna.e2e;
 
+import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.e2e.beans.Author;
 import com.fauna.query.QueryOptions;
@@ -20,7 +21,7 @@ import static com.fauna.serialization.generic.Parameterized.optionalOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class E2EQueryTest {
-    public static final FaunaClient c = com.fauna.e2e.LocalFauna.get();
+    public static final FaunaClient c = Fauna.local();
 
     @BeforeAll
     public static void setup() {
