@@ -119,8 +119,8 @@ class FaunaClientTest {
 
     @Test
     void nullConfigClientConstructor() {
-        NullPointerException thrown = assertThrows(
-                NullPointerException.class,
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
                 () -> Fauna.client(null),
                 "null FaunaConfig should throw"
         );

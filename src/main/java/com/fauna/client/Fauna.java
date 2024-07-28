@@ -18,6 +18,9 @@ public class Fauna {
      * @return          A FaunaClient (or subclass of it).
      */
     public static FaunaClient client(FaunaConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("FaunaConfig cannot be null.");
+        }
         return new BaseFaunaClient(config);
     }
 
@@ -29,6 +32,9 @@ public class Fauna {
      * @return              A FaunaClient (or subclass of it).
      */
     public static FaunaClient client(FaunaConfig config, HttpClient httpClient, RetryStrategy retryStrategy) {
+        if (config == null) {
+            throw new IllegalArgumentException("FaunaConfig cannot be null.");
+        }
         return new BaseFaunaClient(config, httpClient, retryStrategy);
     }
 
@@ -39,6 +45,12 @@ public class Fauna {
      * @return                  A FaunaClient (or subclass of it).
      */
     public static FaunaClient scoped(FaunaClient client, String tenantDatabase) {
+        if (client == null) {
+            throw new IllegalArgumentException("FaunaClient cannot be null.");
+        }
+        if (tenantDatabase == null || tenantDatabase.isEmpty()) {
+            throw new IllegalArgumentException("tenantDatabase cannot be null or empty.");
+        }
         return new ScopedFaunaClient(client, FaunaScope.builder(tenantDatabase).build());
     }
 
@@ -50,6 +62,15 @@ public class Fauna {
      * @return                  A FaunaClient (or subclass of it).
      */
     public static FaunaClient scoped(FaunaClient client, String tenantDatabase, String role) {
+        if (client == null) {
+            throw new IllegalArgumentException("FaunaClient cannot be null.");
+        }
+        if (tenantDatabase == null || tenantDatabase.isEmpty()) {
+            throw new IllegalArgumentException("tenantDatabase cannot be null or empty.");
+        }
+        if (role == null || role.isEmpty()) {
+            throw new IllegalArgumentException("role cannot be null or empty.");
+        }
         return new ScopedFaunaClient(client, FaunaScope.builder(tenantDatabase).withRole(role).build());
     }
 
