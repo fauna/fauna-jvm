@@ -23,10 +23,19 @@ public abstract class FaunaClient {
 
     public static final RetryStrategy DEFAULT_RETRY_STRATEGY = ExponentialBackoffStrategy.builder().build();
     public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
+    private final String faunaSecret;
 
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
+
+    public FaunaClient(String secret) {
+        this.faunaSecret = secret;
+    }
+
+    protected String getFaunaSecret() {
+        return this.faunaSecret;
+    }
 
     private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, IDeserializer<T> deserializer) {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, deserializer));

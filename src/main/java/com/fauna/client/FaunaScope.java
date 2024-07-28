@@ -3,6 +3,7 @@ package com.fauna.client;
 import java.util.Optional;
 
 public class FaunaScope {
+    private static final String DELIMITER = ":";
     private static final String ROLE_PREFIX = "@role/";
     private final String tenantDatabase;
     private final String role;
@@ -24,6 +25,10 @@ public class FaunaScope {
     public FaunaScope(Builder builder) {
         this.tenantDatabase = builder.tenantDatabase;;
         this.role = builder.role.orElse(BuiltIn.SERVER);
+    }
+
+    public String getToken(String secret) {
+        return String.join(DELIMITER, secret, tenantDatabase, ROLE_PREFIX + role);
     }
 
     public static class Builder {
@@ -49,14 +54,6 @@ public class FaunaScope {
         return new Builder(tenantDatabase);
     }
 
-    /**
-     * This is a very un-Javalike name for this method, but I think it reads well when used in practice.
-     * @param tenantDatabase
-     * @return
-     */
-    public static Builder to(String tenantDatabase) {
-        return new Builder(tenantDatabase);
-    }
 
 
 }

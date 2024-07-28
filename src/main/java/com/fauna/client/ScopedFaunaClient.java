@@ -3,13 +3,14 @@ package com.fauna.client;
 import java.net.http.HttpClient;
 
 public class ScopedFaunaClient extends FaunaClient {
-    FaunaClient client;
-    FaunaScope scope;
+    private final FaunaClient client;
+    private final RequestBuilder requestBuilder;
 
 
     public ScopedFaunaClient(FaunaClient client, FaunaScope scope) {
+        super(client.getFaunaSecret());
         this.client = client;
-        this.scope = scope;
+        this.requestBuilder = client.getRequestBuilder().scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
     }
 
 
@@ -25,6 +26,6 @@ public class ScopedFaunaClient extends FaunaClient {
 
     @Override
     RequestBuilder getRequestBuilder() {
-        return client.getRequestBuilder();
+        return this.requestBuilder;
     }
 }
