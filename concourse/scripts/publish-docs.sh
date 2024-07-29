@@ -45,6 +45,9 @@ cp -R "../fauna-jvm-repository/build/docs/javadoc" "$PACKAGE_VERSION"
 # BODY_GTM=$(cat ../fauna-jvm-repository/concourse/scripts/body_gtm.dat)
 # sed -i '' "0,/<body>/{s/<body>/<body>${BODY_GTM}/}" "$PACKAGE_VERSION/index.html"
 
+echo "Updating 'latest' symlink to point to $PACKAGE_VERSION"
+ln -sfn "$PACKAGE_VERSION" latest
+
 git config --global user.email "nobody@fauna.com"
 git config --global user.name "Fauna, Inc"
 
