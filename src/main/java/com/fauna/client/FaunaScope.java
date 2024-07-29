@@ -12,11 +12,6 @@ public class FaunaScope {
         this.role = role;
     }
 
-    public FaunaScope(Builder builder) {
-        this.database = builder.database;;
-        this.role = builder.role.orElse(FaunaRole.SERVER);
-    }
-
     public String getToken(String secret) {
         return String.join(DELIMITER, secret, database, role.toString());
     }
