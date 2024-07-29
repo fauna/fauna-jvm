@@ -4,7 +4,7 @@ image_resource:
   type: registry-image
   source:
     repository: eclipse-temurin
-    tag: 11
+    tag: 11-noble
 
 params:
   MAVENCENTRAL_USER:
@@ -18,6 +18,7 @@ inputs:
 
 outputs:
   - name: slack-message
+  - name: fauna-jvm-repository-tagged
 
 run:
   path: ./fauna-jvm-repository/concourse/scripts/publish.sh
