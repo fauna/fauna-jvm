@@ -1,13 +1,12 @@
 package com.fauna.serialization;
 
 import com.fauna.enums.FaunaTokenType;
+import com.fauna.exception.NullDocumentException;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
 import com.fauna.types.NamedDocument;
 import com.fauna.types.NamedDocumentRef;
-import com.fauna.types.NullDocumentRef;
-import com.fauna.types.NullNamedDocumentRef;
 import com.fauna.exception.ClientException;
 
 import java.io.IOException;
@@ -242,14 +241,16 @@ public class DynamicDeserializer<T> extends BaseDeserializer<T> {
             if (exists) {
                 return new DocumentRef(id, coll);
             }
-            return new NullDocumentRef(id, coll, cause);
+
+            throw new NullDocumentException(id, coll, cause);
         }
 
         if (name != null && coll != null) {
             if (exists) {
                 return new NamedDocumentRef(name, coll);
             }
-            return new NullNamedDocumentRef(name, coll, cause);
+
+            throw new NullDocumentException(name, coll, cause);
         }
 
         return allProps;

@@ -16,7 +16,7 @@ resources:
     icon: github
     source:
       uri: git@github.com:fauna/fauna-jvm.git
-      branch: main
+      branch: release
       private_key: ((github-ssh-key))
 
   - name: fauna-jvm-repository-docs
@@ -79,13 +79,20 @@ jobs:
           SIGNING_KEYID: ((gpg-keyid))
           SIGNING_KEY: ((gpg-private-key))
           SIGNING_KEYPASSWORD: ((gpg-passphrase))
+          GIT_PRIVATE_KEY: ((github-ssh-key))
         on_success:
           put: notify
           params:
             text_file: slack-message/publish
 
+      - put: fauna-jvm-repository
+        params:
+          repository: fauna-jvm-repository-tagged
+
       - task: publish-docs
         file: fauna-jvm-repository/concourse/tasks/publish-docs.yml
+        params:
+          GIT_PRIVATE_KEY: ((github-ssh-key))
 
       - put: fauna-jvm-repository-docs
         params:
