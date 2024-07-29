@@ -240,7 +240,7 @@ prepending an additional `$`.
 var collectionName = "Product";
 
 // Pass the var to an FQL query.
-var query = Query.fql("""
+Query query = fql("""
     let collection = Collection(${collectionName})
     collection.sortedByPriceLowToHigh()
     """,
@@ -273,16 +273,15 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 
+import static com.fauna.query.builder.Query.fql;
+
 public class App {
     public static void main(String[] args)
  {
         try {
-            var config = new FaunaConfig.Builder()
-                    .secret("FAUNA_SECRET")
-                    .build();
-            var client = new FaunaClient(config);
+            FaunaClient client = new FaunaClient(FaunaConfic.builder().secret("FAUNA_SECRET").build());
 
-            var query = Query.fql("'Hello world'");
+            Query query = fql("'Hello world'");
 
             CompletableFuture<QuerySuccess<String>> futureResponse = client.asyncQuery(query, String.class);
 
@@ -311,7 +310,6 @@ You can pass a `FaunaConfig` object to customize the configuration of a
 
 ```java
 FaunaConfig config = new FaunaConfig.Builder()
-        .endpoint("https://db.fauna.com")
         .secret("FAUNA_SECRET")
         .build();
 
@@ -342,7 +340,7 @@ export FAUNA_ENDPOINT=https://db.fauna.com/
 You can initialize the client with a default configuration:
 
 ```java
-var client = new FaunaClient();
+FaunaClient client = Fauna.client();
 ```
 
 ### Retries
