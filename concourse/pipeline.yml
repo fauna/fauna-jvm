@@ -42,6 +42,7 @@ jobs:
     public: false
     plan:
       - get: fauna-jvm-repository
+        trigger: true
         passed: [set-self]
       - get: fauna-jvm-repository-docs
         passed: [set-self]
