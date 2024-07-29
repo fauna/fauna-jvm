@@ -12,6 +12,5 @@ repository itself. The runbook below describes the release process.
 4. Submit a release PR.
 5. Once approved, set the remote `release` branch to point to the commit
    generated in step 2 by running `git push --force origin $SHA:release`.
-6. The following additional manual steps are required for now:
-   - [Trigger a new release build](https://concourse.faunadb.net/teams/devex/pipelines/jvm-driver-release-v10/jobs/release)
+6. The following additional manual step is required for now:
    - Find the staged release artifact at https://central.sonatype.com/publishing and click publish
