@@ -20,9 +20,7 @@ public class RequestBuilder {
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
 
-    private final FaunaConfig faunaConfig;
     private final HttpRequest.Builder baseRequestBuilder;
-
 
     static class Headers {
         static final String LAST_TXN_TS = "X-Last-Txn-Ts";
@@ -40,22 +38,32 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(FaunaConfig config, String suffix) {
-        this.faunaConfig = config;
+    public RequestBuilder(URI uri, String token) {
         // DriverEnvironment is not needed outside the constructor for now.
         DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
-        this.baseRequestBuilder = HttpRequest.newBuilder().uri(URI.create(faunaConfig.getEndpoint() + suffix)).headers(
+        this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
                 RequestBuilder.Headers.FORMAT, "tagged",
                 RequestBuilder.Headers.ACCEPT_ENCODING, "gzip",
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
                 RequestBuilder.Headers.DRIVER, "Java",
                 RequestBuilder.Headers.DRIVER_ENV, env.toString(),
-                Headers.AUTHORIZATION, buildAuthToken()
+                Headers.AUTHORIZATION, buildAuthHeader(token)
         );
     }
 
+    public RequestBuilder(HttpRequest.Builder builder) {
+        this.baseRequestBuilder = builder;
+    }
+
     public static RequestBuilder queryRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(config, QUERY_PATH);
+        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret());
+    }
+
+    public RequestBuilder scopedRequestBuilder(String token) {
+        HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
+        // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
+        newBuilder.setHeader(Headers.AUTHORIZATION, buildAuthHeader(token));
+        return new RequestBuilder(newBuilder);
     }
 
     /**
@@ -65,21 +73,22 @@ public class RequestBuilder {
      * @return An HttpRequest object configured for the Fauna query.
      */
     public HttpRequest buildRequest(Query fql, QueryOptions options) {
+        // TODO: I think we can avoid doing this copy if no new headers need to be set.
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         if (options != null) {
             addOptionalHeaders(builder, options);
         }
         // TODO: set last-txn-ts and max-contention-retries.
         try {
-            return builder.POST(HttpRequest.BodyPublishers.ofString(
-                    Serializer.serialize(new FaunaRequest(fql)))).build();
+            String body = Serializer.serialize(new FaunaRequest(fql));
+            return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Query request.", e);
         }
     }
 
-    private String buildAuthToken() {
-        return String.join(" ", RequestBuilder.BEARER, this.faunaConfig.getSecret());
+    private static String buildAuthHeader(String token) {
+        return String.join(" ", RequestBuilder.BEARER, token);
     }
 
     /**

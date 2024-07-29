@@ -1,6 +1,5 @@
 package com.fauna.query.builder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fauna.serialization.Serializer;
 import org.junit.jupiter.api.Test;
 

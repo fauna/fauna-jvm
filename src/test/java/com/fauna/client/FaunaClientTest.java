@@ -11,12 +11,14 @@ import com.fauna.types.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
@@ -30,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -48,7 +51,7 @@ class FaunaClientTest {
 
     @BeforeEach
     void setUp() {
-        client = new FaunaClient(FaunaConfig.builder().build(), mockHttpClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
+        client = Fauna.client(FaunaConfig.LOCAL, mockHttpClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
     }
 
     @Test
@@ -80,18 +83,17 @@ class FaunaClientTest {
     @Test
     void customConfigConstructor() {
         FaunaConfig config = FaunaConfig.builder().secret("foo").build();
-        FaunaClient client = new FaunaClient(config);
-        assertTrue(client.toString().startsWith("com.fauna.client.FaunaClient"));
+        FaunaClient client = Fauna.client(config);
+        assertTrue(client.toString().startsWith("com.fauna.client.BaseFaunaClient"));
     }
 
     @Test
     void customConfigAndClientConstructor() {
-        QueryOptions opts = QueryOptions.builder().timeout(Duration.ofSeconds(10)).build();
         FaunaConfig config = FaunaConfig.builder().build();
         HttpClient multiThreadedClient = HttpClient.newBuilder().executor(Executors.newFixedThreadPool(20))
                 .connectTimeout(Duration.ofSeconds(15)).build();
-        FaunaClient client = new FaunaClient(config, multiThreadedClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
-        assertTrue(client.toString().startsWith("com.fauna.client.FaunaClient"));
+        FaunaClient client = Fauna.client(config, multiThreadedClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
+        assertTrue(client.toString().startsWith("com.fauna.client.BaseFaunaClient"));
     }
 
     @Test()
@@ -122,11 +124,12 @@ class FaunaClientTest {
     void nullConfigClientConstructor() {
         IllegalArgumentException thrown = assertThrows(
                 IllegalArgumentException.class,
-                () -> new FaunaClient(null),
+                () -> Fauna.client(null),
                 "null FaunaConfig should throw"
         );
         assertEquals("FaunaConfig cannot be null.", thrown.getMessage() );
     }
+
 
     @Test
     void query_WhenFqlIsNull_ShouldThrowIllegalArgumentException() {
@@ -142,7 +145,8 @@ class FaunaClientTest {
     void query_WithValidFQL_ShouldCall() throws IOException, InterruptedException {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
-        when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
+        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret"));
+        when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QuerySuccess<Document> response = client.query(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
         assertEquals("success", response.getSummary());
         assertEquals(0, response.getLastSeenTxn());
@@ -240,7 +244,7 @@ class FaunaClientTest {
         when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         when(resp.statusCode()).thenReturn(429);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
-        FaunaClient noRetryClient = new FaunaClient(FaunaConfig.builder().build(), mockHttpClient, FaunaClient.NO_RETRY_STRATEGY);
+        FaunaClient noRetryClient = Fauna.client(FaunaConfig.DEFAULT, mockHttpClient, FaunaClient.NO_RETRY_STRATEGY);
         CompletableFuture<QuerySuccess<Document>> future = noRetryClient.asyncQuery(
                 Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
@@ -260,7 +264,7 @@ class FaunaClientTest {
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         // WHEN
 
-        FaunaClient fastClient = new FaunaClient(FaunaConfig.builder().build(), mockHttpClient,
+        BaseFaunaClient fastClient = new BaseFaunaClient(FaunaConfig.builder().build(), mockHttpClient,
                 new ExponentialBackoffStrategy(retryAttempts, 1f, 10, 10, 0.1f));
         CompletableFuture<QuerySuccess<Document>> future = fastClient.asyncQuery(
                 Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
