@@ -2,9 +2,12 @@ package com.fauna.serialization;
 
 import com.fauna.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.NullDocumentException;
 import com.fauna.interfaces.IClassDeserializer;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.mapping.MappingInfo;
+import com.fauna.types.Module;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
@@ -12,6 +15,9 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
 
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
+    private static final String COLL_FIELD = "coll";
+    private static final String EXISTS_FIELD = "exists";
+    private static final String CAUSE_FIELD = "cause";
 
     private final MappingInfo _info;
 
@@ -44,6 +50,12 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
 
     private void setFields(Object instance, UTF8FaunaParser reader,
                            FaunaTokenType endToken) throws IOException {
+        String id = null;
+        String name = null;
+        Module coll = null;
+        boolean exists = true;
+        String cause = null;
+
         while (reader.read() && reader.getCurrentTokenType() != endToken) {
             if (reader.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
                 throw unexpectedToken(reader.getCurrentTokenType());
@@ -54,11 +66,25 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
 
             if (fieldName.equals(ID_FIELD)
                 && reader.getCurrentTokenType() == FaunaTokenType.STRING) {
+                id = reader.getValueAsString();
                 trySetId(instance, reader.getValueAsString());
             } else if (fieldName.equals(NAME_FIELD)
                 && reader.getCurrentTokenType() == FaunaTokenType.STRING) {
+                name = reader.getValueAsString();
                 trySetName(instance, reader.getValueAsString());
             } else {
+                if (fieldName.equals(COLL_FIELD) && reader.getCurrentTokenType() == FaunaTokenType.MODULE) {
+                    coll = reader.getValueAsModule();
+                }
+
+                if (fieldName.equals(EXISTS_FIELD) && reader.getCurrentTokenType() == FaunaTokenType.FALSE) {
+                    exists = reader.getValueAsBoolean();
+                }
+
+                if (fieldName.equals(CAUSE_FIELD) && reader.getCurrentTokenType() == FaunaTokenType.STRING) {
+                    cause = reader.getValueAsString();
+                }
+
                 FieldInfo field = _info.getFieldsByName().get(fieldName);
                 if (field != null) {
                     field.getProperty().setAccessible(true);
@@ -72,6 +98,10 @@ public class ClassDeserializer<T> extends BaseDeserializer<T> implements IClassD
                     reader.skip();
                 }
             }
+        }
+
+        if (endToken == FaunaTokenType.END_REF && !exists) {
+            throw new NullDocumentException(id != null ? id : name, coll, cause);
         }
     }
 

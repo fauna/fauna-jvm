@@ -1,12 +1,8 @@
 package com.fauna.serialization;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fauna.beans.Person;
 import com.fauna.beans.PersonWithAttributes;
+import com.fauna.exception.NullDocumentException;
 import com.fauna.serialization.generic.ListOf;
 import com.fauna.serialization.generic.MapOf;
 import com.fauna.serialization.generic.PageOf;
@@ -15,8 +11,6 @@ import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
 import com.fauna.types.NamedDocument;
 import com.fauna.types.NamedDocumentRef;
-import com.fauna.types.NullDocumentRef;
-import com.fauna.types.NullNamedDocumentRef;
 import com.fauna.types.Page;
 import com.fauna.exception.ClientException;
 import com.fauna.interfaces.IDeserializer;
@@ -29,7 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import com.fauna.types.Module;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DeserializerTest {
@@ -196,7 +194,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void deserializeNullRef() throws IOException {
+    public void deserializeNullRefThrows() throws IOException {
         String given = "{\n" +
             "    \"@ref\":{\n" +
             "        \"id\":\"123\",\n" +
@@ -208,12 +206,15 @@ public class DeserializerTest {
             "    }\n" +
             "}";
 
-        NullDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, NullDocumentRef.class));
+        NullDocumentException exception = assertThrows(
+                NullDocumentException.class,
+                () -> deserialize(given, ctx -> Deserializer.generate(ctx, Object.class))
+        );
 
-        assertEquals("123", actual.getId());
-        assertEquals(new Module("MyColl"), actual.getCollection());
-        assertEquals("not found", actual.getCause());
+        assertEquals("Document 123 in collection MyColl is null: not found", exception.getMessage());
+        assertEquals("123", exception.getId());
+        assertEquals(new Module("MyColl"), exception.getCollection());
+        assertEquals("not found", exception.getNullCause());
     }
 
     @Test
@@ -235,7 +236,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void deserializeNullNamedRef() throws IOException {
+    public void deserializeNullNamedRefThrows() throws IOException {
         String given = "{\n" +
             "    \"@ref\":{\n" +
             "        \"name\":\"RefName\",\n" +
@@ -247,12 +248,15 @@ public class DeserializerTest {
             "    }\n" +
             "}";
 
-        NullNamedDocumentRef actual = deserialize(given,
-            ctx -> Deserializer.generate(ctx, NullNamedDocumentRef.class));
+        NullDocumentException exception = assertThrows(
+                NullDocumentException.class,
+                () -> deserialize(given, ctx -> Deserializer.generate(ctx, Object.class))
+        );
 
-        assertEquals("RefName", actual.getName());
-        assertEquals(new Module("MyColl"), actual.getCollection());
-        assertEquals("not found", actual.getCause());
+        assertEquals("Document RefName in collection MyColl is null: not found", exception.getMessage());
+        assertEquals("RefName", exception.getId());
+        assertEquals(new Module("MyColl"), exception.getCollection());
+        assertEquals("not found", exception.getNullCause());
     }
 
     @Test
@@ -459,6 +463,54 @@ public class DeserializerTest {
         assertEquals("Luhrmann2", p.getLastName());
         assertEquals('A', p.getMiddleInitial());
         assertEquals(612, p.getAge());
+    }
+
+    @Test
+    public void deserializeDocIntoPoco() throws IOException {
+        String given = "{\n" +
+                "    \"@doc\": {\n" +
+                "        \"id\": \"123\",\n" +
+                "        \"coll\": {\"@mod\": \"MyColl\"},\n" +
+                "        \"ts\": {\"@time\": \"2023-12-15T01:01:01.0010010Z\"},\n" +
+                "        \"firstName\": \"Baz2\"," +
+                "        \"lastName\": \"Luhrmann2\"," +
+                "        \"middleInitial\": {\"@int\":\"65\"}," +
+                "        \"age\": { \"@int\": \"612\" }" +
+                "    }\n" +
+                "}";
+
+
+        Person p = deserialize(given,
+                ctx -> Deserializer.generate(ctx, Person.class));
+        assertEquals("Baz2", p.getFirstName());
+        assertEquals("Luhrmann2", p.getLastName());
+        assertEquals('A', p.getMiddleInitial());
+        assertEquals(612, p.getAge());
+    }
+
+    @Test
+    public void deserializeNullDocIntoPocoThrows() throws IOException {
+        String given = "{\n" +
+                "    \"@ref\":{\n" +
+                "        \"id\":\"123\",\n" +
+                "        \"coll\":{\n" +
+                "            \"@mod\":\"Person\"\n" +
+                "        },\n" +
+                "        \"exists\":false,\n" +
+                "        \"cause\":\"not found\"\n" +
+                "    }\n" +
+                "}";
+
+
+        NullDocumentException exception = assertThrows(
+                NullDocumentException.class,
+                () -> deserialize(given, ctx -> Deserializer.generate(ctx, Person.class))
+        );
+
+        assertEquals("Document 123 in collection Person is null: not found", exception.getMessage());
+        assertEquals("123", exception.getId());
+        assertEquals(new Module("Person"), exception.getCollection());
+        assertEquals("not found", exception.getNullCause());
     }
 
     @Test
