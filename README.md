@@ -265,8 +265,7 @@ import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 
 public class App {
-    public static void main(String[] args)
- {
+    public static void main(String[] args) {
         try {
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
@@ -282,12 +281,11 @@ public class App {
             System.out.println(response.getStats().toString());
 
         } catch (FaunaException e) {
-            if (e instanceof ServiceException serviceException) {
+            if (e instanceof ServiceException) {
+                ServiceException serviceException = (ServiceException) e;
                 System.out.println(serviceException.getStats().toString());
-                System.out.println(e);
-            } else {
-                System.out.println(e);
             }
+            System.out.println(e);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
