@@ -7,12 +7,9 @@ import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
 import com.fauna.types.NamedDocument;
 import com.fauna.types.NamedDocumentRef;
-import com.fauna.types.NullDocumentRef;
-import com.fauna.types.NullNamedDocumentRef;
 import com.fauna.types.Page;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -47,11 +44,6 @@ public class Deserializer {
         DocumentRef.class);
     private static final IDeserializer<NamedDocumentRef> _namedDocumentRef = new CheckedDeserializer(
         NamedDocumentRef.class);
-    private static final IDeserializer<NullDocumentRef> _nullDocumentRef = new CheckedDeserializer(
-        NullDocumentRef.class);
-    private static final IDeserializer<NullNamedDocumentRef> _nullNamedDocumentRef = new CheckedDeserializer(
-        NullNamedDocumentRef.class);
-
     private static final Map<Class<?>, IDeserializer<?>> DESERIALIZERS = new HashMap<>();
 
     static {
@@ -78,9 +70,7 @@ public class Deserializer {
         DESERIALIZERS.put(Document.class, _document);
         DESERIALIZERS.put(NamedDocument.class, _namedDocument);
         DESERIALIZERS.put(DocumentRef.class, _documentRef);
-        DESERIALIZERS.put(NullDocumentRef.class, _nullDocumentRef);
         DESERIALIZERS.put(NamedDocumentRef.class, _namedDocumentRef);
-        DESERIALIZERS.put(NullNamedDocumentRef.class, _nullNamedDocumentRef);
         DESERIALIZERS.put(Object.class, DynamicDeserializer.getInstance());
     }
 
