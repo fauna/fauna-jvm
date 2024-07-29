@@ -61,14 +61,14 @@ public class Fauna {
      * @param role              A Fauna role (either built-in or user defined).
      * @return                  A FaunaClient (or subclass of it).
      */
-    public static FaunaClient scoped(FaunaClient client, String tenantDatabase, String role) {
+    public static FaunaClient scoped(FaunaClient client, String tenantDatabase, FaunaRole role) {
         if (client == null) {
             throw new IllegalArgumentException("FaunaClient cannot be null.");
         }
         if (tenantDatabase == null || tenantDatabase.isEmpty()) {
             throw new IllegalArgumentException("tenantDatabase cannot be null or empty.");
         }
-        if (role == null || role.isEmpty()) {
+        if (role == null) {
             throw new IllegalArgumentException("role cannot be null or empty.");
         }
         return new ScopedFaunaClient(client, FaunaScope.builder(tenantDatabase).withRole(role).build());

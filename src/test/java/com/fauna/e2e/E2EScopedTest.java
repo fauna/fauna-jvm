@@ -4,7 +4,6 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.query.builder.Query;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,7 +17,6 @@ public class E2EScopedTest {
         Fixtures.PeopleDatabase(baseClient);
     }
 
-    @Disabled("Throws a 401 but the header looks correct to me. Is the fixture setup correctly?")
     @Test
     public void query_sync() {
         var q = Query.fql("42");
