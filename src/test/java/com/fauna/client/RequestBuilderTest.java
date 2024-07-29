@@ -4,6 +4,7 @@ import com.fauna.query.QueryOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.HashMap;
@@ -11,6 +12,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import static com.fauna.client.RequestBuilder.Headers.AUTHORIZATION;
+import static com.fauna.client.RequestBuilder.Headers.DRIVER_ENV;
+import static com.fauna.client.RequestBuilder.Headers.LINEARIZED;
+import static com.fauna.client.RequestBuilder.Headers.QUERY_TAGS;
+import static com.fauna.client.RequestBuilder.Headers.TRACE_PARENT;
+import static com.fauna.client.RequestBuilder.Headers.TYPE_CHECK;
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,9 +38,11 @@ class RequestBuilderTest {
 
         assertEquals("http://localhost:8443/query/1", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
-        assertTrue(httpRequest.bodyPublisher().get().contentLength() > 0);
-        assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.AUTHORIZATION));
-        assertEquals("Bearer secret", httpRequest.headers().firstValue(RequestBuilder.Headers.AUTHORIZATION).get());
+        assertTrue(httpRequest.bodyPublisher().orElseThrow().contentLength() > 0);
+        HttpHeaders headers = httpRequest.headers();
+        assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("driver=java"));
+        assertNotNull(headers.firstValue(AUTHORIZATION));
+        assertEquals("Bearer secret", headers.firstValue(AUTHORIZATION).orElseThrow());
     }
 
     @Test
@@ -42,11 +51,12 @@ class RequestBuilderTest {
                 .linearized(true).typeCheck(true).traceParent("traceParent").build();
 
         HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options);
+        HttpHeaders headers = httpRequest.headers();
 
-        assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.LINEARIZED).get());
-        assertEquals("true", httpRequest.headers().firstValue(RequestBuilder.Headers.TYPE_CHECK).get());
-        assertNotNull(httpRequest.headers().firstValue(RequestBuilder.Headers.QUERY_TAGS));
-        assertEquals("traceParent", httpRequest.headers().firstValue(RequestBuilder.Headers.TRACE_PARENT).get());
+        assertEquals("true", headers.firstValue(LINEARIZED).orElseThrow());
+        assertEquals("true", headers.firstValue(TYPE_CHECK).orElseThrow());
+        assertNotNull(headers.firstValue(QUERY_TAGS));
+        assertEquals("traceParent", headers.firstValue(TRACE_PARENT).orElseThrow());
     }
 
     @Test
