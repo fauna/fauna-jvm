@@ -65,7 +65,6 @@ The following application:
 ```java
 package org.example;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -101,8 +100,8 @@ public class App {
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
                     .build();
-            // Initialize the client.
 
+            // Initialize the client.
             var client = new FaunaClient(config);
 
             // Compose a query.
@@ -121,33 +120,35 @@ public class App {
             // Run the query asynchronously.
             System.out.println("\nRunning asynchronous query:");
             runAsynchronousQuery(client, query);
-
         } catch (FaunaException e) {
             System.err.println("Fauna error occurred: " + e.getMessage());
             e.printStackTrace();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
     }
+
 
     private static void runSynchronousQuery(FaunaClient client, Query query) throws FaunaException {
         // Use `query()` to run a synchronous query.
         // Synchronous queries block the current thread until the query completes.
         // Accepts the query, expected result class, and a nullable set of query options.
         QuerySuccess<Page<Product>> result = client.query(query, new PageOf<>(Product.class));
-        printResults(result.getData().data());
+        printResults(result.getData());
     }
 
-    // Use `asyncQuery()` to run an asynchronous, non-blocking query.
-    // Accepts the query, expected result class, and a nullable set of query options.
     private static void runAsynchronousQuery(FaunaClient client, Query query) throws ExecutionException, InterruptedException {
+        // Use `asyncQuery()` to run an asynchronous, non-blocking query.
+        // Accepts the query, expected result class, and a nullable set of query options.
         CompletableFuture<QuerySuccess<Page<Product>>> futureResult = client.asyncQuery(query, new PageOf<>(Product.class));
 
         QuerySuccess<Page<Product>> result = futureResult.get();
-        printResults(result.getData().data());
+        printResults(result.getData());
     }
 
     // Iterate through the products in the page.
-    private static void printResults(List<Product> products) {
-        for (Product product : products) {
+    private static void printResults(Page<Product> page) {
+        for (Product product : page.data()) {
             System.out.println("Name: " + product.name);
             System.out.println("Description: " + product.description);
             System.out.println("Price: " + product.price);
@@ -178,7 +179,10 @@ For example:
 
 ```java
 // Defaults to the secret in the `FAUNA_SECRET` env var.
-var client = new FaunaClient();
+var config = new FaunaConfig.Builder()
+        .build();
+
+var client = new FaunaClient(config);
 ```
 
 
@@ -261,8 +265,7 @@ import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 
 public class App {
-    public static void main(String[] args)
- {
+    public static void main(String[] args) {
         try {
             var config = new FaunaConfig.Builder()
                     .secret("FAUNA_SECRET")
@@ -278,12 +281,11 @@ public class App {
             System.out.println(response.getStats().toString());
 
         } catch (FaunaException e) {
-            if (e instanceof ServiceException serviceException) {
+            if (e instanceof ServiceException) {
+                ServiceException serviceException = (ServiceException) e;
                 System.out.println(serviceException.getStats().toString());
-                System.out.println(e);
-            } else {
-                System.out.println(e);
             }
+            System.out.println(e);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -350,7 +352,7 @@ var query = Query.fql("Hello World");
 
 var options = QueryOptions.builder()
     .linearized(true)
-    .queryTags(Map.of("name", "hello world query"))
+    .queryTags(Map.of("name", "hello_world_query"))
     .timeout(Duration.ofSeconds(10))
     .traceParent("00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00")
     .typeCheck(false)
@@ -362,10 +364,10 @@ client.query(query, String.class, options)
 The following table outlines properties of the `QueryOptions` class and their
 defaults.
 
-| Property      | Type                     | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------- | ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `linearize`   | Boolean                  |          | If `true`, the query is linearized, ensuring strict serialization of reads and writes. Defaults to `null` (false).<br><p>Maps to the [`x-linearized`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                                                                |
-| `queryTags`   | `<Map<String, String>> ` |          | Key-value tags used to identify the query. Defaults to `null` (none). Query tags are included in [query logs](https://docs.fauna.com/fauna/current/tools/query-logs/reference/schema/) and the response body for successful queries. The tags are typically used for monitoring.<br><p>Maps to the [`x-query-tags`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p> |
-| `timeout`     | Duration                 |          | Maximum amount of time Fauna runs the query before marking it as failed. Defaults to 5 seconds. Maps to the [`x-query-timeout-ms`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.                                                                                                                                                                                  |
-| `traceParent` | String                   |          | W3C-compliant traceparent ID for the request. Defaults to `null` (none). <br><p>If you omit the traceparent ID or provide an invalid ID, Fauna generates a valid one. The traceparent ID is included in query logs. Traceparent IDs are typically used for monitoring.</p>                                                                                                                                             |
-| `typeCheck`   | Boolean                  |          | If `true`, enables type checking for the query. Defaults to the database's type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                       |
+| Property      | Type                    | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------- | ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `linearize`   | Boolean                 |          | If `true`, the query is linearized, ensuring strict serialization of reads and writes. Defaults to `null` (false).<br><p>Maps to the [`x-linearized`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                                                                                                                                                                |
+| `queryTags`   | `<Map<String, String>>` |          | Key-value tags used to identify the query. Defaults to `null` (none). Keys and values can only contain uppercase or lowercase letters, numbers, and underscores (`_`). Query tags are included in [query logs](https://docs.fauna.com/fauna/current/tools/query-logs/reference/schema/) and the response body for successful queries. The tags are typically used for monitoring.<br><p>Maps to the [`x-query-tags`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p> |
+| `timeout`     | Duration                |          | Maximum amount of time Fauna runs the query before marking it as failed. Defaults to 5 seconds. Maps to the [`x-query-timeout-ms`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.                                                                                                                                                                                                                                                                                       |
+| `traceParent` | String                  |          | W3C-compliant traceparent ID for the request. Defaults to `null` (none). <br><p>If you omit the traceparent ID or provide an invalid ID, Fauna generates a valid one. The traceparent ID is included in query logs. Traceparent IDs are typically used for monitoring.</p>                                                                                                                                                                                                                                              |
+| `typeCheck`   | Boolean                 |          | If `true`, enables type checking for the query. Defaults to the database's type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                                                                                                                        |
