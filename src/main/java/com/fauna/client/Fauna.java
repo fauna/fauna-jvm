@@ -39,39 +39,39 @@ public class Fauna {
     }
 
     /**
-     * Create a new Fauna client that wraps an existing client, but is scoped to a specific tenant database.
+     * Create a new Fauna client that wraps an existing client, but is scoped to a specific database.
      * @param client            Another Fauna client.
-     * @param tenantDatabase    The name of the tenant database.
+     * @param database          The name of the database.
      * @return                  A FaunaClient (or subclass of it).
      */
-    public static FaunaClient scoped(FaunaClient client, String tenantDatabase) {
+    public static FaunaClient scoped(FaunaClient client, String database) {
         if (client == null) {
             throw new IllegalArgumentException("FaunaClient cannot be null.");
         }
-        if (tenantDatabase == null || tenantDatabase.isEmpty()) {
-            throw new IllegalArgumentException("tenantDatabase cannot be null or empty.");
+        if (database == null || database.isEmpty()) {
+            throw new IllegalArgumentException("database cannot be null or empty.");
         }
-        return new ScopedFaunaClient(client, FaunaScope.builder(tenantDatabase).build());
+        return new ScopedFaunaClient(client, FaunaScope.builder(database).build());
     }
 
     /**
-     * Create a new Fauna client that wraps an existing client, but is scoped to a specific tenant database.
+     * Create a new Fauna client that wraps an existing client, but is scoped to a specific database.
      * @param client            Another Fauna client.
-     * @param tenantDatabase    The name of the tenant database.
+     * @param database          The name of the database.
      * @param role              A Fauna role (either built-in or user defined).
      * @return                  A FaunaClient (or subclass of it).
      */
-    public static FaunaClient scoped(FaunaClient client, String tenantDatabase, FaunaRole role) {
+    public static FaunaClient scoped(FaunaClient client, String database, FaunaRole role) {
         if (client == null) {
             throw new IllegalArgumentException("FaunaClient cannot be null.");
         }
-        if (tenantDatabase == null || tenantDatabase.isEmpty()) {
-            throw new IllegalArgumentException("tenantDatabase cannot be null or empty.");
+        if (database == null || database.isEmpty()) {
+            throw new IllegalArgumentException("database cannot be null or empty.");
         }
         if (role == null) {
             throw new IllegalArgumentException("role cannot be null or empty.");
         }
-        return new ScopedFaunaClient(client, FaunaScope.builder(tenantDatabase).withRole(role).build());
+        return new ScopedFaunaClient(client, FaunaScope.builder(database).withRole(role).build());
     }
 
     /**

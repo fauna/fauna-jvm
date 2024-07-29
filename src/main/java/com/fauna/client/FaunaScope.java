@@ -4,29 +4,29 @@ import java.util.Optional;
 
 public class FaunaScope {
     private static final String DELIMITER = ":";
-    private final String tenantDatabase;
+    private final String database;
     private final FaunaRole role;
 
-    public FaunaScope(String tenantDatabase, FaunaRole role) {
-        this.tenantDatabase = tenantDatabase;
+    public FaunaScope(String database, FaunaRole role) {
+        this.database = database;
         this.role = role;
     }
 
     public FaunaScope(Builder builder) {
-        this.tenantDatabase = builder.tenantDatabase;;
+        this.database = builder.database;;
         this.role = builder.role.orElse(FaunaRole.SERVER);
     }
 
     public String getToken(String secret) {
-        return String.join(DELIMITER, secret, tenantDatabase, role.toString());
+        return String.join(DELIMITER, secret, database, role.toString());
     }
 
     public static class Builder {
-        public final String tenantDatabase;
+        public final String database;
         public Optional<FaunaRole> role = Optional.empty();
 
-        public Builder(String tenantDatabase) {
-            this.tenantDatabase = tenantDatabase;
+        public Builder(String database) {
+            this.database = database;
         }
 
         public Builder withRole(FaunaRole role) {
@@ -35,13 +35,13 @@ public class FaunaScope {
         }
 
         public FaunaScope build() {
-            return new FaunaScope(this.tenantDatabase, this.role.orElse(FaunaRole.SERVER));
+            return new FaunaScope(this.database, this.role.orElse(FaunaRole.SERVER));
 
         }
     }
 
-    public static Builder builder(String tenantDatabase) {
-        return new Builder(tenantDatabase);
+    public static Builder builder(String database) {
+        return new Builder(database);
     }
 
 
