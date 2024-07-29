@@ -22,7 +22,7 @@ versions of FQL. To query your databases with earlier API versions, use the
 
 ## Javadocs
 
-API reference documentation are available in the [Javadocs](https://fauna.github.io/fauna-jvm/latest/).
+API reference documentation is available in the [Javadocs](https://fauna.github.io/fauna-jvm/latest/).
 
 
 ## Installation
