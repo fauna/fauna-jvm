@@ -31,6 +31,7 @@ The driver is available on the [Maven central
 repository](https://central.sonatype.com/artifact/com.fauna/fauna-jvm).
 You can add the driver to your Java project using Gradle or Maven.
 
+
 ### Gradle
 
 File `build.gradle`:
@@ -41,6 +42,7 @@ dependencies {
     ...
 }
 ```
+
 
 ### Maven
 
@@ -189,6 +191,7 @@ The client comes with a helper config for connecting to Fauna running locally.
 FaunaClient local = Fauna.local();
 ```
 
+
 ### Scoped client
 You can scope a client to a specific database (and role).
 
@@ -259,6 +262,7 @@ API. This helps prevent injection attacks.
 
 <!-- TODO: Subqueries -->
 
+
 ## Query statistics
 
 Successful query responses and `ServiceException` exceptions include query
@@ -306,6 +310,7 @@ public class App {
 }
 ```
 
+
 ## Client configuration
 
 You can pass a `FaunaConfig` object to customize the configuration of a
@@ -318,14 +323,6 @@ FaunaConfig config = new FaunaConfig.Builder()
 
 FaunaClient client = Fauna.client(config);
 ```
-
-The following table outlines properties of the `FaunaConfig` class and their
-defaults.
-
-| Property   | Type   | Required | Description                                                                                                                                                                       |
-| ---------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `secret`   | String |          | Fauna authentication secret used to authorize requests. Defaults to the `FAUNA_SECRET` environment variable.                                                                      |
-| `endpoint` | String |          | Base URL used by the driver for Fauna HTTP API requests. Defaults to the `FAUNA_ENDPOINT` environment variable. If `FAUNA_ENDPOINT` is not set, defaults to https://db.fauna.com. |
 
 
 ### Environment variables
@@ -345,6 +342,7 @@ You can initialize the client with a default configuration:
 ```java
 FaunaClient client = Fauna.client();
 ```
+
 
 ### Retries
 
@@ -372,14 +370,3 @@ QueryOptions options = QueryOptions.builder()
 
 QuerySuccess result = client.query(query, String.class, options);
 ```
-
-The following table outlines properties of the `QueryOptions` class and their
-defaults.
-
-| Property      | Type                    | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------- | ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `linearize`   | Boolean                 |          | If `true`, the query is linearized, ensuring strict serialization of reads and writes. Defaults to `null` (false).<br><p>Maps to the [`x-linearized`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                                                                                                                                                                |
-| `queryTags`   | `<Map<String, String>>` |          | Key-value tags used to identify the query. Defaults to `null` (none). Keys and values can only contain uppercase or lowercase letters, numbers, and underscores (`_`). Query tags are included in [query logs](https://docs.fauna.com/fauna/current/tools/query-logs/reference/schema/) and the response body for successful queries. The tags are typically used for monitoring.<br><p>Maps to the [`x-query-tags`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p> |
-| `timeout`     | Duration                |          | Maximum amount of time Fauna runs the query before marking it as failed. Defaults to 5 seconds. Maps to the [`x-query-timeout-ms`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.                                                                                                                                                                                                                                                                                       |
-| `traceParent` | String                  |          | W3C-compliant traceparent ID for the request. Defaults to `null` (none). <br><p>If you omit the traceparent ID or provide an invalid ID, Fauna generates a valid one. The traceparent ID is included in query logs. Traceparent IDs are typically used for monitoring.</p>                                                                                                                                                                                                                                              |
-| `typeCheck`   | Boolean                 |          | If `true`, enables type checking for the query. Defaults to the database's type checking setting.<br><p>If `true`, type checking must be enabled on the database. Maps to the [`x-typecheck`](https://docs.fauna.com/fauna/current/reference/http/reference/query/post/#header) HTTP header.</p>                                                                                                                                                                                                                        |
