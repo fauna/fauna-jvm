@@ -71,6 +71,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaObject;
+import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
@@ -97,16 +98,12 @@ public class App {
 
     public static void main(String[] args) {
         try {
-            // Configure the Fauna client.
-            var config = new FaunaConfig.Builder()
-                    .secret("FAUNA_SECRET")
-                    .build();
-            // Initialize the client.
-
-            var client = new FaunaClient(config);
+            // Initialize a default client.
+            // It will get the secret from the $FAUNA_SECRET environment variable.
+            FaunaClient client = Fauna.client();
 
             // Compose a query.
-            var query = Query.fql("""
+            Query query = Query.fql("""
                 Product.sortedByPriceLowToHigh() {
                     name,
                     description,
@@ -166,11 +163,10 @@ To send query requests to Fauna, initialize a `FaunaClient` instance with a
 Fauna authentication secret. You can pass the secret in a `FaunaConfig` object:
 
 ```java
-var config = new FaunaConfig.Builder()
-        .secret("FAUNA_SECRET")
-        .build();
+FaunaConfig config = FaunaConfig.builder().secret("FAUNA_SECRET").build();
 
-var client = new FaunaClient(config);
+
+FaunaClient client = Fauna.client(config);
 ```
 
 If not specified, `secret` defaults to the `FAUNA_SECRET` environment variable.
@@ -178,7 +174,24 @@ For example:
 
 ```java
 // Defaults to the secret in the `FAUNA_SECRET` env var.
-var client = new FaunaClient();
+FaunaClient client = Fauna.client();
+```
+
+The client comes with a helper config for connecting to Fauna running locally.
+
+```java
+// Connects to Fauna running locally via Docker (http://localhost:8443 and secret "secret").
+FaunaClient local = Fauna.local();
+```
+
+### Scoped client
+You can scope a client to a specific database (and role).
+
+```java
+FaunaClient db1 = Fauna.scoped(client, FaunaScope.builder("Database1").build());
+
+FaunaScope scope2 = FaunaScope.builder("Database2").withRole(FaunaRole.named("MyRole")).build();
+FaunaClient db2 = Fauna.scoped(client, scope2);
 ```
 
 
@@ -198,8 +211,8 @@ Use `fql` templates to compose FQL queries. To run the query, pass the template
 and an expected result class to `query()` or `asyncQuery()`:
 
 ```java
-var query = Query.fql("Product.sortedByPriceLowToHigh()");
-client.asyncQuery(query, new PageOf<>(Product.class));
+Query query = Query.fql("Product.sortedByPriceLowToHigh()");
+QuerySuccess<Page<Product>> result = client.query(query, new PageOf<>(Product.class));
 ```
 
 You can also pass a nullable set of [query options](#query-options) to `query()`
@@ -229,7 +242,7 @@ var collectionName = "Product";
 // Pass the var to an FQL query.
 var query = Query.fql("""
     let collection = Collection(${collectionName})
-	collection.sortedByPriceLowToHigh()
+    collection.sortedByPriceLowToHigh()
     """,
     Map.of(
         "collectionName", collectionName
@@ -297,12 +310,12 @@ You can pass a `FaunaConfig` object to customize the configuration of a
 `FaunaClient` instance.
 
 ```java
-var config = new FaunaConfig.Builder()
-        .endpoint("https://db.us.fauna.com")
+FaunaConfig config = new FaunaConfig.Builder()
+        .endpoint("https://db.fauna.com")
         .secret("FAUNA_SECRET")
         .build();
 
-var client = new FaunaClient(config);
+FaunaClient client = Fauna.client(config);
 ```
 
 The following table outlines properties of the `FaunaConfig` class and their
@@ -346,17 +359,17 @@ how a query runs in Fauna. You can also use query options to instrument
 a query for monitoring and debugging.
 
 ```java
-var query = Query.fql("Hello World");
+Query query = Query.fql("Hello World");
 
-var options = QueryOptions.builder()
+QueryOptions options = QueryOptions.builder()
     .linearized(true)
-    .queryTags(Map.of("name", "hello world query"))
+    .queryTags(Map.of("foo", "bar"))
     .timeout(Duration.ofSeconds(10))
     .traceParent("00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00")
     .typeCheck(false)
     .build();
 
-client.query(query, String.class, options)
+QuerySuccess result = client.query(query, String.class, options);
 ```
 
 The following table outlines properties of the `QueryOptions` class and their
