@@ -40,7 +40,8 @@ class RequestBuilderTest {
         assertEquals("POST", httpRequest.method());
         assertTrue(httpRequest.bodyPublisher().orElseThrow().contentLength() > 0);
         HttpHeaders headers = httpRequest.headers();
-        assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("driver=java"));
+        assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("runtime=java"));
+        assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("driver=1.0.0;"));
         assertNotNull(headers.firstValue(AUTHORIZATION));
         assertEquals("Bearer secret", headers.firstValue(AUTHORIZATION).orElseThrow());
     }
