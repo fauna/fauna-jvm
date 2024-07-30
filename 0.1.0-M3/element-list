@@ -1,0 +1,15 @@
+com.fauna.annotation
+com.fauna.client
+com.fauna.constants
+com.fauna.enums
+com.fauna.env
+com.fauna.exception
+com.fauna.interfaces
+com.fauna.mapping
+com.fauna.query
+com.fauna.query.builder
+com.fauna.query.template
+com.fauna.response
+com.fauna.serialization
+com.fauna.serialization.generic
+com.fauna.types
