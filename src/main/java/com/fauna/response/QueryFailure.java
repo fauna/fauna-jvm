@@ -14,7 +14,7 @@ public final class QueryFailure extends QueryResponse {
     private int statusCode;
     private String errorCode = "";
     private String message = "";
-    private Object constraintFailures;
+    private ConstraintFailure[] constraintFailures;
     private Object abort;
 
     private String fullMessage = "";
@@ -75,8 +75,8 @@ public final class QueryFailure extends QueryResponse {
         return fullMessage;
     }
 
-    public Object getConstraintFailures() {
-        return constraintFailures;
+    public Optional<ConstraintFailure[]> getConstraintFailures() {
+        return Optional.ofNullable(constraintFailures);
     }
 
     public Optional<Object> getAbort() {
