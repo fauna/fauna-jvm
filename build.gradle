@@ -9,6 +9,7 @@ group = 'com.fauna'
 compileJava {
     options.encoding = 'UTF-8'
 }
+
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -19,12 +20,6 @@ test {
 
 repositories {
     mavenCentral()
-}
-
-task printVersion {
-    doLast {
-        println project.version
-    }
 }
 
 dependencies {
@@ -78,3 +73,20 @@ mavenPublishing {
         }
     }
 }
+
+// tasks
+
+task printVersion {
+    doLast {
+        println project.version
+    }
+}
+
+task writeProps(type: WriteProperties) {
+    outputFile = file("src/main/resources/version.properties")
+    encoding = 'UTF-8'
+    property('version', project.version)
+    property('name', project.name)
+    property('group', project.group)
+}
+processResources.dependsOn(writeProps)
