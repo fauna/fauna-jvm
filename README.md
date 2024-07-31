@@ -274,20 +274,21 @@ package org.example;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
 import com.fauna.query.builder.Query;
+import static com.fauna.query.builder.Query.fql;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
-
-import static com.fauna.query.builder.Query.fql;
 
 public class App {
     public static void main(String[] args) {
         try {
-            FaunaClient client = new FaunaClient(FaunaConfic.builder().secret("FAUNA_SECRET").build());
+            FaunaConfig config = FaunaConfig.builder().secret("FAUNA_SECRET").build();
+            FaunaClient client = Fauna.client(config);
 
             Query query = fql("'Hello world'");
 
