@@ -9,11 +9,15 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 import com.fauna.serialization.Deserializer;
+import com.fauna.serialization.generic.ListOf;
+import com.fauna.serialization.generic.PageOf;
 import com.fauna.serialization.generic.ParameterizedOf;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -261,4 +265,8 @@ public abstract class FaunaClient {
         }
     }
     //endregion
+
+    public <E> PageIterator<E> paginate(Query fql, Class<E> resultClass) {
+        return new PageIterator<>(this, fql, resultClass, null);
+    }
 }
