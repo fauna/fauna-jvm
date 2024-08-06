@@ -269,4 +269,8 @@ public abstract class FaunaClient {
     public <E> PageIterator<E> paginate(Query fql, Class<E> resultClass) {
         return new PageIterator<>(this, fql, resultClass, null);
     }
+
+    public <E> PageIterator<E> paginate(Query fql, Class<E> resultClass, QueryOptions options) {
+        return new PageIterator<>(this, fql, resultClass, options);
+    }
 }
