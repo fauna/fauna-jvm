@@ -20,11 +20,12 @@ import static com.fauna.query.builder.Query.fql;
  * @param <E>
  */
 public class PageIterator<E> implements Iterator<Page<E>> {
+    private static final String PAGINATE_QUERY = "Set.paginate(${after})";
     private final FaunaClient client;
     private final QueryOptions options;
     private final PageOf<E> pageClass;
-    private CompletableFuture<QuerySuccess<Page<E>>> latestQuery;
-    private boolean hasNext = true;
+    private CompletableFuture<QuerySuccess<Page<E>>> queryFuture;
+    private QuerySuccess<Page<E>> latestResult;
 
     /**
      * Construct a new PageIterator.
@@ -38,13 +39,24 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         this.pageClass = new PageOf<>(resultClass);
         this.options = options;
         // Initial query;
-        this.latestQuery = client.asyncQuery(fql, this.pageClass, options);
+        this.queryFuture = client.asyncQuery(fql, this.pageClass, options);
+        this.latestResult = null;
+    }
+
+    private void completeFuture() {
+        if (this.queryFuture != null && this.latestResult == null) {
+            this.latestResult = queryFuture.join();
+            this.queryFuture = null;
+        }
     }
 
     @Override
     public boolean hasNext() {
-        return this.hasNext;
+        completeFuture();
+        return this.latestResult != null;
     }
+
+
 
     /**
      * Get the next Page.
@@ -52,22 +64,17 @@ public class PageIterator<E> implements Iterator<Page<E>> {
      */
     @Override
     public Page<E> next() {
-        if (this.latestQuery == null || !this.hasNext) {
-            this.hasNext = false;
-            throw new NoSuchElementException();
-        }
-        try {
-            QuerySuccess<Page<E>> latestResult = latestQuery.get();
-            Page<E> lastPage = latestResult.getData();
-            if (lastPage.after() != null) {
-                this.latestQuery = client.asyncQuery(fql("Set.paginate(${after})", Map.of("after", lastPage.after())), pageClass, options);
-            } else {
-                this.hasNext = false;
-                this.latestQuery = null;
+        completeFuture();
+        if (this.latestResult != null) {
+            Page<E> page = this.latestResult.getData();
+            this.latestResult = null;
+            if (page.after() != null) {
+                Map<String, Object> args = Map.of("after", page.after());
+                this.queryFuture = client.asyncQuery(fql(PAGINATE_QUERY, args), pageClass, options);
             }
-            return lastPage;
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            return page;
+        } else {
+            throw new NoSuchElementException();
         }
     }
 
@@ -78,14 +85,17 @@ public class PageIterator<E> implements Iterator<Page<E>> {
     public Iterator<E> flatten() {
         return new Iterator<>() {
             private final PageIterator<E> pageIterator = PageIterator.this;
-            private Iterator<E> thisPage = pageIterator.next().data().iterator();
+            private Iterator<E> thisPage = pageIterator.hasNext() ? pageIterator.next().data().iterator() : null;
             @Override
             public boolean hasNext() {
-                return thisPage.hasNext() || pageIterator.hasNext();
+                return thisPage != null && (thisPage.hasNext() || pageIterator.hasNext());
             }
 
             @Override
             public E next() {
+                if (thisPage == null) {
+                    throw new NoSuchElementException();
+                }
                 try {
                     return thisPage.next();
                 } catch (NoSuchElementException e) {
