@@ -1,6 +1,5 @@
 package com.fauna.annotation;
 
-import com.fauna.enums.FaunaType;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,6 +15,4 @@ public @interface FaunaField {
     String name() default "";
 
     boolean nullable() default false;
-
-    FaunaType type() default FaunaType.STRING;
 }
