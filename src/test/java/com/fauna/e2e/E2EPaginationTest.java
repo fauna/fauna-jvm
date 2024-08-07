@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,8 +70,11 @@ public class E2EPaginationTest {
     public void query_all_flattened() {
         PageIterator<Product> iter = client.paginate(fql("Product.all()"), Product.class);
         Iterator<Product> productIter = iter.flatten();
-        List<Product> products = StreamSupport.stream((
-                (Iterable<Product>)() -> productIter).spliterator(), false).collect(Collectors.toList());
+        List<Product> products = new ArrayList<>();
+        // Java iterators not being iterable (or useable in a for-each loop) is annoying.
+        for (Product p : (Iterable<Product>) () -> productIter) {
+            products.add(p);
+        }
         assertEquals(50, products.size());
     }
 }
