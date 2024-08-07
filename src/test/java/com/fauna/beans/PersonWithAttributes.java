@@ -2,7 +2,6 @@ package com.fauna.beans;
 
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaObject;
-import com.fauna.enums.FaunaType;
 
 @FaunaObject
 public class PersonWithAttributes {
@@ -13,7 +12,7 @@ public class PersonWithAttributes {
     @FaunaField(name = "last_name")
     private String lastName;
 
-    @FaunaField(name = "age", type = FaunaType.INT, nullable = true)
+    @FaunaField(name = "age", nullable = true)
     private Integer age;
 
     public PersonWithAttributes(String firstName, String lastName, int age) {
