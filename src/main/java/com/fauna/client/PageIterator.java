@@ -1,6 +1,7 @@
 package com.fauna.client;
 
 
+import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
@@ -11,7 +12,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionException;
 
 import static com.fauna.query.builder.Query.fql;
 
@@ -45,7 +46,15 @@ public class PageIterator<E> implements Iterator<Page<E>> {
 
     private void completeFuture() {
         if (this.queryFuture != null && this.latestResult == null) {
-            this.latestResult = queryFuture.join();
+            try {
+                this.latestResult = queryFuture.join();
+            } catch (CompletionException e) {
+                if (e.getCause() != null && e.getCause() instanceof FaunaException) {
+                    throw (FaunaException) e.getCause();
+                } else {
+                    throw e;
+                }
+            }
             this.queryFuture = null;
         }
     }
