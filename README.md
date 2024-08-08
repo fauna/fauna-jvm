@@ -279,7 +279,7 @@ public class App {
         // Paginate will make an async request to Fauna.
         PageIterator<Product> iter1 = client.paginate(fql("Product.all()"), Product.class);
 
-        // Handle each page, PageIterator extends the Java Iterator interface.
+        // Handle each page. `PageIterator` extends the Java Iterator interface.
         while (iter1.hasNext()) {
             Page<Product> page = iter1.next();
             List<Product> pageData = page.data();
