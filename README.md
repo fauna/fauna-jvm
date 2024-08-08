@@ -286,7 +286,7 @@ public class App {
         
         PageIterator<Product> iter2 = client.paginate(fql("Product.all()"), Product.class);
         
-        // You can use the flatten method on PageIterator to iterate over the underlying collection.
+        // Use the `flatten()` on PageIterator to iterate over every item in a set.
         Iterator<Product> productIter = iter2.flatten();
         List<Product> products = new ArrayList<>();
 
