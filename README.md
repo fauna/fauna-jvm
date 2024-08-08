@@ -276,7 +276,7 @@ public class App {
     public static void main(String[] args) {
         FaunaClient client = Fauna.client();
         
-        // Paginate will make an async request to Fauna.
+        // `paginate()` will make an async request to Fauna.
         PageIterator<Product> iter1 = client.paginate(fql("Product.all()"), Product.class);
 
         // Handle each page. `PageIterator` extends the Java Iterator interface.
