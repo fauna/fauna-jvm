@@ -11,31 +11,18 @@ import java.util.List;
 
 public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
 
-    private IDeserializer<List<T>> _dataDeserializer;
+    private IDeserializer<T> elemDeserializer;
+    private IDeserializer<List<T>> dataDeserializer;
 
     public PageDeserializer(IDeserializer<T> elemDeserializer) {
-        _dataDeserializer = new ListDeserializer<>(elemDeserializer);
+        this.elemDeserializer = elemDeserializer;
+        this.dataDeserializer = new ListDeserializer<>(elemDeserializer);
     }
 
-    @Override
-    public Page<T> doDeserialize(UTF8FaunaParser reader)
-        throws IOException {
-        FaunaTokenType endToken;
-        switch (reader.getCurrentTokenType()) {
-            case START_PAGE:
-                endToken = FaunaTokenType.END_PAGE;
-                break;
-            case START_OBJECT:
-                endToken = FaunaTokenType.END_OBJECT;
-                break;
-            default:
-                throw new ClientException(
-                    "Unexpected token while deserializing into " + Page.class + ": "
-                        + reader.getCurrentTokenType());
-        }
-
+    private Page<T> deserializePage(UTF8FaunaParser reader, FaunaTokenType endToken) throws IOException {
         List<T> data = null;
         String after = null;
+
 
         while (reader.read() && reader.getCurrentTokenType() != endToken) {
             String fieldName = reader.getValueAsString();
@@ -43,7 +30,7 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
 
             switch (fieldName) {
                 case "data":
-                    data = _dataDeserializer.deserialize(reader);
+                    data = dataDeserializer.deserialize(reader);
                     break;
                 case "after":
                     after = reader.getValueAsString();
@@ -56,5 +43,27 @@ public class PageDeserializer<T> extends BaseDeserializer<Page<T>> {
         }
 
         return new Page<>(data, after);
+
+    }
+
+    public Page<T> wrapDocumentInPage(UTF8FaunaParser reader) throws IOException {
+        T elem = this.elemDeserializer.deserialize(reader);
+        return new Page<>(List.of(elem), null);
+    }
+
+    @Override
+    public Page<T> doDeserialize(UTF8FaunaParser reader) throws IOException {
+        switch (reader.getCurrentTokenType()) {
+            case START_PAGE:
+                return deserializePage(reader, FaunaTokenType.END_PAGE);
+            case START_OBJECT:
+                return deserializePage(reader, FaunaTokenType.END_OBJECT);
+            case START_DOCUMENT:
+                return wrapDocumentInPage(reader);
+            default:
+                throw new ClientException(
+                    "Unexpected token while deserializing into " + Page.class + ": "
+                        + reader.getCurrentTokenType());
+        }
     }
 }

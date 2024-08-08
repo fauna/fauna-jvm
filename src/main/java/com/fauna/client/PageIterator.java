@@ -26,7 +26,7 @@ public class PageIterator<E> implements Iterator<Page<E>> {
     private final QueryOptions options;
     private final PageOf<E> pageClass;
     private CompletableFuture<QuerySuccess<Page<E>>> queryFuture;
-    private QuerySuccess<Page<E>> latestResult;
+    private Page<E> latestResult;
 
     /**
      * Construct a new PageIterator.
@@ -44,10 +44,18 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         this.latestResult = null;
     }
 
+    public PageIterator(FaunaClient client, Page<E> page, Class<E> resultClass, QueryOptions options) {
+        this.client = client;
+        this.pageClass = new PageOf<>(resultClass);
+        this.options = options;
+        this.queryFuture = null;
+        this.latestResult = page;
+    }
+
     private void completeFuture() {
         if (this.queryFuture != null && this.latestResult == null) {
             try {
-                this.latestResult = queryFuture.join();
+                this.latestResult = queryFuture.join().getData();
             } catch (CompletionException e) {
                 if (e.getCause() != null && e.getCause() instanceof FaunaException) {
                     throw (FaunaException) e.getCause();
@@ -75,7 +83,7 @@ public class PageIterator<E> implements Iterator<Page<E>> {
     public Page<E> next() {
         completeFuture();
         if (this.latestResult != null) {
-            Page<E> page = this.latestResult.getData();
+            Page<E> page = this.latestResult;
             this.latestResult = null;
             if (page.after() != null) {
                 Map<String, Object> args = Map.of("after", page.after());

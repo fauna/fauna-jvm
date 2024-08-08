@@ -10,6 +10,7 @@ import com.fauna.serialization.Deserializer;
 import com.fauna.serialization.PageDeserializer;
 import com.fauna.serialization.generic.PageOf;
 import com.fauna.serialization.generic.ParameterizedOf;
+import com.fauna.types.Page;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -101,6 +102,36 @@ public class PageIteratorTest {
         InvalidRequestException exc = assertThrows(InvalidRequestException.class, () -> pageIterator.hasNext());
         assertEquals("invalid_query", exc.getResponse().getErrorCode());
     }
+
+    @Test
+    public void test_PageIterator_from_single_Page() {
+        Page<String> page = new Page<>(List.of("hello"), null);
+        PageIterator<String> pageIterator = new PageIterator<>(client, page, String.class, null);
+        assertTrue(pageIterator.hasNext());
+        assertEquals(page, pageIterator.next());
+        assertFalse(pageIterator.hasNext());
+        assertThrows(NoSuchElementException.class, () -> pageIterator.next());
+
+    }
+
+    @Test
+    public void test_PageIterator_from_Page() throws IOException {
+        Page<String> page = new Page<>(List.of("hello"), "foo");
+        PageIterator<String> pageIterator = new PageIterator<>(client, page, String.class, null);
+
+        assertTrue(pageIterator.hasNext());
+        when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(
+                successFuture(false, 0));
+        assertEquals(page, pageIterator.next());
+
+        assertTrue(pageIterator.hasNext());
+        assertEquals(List.of("0-a", "0-b"), pageIterator.next().data());
+
+        assertFalse(pageIterator.hasNext());
+        assertThrows(NoSuchElementException.class, () -> pageIterator.next());
+
+    }
+
 
 
 }
