@@ -263,7 +263,9 @@ API. This helps prevent injection attacks.
 <!-- TODO: Subqueries -->
 
 ## Pagination
-The client has a pagination API built-in for large sets of results.
+Use `paginate()` to asynchronously iterate through sets that contain more than one page of results.
+
+`paginate()` accepts the same [query options](#query-options) as `query()` and `asyncQuery()`.
 
 ```java
 import com.fauna.client.Fauna;
