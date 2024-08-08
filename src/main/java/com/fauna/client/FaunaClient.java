@@ -9,8 +9,6 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 import com.fauna.serialization.Deserializer;
-import com.fauna.serialization.generic.ListOf;
-import com.fauna.serialization.generic.PageOf;
 import com.fauna.serialization.generic.ParameterizedOf;
 
 import java.net.http.HttpClient;
