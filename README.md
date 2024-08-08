@@ -262,6 +262,41 @@ API. This helps prevent injection attacks.
 
 <!-- TODO: Subqueries -->
 
+## Pagination
+Use `paginate()` to asynchronously iterate through sets that contain more than one page of results.
+
+`paginate()` accepts the same [query options](#query-options) as `query()` and `asyncQuery()`.
+
+```java
+import com.fauna.client.Fauna;
+import com.fauna.client.FaunaClient;
+import com.fauna.client.PageIterator;
+
+public class App {
+    public static void main(String[] args) {
+        FaunaClient client = Fauna.client();
+        
+        // `paginate()` will make an async request to Fauna.
+        PageIterator<Product> iter1 = client.paginate(fql("Product.all()"), Product.class);
+
+        // Handle each page. `PageIterator` extends the Java Iterator interface.
+        while (iter1.hasNext()) {
+            Page<Product> page = iter1.next();
+            List<Product> pageData = page.data();
+            // Do something with your data.
+        }
+        
+        PageIterator<Product> iter2 = client.paginate(fql("Product.all()"), Product.class);
+        
+        // Use the `flatten()` on PageIterator to iterate over every item in a set.
+        Iterator<Product> productIter = iter2.flatten();
+        List<Product> products = new ArrayList<>();
+
+        // Iterate over Product elements without worrying about pages.
+        iter2.forEachRemaining((Product p) -> products.add(p));
+    }
+}
+```
 
 ## Query statistics
 
