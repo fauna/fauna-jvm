@@ -26,7 +26,6 @@ public final class QuerySuccess<T> extends QueryResponse {
         if ((elem = json.get(ResponseFields.DATA_FIELD_NAME)) != null) {
             // FIXME: avoid converting the parsed `elem` to a string and re-parsing the JSON.
             UTF8FaunaParser reader = new UTF8FaunaParser(elem.toString());
-            reader.read();
             this.data = deserializer.deserialize(reader);
         }
 

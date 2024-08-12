@@ -1,6 +1,5 @@
 package com.fauna.annotation;
 
-import com.fauna.enums.FaunaType;
 import java.lang.reflect.Field;
 
 public class FaunaFieldImpl implements FaunaField {
@@ -20,8 +19,13 @@ public class FaunaFieldImpl implements FaunaField {
     }
 
     @Override
+    public Class<?> typeArgument() {
+        return annotation != null ? annotation.typeArgument() : null;
+    }
+
+    @Override
     public boolean nullable() {
-        return annotation != null ? annotation.nullable() : false;
+        return annotation != null && annotation.nullable();
     }
 
     @Override

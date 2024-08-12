@@ -56,6 +56,9 @@ public class UTF8FaunaParser {
         InputStream inputStream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(inputStream);
+        if (getCurrentTokenType() == FaunaTokenType.NONE) {
+            read();
+        }
     }
 
     private enum InternalTokenType {
@@ -65,6 +68,9 @@ public class UTF8FaunaParser {
     public UTF8FaunaParser(InputStream body) throws IOException {
         JsonFactory factory = new JsonFactory();
         this.jsonParser = factory.createParser(body);
+        if (getCurrentTokenType() == FaunaTokenType.NONE) {
+            read();
+        }
     }
 
     public UTF8FaunaParser(JsonParser jsonParser) {
@@ -277,6 +283,13 @@ public class UTF8FaunaParser {
         }
     }
 
+    private void validateTaggedTypes(FaunaTokenType... types) {
+        if (!Arrays.asList(types).contains(currentFaunaTokenType))
+            throw new IllegalStateException(
+                    "CurrentTokenType is a " + currentFaunaTokenType.toString() +
+                            ", not in " + Arrays.toString(types) + ".");
+    }
+
     public Character getValueAsCharacter() {
         validateTaggedType(FaunaTokenType.INT);
         return Character.valueOf((char) Integer.parseInt(taggedTokenValue));
@@ -310,7 +323,7 @@ public class UTF8FaunaParser {
     }
 
     public Integer getValueAsInt() {
-        validateTaggedType(FaunaTokenType.INT);
+        validateTaggedTypes(FaunaTokenType.INT, FaunaTokenType.LONG);
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
