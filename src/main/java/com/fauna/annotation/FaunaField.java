@@ -14,5 +14,7 @@ public @interface FaunaField {
 
     String name() default "";
 
+    Class<?> typeArgument() default void.class;
+
     boolean nullable() default false;
 }

@@ -68,10 +68,8 @@ class UTF8FaunaParserTest {
 
         String json = "{\"@int\": \"123\"";
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
-        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
-
         Exception ex = assertThrows(ClientException.class,
-            () -> reader.read());
+            () -> new UTF8FaunaParser(inputStream));
 
         assertEquals("Failed to advance underlying JSON reader.", ex.getMessage());
     }
@@ -525,7 +523,6 @@ class UTF8FaunaParserTest {
 
         for (String test : tests) {
             UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
-            reader.read();
             reader.skip();
             assertFalse(reader.read());
         }
@@ -535,7 +532,6 @@ class UTF8FaunaParserTest {
     public void skipNestedEscapedObject() throws IOException {
         String test = "{\"@object\": {\"inner\": {\"@object\": {\"foo\": \"bar\"}}, \"k2\": {}}}";
         UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
-        reader.read(); // {"@object":{
         assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
         reader.read(); // inner
         assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
@@ -552,7 +548,6 @@ class UTF8FaunaParserTest {
     public void skipNestedObject() throws IOException {
         String test = "{\"k\":{\"inner\":{}},\"k2\":{}}";
         UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
-        reader.read(); // {
         assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
         reader.read(); // k
         assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
@@ -569,7 +564,6 @@ class UTF8FaunaParserTest {
     public void skipNestedArrays() throws IOException {
         String test = "{\"k\":[\"1\",\"2\"],\"k2\":{}}";
         UTF8FaunaParser reader = new UTF8FaunaParser(new ByteArrayInputStream(test.getBytes()));
-        reader.read(); // {
         assertEquals(FaunaTokenType.START_OBJECT, reader.getCurrentTokenType());
         reader.read(); // k
         assertEquals(FaunaTokenType.FIELD_NAME, reader.getCurrentTokenType());
@@ -585,7 +579,6 @@ class UTF8FaunaParserTest {
     private static void assertReader(UTF8FaunaParser reader,
                                      List<Map.Entry<FaunaTokenType, Object>> tokens) throws IOException {
         for (Map.Entry<FaunaTokenType, Object> entry : tokens) {
-            reader.read();
             assertNotNull(entry.getKey());
             assertNotNull(reader.getCurrentTokenType());
             assertEquals(entry.getKey(), reader.getCurrentTokenType());
@@ -621,6 +614,8 @@ class UTF8FaunaParserTest {
                     assertNull(entry.getValue());
                     break;
             }
+
+            reader.read();
         }
 
         assertFalse(reader.read());

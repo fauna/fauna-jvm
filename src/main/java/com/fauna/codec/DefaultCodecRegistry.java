@@ -1,13 +1,11 @@
 package com.fauna.codec;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultCodecRegistry implements CodecRegistry {
+    private static final ConcurrentHashMap<CodecRegistryKey, Codec<?>> codecs = new ConcurrentHashMap<>();
 
-    private static final HashMap<CodecRegistryKey, Codec<?>> codecs = new HashMap<>();
-
-    public DefaultCodecRegistry() {
-    }
+    public DefaultCodecRegistry() {}
 
     @Override
     @SuppressWarnings("unchecked")
@@ -16,8 +14,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
     }
 
     @Override
-    public <T> void add(CodecRegistryKey key, Codec<T> codec) {
-        if (codecs.containsKey(key)) return;
+    public <T> void put(CodecRegistryKey key, Codec<T> codec) {
         codecs.put(key, codec);
     }
 
