@@ -38,10 +38,9 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
         if (obj == null) {
             gen.writeNullValue();
-            return;
+        } else {
+            throw new ClientException(this.unsupportedTypeMessage(obj.getClass()));
         }
-
-        throw new ClientException(this.unsupportedTypeMessage(obj.getClass()));
     }
 
     @Override
@@ -50,7 +49,6 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
 
-    @SuppressWarnings("unchecked")
     private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws IOException {
         List<E> data = null;
         String after = null;
@@ -73,12 +71,15 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
             throw new ClientException("No page data found while deserializing into Page<>");
         }
 
-        return (L) new Page<>(data, after);
+        @SuppressWarnings("unchecked")
+        L res = (L) new Page<>(data, after);
+        return res;
     }
 
-    @SuppressWarnings("unchecked")
     private L wrapDocumentInPage(UTF8FaunaParser parser) throws IOException {
         E elem = this.elementCodec.decode(parser);
-        return (L) new Page<>(List.of(elem), null);
+        @SuppressWarnings("unchecked")
+        L res = (L) new Page<>(List.of(elem), null);
+        return res;
     }
 }

@@ -4,6 +4,7 @@ import com.fauna.codec.Codec;
 import com.fauna.enums.FaunaTokenType;
 
 import java.lang.reflect.Type;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,10 +16,10 @@ public abstract class BaseCodec<T> implements Codec<T> {
     ));
 
     protected String unexpectedTokenExceptionMessage(FaunaTokenType token) {
-        return String.format("Unexpected token `%s` decoding with `%s`", token, this.getClass());
+        return MessageFormat.format("Unexpected token `{0}` decoding with `{1}`", token, this.getClass());
     }
 
     protected String unsupportedTypeMessage(Type type){
-        return String.format("Cannot encode `%s` with `%s`", type, this.getClass());
+        return MessageFormat.format("Cannot encode `{0}` with `{1}`", type, this.getClass());
     }
 }

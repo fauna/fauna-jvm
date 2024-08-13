@@ -28,62 +28,47 @@ public class DynamicCodec extends BaseCodec<Object> {
 
     @Override
     public Object decode(UTF8FaunaParser parser) throws IOException {
-        Object value = null;
         switch (parser.getCurrentTokenType()) {
             case NULL:
-                break;
+                return null;
             case START_OBJECT:
-                value = map.decode(parser);
-                break;
+                return map.decode(parser);
             case START_ARRAY:
-                value = list.decode(parser);
-                break;
+                return list.decode(parser);
             case START_PAGE:
-                value = page.decode(parser);
-                break;
+                return page.decode(parser);
             case START_REF:
-                value = decodeRef(parser);
-                break;
+                return decodeRef(parser);
             case START_DOCUMENT:
-                value = decodeDocument(parser);
-                break;
+                return decodeDocument(parser);
             case MODULE:
-                value = parser.getValueAsModule();
-                break;
+                return parser.getValueAsModule();
             case INT:
-                value = parser.getValueAsInt();
-                break;
+                return parser.getValueAsInt();
             case STRING:
-                value = parser.getValueAsString();
-                break;
+                return parser.getValueAsString();
             case DATE:
-                value = parser.getValueAsLocalDate();
-                break;
+                return parser.getValueAsLocalDate();
             case TIME:
-                value = parser.getValueAsTime();
-                break;
+                return parser.getValueAsTime();
             case DOUBLE:
-                value = parser.getValueAsDouble();
-                break;
+                return parser.getValueAsDouble();
             case LONG:
-                value = parser.getValueAsLong();
-                break;
+                return parser.getValueAsLong();
             case TRUE:
             case FALSE:
-                value = parser.getValueAsBoolean();
-                break;
-            default:
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                return parser.getValueAsBoolean();
         }
 
-        return value;
+        throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings("unchecked")
     public void encode(UTF8FaunaGenerator gen, Object obj) throws IOException {
 
         // TODO: deal with Object.class loop
+        @SuppressWarnings("rawtypes")
         Codec codec = provider.get(obj.getClass());
         codec.encode(gen, obj);
     }

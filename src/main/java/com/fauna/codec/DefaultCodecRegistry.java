@@ -8,9 +8,10 @@ public class DefaultCodecRegistry implements CodecRegistry {
     public DefaultCodecRegistry() {}
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> Codec<T> get(CodecRegistryKey key) {
-        return (Codec<T>) codecs.get(key);
+        @SuppressWarnings("unchecked")
+        var codec = (Codec<T>) codecs.get(key);
+        return codec;
     }
 
     @Override

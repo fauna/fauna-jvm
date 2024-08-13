@@ -20,7 +20,6 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public L decode(UTF8FaunaParser parser) throws IOException {
         if (parser.getCurrentTokenType() != FaunaTokenType.START_OBJECT) {
             throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
@@ -38,8 +37,10 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
             V value = valueCodec.decode(parser);
             map.put(fieldName, value);
         }
-
-        return (L) map;
+        
+        @SuppressWarnings("unchecked")
+        L typed = (L) map;
+        return typed;
     }
 
     @Override

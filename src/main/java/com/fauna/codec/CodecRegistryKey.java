@@ -20,14 +20,15 @@ public class CodecRegistryKey {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == this)
+    public boolean equals(Object other) {
+        if (other == this) {
             return true;
-        if (!(o instanceof CodecRegistryKey))
+        } else if (other instanceof CodecRegistryKey) {
+            CodecRegistryKey otherCRK = (CodecRegistryKey) other;
+            return this.base == otherCRK.base && this.typeArg == otherCRK.typeArg;
+        } else {
             return false;
-        CodecRegistryKey other = (CodecRegistryKey)o;
-
-        return base == other.base && typeArg == other.typeArg;
+        }
     }
 
     @Override

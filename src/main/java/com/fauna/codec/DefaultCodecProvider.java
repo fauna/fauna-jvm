@@ -28,13 +28,8 @@ public class DefaultCodecProvider implements CodecProvider {
         CodecRegistryKey key = CodecRegistryKey.from(clazz, typeArg);
 
         if (!registry.contains(key)) {
-            synchronized (registry) {
-                // Check again
-                if (!registry.contains(key)) {
-                    var codec = generate(clazz, typeArg);
-                    registry.put(key, codec);
-                }
-            }
+            var codec = generate(clazz, typeArg);
+            registry.put(key, codec);
         }
 
         return registry.get(key);
