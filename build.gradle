@@ -90,3 +90,4 @@ task writeProps(type: WriteProperties) {
     property('group', project.group)
 }
 processResources.dependsOn(writeProps)
+sourcesJar.dependsOn(writeProps)
