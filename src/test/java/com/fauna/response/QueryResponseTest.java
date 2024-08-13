@@ -55,7 +55,7 @@ class QueryResponseTest {
         ObjectNode errorData = mapper.createObjectNode();
         errorData.put(ResponseFields.ERROR_CODE_FIELD_NAME, "ErrorCode");
         errorData.put(ResponseFields.ERROR_MESSAGE_FIELD_NAME, "ErrorMessage");
-        errorData.put(ResponseFields.ERROR_CONSTRAINT_FAILURES_FIELD_NAME, "ConstraintFailures");
+        // ObjectNode cf = errorData.putObject(ResponseFields.ERROR_CONSTRAINT_FAILURES_FIELD_NAME);
         errorData.put(ResponseFields.ERROR_ABORT_FIELD_NAME, "AbortData");
         ObjectNode failureNode = mapper.createObjectNode();
         failureNode.put(ResponseFields.ERROR_FIELD_NAME, errorData);
@@ -71,7 +71,7 @@ class QueryResponseTest {
         assertEquals(400, failureResponse.getStatusCode());
         assertEquals("ErrorCode", failureResponse.getErrorCode());
         assertEquals("ErrorMessage", failureResponse.getMessage());
-        assertEquals("ConstraintFailures", failureResponse.getConstraintFailures());
+        assertTrue(failureResponse.getConstraintFailures().isEmpty());
         assertEquals(Optional.of("AbortData"), failureResponse.getAbort());
     }
 

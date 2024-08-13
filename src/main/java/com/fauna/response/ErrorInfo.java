@@ -7,16 +7,16 @@ import java.util.Optional;
 
 public class ErrorInfo {
 
-    private String code;
-    private String message;
-    private Object constraintFailures;
-    private Object abort;
+    private final String code;
+    private final String message;
+    private final ConstraintFailure[] constraintFailures;
+    private final Object abort;
 
     @JsonCreator
     public ErrorInfo(
         @JsonProperty("code") String code,
         @JsonProperty("message") String message,
-        @JsonProperty("constraint_failures") Object constraintFailures,
+        @JsonProperty("constraint_failures") ConstraintFailure[] constraintFailures,
         @JsonProperty("abort") Object abort) {
         this.code = code;
         this.message = message;
@@ -32,7 +32,7 @@ public class ErrorInfo {
         return message;
     }
 
-    public Object getConstraintFailures() {
+    public ConstraintFailure[] getConstraintFailures() {
         return constraintFailures;
     }
 

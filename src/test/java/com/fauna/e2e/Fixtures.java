@@ -1,7 +1,6 @@
 package com.fauna.e2e;
 
 import com.fauna.client.FaunaClient;
-import com.fauna.response.QuerySuccess;
 
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -24,12 +23,10 @@ public class Fixtures {
 
     public static void ProductCollection(FaunaClient client) {
         client.asyncQuery(fql("Collection.byName('Product')?.delete()")).exceptionally(t -> null).join();
-        client.query(fql("Collection.create({name: 'Product'})"));
+        // client.query(fql("Collection.create({name: 'Product'})"));
+        client.query(fql("Collection.create({name: 'Product', fields: {'name': {signature: 'String'},'quantity': {signature: 'Int', default: '0'}}, constraints: [{unique: ['name']},{check:{name: 'posQuantity', body: '(doc) => doc.quantity >= 0' }}]})"));
         IntStream.range(0, 50).forEach(i -> client.query(
                 fql("Product.create({'name': ${name}, 'quantity': ${quantity}})",
                         Map.of("name", "product-" + i, "quantity", i))));
     }
-
-
-
 }
