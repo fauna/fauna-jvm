@@ -128,7 +128,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     private void setFields(Object instance, UTF8FaunaParser parser,
                            FaunaTokenType endToken) throws IOException, IllegalAccessException {
 
-        InternalRef.Builder refBuilder = new InternalRef.Builder();
+        InternalDocument.Builder builder = new InternalDocument.Builder();
 
         while (parser.read() && parser.getCurrentTokenType() != endToken) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
@@ -139,7 +139,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
             parser.read();
 
             if (endToken == FaunaTokenType.END_REF) {
-                refBuilder = refBuilder.withField(fieldName, parser);
+                builder = builder.withRefField(fieldName, parser);
             }
 
             if (fieldName.equals(ID_FIELD)) {
@@ -151,7 +151,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
             }
         }
 
-        refBuilder.build().throwIfNotExists();
+        // Throws if it does not exist, otherwise no-op.
+        builder.build();
     }
 
     private void trySetId(String fieldName, Object instance, UTF8FaunaParser parser) throws IllegalAccessException {

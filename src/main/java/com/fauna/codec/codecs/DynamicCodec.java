@@ -80,11 +80,8 @@ public class DynamicCodec extends BaseCodec<Object> {
 
     private Object decodeDocument(UTF8FaunaParser parser)
             throws IOException {
-        Map<String, Object> data = new HashMap<>();
-        String id = null;
-        String name = null;
-        Instant ts = null;
-        Module coll = null;
+
+        var builder = new InternalDocument.Builder();
 
         while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_DOCUMENT) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
@@ -95,58 +92,27 @@ public class DynamicCodec extends BaseCodec<Object> {
             parser.read();
             switch (fieldName) {
                 case "id":
-                    id = parser.getValueAsString();
-                    break;
                 case "name":
-                    name = parser.getValueAsString();
-                    break;
                 case "ts":
-                    ts = parser.getValueAsTime();
-                    break;
                 case "coll":
-                    coll = parser.getValueAsModule();
+                    builder = builder.withDocField(fieldName, parser);
                     break;
                 default:
                     var v = this.decode(parser);
-                    if (v != null) data.put(fieldName, v);
+                    if (v != null) {
+                        builder = builder.withDataField(fieldName, v);
+                    }
                     break;
             }
         }
 
-        if (id != null && coll != null && ts != null) {
-            if (name != null) {
-                data.put("name", name);
-            }
-            return new Document(id, coll, ts, data);
-        }
-
-        if (name != null && coll != null && ts != null) {
-            return new NamedDocument(name, coll, ts, data);
-        }
-
-        if (id != null) {
-            data.put("id", id);
-        }
-        if (name != null) {
-            data.put("name", name);
-        }
-        if (coll != null) {
-            data.put("coll", coll);
-        }
-        if (ts != null) {
-            data.put("ts", ts);
-        }
-        return data;
+        return builder.build();
     }
 
     private Object decodeRef(UTF8FaunaParser parser)
             throws IOException {
-        String id = null;
-        String name = null;
-        Module coll = null;
-        boolean exists = true;
-        String cause = null;
-        Map<String, Object> allProps = new HashMap<>();
+
+        var builder = new InternalDocument.Builder();
 
         while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
@@ -155,49 +121,9 @@ public class DynamicCodec extends BaseCodec<Object> {
 
             String fieldName = parser.getValueAsString();
             parser.read();
-            switch (fieldName) {
-                case "id":
-                    id = parser.getValueAsString();
-                    allProps.put("id", id);
-                    break;
-                case "name":
-                    name = parser.getValueAsString();
-                    allProps.put("name", name);
-                    break;
-                case "coll":
-                    coll = parser.getValueAsModule();
-                    allProps.put("coll", coll);
-                    break;
-                case "exists":
-                    exists = parser.getValueAsBoolean();
-                    allProps.put("exists", exists);
-                    break;
-                case "cause":
-                    cause = parser.getValueAsString();
-                    allProps.put("cause", cause);
-                    break;
-                default:
-                    allProps.put(fieldName, this.decode(parser));
-                    break;
-            }
+            builder = builder.withRefField(fieldName, parser);
         }
 
-        if (id != null && coll != null) {
-            if (exists) {
-                return new DocumentRef(id, coll);
-            }
-
-            throw new NullDocumentException(id, coll, cause);
-        }
-
-        if (name != null && coll != null) {
-            if (exists) {
-                return new NamedDocumentRef(name, coll);
-            }
-
-            throw new NullDocumentException(name, coll, cause);
-        }
-
-        return allProps;
+        return builder.build();
     }
 }
