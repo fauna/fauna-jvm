@@ -1,10 +1,8 @@
 package com.fauna.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.beans.ClassWithFieldAttributeAndWithoutObjectAttribute;
-import com.fauna.beans.ClassWithInvalidPropertyTypeHint;
 import com.fauna.beans.ClassWithPropertyWithoutFieldAttribute;
 import com.fauna.beans.Person;
 import com.fauna.beans.PersonWithAttributes;
@@ -18,15 +16,12 @@ import com.fauna.beans.PersonWithConflict.PersonWithObjectConflict;
 import com.fauna.beans.PersonWithConflict.PersonWithRefConflict;
 import com.fauna.beans.PersonWithConflict.PersonWithSetConflict;
 import com.fauna.beans.PersonWithConflict.PersonWithTimeConflict;
-import com.fauna.beans.PersonWithTypeOverrides;
 import com.fauna.types.Module;
-import com.fauna.exception.ClientException;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 class SerializerTest {
@@ -201,57 +196,6 @@ class SerializerTest {
             String actual = Serializer.serialize(test);
             assertEquals(expected, actual);
         }
-    }
-
-    @Test
-    public void serializeClassWithTypeConversions() throws IOException {
-        PersonWithTypeOverrides test = new PersonWithTypeOverrides();
-        String expectedWithWhitespace =
-            "{\n" +
-                "  \"short_to_long\": {\"@long\": \"10\"},\n" +
-                "  \"ushort_to_long\": {\"@long\": \"11\"},\n" +
-                "  \"byte_to_long\": {\"@long\": \"12\"},\n" +
-                "  \"sbyte_to_long\": {\"@long\": \"13\"},\n" +
-                "  \"int_to_long\": {\"@long\": \"20\"},\n" +
-                "  \"uint_to_long\": {\"@long\": \"21\"},\n" +
-                "  \"long_to_long\": {\"@long\": \"30\"},\n" +
-                "  \"short_to_int\": {\"@int\": \"40\"},\n" +
-                "  \"ushort_to_int\": {\"@int\": \"41\"},\n" +
-                "  \"byte_to_int\": {\"@int\": \"42\"},\n" +
-                "  \"sbyte_to_int\": {\"@int\": \"43\"},\n" +
-                "  \"int_to_int\": {\"@int\": \"50\"},\n" +
-                "  \"short_to_double\": {\"@double\": \"60.0\"},\n" +
-                "  \"int_to_double\": {\"@double\": \"70.0\"},\n" +
-                "  \"long_to_double\": {\"@double\": \"80.0\"},\n" +
-                "  \"double_to_double\": {\"@double\": \"10.1\"},\n" +
-                "  \"float_to_double\": {\"@double\": \"1.344499945640564\"},\n" +
-                "  \"true_to_true\": true,\n" +
-                "  \"false_to_false\": false,\n" +
-                "  \"class_to_string\": \"TheThing\",\n" +
-                "  \"string_to_string\": \"aString\",\n" +
-                "  \"instant_to_date\": {\"@date\": \"2023-12-13\"},\n" +
-                "  \"localdate_to_date\": {\"@date\": \"2023-12-13\"},\n" +
-                "  \"zoneddatetime_to_date\": {\"@date\": \"2023-12-13\"},\n" +
-                "  \"instant_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"},\n" +
-                "  \"offsetdatetime_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"},\n" +
-                "  \"zoneddatetime_to_time\": {\"@time\": \"2023-12-13T12:12:12.001001Z\"}\n"
-                +
-                "}";
-        String expected = expectedWithWhitespace.replaceAll("\\s", "");
-        String actual = Serializer.serialize(test);
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void serializeObjectWithInvalidTypeHint() {
-        ClassWithInvalidPropertyTypeHint obj = new ClassWithInvalidPropertyTypeHint();
-
-        Exception ex = assertThrows(ClientException.class,
-            () -> Serializer.serialize(obj));
-
-        Assert.assertEquals(
-            "Unsupported Int conversion. Provided value must be a byte, short, or int.",
-            ex.getMessage());
     }
 
     @Test

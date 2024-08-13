@@ -262,6 +262,41 @@ API. This helps prevent injection attacks.
 
 <!-- TODO: Subqueries -->
 
+## Pagination
+Use `paginate()` to asynchronously iterate through sets that contain more than one page of results.
+
+`paginate()` accepts the same [query options](#query-options) as `query()` and `asyncQuery()`.
+
+```java
+import com.fauna.client.Fauna;
+import com.fauna.client.FaunaClient;
+import com.fauna.client.PageIterator;
+
+public class App {
+    public static void main(String[] args) {
+        FaunaClient client = Fauna.client();
+        
+        // `paginate()` will make an async request to Fauna.
+        PageIterator<Product> iter1 = client.paginate(fql("Product.all()"), Product.class);
+
+        // Handle each page. `PageIterator` extends the Java Iterator interface.
+        while (iter1.hasNext()) {
+            Page<Product> page = iter1.next();
+            List<Product> pageData = page.data();
+            // Do something with your data.
+        }
+        
+        PageIterator<Product> iter2 = client.paginate(fql("Product.all()"), Product.class);
+        
+        // Use the `flatten()` on PageIterator to iterate over every item in a set.
+        Iterator<Product> productIter = iter2.flatten();
+        List<Product> products = new ArrayList<>();
+
+        // Iterate over Product elements without worrying about pages.
+        iter2.forEachRemaining((Product p) -> products.add(p));
+    }
+}
+```
 
 ## Query statistics
 
@@ -274,20 +309,21 @@ package org.example;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
 import com.fauna.query.builder.Query;
+import static com.fauna.query.builder.Query.fql;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
-
-import static com.fauna.query.builder.Query.fql;
 
 public class App {
     public static void main(String[] args) {
         try {
-            FaunaClient client = new FaunaClient(FaunaConfic.builder().secret("FAUNA_SECRET").build());
+            FaunaConfig config = FaunaConfig.builder().secret("FAUNA_SECRET").build();
+            FaunaClient client = Fauna.client(config);
 
             Query query = fql("'Hello world'");
 
