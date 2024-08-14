@@ -29,7 +29,7 @@ public class ConstraintFailure {
     }
 
     /**
-     * Each path returned by Fauna for a constraint failure is an array of strings & integers. But since Java
+     * Each path returned by Fauna for a constraint failure is an array of strings and integers. But since Java
      * doesn't really have a way to support union types, returning Object (the common parent of String and Integer)
      * seems like the simplest solution.
      *
