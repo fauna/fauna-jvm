@@ -13,6 +13,7 @@ compileJava {
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    withSourcesJar()
 }
 test {
     useJUnitPlatform()
@@ -83,10 +84,11 @@ task printVersion {
 }
 
 task writeProps(type: WriteProperties) {
-    outputFile = file("src/main/resources/version.properties")
+    destinationFile = file("src/main/resources/version.properties")
     encoding = 'UTF-8'
     property('version', project.version)
     property('name', project.name)
     property('group', project.group)
 }
 processResources.dependsOn(writeProps)
+sourcesJar.dependsOn(writeProps)
