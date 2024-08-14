@@ -26,5 +26,8 @@ jobs:
     - name: Run Gradle test
       run: ./gradlew test
 
+    - name: Run Gradle javadocs
+      run: ./gradlew javadocs
+
     - name: Run Gradle assemble
       run: ./gradlew assemble
