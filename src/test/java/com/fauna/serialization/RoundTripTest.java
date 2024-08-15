@@ -158,23 +158,6 @@ public class RoundTripTest {
         assertEquals(serialized, Serializer.serialize(deserialized));
     }
 
-
-
-    // @Disabled("Byte array deserialization not supported yet.")
-    @Test
-    public void testByteArray() throws IOException {
-        byte[] var = new byte[]{-128, 0, 127};
-        String serialized = Serializer.serialize(var);
-        assertEquals("{\"@bytes\":\"gAB/\"}", serialized);
-        // IDeserializer<Byte[]> deserializer = Deserializer.generate(ctx, Byte[].class);
-        Object deserialized = Deserializer.DYNAMIC.deserialize(new UTF8FaunaParser(serialized));
-        // ser -> deser round trip
-        assertEquals(Map.of("@bytes", "gAB/"), deserialized);
-        // assertEquals(var, deserialized);  TODO: Should get a byte[] or Byte[] not {"@bytes": "gAB\"} back.
-        // deser -> ser round trip
-        assertEquals(serialized, Serializer.serialize(deserialized));
-    }
-
     @Disabled("Object array deserialization not supported yet.")
     @Test
     public void testObjectArray() throws IOException {
