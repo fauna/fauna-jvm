@@ -23,6 +23,8 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     @Override
     public L decode(UTF8FaunaParser parser) throws IOException {
         switch (parser.getCurrentTokenType()) {
+            case NULL:
+                return null;
             case START_PAGE:
                 return decodePage(parser, FaunaTokenType.END_PAGE);
             case START_OBJECT:

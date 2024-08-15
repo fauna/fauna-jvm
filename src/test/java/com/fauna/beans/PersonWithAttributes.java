@@ -3,6 +3,8 @@ package com.fauna.beans;
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaObject;
 
+import java.util.Objects;
+
 @FaunaObject
 public class PersonWithAttributes {
 
@@ -37,4 +39,23 @@ public class PersonWithAttributes {
         return age;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null) return false;
+
+        if (getClass() != o.getClass()) return false;
+
+        PersonWithAttributes c = (PersonWithAttributes) o;
+
+        return firstName.equals(c.firstName)
+                && lastName.equals(c.lastName)
+                && Objects.equals(age, c.age);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, age);
+    }
 }

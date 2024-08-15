@@ -25,17 +25,14 @@ import java.util.Map;
 public class ClassCodec<T> extends BaseCodec<T> {
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
-    private static final String COLL_FIELD = "coll";
-    private static final String EXISTS_FIELD = "exists";
-    private static final String CAUSE_FIELD = "cause";
 
 
-    private final Type type;
+    private final Class<T> type;
     private final List<FieldInfo> fields;
     private final Map<String, FieldInfo> fieldsByName;
     private final boolean shouldEscapeObject;
 
-    public ClassCodec(Type ty, CodecProvider provider) {
+    public ClassCodec(Class<T> ty, CodecProvider provider) {
         this.type = ty;
 
         List<FieldInfo> fieldsList = new ArrayList<>();
@@ -76,10 +73,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
             @SuppressWarnings("unchecked")
             T typed = (T) instance;
             return typed;
-        } catch (IOException exc) {
-            throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
         } catch (IllegalAccessException | ClassNotFoundException | InvocationTargetException | InstantiationException |
-                 NoSuchMethodException e) {
+                 NoSuchMethodException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -115,8 +110,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public Class<?> getCodecClass() {
-        return null;
+    public Class<T> getCodecClass() {
+        return this.type;
     }
 
     private Object createInstance() throws InvocationTargetException, InstantiationException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException {

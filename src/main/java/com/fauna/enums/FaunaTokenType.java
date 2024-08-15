@@ -26,6 +26,7 @@ public enum FaunaTokenType {
     FIELD_NAME,
 
     STRING,
+    BYTES,
 
     INT,
     LONG,

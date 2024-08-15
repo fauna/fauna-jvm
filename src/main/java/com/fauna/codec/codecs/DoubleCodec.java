@@ -6,35 +6,35 @@ import com.fauna.serialization.UTF8FaunaParser;
 
 import java.io.IOException;
 
-public class StringCodec extends BaseCodec<String> {
+public class DoubleCodec extends BaseCodec<Double> {
 
-    public static final StringCodec singleton = new StringCodec();
+    public static final DoubleCodec singleton = new DoubleCodec();
 
     @Override
-    public String decode(UTF8FaunaParser parser) throws IOException {
+    public Double decode(UTF8FaunaParser parser) throws IOException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
-            case STRING:
-                return parser.getValueAsString();
-            case BYTES:
-                return parser.getTaggedValueAsString();
+            case INT:
+            case LONG:
+            case DOUBLE:
+                return parser.getValueAsDouble();
             default:
                 throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, String obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Double obj) throws IOException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
-            gen.writeStringValue(obj);
+            gen.writeDoubleValue(obj);
         }
     }
 
     @Override
-    public Class<String> getCodecClass() {
-        return String.class;
+    public Class<Double> getCodecClass() {
+        return Double.class;
     }
 }

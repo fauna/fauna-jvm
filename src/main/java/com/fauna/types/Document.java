@@ -2,6 +2,7 @@ package com.fauna.types;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a document.
@@ -43,5 +44,26 @@ public final class Document extends BaseDocument {
      */
     public String getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null) return false;
+
+        if (getClass() != o.getClass()) return false;
+
+        Document c = (Document) o;
+
+        return id.equals(c.id)
+                && getTs().equals(c.getTs())
+                && getCollection().equals(c.getCollection())
+                && data.equals(c.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, getTs(), getCollection(), data);
     }
 }

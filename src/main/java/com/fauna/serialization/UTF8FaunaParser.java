@@ -1,16 +1,5 @@
 package com.fauna.serialization;
 
-import static com.fauna.enums.FaunaTokenType.DATE;
-import static com.fauna.enums.FaunaTokenType.DOUBLE;
-import static com.fauna.enums.FaunaTokenType.END_ARRAY;
-import static com.fauna.enums.FaunaTokenType.END_DOCUMENT;
-import static com.fauna.enums.FaunaTokenType.END_OBJECT;
-import static com.fauna.enums.FaunaTokenType.END_PAGE;
-import static com.fauna.enums.FaunaTokenType.END_REF;
-import static com.fauna.enums.FaunaTokenType.LONG;
-import static com.fauna.enums.FaunaTokenType.NONE;
-import static com.fauna.enums.FaunaTokenType.TIME;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -24,11 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
+
+import static com.fauna.enums.FaunaTokenType.*;
 
 /**
  * Represents a reader that provides fast, non-cached, forward-only access to serialized data.
@@ -45,6 +32,7 @@ public class UTF8FaunaParser {
     private static final String MOD_TAG = "@mod";
     private static final String SET_TAG = "@set";
     private static final String OBJECT_TAG = "@object";
+    private static final String BYTES_TAG = "@bytes";
 
     private final JsonParser jsonParser;
     private final Stack<Object> tokenStack = new Stack<>();
@@ -175,6 +163,9 @@ public class UTF8FaunaParser {
         switch (jsonParser.currentToken()) {
             case FIELD_NAME:
                 switch (jsonParser.getText()) {
+                    case BYTES_TAG:
+                        handleTaggedString(FaunaTokenType.BYTES);
+                        break;
                     case INT_TAG:
                         handleTaggedString(FaunaTokenType.INT);
                         break;
@@ -291,7 +282,7 @@ public class UTF8FaunaParser {
     }
 
     public Character getValueAsCharacter() {
-        validateTaggedType(FaunaTokenType.INT);
+        validateTaggedType(INT);
         return Character.valueOf((char) Integer.parseInt(taggedTokenValue));
     }
 
@@ -303,8 +294,17 @@ public class UTF8FaunaParser {
         }
     }
 
+    public String getTaggedValueAsString() {
+        return taggedTokenValue;
+    }
+
+    public byte[] getValueAsByteArray() {
+        validateTaggedTypes(BYTES);
+        return Base64.getDecoder().decode(taggedTokenValue.getBytes());
+    }
+
     public Byte getValueAsByte() {
-        validateTaggedType(FaunaTokenType.INT);
+        validateTaggedType(INT);
         try {
             return Byte.parseByte(taggedTokenValue);
         } catch (NumberFormatException e) {
@@ -313,7 +313,7 @@ public class UTF8FaunaParser {
 
     }
     public Short getValueAsShort() {
-        validateTaggedType(FaunaTokenType.INT);
+        validateTaggedType(INT);
         try {
             return Short.parseShort(taggedTokenValue);
         } catch (NumberFormatException e) {
@@ -323,7 +323,7 @@ public class UTF8FaunaParser {
     }
 
     public Integer getValueAsInt() {
-        validateTaggedTypes(FaunaTokenType.INT, FaunaTokenType.LONG);
+        validateTaggedTypes(INT, FaunaTokenType.LONG);
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
@@ -358,7 +358,7 @@ public class UTF8FaunaParser {
     }
 
     public Float getValueAsFloat() {
-        validateTaggedType(DOUBLE);
+        validateTaggedTypes(INT, LONG, DOUBLE);
         try {
             return Float.parseFloat(taggedTokenValue);
         } catch (NumberFormatException e) {
@@ -367,7 +367,7 @@ public class UTF8FaunaParser {
     }
 
     public Double getValueAsDouble() {
-        validateTaggedType(DOUBLE);
+        validateTaggedTypes(INT, LONG, DOUBLE);
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
@@ -376,7 +376,7 @@ public class UTF8FaunaParser {
     }
 
     public Long getValueAsLong() {
-        validateTaggedType(LONG);
+        validateTaggedTypes(INT, LONG);
         try {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {

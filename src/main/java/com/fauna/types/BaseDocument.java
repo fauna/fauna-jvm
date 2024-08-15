@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class BaseDocument implements Iterable<BaseDocument.Entry> {
 
-    private final Hashtable<String, Object> data = new Hashtable<>();
+    protected final Hashtable<String, Object> data = new Hashtable<>();
     private final Instant ts;
     private final Module collection;
 

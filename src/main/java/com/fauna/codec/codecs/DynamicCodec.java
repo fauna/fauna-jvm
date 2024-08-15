@@ -4,14 +4,10 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
-import com.fauna.exception.NullDocumentException;
 import com.fauna.serialization.*;
 import com.fauna.types.*;
-import com.fauna.types.Module;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,8 +70,8 @@ public class DynamicCodec extends BaseCodec<Object> {
     }
 
     @Override
-    public Class<?> getCodecClass() {
-        return null;
+    public Class<Object> getCodecClass() {
+        return Object.class;
     }
 
     private Object decodeDocument(UTF8FaunaParser parser)

@@ -20,7 +20,7 @@ class InternalDocument {
         private Boolean exists = null;
         private String cause = null;
         private Instant ts = null;
-        private Map<String, Object> data = new HashMap<>();
+        private final Map<String, Object> data = new HashMap<>();
         private boolean throwIfNotExists = true;
 
         InternalDocument.Builder withDataField(String key, Object value) {

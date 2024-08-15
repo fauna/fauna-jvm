@@ -7,6 +7,7 @@ import com.fauna.serialization.UTF8FaunaGenerator;
 import com.fauna.serialization.UTF8FaunaParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,26 +22,29 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
 
     @Override
     public L decode(UTF8FaunaParser parser) throws IOException {
-        if (parser.getCurrentTokenType() != FaunaTokenType.START_OBJECT) {
-            throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+        switch (parser.getCurrentTokenType()) {
+            case NULL:
+                return null;
+            case START_OBJECT:
+                Map<String, V> map = new HashMap<>();
+
+                while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_OBJECT) {
+                    if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
+                        throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                    }
+
+                    String fieldName = parser.getValueAsString();
+                    parser.read();
+                    V value = valueCodec.decode(parser);
+                    map.put(fieldName, value);
+                }
+
+                @SuppressWarnings("unchecked")
+                L typed = (L) map;
+                return typed;
+            default:
+                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
         }
-
-        Map<String, V> map = new HashMap<>();
-
-        while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_OBJECT) {
-            if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
-            }
-
-            String fieldName = parser.getValueAsString();
-            parser.read();
-            V value = valueCodec.decode(parser);
-            map.put(fieldName, value);
-        }
-        
-        @SuppressWarnings("unchecked")
-        L typed = (L) map;
-        return typed;
     }
 
     @Override
