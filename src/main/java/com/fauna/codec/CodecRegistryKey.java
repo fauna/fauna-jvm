@@ -25,7 +25,7 @@ public class CodecRegistryKey {
             return true;
         } else if (other instanceof CodecRegistryKey) {
             CodecRegistryKey otherCRK = (CodecRegistryKey) other;
-            return this.base == otherCRK.base && this.typeArg == otherCRK.typeArg;
+            return Objects.equals(base, otherCRK.base) && Objects.equals(typeArg, otherCRK.typeArg);
         } else {
             return false;
         }
