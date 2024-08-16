@@ -20,9 +20,10 @@ versions of FQL. To query your databases with earlier API versions, use the
 - Java 11 or later
 
 
-## Javadocs
+## API reference
 
-API reference documentation is available in the [Javadocs](https://fauna.github.io/fauna-jvm/latest/).
+API reference documentation for the driver is available at
+https://fauna.github.io/fauna-jvm/. The docs are generated using Javadoc.
 
 
 ## Installation
@@ -275,7 +276,7 @@ import com.fauna.client.PageIterator;
 public class App {
     public static void main(String[] args) {
         FaunaClient client = Fauna.client();
-        
+
         // `paginate()` will make an async request to Fauna.
         PageIterator<Product> iter1 = client.paginate(fql("Product.all()"), Product.class);
 
@@ -285,9 +286,9 @@ public class App {
             List<Product> pageData = page.data();
             // Do something with your data.
         }
-        
+
         PageIterator<Product> iter2 = client.paginate(fql("Product.all()"), Product.class);
-        
+
         // Use the `flatten()` on PageIterator to iterate over every item in a set.
         Iterator<Product> productIter = iter2.flatten();
         List<Product> products = new ArrayList<>();

@@ -35,15 +35,17 @@ fi
 
 cp -R "../fauna-jvm-repository/build/docs/javadoc" "$PACKAGE_VERSION"
 
-# echo "Adding google manager tag to head..."
+echo "Adding google manager tag to head..."
 
-# HEAD_GTM=$(cat ../fauna-jvm-repository/concourse/scripts/head_gtm.dat)
-# sed -i '' "0,/<\/title>/{s/<\/title>/<\/title>${HEAD_GTM}/}" "$PACKAGE_VERSION/index.html"
+HEAD_GTM=$(cat ../fauna-jvm-repository/concourse/scripts/head_gtm.dat)
+sed -i.bak "0,/<\/title>/{s/<\/title>/<\/title>${HEAD_GTM}/}" ./$PACKAGE_VERSION/index.html
 
-# echo "Adding google manager tag to body..."
+echo "Adding google manager tag to body..."
 
-# BODY_GTM=$(cat ../fauna-jvm-repository/concourse/scripts/body_gtm.dat)
-# sed -i '' "0,/<body>/{s/<body>/<body>${BODY_GTM}/}" "$PACKAGE_VERSION/index.html"
+BODY_GTM=$(cat ../fauna-jvm-repository/concourse/scripts/body_gtm.dat)
+sed -i.bak "0,/<body>/{s/<body>/<body>${BODY_GTM}/}" ./$PACKAGE_VERSION/index.html
+
+rm ./$PACKAGE_VERSION/index.html.bak
 
 echo "Updating 'latest' symlink to point to $PACKAGE_VERSION"
 ln -sfn "$PACKAGE_VERSION" latest
