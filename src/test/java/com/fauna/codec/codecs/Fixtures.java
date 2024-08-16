@@ -41,6 +41,7 @@ public class Fixtures {
     }
     public static final String ARRAY_WIRE = "[{\"@int\":\"42\"}]";
     public static final String CLASS_WITH_PARAMETERIZED_FIELDS_WIRE = "{\"first_name\":\"foo\",\"a_list\":[\"item1\"],\"a_map\":{\"key1\":{\"@int\":\"42\"}}}";
+    public static final String PERSON_WITH_ATTRIBUTES_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
     public static final String DOCUMENT_WIRE = "{\"@doc\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"},\"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}}";
     public static final String DOCUMENT_REF_WIRE  = "{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"}}}";
     public static final String NAMED_DOCUMENT_WIRE = "{\"@doc\":{\"name\":\"Boogles\",\"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\"coll\":{\"@mod\":\"Foo\"},\"first_name\":\"foo\",\"last_name\":\"bar\"}}";
@@ -67,6 +68,7 @@ public class Fixtures {
             Map.of("first_name","foo", "last_name", "bar")
     );
     public static final NullDocumentException NULL_DOC_EXCEPTION = new NullDocumentException("123", new Module("Foo"), "not found");
+    public static final NullDoc<Document> NULL_DOCUMENT = new NullDoc<>("123", new Module("Foo"), "not found");
 
     // Codecs
     public static final Codec<Object> DYNAMIC_CODEC = DefaultCodecProvider.SINGLETON.get(Object.class);
@@ -89,5 +91,9 @@ public class Fixtures {
     public static final Codec<ClassWithRefTagCollision> CLASS_WITH_REF_TAG_COLLISION_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithRefTagCollision.class);
     public static final Codec<ClassWithParameterizedFields>  CLASS_WITH_PARAMETERIZED_FIELDS_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithParameterizedFields.class);
     public static final Codec<PersonWithAttributes>  PERSON_WITH_ATTRIBUTES_CODEC = DefaultCodecProvider.SINGLETON.get(PersonWithAttributes.class);
+    public static final Codec<BaseDocument> BASE_DOCUMENT_CODEC = DefaultCodecProvider.SINGLETON.get(BaseDocument.class);
+    public static final Codec<BaseRef> BASE_REF_CODEC = DefaultCodecProvider.SINGLETON.get(BaseRef.class);
+    public static final Codec<Nullable<Document>> NULLABLE_DOC_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, Document.class);
+    public static final Codec<Nullable<PersonWithAttributes>> NULLABLE_PERSON_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, PersonWithAttributes.class);
 
 }

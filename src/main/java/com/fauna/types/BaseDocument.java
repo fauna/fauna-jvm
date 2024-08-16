@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Represents the base structure of a document.
  */
-public class BaseDocument implements Iterable<BaseDocument.Entry> {
+public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
 
     protected final Hashtable<String, Object> data = new Hashtable<>();
     private final Instant ts;

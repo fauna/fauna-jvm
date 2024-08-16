@@ -19,6 +19,10 @@ public abstract class BaseCodec<T> implements Codec<T> {
         return MessageFormat.format("Unexpected token `{0}` decoding with `{1}`", token, this.getClass());
     }
 
+    protected String unexpectedTypeWhileDecoding(Type type) {
+        return MessageFormat.format("Unexpected type `{0}` decoding with `{1}`", type, this.getClass());
+    }
+
     protected String unsupportedTypeMessage(Type type){
         return MessageFormat.format("Cannot encode `{0}` with `{1}`", type, this.getClass());
     }

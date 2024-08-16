@@ -1,6 +1,7 @@
 package com.fauna.codec;
 
 import com.fauna.codec.codecs.*;
+import com.fauna.types.*;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +39,10 @@ public class DefaultCodecRegistry implements CodecRegistry {
 
         codecs.put(CodecRegistryKey.from(Double.class), DoubleCodec.singleton);
         codecs.put(CodecRegistryKey.from(double.class), DoubleCodec.singleton);
+
+        codecs.put(CodecRegistryKey.from(BaseRef.class), BaseRefCodec.SINGLETON);
+        codecs.put(CodecRegistryKey.from(DocumentRef.class), BaseRefCodec.SINGLETON);
+        codecs.put(CodecRegistryKey.from(NamedDocumentRef.class), BaseRefCodec.SINGLETON);
     }
 
     @Override

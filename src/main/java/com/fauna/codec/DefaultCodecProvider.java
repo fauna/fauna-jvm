@@ -1,7 +1,7 @@
 package com.fauna.codec;
 
 import com.fauna.codec.codecs.*;
-import com.fauna.types.Page;
+import com.fauna.types.*;
 
 import java.util.List;
 import java.util.Map;
@@ -14,8 +14,13 @@ public class DefaultCodecProvider implements CodecProvider {
     public static final CodecProvider SINGLETON = new DefaultCodecProvider(DefaultCodecRegistry.SINGLETON);
 
     public DefaultCodecProvider(CodecRegistry registry) {
-        var dynamic = new DynamicCodec(this);
-        registry.put(CodecRegistryKey.from(Object.class), dynamic);
+        registry.put(CodecRegistryKey.from(Object.class), new DynamicCodec(this));
+
+        var bdc = new BaseDocumentCodec(this);
+        registry.put(CodecRegistryKey.from(BaseDocument.class), bdc);
+        registry.put(CodecRegistryKey.from(Document.class), bdc);
+        registry.put(CodecRegistryKey.from(NamedDocument.class), bdc);
+
         this.registry = registry;
     }
 
@@ -58,6 +63,11 @@ public class DefaultCodecProvider implements CodecProvider {
         if (clazz == Page.class) {
             Codec<E> valueCodec = this.get(ta, null);
             return (Codec<T>) new PageCodec<E,Page<E>>(valueCodec);
+        }
+
+        if (clazz == Nullable.class) {
+            Codec<E> valueCodec = this.get(ta, null);
+            return (Codec<T>) new NullableCodec<E,Nullable<E>>(valueCodec);
         }
 
         return new ClassCodec<>(clazz, this);

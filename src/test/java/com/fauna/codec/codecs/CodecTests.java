@@ -1,6 +1,12 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.*;
+import com.fauna.exception.ClientException;
+import com.fauna.exception.NullDocumentException;
+import com.fauna.types.Document;
+import com.fauna.types.Module;
+import com.fauna.types.NonNull;
+import com.fauna.types.NullDoc;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -93,6 +99,29 @@ public class CodecTests {
                 Arguments.of(TestType.Decode, PAGE_CODEC, PAGE_WIRE, PAGE_DOCUMENT, null),
                 Arguments.of(TestType.Decode, PAGE_CODEC, DOCUMENT_WIRE, PAGE_DOCUMENT, null),
 
+                // BaseDocumentCodec
+                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_WIRE, DOCUMENT, null),
+                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, NAMED_DOCUMENT_WIRE, NAMED_DOCUMENT, null),
+                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
+                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, null, new ClientException("Unexpected type `class com.fauna.types.DocumentRef` decoding with `class com.fauna.codec.codecs.BaseDocumentCodec`")),
+                Arguments.of(TestType.Encode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, DOCUMENT, null),
+                Arguments.of(TestType.Encode, BASE_DOCUMENT_CODEC, NAMED_DOCUMENT_REF_WIRE, NAMED_DOCUMENT, null),
+
+                // BaseRefCodec
+                Arguments.of(TestType.RoundTrip, BASE_REF_CODEC, DOCUMENT_REF_WIRE, null, null),
+                Arguments.of(TestType.RoundTrip, BASE_REF_CODEC, NAMED_DOCUMENT_REF_WIRE, null, null),
+                Arguments.of(TestType.Decode, BASE_REF_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
+
+                // NullableCodec
+                Arguments.of(TestType.Decode, NULLABLE_DOC_CODEC, DOCUMENT_WIRE, new NonNull<>(DOCUMENT), null),
+                Arguments.of(TestType.Encode, NULLABLE_DOC_CODEC, DOCUMENT_REF_WIRE, new NonNull<>(DOCUMENT), null),
+                Arguments.of(TestType.Decode, NULLABLE_DOC_CODEC, NAMED_DOCUMENT_WIRE, new NonNull<>(NAMED_DOCUMENT), null),
+                Arguments.of(TestType.Encode, NULLABLE_DOC_CODEC, NAMED_DOCUMENT_REF_WIRE, new NonNull<>(NAMED_DOCUMENT), null),
+                Arguments.of(TestType.Decode, NULLABLE_DOC_CODEC, NULL_DOC_WIRE, NULL_DOCUMENT, null),
+                Arguments.of(TestType.Decode, NULLABLE_PERSON_CODEC, DOCUMENT_WIRE, new NonNull<>(PERSON_WITH_ATTRIBUTES), null),
+                Arguments.of(TestType.Encode, NULLABLE_PERSON_CODEC, PERSON_WITH_ATTRIBUTES_WIRE, new NonNull<>(PERSON_WITH_ATTRIBUTES), null),
+                Arguments.of(TestType.Decode, NULLABLE_PERSON_CODEC, NULL_DOC_WIRE, NULL_DOCUMENT, null),
+
                 // DynamicCodec
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, DOCUMENT_WIRE, DOCUMENT, null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, DOCUMENT_REF_WIRE, DOCUMENT_REF, null),
@@ -122,6 +151,18 @@ public class CodecTests {
                 } else {
                     var decoded = Helpers.decode(codec, wire);
                     assertEquals(obj, decoded);
+                }
+                break;
+            case Encode:
+                if (exception != null) {
+                    var ex = assertThrows(exception.getClass(), () -> {
+                        Helpers.encode(codec, (T) obj);
+                    });
+
+                    assertEquals(exception.getMessage(), ex.getMessage());
+                } else {
+                    var encoded = Helpers.encode(codec, (T) obj);
+                    assertEquals(wire, encoded);
                 }
         }
     }
