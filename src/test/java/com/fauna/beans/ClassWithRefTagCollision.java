@@ -10,6 +10,11 @@ import java.util.Objects;
 @FaunaObject
 public class ClassWithRefTagCollision {
 
+    public ClassWithRefTagCollision(){}
+    public ClassWithRefTagCollision(String field) {
+        this.field = field;
+    }
+
     @FaunaField(name = "@ref")
     public String field;
 

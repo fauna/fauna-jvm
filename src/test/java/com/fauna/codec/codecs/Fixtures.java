@@ -10,6 +10,7 @@ import com.fauna.types.*;
 import com.fauna.types.Module;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 @SuppressWarnings({"rawtypes","unchecked"})
@@ -18,6 +19,7 @@ public class Fixtures {
     // Wire Strings
     public static final String NULL_WIRE = "null";
     public static final String STRING_WIRE = "\"Fauna\"";
+    public static final String FAUNA = "Fauna";
     public static final String TRUE_WIRE = "true";
     public static final String FALSE_WIRE = "false";
     public static final String BYTES_WIRE = "{\"@bytes\":\"RmF1bmE=\"}";
@@ -34,13 +36,21 @@ public class Fixtures {
     public static final String MIN_FLOAT_WIRE = String.format("{\"@double\":\"%s\"}", Float.MIN_VALUE);
     public static final String MAX_DOUBLE_WIRE = String.format("{\"@double\":\"%s\"}", Double.MAX_VALUE);
     public static final String MIN_DOUBLE_WIRE = String.format("{\"@double\":\"%s\"}", Double.MIN_VALUE);
-
+    public static final String DATE_WIRE = "{\"@date\":\"2023-12-03\"}";
+    public static final LocalDate DATE = LocalDate.parse("2023-12-03");
+    public static final String INSTANT_UTC_WIRE = "{\"@time\":\"2023-12-03T14:52:10.000001Z\"}";
+    public static final String INSTANT_PACIFIC_WIRE = "{\"@time\":\"2023-12-03T05:52:10.000001-09:00\"}";
+    public static final Instant INSTANT = Instant.parse("2023-12-03T05:52:10.000001-09:00");
     public static final String OBJECT_WIRE = "{\"key1\":{\"@int\":\"42\"}}";
     public static String ESCAPED_OBJECT_WITH_WIRE(String tag) {
         return String.format("{\"@object\":{\"%s\":\"not\"}}", tag);
     }
+    public static final ClassWithRefTagCollision CLASS_WITH_REF_TAG_COLLISION = new ClassWithRefTagCollision("not");
     public static final String ARRAY_WIRE = "[{\"@int\":\"42\"}]";
+    public static final String MODULE_WIRE = "{\"@mod\":\"Foo\"}";
+    public static final Module MODULE = new Module("Foo");
     public static final String CLASS_WITH_PARAMETERIZED_FIELDS_WIRE = "{\"first_name\":\"foo\",\"a_list\":[\"item1\"],\"a_map\":{\"key1\":{\"@int\":\"42\"}}}";
+    public static final ClassWithParameterizedFields CLASS_WITH_PARAMETERIZED_FIELDS = new ClassWithParameterizedFields("foo",  List.of("item1"), Map.of("key1", 42));
     public static final String PERSON_WITH_ATTRIBUTES_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
     public static final String DOCUMENT_WIRE = "{\"@doc\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"},\"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}}";
     public static final String DOCUMENT_REF_WIRE  = "{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"}}}";
@@ -82,6 +92,9 @@ public class Fixtures {
     public static final Codec<Long>  LONG_CODEC = DefaultCodecProvider.SINGLETON.get(long.class);
     public static final Codec<Float>  FLOAT_CODEC = DefaultCodecProvider.SINGLETON.get(float.class);
     public static final Codec<Double>  DOUBLE_CODEC = DefaultCodecProvider.SINGLETON.get(double.class);
+    public static final Codec<Instant> INSTANT_CODEC = DefaultCodecProvider.SINGLETON.get(Instant.class);
+    public static final Codec<LocalDate> LOCAL_DATE_CODEC = DefaultCodecProvider.SINGLETON.get(LocalDate.class);
+    public static final Codec<Module> MODULE_CODEC = DefaultCodecProvider.SINGLETON.get(Module.class);
     public static final Codec<Optional<Integer>> OPTIONAL_INT_CODEC = (Codec<Optional<Integer>>) (Codec) DefaultCodecProvider.SINGLETON.get(Optional.class, int.class);
     public static final Codec<Optional<String>> OPTIONAL_STRING_CODEC = (Codec<Optional<String>>) (Codec) DefaultCodecProvider.SINGLETON.get(Optional.class, String.class);
     public static final Codec<Page<PersonWithAttributes>> PAGE_CODEC = (Codec<Page<PersonWithAttributes>>) (Codec) DefaultCodecProvider.SINGLETON.get(Page.class, PersonWithAttributes.class);
