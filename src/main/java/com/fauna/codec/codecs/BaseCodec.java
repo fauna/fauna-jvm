@@ -11,8 +11,8 @@ import java.util.Set;
 
 public abstract class BaseCodec<T> implements Codec<T> {
 
-    protected Set<String> TAGS = new HashSet<>(Arrays.asList(
-            "@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set", "@object"
+    public static Set<String> TAGS = new HashSet<>(Arrays.asList(
+            "@int", "@long", "@double", "@date", "@time", "@mod", "@ref", "@doc", "@set", "@object", "@bytes"
     ));
 
     protected String unexpectedTokenExceptionMessage(FaunaTokenType token) {

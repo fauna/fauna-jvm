@@ -1,5 +1,7 @@
 package com.fauna.types;
 
+import java.util.Objects;
+
 /**
  * Represents a document ref that has a "name" instead of an "id". For example, a Role document
  * reference is represented as a NamedDocumentRef.
@@ -54,5 +56,24 @@ public class NamedDocumentRef {
      */
     public void setCollection(Module collection) {
         this.collection = collection;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null) return false;
+
+        if (getClass() != o.getClass()) return false;
+
+        NamedDocumentRef c = (NamedDocumentRef) o;
+
+        return name.equals(c.name)
+                && getCollection().equals(c.getCollection());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, getCollection());
     }
 }

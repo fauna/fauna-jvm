@@ -20,18 +20,22 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
 
     @Override
     public L decode(UTF8FaunaParser parser) throws IOException {
-        if (parser.getCurrentTokenType() != FaunaTokenType.START_ARRAY) {
-            throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+        switch (parser.getCurrentTokenType()) {
+            case NULL:
+                return null;
+            case START_ARRAY:
+                List<E> list = new ArrayList<>();
+
+                while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_ARRAY) {
+                    E value = elementCodec.decode(parser);
+                    list.add(value);
+                }
+                @SuppressWarnings("unchecked")
+                var typed = (L) list;
+                return typed;
+            default:
+                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
         }
-
-        List<E> list = new ArrayList<>();
-
-        while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_ARRAY) {
-            E value = elementCodec.decode(parser);
-            list.add(value);
-        }
-
-        return (L) list;
     }
 
     @Override

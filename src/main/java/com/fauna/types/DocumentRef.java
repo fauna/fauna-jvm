@@ -1,6 +1,8 @@
 package com.fauna.types;
 
 
+import java.util.Objects;
+
 /**
  * Represents a document ref.
  */
@@ -54,5 +56,24 @@ public class DocumentRef {
      */
     public void setCollection(Module collection) {
         this.collection = collection;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null) return false;
+
+        if (getClass() != o.getClass()) return false;
+
+        DocumentRef c = (DocumentRef) o;
+
+        return id.equals(c.id)
+                && getCollection().equals(c.getCollection());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, getCollection());
     }
 }

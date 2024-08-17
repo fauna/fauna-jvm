@@ -272,6 +272,17 @@ public class UTF8FaunaGenerator implements AutoCloseable {
     }
 
     /**
+     * Writes a float value as a tagged element (@double).
+     *
+     * @param value The float value to write as a double.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeDoubleValue(float value) throws IOException {
+        writeTaggedValue("@double", Float.toString(value));
+    }
+
+
+    /**
      * Writes an integer value as a tagged element.
      *
      * @param value The integer value to write.
@@ -343,7 +354,7 @@ public class UTF8FaunaGenerator implements AutoCloseable {
     }
 
     public void writeCharValue(Character value) throws IOException {
-        jsonGenerator.writeString(String.valueOf(value));
+        writeIntValue(value);
     }
 
     /**
@@ -363,6 +374,16 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      */
     public void writeModuleValue(Module value) throws IOException {
         writeTaggedValue("@mod", value.getName());
+    }
+
+    /**
+     * Writes a byte array encoded as a base64 string as a tagged element.
+     *
+     * @param value The byte array to write.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeBytesValue(byte[] value) throws IOException {
+        writeTaggedValue("@bytes", Base64.getEncoder().encodeToString(value));
     }
 
     @Override

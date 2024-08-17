@@ -1,9 +1,6 @@
 package com.fauna.serialization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.enums.FaunaTokenType;
@@ -15,8 +12,11 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
@@ -29,6 +29,19 @@ class UTF8FaunaParserTest {
 
         List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
             Map.entry(FaunaTokenType.STRING, "hello")
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
+    @Test
+    public void testGetValueAsByteArray() throws IOException {
+        String s = "{\"@bytes\": \"RmF1bmE=\"}";
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+                Map.entry(FaunaTokenType.BYTES, "Fauna".getBytes())
         );
 
         assertReader(reader, expectedTokens);
@@ -587,6 +600,11 @@ class UTF8FaunaParserTest {
                 case FIELD_NAME:
                 case STRING:
                     assertEquals(entry.getValue(), reader.getValueAsString());
+                    break;
+                case BYTES:
+                    var ar1 = (byte[])entry.getValue();
+                    var ar2 = reader.getValueAsByteArray();
+                    if (!Arrays.equals(ar1, ar2)) Assertions.fail(String.format("expected: %s , received: %s", Arrays.toString(ar1), Arrays.toString(ar2)));
                     break;
                 case INT:
                     assertEquals(entry.getValue(), reader.getValueAsInt());
