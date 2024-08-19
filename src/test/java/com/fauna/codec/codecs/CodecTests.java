@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static com.fauna.codec.codecs.Fixtures.*;
+import static com.fauna.codec.codecs.Fixtures.CLASS_WITH_FAUNA_IGNORE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CodecTests {
@@ -98,6 +99,9 @@ public class CodecTests {
                 // ClassCodec
                 Arguments.of(TestType.RoundTrip, CLASS_WITH_PARAMETERIZED_FIELDS_CODEC, CLASS_WITH_PARAMETERIZED_FIELDS_WIRE, CLASS_WITH_PARAMETERIZED_FIELDS, null),
                 Arguments.of(TestType.RoundTrip, CLASS_WITH_REF_TAG_COLLISION_CODEC, ESCAPED_OBJECT_WITH_WIRE("@ref"), CLASS_WITH_REF_TAG_COLLISION, null),
+                Arguments.of(TestType.RoundTrip, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WIRE, CLASS_WITH_FAUNA_IGNORE, null),
+                Arguments.of(TestType.Encode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WIRE, CLASS_WITH_FAUNA_IGNORE_WITH_AGE, null),
+                Arguments.of(TestType.Decode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE, CLASS_WITH_FAUNA_IGNORE, null),
                 Arguments.of(TestType.Decode, PERSON_WITH_ATTRIBUTES_CODEC, DOCUMENT_WIRE, PERSON_WITH_ATTRIBUTES, null),
                 Arguments.of(TestType.Decode, PERSON_WITH_ATTRIBUTES_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
 

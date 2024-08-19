@@ -6,9 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Attribute used to indicate that a class represents a Fauna object.
+ * Attribute used to indicate that a field should be ignored during encoding and decoding.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Deprecated
-public @interface FaunaObject { }
+@Target(ElementType.FIELD)
+public @interface FaunaIgnore { }

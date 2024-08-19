@@ -2,7 +2,7 @@ package com.fauna.mapping;
 
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaFieldImpl;
-import com.fauna.annotation.FaunaObject;
+import com.fauna.annotation.FaunaIgnore;
 import com.fauna.interfaces.IClassDeserializer;
 import com.fauna.serialization.ClassDeserializer;
 import com.fauna.serialization.Serializer;
@@ -27,24 +27,16 @@ public final class MappingInfo {
         this.type = ty;
 
         Class<?> clazz = getClassFromType(type);
-        boolean hasAttributes = clazz.isAnnotationPresent(FaunaObject.class);
 
         List<FieldInfo> fieldsList = new ArrayList<>();
         Map<String, FieldInfo> byNameMap = new HashMap<>();
 
         for (Field field : ((Class<?>) ty).getDeclaredFields()) {
-            FaunaFieldImpl attr;
-
-            if (hasAttributes) {
-                if (field.getAnnotation(FaunaField.class) != null) {
-                    attr = new FaunaFieldImpl(field,
-                        field.getAnnotation(FaunaField.class));
-                } else {
-                    continue;
-                }
-            } else {
-                attr = new FaunaFieldImpl(field, null);
+            if (field.getAnnotation(FaunaIgnore.class) != null) {
+                continue;
             }
+
+            var attr = new FaunaFieldImpl(field, field.getAnnotation(FaunaField.class));
 
             FieldInfo info = new FieldInfo(ctx, attr, field);
 

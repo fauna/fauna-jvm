@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.beans.ClassWithFaunaIgnore;
 import com.fauna.beans.ClassWithParameterizedFields;
 import com.fauna.beans.ClassWithRefTagCollision;
 import com.fauna.beans.PersonWithAttributes;
@@ -51,6 +52,10 @@ public class Fixtures {
     public static final Module MODULE = new Module("Foo");
     public static final String CLASS_WITH_PARAMETERIZED_FIELDS_WIRE = "{\"first_name\":\"foo\",\"a_list\":[\"item1\"],\"a_map\":{\"key1\":{\"@int\":\"42\"}}}";
     public static final ClassWithParameterizedFields CLASS_WITH_PARAMETERIZED_FIELDS = new ClassWithParameterizedFields("foo",  List.of("item1"), Map.of("key1", 42));
+    public static String CLASS_WITH_FAUNA_IGNORE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\"}";
+    public static final ClassWithFaunaIgnore CLASS_WITH_FAUNA_IGNORE = new ClassWithFaunaIgnore("foo", "bar", null);
+    public static String CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
+    public static final ClassWithFaunaIgnore CLASS_WITH_FAUNA_IGNORE_WITH_AGE = new ClassWithFaunaIgnore("foo", "bar", 42);
     public static final String PERSON_WITH_ATTRIBUTES_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
     public static final String DOCUMENT_WIRE = "{\"@doc\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"},\"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}}";
     public static final String DOCUMENT_REF_WIRE  = "{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"}}}";
@@ -69,7 +74,7 @@ public class Fixtures {
             new Module("Foo"),
             Instant.parse("2023-12-15T01:01:01.0010010Z"),
             Map.of("first_name","foo", "last_name", "bar","age",42)
-        );
+    );
     public static final NamedDocumentRef NAMED_DOCUMENT_REF = new NamedDocumentRef("Boogles", new Module("Foo"));
     public static final NamedDocument NAMED_DOCUMENT = new NamedDocument(
             "Boogles",
@@ -108,5 +113,6 @@ public class Fixtures {
     public static final Codec<BaseRef> BASE_REF_CODEC = DefaultCodecProvider.SINGLETON.get(BaseRef.class);
     public static final Codec<Nullable<Document>> NULLABLE_DOC_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, Document.class);
     public static final Codec<Nullable<PersonWithAttributes>> NULLABLE_PERSON_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, PersonWithAttributes.class);
+    public static final Codec<ClassWithFaunaIgnore> CLASS_WITH_FAUNA_IGNORE_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithFaunaIgnore.class);
 
 }
