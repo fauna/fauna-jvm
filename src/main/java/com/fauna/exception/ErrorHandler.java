@@ -31,7 +31,7 @@ public class ErrorHandler {
      * Handles errors based on the HTTP status code and response body.
      *
      * @param statusCode        The HTTP status code.
-     * @param body              The deserialized QueryFailure body.
+     * @param body              The decoded QueryFailure body.
      * @param mapper            Jackson ObjectMapper.
      * @throws AbortException
      * @throws AuthenticationException
@@ -67,7 +67,7 @@ public class ErrorHandler {
      * Handles errors based on the HTTP status code and error code.
      *
      * @param statusCode    The HTTP status code.
-     * @param failure       The deserialized QueryFailure body.
+     * @param failure       The decoded QueryFailure body.
      * @throws AbortException
      * @throws AuthenticationException
      * @throws AuthorizationException
@@ -91,7 +91,7 @@ public class ErrorHandler {
                     case CONSTRAINT_FAILURE: throw new ConstraintFailureException(failure);
                     // There are ~30 more error codes that map to a QueryRuntimeException.
                     // By using a default here, one of them is not strictly required. But we
-                    // _do_ require a valid JSON body that can be deserialized to a
+                    // _do_ require a valid JSON body that can be decoded to a
                     // QueryFailure. Defaulting here also slightly future-proofs this client
                     // because Fauna can throw 400s with new error codes.
                     default: throw new QueryRuntimeException(failure);

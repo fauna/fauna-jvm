@@ -1,5 +1,6 @@
 package com.fauna.client;
 
+import com.fauna.codec.*;
 import com.fauna.query.QueryOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -31,10 +32,13 @@ class RequestBuilderTest {
 
     private final RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
 
+    private final CodecRegistry codecRegistry = new DefaultCodecRegistry();
+    private final CodecProvider codecProvider = new DefaultCodecProvider(codecRegistry);
+
 
     @Test
     void buildRequest_shouldConstructCorrectHttpRequest() {
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null);
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null, codecProvider);
 
         assertEquals("http://localhost:8443/query/1", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
@@ -51,7 +55,7 @@ class RequestBuilderTest {
         QueryOptions options = QueryOptions.builder().timeout(Duration.ofSeconds(15))
                 .linearized(true).typeCheck(true).traceParent("traceParent").build();
 
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options);
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options, codecProvider);
         HttpHeaders headers = httpRequest.headers();
 
         assertEquals("true", headers.firstValue(LINEARIZED).orElseThrow());
@@ -66,6 +70,6 @@ class RequestBuilderTest {
         // This was faster, but now I think it's taking time to do things like create the FaunaRequest object.
         // Being able to build 10k requests per second still seems like reasonable performance.
         IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(
-                fql("Sample FQL Query ${i}", Map.of("i", i)), null));
+                fql("Sample FQL Query ${i}", Map.of("i", i)), null, codecProvider));
     }
 }

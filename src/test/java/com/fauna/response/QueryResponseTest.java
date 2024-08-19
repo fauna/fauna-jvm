@@ -1,7 +1,6 @@
 package com.fauna.response;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -10,40 +9,47 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fauna.beans.Person;
+import com.fauna.beans.PersonWithAttributes;
+import com.fauna.codec.*;
 import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ClientException;
-import com.fauna.exception.ProtocolException;
-import com.fauna.interfaces.IDeserializer;
-import com.fauna.mapping.MappingContext;
-import com.fauna.serialization.Deserializer;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.Optional;
 
-import com.fauna.serialization.Serializer;
-import com.fauna.serialization.UTF8FaunaParser;
-import com.fauna.types.Document;
+import com.fauna.exception.ProtocolException;
+import com.fauna.codec.UTF8FaunaGenerator;
 import org.junit.jupiter.api.Test;
 
 class QueryResponseTest {
-    MappingContext context = new MappingContext();
-    IDeserializer<Document> docDeserializer = Deserializer.generate(context, Document.class);
+
+    CodecRegistry codecRegistry = new DefaultCodecRegistry();
+    CodecProvider codecProvider = new DefaultCodecProvider(codecRegistry);
+
+    @SuppressWarnings("unchecked")
+    private <T> String encode(Codec<T> codec, T obj) throws IOException {
+        try(UTF8FaunaGenerator gen = new UTF8FaunaGenerator()) {
+            codec.encode(gen, obj);
+            return gen.serialize();
+        }
+    }
 
     @Test
     public void getFromResponseBody_Success() throws IOException {
-        Person baz = new Person("baz", "luhrman", 'A', 64);
-        String data = Serializer.serialize(baz);
-        String body = "{\"stats\":{},\"static_type\":\"Person\",\"data\":" + data + "}";
+        PersonWithAttributes baz = new PersonWithAttributes("baz", "luhrman", 64);
+
+        Codec<PersonWithAttributes> codec = codecProvider.get(PersonWithAttributes.class);
+        String data = encode(codec, baz);
+        String body = "{\"stats\":{},\"static_type\":\"PersonWithAttributes\",\"data\":" + data + "}";
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn(body);
         when(resp.statusCode()).thenReturn(200);
 
-        QuerySuccess<Person> success = QueryResponse.handleResponse(resp, Deserializer.generate(context, Person.class));
+        QuerySuccess<PersonWithAttributes> success = QueryResponse.handleResponse(resp, codec);
 
         assertEquals(baz.getFirstName(), success.getData().getFirstName());
-        assertEquals("Person", success.getStaticType().get());
+        assertEquals("PersonWithAttributes", success.getStaticType().get());
 
 
     }
@@ -82,7 +88,7 @@ class QueryResponseTest {
         when(resp.statusCode()).thenReturn(400);
         when(resp.body()).thenReturn(body);
 
-        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, docDeserializer));
+        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, codecProvider.get(Object.class)));
         assertEquals("ProtocolException HTTP 400 with body: " + body, exc.getMessage());
         assertEquals(400, exc.getStatusCode());
         assertEquals(body, exc.getBody());
@@ -92,12 +98,11 @@ class QueryResponseTest {
     public void handleResponseWithMissingStatsThrowsProtocolException() {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"not valid json\"");
-        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, docDeserializer));
+        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp,  codecProvider.get(Object.class)));
     }
 
     @Test
     void getFromResponseBody_Exception() {
-        MappingContext ctx = new MappingContext();
         String body = "Invalid JSON";
 
         // TODO call FaunaClient.handleResponse here.

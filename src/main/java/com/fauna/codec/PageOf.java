@@ -1,10 +1,10 @@
-package com.fauna.serialization.generic;
+package com.fauna.codec;
 
 import com.fauna.types.Page;
 import java.lang.reflect.Type;
 
 /**
- * PageOf stores the generic parameter class to evade type erasure during deserialization.
+ * PageOf stores the generic parameter class to evade type erasure during decoding.
  * @param <E> The element class of the page.
  */
 public class PageOf<E> implements ParameterizedOf<Page<E>> {

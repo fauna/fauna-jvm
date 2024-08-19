@@ -2,7 +2,7 @@ package com.fauna.codec.codecs;
 
 import com.fauna.enums.FaunaTokenType;
 import com.fauna.exception.NullDocumentException;
-import com.fauna.serialization.UTF8FaunaParser;
+import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.*;
 import com.fauna.types.Module;
 

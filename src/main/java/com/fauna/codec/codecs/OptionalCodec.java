@@ -2,8 +2,8 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
 import com.fauna.enums.FaunaTokenType;
-import com.fauna.serialization.UTF8FaunaGenerator;
-import com.fauna.serialization.UTF8FaunaParser;
+import com.fauna.codec.UTF8FaunaGenerator;
+import com.fauna.codec.UTF8FaunaParser;
 
 import java.io.IOException;
 import java.util.Optional;

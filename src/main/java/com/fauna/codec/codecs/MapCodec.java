@@ -3,11 +3,10 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
-import com.fauna.serialization.UTF8FaunaGenerator;
-import com.fauna.serialization.UTF8FaunaParser;
+import com.fauna.codec.UTF8FaunaGenerator;
+import com.fauna.codec.UTF8FaunaParser;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -75,29 +75,24 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.fauna.annotation.FaunaField;
-import com.fauna.annotation.FaunaObject;
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.generic.PageOf;
+import com.fauna.codec.PageOf;
 import com.fauna.types.Page;
 
 public class App {
 
     // Define class for `Product` documents
     // in expected results.
-    @FaunaObject
     public static class Product {
-        @FaunaField(name = "name")
         public String name;
 
-        @FaunaField(name = "description")
         public String description;
 
-        @FaunaField(name = "price")
         public double price;
     }
 
@@ -109,12 +104,12 @@ public class App {
 
             // Compose a query.
             Query query = Query.fql("""
-                Product.sortedByPriceLowToHigh() {
-                    name,
-                    description,
-                    price
-                }
-            """);
+                        Product.sortedByPriceLowToHigh() {
+                            name,
+                            description,
+                            price
+                        }
+                    """);
 
             // Run the query synchronously.
             System.out.println("Running synchronous query:");
@@ -231,10 +226,10 @@ options](#query-options).
 ### Define a result class
 
 You can use the `com.fauna.annotation`  package to define a result class for a
-Fauna document. The package provides annotations like `@FaunaObject` and
-`@FaunaField` to map Fauna documents to Java classes and fields.
+Fauna document. The package provides annotations like `@FaunaField` and
+`@FaunaIgnore` to map Fauna documents to Java classes and fields.
 
-Use the `com.fauna.serialization` package to handle deserialization for
+Use the `com.fauna.codec` package to handle decoding for
 generics, such as `PageOf`, `ListOf`, and `MapOf`.
 
 

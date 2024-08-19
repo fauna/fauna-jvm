@@ -1,7 +1,7 @@
-package com.fauna.serialization.generic;
+package com.fauna.codec;
 
 /**
- * A helper class for static access to parameterized generics for deserialization.
+ * A helper class for static access to parameterized generics for decoding.
  */
 public class Parameterized {
 

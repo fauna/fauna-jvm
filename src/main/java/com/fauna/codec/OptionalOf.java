@@ -1,11 +1,11 @@
-package com.fauna.serialization.generic;
+package com.fauna.codec;
 
 import java.lang.reflect.Type;
 import java.util.Optional;
 
 
 /**
- * OptionalOf stores the generic parameter class to evade type erasure during deserialization.
+ * OptionalOf stores the generic parameter class to evade type erasure during decoding.
  * @param <E> The element class of the list.
  */
 public class OptionalOf<E> implements ParameterizedOf<Optional<E>> {

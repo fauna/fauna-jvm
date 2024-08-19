@@ -2,14 +2,14 @@ package com.fauna.codec.codecs;
 
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaFieldImpl;
+import com.fauna.annotation.FaunaIgnore;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
 import com.fauna.mapping.FieldInfo;
-import com.fauna.mapping.FieldName;
-import com.fauna.serialization.UTF8FaunaGenerator;
-import com.fauna.serialization.UTF8FaunaParser;
+import com.fauna.codec.UTF8FaunaGenerator;
+import com.fauna.codec.UTF8FaunaParser;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -23,8 +23,6 @@ import java.util.Map;
 public class ClassCodec<T> extends BaseCodec<T> {
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
-
-
     private final Class<T> type;
     private final List<FieldInfo> fields;
     private final Map<String, FieldInfo> fieldsByName;
@@ -37,22 +35,20 @@ public class ClassCodec<T> extends BaseCodec<T> {
         Map<String, FieldInfo> byNameMap = new HashMap<>();
 
         for (Field field : ((Class<?>) ty).getDeclaredFields()) {
-            if (field.getAnnotation(FaunaField.class) == null) {
+            if (field.getAnnotation(FaunaIgnore.class) != null) {
                 continue;
             }
 
             var attr = new FaunaFieldImpl(field, field.getAnnotation(FaunaField.class));
 
-            var name = !attr.name().isEmpty() ? attr.name() : FieldName.canonical(field.getName());
-
-            if (byNameMap.containsKey(name)) {
+            if (byNameMap.containsKey(attr.name())) {
                 throw new IllegalArgumentException(
-                        "Duplicate field name " + name + " in " + ty);
+                        "Duplicate field name " + attr.name() + " in " + ty);
             }
 
             var ta = attr.typeArgument() != void.class ? attr.typeArgument() : null;
             var codec = provider.get(field.getType(), ta);
-            FieldInfo info = new FieldInfo(field, name, codec);
+            FieldInfo info = new FieldInfo(field, attr.name(), codec);
             fieldsList.add(info);
             byNameMap.put(info.getName(), info);
         }

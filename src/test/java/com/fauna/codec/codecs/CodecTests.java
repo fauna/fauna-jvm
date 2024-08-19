@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.beans.ClassWithFaunaIgnore;
 import com.fauna.codec.*;
 import com.fauna.exception.ClientException;
 import com.fauna.types.NonNull;
@@ -98,6 +99,9 @@ public class CodecTests {
                 // ClassCodec
                 Arguments.of(TestType.RoundTrip, CLASS_WITH_PARAMETERIZED_FIELDS_CODEC, CLASS_WITH_PARAMETERIZED_FIELDS_WIRE, CLASS_WITH_PARAMETERIZED_FIELDS, null),
                 Arguments.of(TestType.RoundTrip, CLASS_WITH_REF_TAG_COLLISION_CODEC, ESCAPED_OBJECT_WITH_WIRE("@ref"), CLASS_WITH_REF_TAG_COLLISION, null),
+                Arguments.of(TestType.RoundTrip, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WIRE, CLASS_WITH_FAUNA_IGNORE, null),
+                Arguments.of(TestType.Encode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WIRE, CLASS_WITH_FAUNA_IGNORE_WITH_AGE, null),
+                Arguments.of(TestType.Decode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE, CLASS_WITH_FAUNA_IGNORE, null),
                 Arguments.of(TestType.Decode, PERSON_WITH_ATTRIBUTES_CODEC, DOCUMENT_WIRE, PERSON_WITH_ATTRIBUTES, null),
                 Arguments.of(TestType.Decode, PERSON_WITH_ATTRIBUTES_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
 

@@ -1,5 +1,7 @@
 package com.fauna.annotation;
 
+import com.fauna.mapping.FieldName;
+
 import java.lang.reflect.Field;
 
 public class FaunaFieldImpl implements FaunaField {
@@ -15,7 +17,7 @@ public class FaunaFieldImpl implements FaunaField {
     @Override
     public String name() {
         return (annotation != null && !annotation.name().isEmpty()) ? annotation.name()
-            : field.getName();
+            : FieldName.canonical(field.getName());
     }
 
     @Override
