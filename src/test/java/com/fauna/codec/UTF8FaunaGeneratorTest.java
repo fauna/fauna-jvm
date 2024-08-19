@@ -1,7 +1,8 @@
-package com.fauna.serialization;
+package com.fauna.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.types.Module;
 
 import java.io.IOException;

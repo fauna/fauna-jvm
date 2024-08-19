@@ -1,7 +1,7 @@
 package com.fauna.serialization;
 
 
-import com.fauna.serialization.generic.ParameterizedOf;
+import com.fauna.codec.ParameterizedOf;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;

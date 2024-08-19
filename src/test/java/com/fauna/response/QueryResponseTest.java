@@ -23,7 +23,6 @@ import java.net.http.HttpResponse;
 import java.util.Optional;
 
 import com.fauna.serialization.Serializer;
-import com.fauna.serialization.UTF8FaunaParser;
 import com.fauna.types.Document;
 import org.junit.jupiter.api.Test;
 

@@ -15,10 +15,10 @@ import java.util.concurrent.ExecutionException;
 
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.*;
-import static com.fauna.serialization.generic.Parameterized.listOf;
-import static com.fauna.serialization.generic.Parameterized.mapOf;
-import static com.fauna.serialization.generic.Parameterized.pageOf;
-import static com.fauna.serialization.generic.Parameterized.optionalOf;
+import static com.fauna.codec.Parameterized.listOf;
+import static com.fauna.codec.Parameterized.mapOf;
+import static com.fauna.codec.Parameterized.pageOf;
+import static com.fauna.codec.Parameterized.optionalOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class E2EQueryTest {

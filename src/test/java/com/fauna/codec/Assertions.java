@@ -1,4 +1,4 @@
-package com.fauna.serialization;
+package com.fauna.codec;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.fauna.serialization.generic;
+package com.fauna.codec;
 
 import com.fauna.types.Page;
 import java.lang.reflect.Type;

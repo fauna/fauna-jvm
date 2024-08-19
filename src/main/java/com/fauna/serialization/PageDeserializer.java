@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 
+import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.enums.FaunaTokenType;
 import com.fauna.types.Page;
 import com.fauna.exception.ClientException;

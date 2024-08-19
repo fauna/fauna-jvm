@@ -3,7 +3,7 @@ package com.fauna.response;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fauna.constants.ResponseFields;
 import com.fauna.interfaces.IDeserializer;
-import com.fauna.serialization.UTF8FaunaParser;
+import com.fauna.codec.UTF8FaunaParser;
 import java.io.IOException;
 import java.util.Optional;
 

@@ -5,7 +5,7 @@ import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.generic.PageOf;
+import com.fauna.codec.PageOf;
 import com.fauna.types.Page;
 
 import java.util.Iterator;

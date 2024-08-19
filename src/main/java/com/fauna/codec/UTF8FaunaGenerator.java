@@ -1,4 +1,4 @@
-package com.fauna.serialization;
+package com.fauna.codec;
 
 
 import com.fasterxml.jackson.core.JsonFactory;
