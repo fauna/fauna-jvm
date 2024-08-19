@@ -4,7 +4,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
- * MapOf stores the generic parameter class to evade type erasure during deserialization.
+ * MapOf stores the generic parameter class to evade type erasure during decoding.
  * @param <E> The value class of the Map.
  */
 public class MapOf<E> implements ParameterizedOf<Map<String,E>> {
@@ -16,7 +16,7 @@ public class MapOf<E> implements ParameterizedOf<Map<String,E>> {
 
     @Override
     public Type[] getActualTypeArguments() {
-        return new Type[]{String.class, valueClass};
+        return new Type[]{valueClass};
     }
 
     @Override

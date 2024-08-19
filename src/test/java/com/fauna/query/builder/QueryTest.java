@@ -1,6 +1,7 @@
 package com.fauna.query.builder;
 
-import com.fauna.serialization.Serializer;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.UTF8FaunaGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -17,6 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QueryTest {
+
+    private String encode(Query q) throws IOException {
+        var gen = new UTF8FaunaGenerator();
+        q.encode(gen, DefaultCodecProvider.SINGLETON);
+        return gen.serialize();
+    }
 
     @Test
     public void testQueryBuilderStrings() {
@@ -112,7 +119,7 @@ class QueryTest {
     @Test
     public void testQuerySerialization() throws IOException {
         Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
-        assertEquals("{\"fql\":[\"let one = \",{\"value\":{\"@int\":\"15\"}}]}",
-                Serializer.serialize(q1));
+        assertEquals("{\"query\":{\"fql\":[\"let one = \",{\"value\":{\"@int\":\"15\"}}]}}",
+                encode(q1));
     }
 }

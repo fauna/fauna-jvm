@@ -2,7 +2,6 @@ package com.fauna.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.types.Module;
 
 import java.io.IOException;
@@ -99,17 +98,17 @@ public class UTF8FaunaGeneratorTest {
         writer.writeEndObject();
 
         assertWriter("{\"anInt\":{\"@int\":\"42\"}," +
-            "\"aLong\":{\"@long\":\"42\"}," +
-            "\"aDouble\":{\"@double\":\"1.2\"}," +
-            "\"aDecimal\":{\"@double\":\"3.14\"}," +
-            "\"true\":true," +
-            "\"false\":false," +
-            "\"foo\":\"bar\"," +
-            "\"aDate\":{\"@date\":\"2023-12-04\"}," +
-            "\"aTime\":{\"@time\":\"2024-01-23T13:33:10.300Z\"}," +
-            "\"aNull\":null," +
-            "\"anArray\":[]," +
-            "\"anObject\":{}}");
+                "\"aLong\":{\"@long\":\"42\"}," +
+                "\"aDouble\":{\"@double\":\"1.2\"}," +
+                "\"aDecimal\":{\"@double\":\"3.14\"}," +
+                "\"true\":true," +
+                "\"false\":false," +
+                "\"foo\":\"bar\"," +
+                "\"aDate\":{\"@date\":\"2023-12-04\"}," +
+                "\"aTime\":{\"@time\":\"2024-01-23T13:33:10.300Z\"}," +
+                "\"aNull\":null," +
+                "\"anArray\":[]," +
+                "\"anObject\":{}}");
     }
 
     @Test
@@ -132,17 +131,17 @@ public class UTF8FaunaGeneratorTest {
         writer.writeEndArray();
 
         assertWriter("[{\"@int\":\"42\"}," +
-            "{\"@long\":\"42\"}," +
-            "{\"@double\":\"1.2\"}," +
-            "{\"@double\":\"3.14\"}," +
-            "true," +
-            "false," +
-            "\"bar\"," +
-            "{\"@date\":\"2023-12-04\"}," +
-            "{\"@time\":\"2024-01-23T13:33:10.300Z\"}," +
-            "null," +
-            "[]," +
-            "{}]");
+                "{\"@long\":\"42\"}," +
+                "{\"@double\":\"1.2\"}," +
+                "{\"@double\":\"3.14\"}," +
+                "true," +
+                "false," +
+                "\"bar\"," +
+                "{\"@date\":\"2023-12-04\"}," +
+                "{\"@time\":\"2024-01-23T13:33:10.300Z\"}," +
+                "null," +
+                "[]," +
+                "{}]");
     }
 
     @Test

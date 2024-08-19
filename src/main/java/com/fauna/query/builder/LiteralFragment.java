@@ -1,7 +1,10 @@
 package com.fauna.query.builder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fauna.codec.CodecProvider;
+import com.fauna.codec.UTF8FaunaGenerator;
 
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -33,6 +36,11 @@ public class LiteralFragment extends Fragment {
     @Override
     public String get() {
         return value;
+    }
+
+    @Override
+    public void encode(UTF8FaunaGenerator gen, CodecProvider provider) throws IOException {
+        gen.writeStringValue(value);
     }
 
     @Override

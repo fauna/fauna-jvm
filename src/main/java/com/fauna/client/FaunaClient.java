@@ -1,14 +1,15 @@
 package com.fauna.client;
 
+import com.fauna.codec.Codec;
+import com.fauna.codec.CodecProvider;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
-import com.fauna.interfaces.IDeserializer;
-import com.fauna.mapping.MappingContext;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.Deserializer;
 import com.fauna.codec.ParameterizedOf;
 
 import java.net.http.HttpClient;
@@ -24,6 +25,7 @@ public abstract class FaunaClient {
     public static final RetryStrategy DEFAULT_RETRY_STRATEGY = ExponentialBackoffStrategy.builder().build();
     public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
     private final String faunaSecret;
+    private final CodecProvider codecProvider = new DefaultCodecProvider(new DefaultCodecRegistry());
 
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
@@ -37,8 +39,8 @@ public abstract class FaunaClient {
         return this.faunaSecret;
     }
 
-    private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, IDeserializer<T> deserializer) {
-        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, deserializer));
+    private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, codec));
     }
 
     //region Asynchronous API
@@ -53,13 +55,13 @@ public abstract class FaunaClient {
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql) {
+    public CompletableFuture<QuerySuccess<Object>> asyncQuery(Query fql) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        IDeserializer<T> deserializer = Deserializer.generate(new MappingContext(), Object.class);
-        return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null), deserializer));
+        Codec<Object> codec = codecProvider.get(Object.class, null);
+        return new RetryHandler<QuerySuccess<Object>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider), codec));
     }
 
     /**
@@ -79,9 +81,9 @@ public abstract class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        IDeserializer<T> deserializer = Deserializer.generate(new MappingContext(), resultClass);
+        Codec<T> codec = codecProvider.get(resultClass, null);
         return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options), deserializer));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider), codec));
     }
 
     /**
@@ -101,9 +103,9 @@ public abstract class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        IDeserializer<E> deserializer = Deserializer.generate(new MappingContext(), parameterizedType);
+        Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), (Class<?>) parameterizedType.getActualTypeArguments()[0]);
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options), deserializer));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider), codec));
     }
 
     /**
@@ -138,9 +140,9 @@ public abstract class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
-        IDeserializer<E> deserializer = Deserializer.generate(new MappingContext(), parameterizedType);
+        Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), (Class<?>) parameterizedType.getActualTypeArguments()[0]);
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null), deserializer));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider), codec));
     }
     //endregion
 
