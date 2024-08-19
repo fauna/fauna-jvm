@@ -1,5 +1,10 @@
 package com.fauna.query.builder;
 
+import com.fauna.codec.Codec;
+import com.fauna.codec.CodecProvider;
+import com.fauna.codec.UTF8FaunaGenerator;
+
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -27,6 +32,15 @@ public class ValueFragment extends Fragment {
     @Override
     public Object get() {
         return value;
+    }
+
+    @Override
+    public void encode(UTF8FaunaGenerator gen, CodecProvider provider) throws IOException {
+        Codec codec = provider.get(value.getClass());
+        gen.writeStartObject();
+        gen.writeFieldName("value");
+        codec.encode(gen, value);
+        gen.writeEndObject();
     }
 
     @Override

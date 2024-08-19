@@ -1,7 +1,10 @@
 package com.fauna.query.builder;
 
+import com.fauna.codec.CodecProvider;
 import com.fauna.query.template.FaunaTemplate;
+import com.fauna.codec.UTF8FaunaGenerator;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -65,5 +68,19 @@ public class Query implements Serializable {
      */
     public Fragment[] getFql() {
         return this.fql;
+    }
+
+    public void encode(UTF8FaunaGenerator gen, CodecProvider provider) throws IOException {
+        gen.writeStartObject();
+        gen.writeFieldName("query");
+        gen.writeStartObject();
+        gen.writeFieldName("fql");
+        gen.writeStartArray();
+        for (Fragment fragment : fql) {
+            fragment.encode(gen, provider);
+        }
+        gen.writeEndArray();
+        gen.writeEndObject();
+        gen.writeEndObject();
     }
 }

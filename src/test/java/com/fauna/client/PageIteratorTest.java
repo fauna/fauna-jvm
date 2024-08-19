@@ -3,11 +3,10 @@ package com.fauna.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.InvalidRequestException;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.Deserializer;
-import com.fauna.serialization.PageDeserializer;
 import com.fauna.codec.PageOf;
 import com.fauna.codec.ParameterizedOf;
 import com.fauna.types.Page;
@@ -47,7 +46,7 @@ public class PageIteratorTest {
         arr.add(num + "-a");
         arr.add(num + "-b");
 
-        QuerySuccess<PageOf<String>> success = new QuerySuccess(new PageDeserializer<>(Deserializer.DYNAMIC), root, null);
+        QuerySuccess<PageOf<String>> success = new QuerySuccess(DefaultCodecProvider.SINGLETON.get(Page.class, String.class), root, null);
         return CompletableFuture.supplyAsync(() -> success);
     }
 
@@ -131,7 +130,4 @@ public class PageIteratorTest {
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
 
     }
-
-
-
 }

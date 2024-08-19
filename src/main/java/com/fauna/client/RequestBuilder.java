@@ -1,10 +1,11 @@
 package com.fauna.client;
 
+import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
-import com.fauna.serialization.Serializer;
+import com.fauna.codec.UTF8FaunaGenerator;
 
 import java.io.IOException;
 import java.net.URI;
@@ -72,7 +73,7 @@ public class RequestBuilder {
      * @param fql The Fauna query string.
      * @return An HttpRequest object configured for the Fauna query.
      */
-    public HttpRequest buildRequest(Query fql, QueryOptions options) {
+    public HttpRequest buildRequest(Query fql, QueryOptions options, CodecProvider provider) {
         // TODO: I think we can avoid doing this copy if no new headers need to be set.
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         if (options != null) {
@@ -80,7 +81,9 @@ public class RequestBuilder {
         }
         // TODO: set last-txn-ts and max-contention-retries.
         try {
-            String body = Serializer.serialize(new FaunaRequest(fql));
+            UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
+            fql.encode(gen, provider);
+            String body = gen.serialize();
             return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Query request.", e);
