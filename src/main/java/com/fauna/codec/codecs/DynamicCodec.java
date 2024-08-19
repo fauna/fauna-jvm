@@ -34,9 +34,9 @@ public class DynamicCodec extends BaseCodec<Object> {
             case START_PAGE:
                 return page.decode(parser);
             case START_REF:
-                return decodeRef(parser);
+                return provider.get(DocumentRef.class).decode(parser);
             case START_DOCUMENT:
-                return decodeDocument(parser);
+                return provider.get(Document.class).decode(parser);
             case MODULE:
                 return parser.getValueAsModule();
             case INT:
@@ -72,37 +72,6 @@ public class DynamicCodec extends BaseCodec<Object> {
     @Override
     public Class<Object> getCodecClass() {
         return Object.class;
-    }
-
-    private Object decodeDocument(UTF8FaunaParser parser)
-            throws IOException {
-
-        var builder = new InternalDocument.Builder();
-
-        while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_DOCUMENT) {
-            if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
-            }
-
-            String fieldName = parser.getValueAsString();
-            parser.read();
-            switch (fieldName) {
-                case "id":
-                case "name":
-                case "ts":
-                case "coll":
-                    builder = builder.withDocField(fieldName, parser);
-                    break;
-                default:
-                    var v = this.decode(parser);
-                    if (v != null) {
-                        builder = builder.withDataField(fieldName, v);
-                    }
-                    break;
-            }
-        }
-
-        return builder.build();
     }
 
     private Object decodeRef(UTF8FaunaParser parser)
