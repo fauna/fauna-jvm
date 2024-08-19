@@ -1,6 +1,9 @@
 package com.fauna.client;
 
-import com.fauna.codec.*;
+import com.fauna.codec.Codec;
+import com.fauna.codec.CodecProvider;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
