@@ -2,7 +2,6 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
-import com.fauna.enums.FaunaTokenType;
 import com.fauna.exception.ClientException;
 import com.fauna.serialization.*;
 import com.fauna.types.*;
@@ -72,23 +71,5 @@ public class DynamicCodec extends BaseCodec<Object> {
     @Override
     public Class<Object> getCodecClass() {
         return Object.class;
-    }
-
-    private Object decodeRef(UTF8FaunaParser parser)
-            throws IOException {
-
-        var builder = new InternalDocument.Builder();
-
-        while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
-            if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
-            }
-
-            String fieldName = parser.getValueAsString();
-            parser.read();
-            builder = builder.withRefField(fieldName, parser);
-        }
-
-        return builder.build();
     }
 }

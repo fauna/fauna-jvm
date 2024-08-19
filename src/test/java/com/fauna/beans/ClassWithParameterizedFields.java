@@ -10,14 +10,23 @@ import java.util.Objects;
 @FaunaObject
 public class ClassWithParameterizedFields {
 
+    public ClassWithParameterizedFields() {
+    }
+
+    public ClassWithParameterizedFields(String firstName, List<String> list, Map<String,Integer> map) {
+        this.firstName = firstName;
+        this.list = list;
+        this.map = map;
+    }
+
     @FaunaField(name = "first_name")
-    public String firstName = "Baz";
+    public String firstName;
 
     @FaunaField(name = "a_list", typeArgument = String.class)
-    public List<String> list  = List.of("item1");
+    public List<String> list;
 
     @FaunaField(name = "a_map", typeArgument = Integer.class)
-    public Map<String,Integer> map  = Map.of("key1", 42);
+    public Map<String,Integer> map;
 
     @Override
     public boolean equals(Object o) {

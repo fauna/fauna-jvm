@@ -1,6 +1,7 @@
 package com.fauna.serialization;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fauna.enums.FaunaTokenType;
@@ -12,11 +13,9 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
@@ -604,7 +603,7 @@ class UTF8FaunaParserTest {
                 case BYTES:
                     var ar1 = (byte[])entry.getValue();
                     var ar2 = reader.getValueAsByteArray();
-                    if (!Arrays.equals(ar1, ar2)) Assertions.fail(String.format("expected: %s , received: %s", Arrays.toString(ar1), Arrays.toString(ar2)));
+                    assertArrayEquals(ar1, ar2);
                     break;
                 case INT:
                     assertEquals(entry.getValue(), reader.getValueAsInt());

@@ -2,7 +2,10 @@ package com.fauna.codec;
 
 import com.fauna.codec.codecs.*;
 import com.fauna.types.*;
+import com.fauna.types.Module;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultCodecRegistry implements CodecRegistry {
@@ -39,6 +42,11 @@ public class DefaultCodecRegistry implements CodecRegistry {
 
         codecs.put(CodecRegistryKey.from(Double.class), DoubleCodec.singleton);
         codecs.put(CodecRegistryKey.from(double.class), DoubleCodec.singleton);
+
+        codecs.put(CodecRegistryKey.from(Instant.class), InstantCodec.SINGLETON);
+        codecs.put(CodecRegistryKey.from(LocalDate.class), LocalDateCodec.SINGLETON);
+
+        codecs.put(CodecRegistryKey.from(Module.class), ModuleCodec.SINGLETON);
 
         codecs.put(CodecRegistryKey.from(BaseRef.class), BaseRefCodec.SINGLETON);
         codecs.put(CodecRegistryKey.from(DocumentRef.class), BaseRefCodec.SINGLETON);
