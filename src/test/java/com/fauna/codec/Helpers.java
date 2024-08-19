@@ -1,8 +1,5 @@
 package com.fauna.codec;
 
-import com.fauna.serialization.UTF8FaunaGenerator;
-import com.fauna.serialization.UTF8FaunaParser;
-
 import java.io.IOException;
 
 public class Helpers {

@@ -1,5 +1,6 @@
 package com.fauna.serialization;
 
+import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 import com.fauna.mapping.FieldInfo;
@@ -9,10 +10,6 @@ import com.fauna.query.builder.LiteralFragment;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 public class Serializer {

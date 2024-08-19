@@ -1,5 +1,6 @@
 package com.fauna.serialization;
 
+import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.interfaces.IDeserializer;
 import com.fauna.mapping.MappingContext;
 import org.junit.jupiter.api.Disabled;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static com.fauna.serialization.Assertions.assertStringEquivalence;
+import static com.fauna.codec.Assertions.assertStringEquivalence;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

@@ -2,10 +2,11 @@ package com.fauna.serialization;
 
 import com.fauna.beans.Person;
 import com.fauna.beans.PersonWithAttributes;
+import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.NullDocumentException;
-import com.fauna.serialization.generic.ListOf;
-import com.fauna.serialization.generic.MapOf;
-import com.fauna.serialization.generic.PageOf;
+import com.fauna.codec.ListOf;
+import com.fauna.codec.MapOf;
+import com.fauna.codec.PageOf;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.fauna.types.Module;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

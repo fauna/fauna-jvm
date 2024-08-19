@@ -5,7 +5,7 @@ import com.fauna.client.FaunaClient;
 import com.fauna.client.PageIterator;
 import com.fauna.e2e.beans.Product;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.generic.PageOf;
+import com.fauna.codec.PageOf;
 import com.fauna.types.Page;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

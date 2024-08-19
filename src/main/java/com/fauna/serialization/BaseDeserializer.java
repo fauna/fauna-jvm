@@ -1,5 +1,6 @@
 package com.fauna.serialization;
 
+import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.interfaces.IDeserializer;
 
 import java.io.IOException;
