@@ -75,7 +75,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.fauna.annotation.FaunaField;
-import com.fauna.annotation.FaunaObject;
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
@@ -89,15 +88,11 @@ public class App {
 
     // Define class for `Product` documents
     // in expected results.
-    @FaunaObject
     public static class Product {
-        @FaunaField(name = "name")
         public String name;
 
-        @FaunaField(name = "description")
         public String description;
 
-        @FaunaField(name = "price")
         public double price;
     }
 
@@ -231,8 +226,8 @@ options](#query-options).
 ### Define a result class
 
 You can use the `com.fauna.annotation`  package to define a result class for a
-Fauna document. The package provides annotations like `@FaunaObject` and
-`@FaunaField` to map Fauna documents to Java classes and fields.
+Fauna document. The package provides annotations like `@FaunaField` and
+`@FaunaIgnore` to map Fauna documents to Java classes and fields.
 
 Use the `com.fauna.serialization` package to handle deserialization for
 generics, such as `PageOf`, `ListOf`, and `MapOf`.

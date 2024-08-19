@@ -2,12 +2,10 @@ package com.fauna.beans;
 
 
 import com.fauna.annotation.FaunaField;
-import com.fauna.annotation.FaunaObject;
 
 import java.util.Objects;
 
 
-@FaunaObject
 public class ClassWithRefTagCollision {
 
     public ClassWithRefTagCollision(){}

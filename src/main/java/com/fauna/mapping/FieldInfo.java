@@ -24,11 +24,10 @@ public final class FieldInfo {
 
     public FieldInfo(MappingContext ctx, FaunaFieldImpl attr, Field prop) {
         this.ctx = ctx;
-        this.name =
-            attr != null && attr.name() != null ? attr.name() : FieldName.canonical(prop.getName());
+        this.name = attr.name();
         this.property = prop;
         this.type = prop.getType();
-        this.isNullable = attr != null && attr.nullable();
+        this.isNullable = attr.nullable();
         this.codec = null;
     }
 

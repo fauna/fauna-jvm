@@ -207,14 +207,6 @@ class SerializerTest {
     }
 
     @Test
-    public void serializeObjectWithPropertyWithoutFieldAttribute() throws IOException {
-        ClassWithPropertyWithoutFieldAttribute obj = new ClassWithPropertyWithoutFieldAttribute();
-        String expected = "{}";
-        String actual = Serializer.serialize(obj);
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void serializeAnonymousClassObject() throws IOException {
         Object obj = new Object() {
             public String firstName = "John";
