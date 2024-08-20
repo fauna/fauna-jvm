@@ -7,11 +7,15 @@ import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
+import com.fauna.query.StreamOptions;
+import com.fauna.stream.StreamRequest;
+import com.fauna.query.StreamTokenResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 import com.fauna.codec.ParameterizedOf;
 
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -30,6 +34,7 @@ public abstract class FaunaClient {
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
+    abstract RequestBuilder getStreamRequestBuilder();
 
     public FaunaClient(String secret) {
         this.faunaSecret = secret;
@@ -270,5 +275,17 @@ public abstract class FaunaClient {
 
     public <E> PageIterator<E> paginate(Query fql, Class<E> resultClass, QueryOptions options) {
         return new PageIterator<>(this, fql, resultClass, options);
+    }
+
+    public <E> StreamIterator stream(Query fql, Class<E> resultClass) {
+        CompletableFuture<QuerySuccess<StreamTokenResponse>> tokenFuture = this.asyncQuery(fql, StreamTokenResponse.class);
+        return new StreamIterator(this, tokenFuture, resultClass, StreamOptions.builder().build());
+    }
+
+    // TODO: Maybe it would be better for this method to be called stream?
+    public CompletableFuture<HttpResponse<InputStream>> openStream(StreamRequest req) {
+        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(req, codecProvider);
+        return getHttpClient().sendAsync(streamReq,
+                HttpResponse.BodyHandlers.ofInputStream());
     }
 }

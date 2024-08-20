@@ -19,7 +19,7 @@ public class ConstraintFailureTest {
 
     private QueryResponseWire getQueryResponseWire(List<List<Object>> paths) throws JsonProcessingException {
         ObjectNode body = mapper.createObjectNode();
-        QueryStats stats = new QueryStats(0, 0, 0, 0, 0, 0, 0, List.of());
+        QueryStats stats = new QueryStats(0, 0, 0, 0, 0, 0, 0, 0, List.of());
         // body.put("stats", mapper.writeValueAsString(stats));
         body.putPOJO("stats", stats);
         body.put("summary", "error: failed to...");

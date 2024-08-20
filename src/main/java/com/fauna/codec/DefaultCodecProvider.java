@@ -12,6 +12,8 @@ import com.fauna.codec.codecs.QueryArrCodec;
 import com.fauna.codec.codecs.QueryCodec;
 import com.fauna.codec.codecs.QueryLiteralCodec;
 import com.fauna.codec.codecs.QueryObjCodec;
+import com.fauna.codec.codecs.StreamRequestCodec;
+import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.query.builder.QueryArr;
 import com.fauna.query.builder.QueryLiteral;
@@ -39,6 +41,9 @@ public class DefaultCodecProvider implements CodecProvider {
         registry.put(CodecRegistryKey.from(QueryObj.class), new QueryObjCodec(this));
         registry.put(CodecRegistryKey.from(QueryArr.class), new QueryArrCodec(this));
         registry.put(CodecRegistryKey.from(QueryLiteral.class), new QueryLiteralCodec());
+
+        registry.put(CodecRegistryKey.from(StreamRequest.class), new StreamRequestCodec(this));
+        // registry.put(CodecRegistryKey.from(StreamEvent.class), new StreamEventCodec(this));
 
         var bdc = new BaseDocumentCodec(this);
         registry.put(CodecRegistryKey.from(BaseDocument.class), bdc);

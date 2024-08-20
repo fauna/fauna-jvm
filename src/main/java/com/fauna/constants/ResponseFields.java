@@ -17,6 +17,7 @@ public final class ResponseFields {
     public static final String STATS_READ_OPS = "read_ops";
     public static final String STATS_WRITE_OPS = "write_ops";
     public static final String STATS_QUERY_TIME_MS = "query_time_ms";
+    public static final String STATS_PROCESSING_TIME_MS = "processing_time_ms";
     public static final String STATS_CONTENTION_RETRIES = "contention_retries";
     public static final String STATS_STORAGE_BYTES_READ = "storage_bytes_read";
     public static final String STATS_STORAGE_BYTES_WRITE = "storage_bytes_write";
@@ -27,4 +28,8 @@ public final class ResponseFields {
     public static final String ERROR_MESSAGE_FIELD_NAME = "message";
     public static final String ERROR_CONSTRAINT_FAILURES_FIELD_NAME = "constraint_failures";
     public static final String ERROR_ABORT_FIELD_NAME = "abort";
+
+    // Stream-related fields
+    public static final String STREAM_EVENT_TYPE_FIELD_NAME = "type";
+    public static final String STREAM_CURSOR_FIELD_NAME = "cursor";
 }

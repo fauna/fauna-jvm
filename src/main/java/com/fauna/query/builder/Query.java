@@ -1,10 +1,7 @@
 package com.fauna.query.builder;
 
-import com.fauna.codec.CodecProvider;
 import com.fauna.query.template.FaunaTemplate;
-import com.fauna.codec.UTF8FaunaGenerator;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Spliterator;

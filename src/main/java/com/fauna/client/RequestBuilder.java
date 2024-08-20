@@ -5,6 +5,7 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
+import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
 
@@ -21,6 +22,7 @@ public class RequestBuilder {
 
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
+    private static final String STREAM_PATH = "/stream/1";
 
     private final HttpRequest.Builder baseRequestBuilder;
 
@@ -61,6 +63,10 @@ public class RequestBuilder {
         return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret());
     }
 
+    public static RequestBuilder streamRequestBuilder(FaunaConfig config) {
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret());
+    }
+
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
@@ -93,6 +99,21 @@ public class RequestBuilder {
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Query request.", e);
         }
+    }
+
+    public HttpRequest buildStreamRequest(StreamRequest req, CodecProvider provider) {
+        HttpRequest.Builder builder = baseRequestBuilder.copy();
+        Codec<StreamRequest> codec = provider.get(StreamRequest.class);
+        try {
+            UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
+            codec.encode(gen, req);
+            gen.writeEndObject();
+            String body = gen.serialize();
+            return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+        } catch (IOException e) {
+            throw new ClientException("Unable to build Fauna Stream request.", e);
+        }
+
     }
 
     private static String buildAuthHeader(String token) {
