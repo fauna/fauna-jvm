@@ -52,7 +52,6 @@ public class PageIteratorTest {
 
     private CompletableFuture<QuerySuccess<PageOf<String>>> failureFuture() throws IOException {
         ObjectNode root = MAPPER.createObjectNode();
-        ObjectNode stats = root.putObject("stats");
         ObjectNode error = root.putObject("error");
         error.put("code", "invalid_query");
         return CompletableFuture.failedFuture(new InvalidRequestException(new QueryFailure(400, root, null)));
