@@ -1,7 +1,26 @@
 package com.fauna.codec;
 
-import com.fauna.codec.codecs.*;
-import com.fauna.types.*;
+import com.fauna.codec.codecs.BaseDocumentCodec;
+import com.fauna.codec.codecs.ClassCodec;
+import com.fauna.codec.codecs.DynamicCodec;
+import com.fauna.codec.codecs.ListCodec;
+import com.fauna.codec.codecs.MapCodec;
+import com.fauna.codec.codecs.NullableCodec;
+import com.fauna.codec.codecs.OptionalCodec;
+import com.fauna.codec.codecs.PageCodec;
+import com.fauna.codec.codecs.QueryArrCodec;
+import com.fauna.codec.codecs.QueryCodec;
+import com.fauna.codec.codecs.QueryLiteralCodec;
+import com.fauna.codec.codecs.QueryObjCodec;
+import com.fauna.query.builder.Query;
+import com.fauna.query.builder.QueryArr;
+import com.fauna.query.builder.QueryLiteral;
+import com.fauna.query.builder.QueryObj;
+import com.fauna.types.BaseDocument;
+import com.fauna.types.Document;
+import com.fauna.types.NamedDocument;
+import com.fauna.types.Nullable;
+import com.fauna.types.Page;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +34,11 @@ public class DefaultCodecProvider implements CodecProvider {
 
     public DefaultCodecProvider(CodecRegistry registry) {
         registry.put(CodecRegistryKey.from(Object.class), new DynamicCodec(this));
+
+        registry.put(CodecRegistryKey.from(Query.class), new QueryCodec(this));
+        registry.put(CodecRegistryKey.from(QueryObj.class), new QueryObjCodec(this));
+        registry.put(CodecRegistryKey.from(QueryArr.class), new QueryArrCodec(this));
+        registry.put(CodecRegistryKey.from(QueryLiteral.class), new QueryLiteralCodec());
 
         var bdc = new BaseDocumentCodec(this);
         registry.put(CodecRegistryKey.from(BaseDocument.class), bdc);
@@ -43,13 +67,13 @@ public class DefaultCodecProvider implements CodecProvider {
     @SuppressWarnings({"unchecked"})
     private <T,E> Codec<T> generate(Class<T> clazz, Class<E> typeArg) {
         var ta = (Class<E>) (typeArg == null ? Object.class : typeArg);
-        if (clazz == List.class) {
+        if (List.class.isAssignableFrom(clazz)) {
             Codec<E> elemCodec = this.get(ta, null);
 
             return (Codec<T>) new ListCodec<E,List<E>>(elemCodec);
         }
 
-        if (clazz == Map.class) {
+        if (Map.class.isAssignableFrom(clazz)) {
             Codec<E> valueCodec = this.get(ta, null);
 
             return (Codec<T>) new MapCodec<E,Map<String,E>>(valueCodec);

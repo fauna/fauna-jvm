@@ -5,7 +5,6 @@ import com.fauna.query.template.FaunaTemplate;
 import com.fauna.codec.UTF8FaunaGenerator;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Spliterator;
@@ -16,9 +15,9 @@ import java.util.stream.StreamSupport;
  * Represents a Fauna query that is constructed from fragments.
  * This class allows the building of queries from literal and variable parts.
  */
-public class Query implements Serializable {
+public class Query{
 
-    private final Fragment[] fql;
+    private final QueryFragment[] fql;
 
     /**
      * Construct a Query from the given template String and args.
@@ -31,7 +30,7 @@ public class Query implements Serializable {
                 part -> {
                     Map<String, Object> foo = Objects.requireNonNullElse(args, Map.of());
                     return part.toFragment(foo);
-                }).toArray(Fragment[]::new);
+                }).toArray(QueryFragment[]::new);
     }
 
 
@@ -66,21 +65,7 @@ public class Query implements Serializable {
      * @return a list of Fragments.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
-    public Fragment[] getFql() {
+    public QueryFragment[] get() {
         return this.fql;
-    }
-
-    public void encode(UTF8FaunaGenerator gen, CodecProvider provider) throws IOException {
-        gen.writeStartObject();
-        gen.writeFieldName("query");
-        gen.writeStartObject();
-        gen.writeFieldName("fql");
-        gen.writeStartArray();
-        for (Fragment fragment : fql) {
-            fragment.encode(gen, provider);
-        }
-        gen.writeEndArray();
-        gen.writeEndObject();
-        gen.writeEndObject();
     }
 }
