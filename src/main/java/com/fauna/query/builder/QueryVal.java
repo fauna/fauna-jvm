@@ -11,16 +11,16 @@ import java.util.Objects;
  * Represents a value fragment of a Fauna query.
  * This class encapsulates a value that can be a variable in the query.
  */
-public class ValueFragment extends Fragment {
+public class QueryVal<T> extends QueryFragment<T> {
 
-    private final Object value;
+    private final T value;
 
     /**
      * Constructs a ValueFragment with the specified value.
      *
      * @param value the value to encapsulate, which can be any object.
      */
-    public ValueFragment(Object value) {
+    public QueryVal(T value) {
         this.value = value;
     }
 
@@ -30,17 +30,8 @@ public class ValueFragment extends Fragment {
      * @return the encapsulated object.
      */
     @Override
-    public Object get() {
+    public T get() {
         return value;
-    }
-
-    @Override
-    public void encode(UTF8FaunaGenerator gen, CodecProvider provider) throws IOException {
-        Codec codec = provider.get(value.getClass());
-        gen.writeStartObject();
-        gen.writeFieldName("value");
-        codec.encode(gen, value);
-        gen.writeEndObject();
     }
 
     @Override
@@ -48,7 +39,7 @@ public class ValueFragment extends Fragment {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ValueFragment that = (ValueFragment) o;
+        QueryVal<T> that = (QueryVal<T>) o;
 
         return Objects.equals(value, that.value);
     }

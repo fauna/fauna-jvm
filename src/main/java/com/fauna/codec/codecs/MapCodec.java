@@ -75,6 +75,6 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
 
     @Override
     public Class<?> getCodecClass() {
-        return List.class;
+        return Map.class;
     }
 }

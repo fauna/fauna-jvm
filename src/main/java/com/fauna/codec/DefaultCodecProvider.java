@@ -1,6 +1,7 @@
 package com.fauna.codec;
 
 import com.fauna.codec.codecs.*;
+import com.fauna.query.builder.*;
 import com.fauna.types.*;
 
 import java.util.List;
@@ -15,6 +16,11 @@ public class DefaultCodecProvider implements CodecProvider {
 
     public DefaultCodecProvider(CodecRegistry registry) {
         registry.put(CodecRegistryKey.from(Object.class), new DynamicCodec(this));
+
+        registry.put(CodecRegistryKey.from(Query.class), new QueryCodec(this));
+        registry.put(CodecRegistryKey.from(QueryObj.class), new QueryObjCodec(this));
+        registry.put(CodecRegistryKey.from(QueryArr.class), new QueryArrCodec(this));
+        registry.put(CodecRegistryKey.from(QueryLiteral.class), new QueryLiteralCodec());
 
         var bdc = new BaseDocumentCodec(this);
         registry.put(CodecRegistryKey.from(BaseDocument.class), bdc);
@@ -43,13 +49,13 @@ public class DefaultCodecProvider implements CodecProvider {
     @SuppressWarnings({"unchecked"})
     private <T,E> Codec<T> generate(Class<T> clazz, Class<E> typeArg) {
         var ta = (Class<E>) (typeArg == null ? Object.class : typeArg);
-        if (clazz == List.class) {
+        if (List.class.isAssignableFrom(clazz)) {
             Codec<E> elemCodec = this.get(ta, null);
 
             return (Codec<T>) new ListCodec<E,List<E>>(elemCodec);
         }
 
-        if (clazz == Map.class) {
+        if (Map.class.isAssignableFrom(clazz)) {
             Codec<E> valueCodec = this.get(ta, null);
 
             return (Codec<T>) new MapCodec<E,Map<String,E>>(valueCodec);

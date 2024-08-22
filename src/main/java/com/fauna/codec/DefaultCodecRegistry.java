@@ -1,6 +1,7 @@
 package com.fauna.codec;
 
 import com.fauna.codec.codecs.*;
+import com.fauna.query.builder.QueryVal;
 import com.fauna.types.*;
 import com.fauna.types.Module;
 

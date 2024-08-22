@@ -1,5 +1,6 @@
 package com.fauna.client;
 
+import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
@@ -82,7 +83,11 @@ public class RequestBuilder {
         // TODO: set last-txn-ts and max-contention-retries.
         try {
             UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
-            fql.encode(gen, provider);
+            gen.writeStartObject();
+            gen.writeFieldName("query");
+            Codec<Query> codec = provider.get(Query.class);
+            codec.encode(gen, fql);
+            gen.writeEndObject();
             String body = gen.serialize();
             return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
         } catch (IOException e) {

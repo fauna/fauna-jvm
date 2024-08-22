@@ -11,7 +11,7 @@ import java.util.Objects;
  * Represents a literal fragment of a Fauna query.
  * This class encapsulates a fixed string that does not contain any variables.
  */
-public class LiteralFragment extends Fragment {
+public class QueryLiteral extends QueryFragment {
 
     private final String value;
 
@@ -21,7 +21,7 @@ public class LiteralFragment extends Fragment {
      * @param value the string value of this fragment; must not be null.
      * @throws IllegalArgumentException if {@code value} is null.
      */
-    public LiteralFragment(String value) {
+    public QueryLiteral(String value) {
         if (value == null) {
             throw new IllegalArgumentException("A literal value must not be null");
         }
@@ -39,16 +39,11 @@ public class LiteralFragment extends Fragment {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, CodecProvider provider) throws IOException {
-        gen.writeStringValue(value);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        LiteralFragment that = (LiteralFragment) o;
+        QueryLiteral that = (QueryLiteral) o;
 
         return Objects.equals(value, that.value);
     }
