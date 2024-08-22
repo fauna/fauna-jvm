@@ -5,7 +5,8 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
-import com.fauna.query.builder.*;
+import com.fauna.query.builder.Query;
+import com.fauna.query.builder.QueryFragment;
 
 import java.io.IOException;
 
