@@ -1,8 +1,25 @@
 package com.fauna.codec;
 
-import com.fauna.codec.codecs.*;
-import com.fauna.query.builder.*;
-import com.fauna.types.*;
+import com.fauna.codec.codecs.ClassCodec;
+import com.fauna.codec.codecs.DynamicCodec;
+import com.fauna.codec.codecs.ListCodec;
+import com.fauna.codec.codecs.MapCodec;
+import com.fauna.codec.codecs.NullableCodec;
+import com.fauna.codec.codecs.OptionalCodec;
+import com.fauna.codec.codecs.PageCodec;
+import com.fauna.codec.codecs.QueryArrCodec;
+import com.fauna.codec.codecs.QueryCodec;
+import com.fauna.codec.codecs.QueryLiteralCodec;
+import com.fauna.codec.codecs.QueryObjCodec;
+import com.fauna.query.builder.Query;
+import com.fauna.query.builder.QueryArr;
+import com.fauna.query.builder.QueryLiteral;
+import com.fauna.query.builder.QueryObj;
+import com.fauna.types.BaseDocument;
+import com.fauna.types.Document;
+import com.fauna.types.NamedDocument;
+import com.fauna.types.Nullable;
+import com.fauna.types.Page;
 
 import java.util.List;
 import java.util.Map;
