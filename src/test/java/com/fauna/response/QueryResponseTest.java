@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fauna.beans.PersonWithAttributes;
+import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.*;
 import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ClientException;
@@ -37,16 +37,16 @@ class QueryResponseTest {
 
     @Test
     public void getFromResponseBody_Success() throws IOException {
-        PersonWithAttributes baz = new PersonWithAttributes("baz", "luhrman", 64);
+        ClassWithAttributes baz = new ClassWithAttributes("baz", "luhrman", 64);
 
-        Codec<PersonWithAttributes> codec = codecProvider.get(PersonWithAttributes.class);
+        Codec<ClassWithAttributes> codec = codecProvider.get(ClassWithAttributes.class);
         String data = encode(codec, baz);
         String body = "{\"stats\":{},\"static_type\":\"PersonWithAttributes\",\"data\":" + data + "}";
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn(body);
         when(resp.statusCode()).thenReturn(200);
 
-        QuerySuccess<PersonWithAttributes> success = QueryResponse.handleResponse(resp, codec);
+        QuerySuccess<ClassWithAttributes> success = QueryResponse.handleResponse(resp, codec);
 
         assertEquals(baz.getFirstName(), success.getData().getFirstName());
         assertEquals("PersonWithAttributes", success.getStaticType().get());
