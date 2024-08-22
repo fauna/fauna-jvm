@@ -1,5 +1,6 @@
 package com.fauna.codec;
 
+import com.fauna.codec.codecs.BaseDocumentCodec;
 import com.fauna.codec.codecs.ClassCodec;
 import com.fauna.codec.codecs.DynamicCodec;
 import com.fauna.codec.codecs.ListCodec;
