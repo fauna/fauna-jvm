@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -58,7 +59,7 @@ public class TestAbortException {
     }
 
     @Test
-    public void testAbortDataMissing() throws JsonProcessingException {
+    public void testAbortDataMissing() throws IOException {
         // Given
         ObjectNode root = mapper.createObjectNode();
         ObjectNode error = root.putObject("error");
@@ -69,6 +70,6 @@ public class TestAbortException {
         AbortException exc = new AbortException(failure);
 
         // Then
-        assertThrows(RuntimeException.class, () -> exc.getAbort());
+        assertNull(exc.getAbort());
     }
 }

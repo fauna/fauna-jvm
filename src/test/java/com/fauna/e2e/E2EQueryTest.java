@@ -21,6 +21,7 @@ import static com.fauna.codec.Parameterized.mapOf;
 import static com.fauna.codec.Parameterized.pageOf;
 import static com.fauna.codec.Parameterized.optionalOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -175,6 +176,13 @@ public class E2EQueryTest {
 
         assertTrue(actual.isPresent());
         assertEquals(42, actual.get());
+    }
+
+    @Test
+    public void query_abortEmpty() throws IOException {
+        var q = fql("abort(null)");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertNull(e.getAbort());
     }
 
     @Test

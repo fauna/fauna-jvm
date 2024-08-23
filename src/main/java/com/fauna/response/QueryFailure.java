@@ -46,7 +46,7 @@ public final class QueryFailure extends QueryResponse {
             message = info.getMessage() != null ? info.getMessage() : "";
             constraintFailures = info.getConstraintFailures();
             // When we stop dealing with default object mappers we can do this more elegantly.
-            abortRaw = info.getAbort().isPresent() ? mapper.writeValueAsString(info.getAbort().get()) : null;
+            abortRaw = info.getAbort().isPresent() ? mapper.writeValueAsString(info.getAbort().get()) : "null";
         }
 
         var maybeSummary = !this.getSummary().isEmpty() ? "\n---\n" + this.getSummary() : "";
