@@ -2,7 +2,7 @@ package com.fauna.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fauna.constants.ResponseFields;
+
 import java.util.List;
 
 public final class QueryStats {

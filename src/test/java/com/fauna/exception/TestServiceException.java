@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
+import com.fauna.response.QueryResponseInternal;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -32,7 +33,8 @@ public class TestServiceException {
         root.put("schema_version", 10);
         root.put("query_tags", "foo=bar");
         root.put("txn_ts", Long.MAX_VALUE / 4); // would cause int overflow
-        QueryFailure failure = new QueryFailure(500, root, QueryResponse.DEFAULT_STATS);
+        var res = mapper.readValue(root.asText(), QueryResponseInternal.class);
+        QueryFailure failure = new QueryFailure(500, res);
 
         // When
         ServiceException exc = new ServiceException(failure);

@@ -3,7 +3,6 @@ package com.fauna.response;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
-import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ProtocolException;
@@ -17,44 +16,28 @@ import java.util.Map;
 public abstract class QueryResponse {
 
     private static final ObjectMapper mapper = new ObjectMapper();
-    private final JsonNode rawJson;
-    private long lastSeenTxn;
-    private long schemaVersion;
-    private String summary = "";
-    private final Map<String, String> queryTags = new HashMap<>();
-    private QueryStats stats;
     public static final QueryStats DEFAULT_STATS = new QueryStats(0, 0, 0, 0, 0, 0, 0, List.of());
 
-    QueryResponse(JsonNode json, QueryStats stats) {
-        this.rawJson = json;
-        this.stats = stats;
+    private final long lastSeenTxn;
+    private final long schemaVersion;
+    private final String summary;
+    private final Map<String, String> queryTags = new HashMap<>();
+    private final QueryStats stats;
 
-        JsonNode elem;
+    QueryResponse(QueryResponseInternal response) {
 
-        if ((elem = json.get(ResponseFields.LAST_SEEN_TXN_FIELD_NAME)) != null) {
-            lastSeenTxn = elem.asLong();
-        }
+        lastSeenTxn = response.txnTs;
+        schemaVersion = response.schemaVersion;
+        summary = response.summary;
+        stats = response.stats;
 
-        if ((elem = json.get(ResponseFields.SCHEMA_VERSION_FIELD_NAME)) != null) {
-            schemaVersion = elem.asLong();
-        }
-
-        if ((elem = json.get(ResponseFields.SUMMARY_FIELD_NAME)) != null) {
-            summary = elem.asText();
-        }
-
-        if ((elem = json.get(ResponseFields.QUERY_TAGS_FIELD_NAME)) != null) {
-            String queryTagsString = elem.asText();
-
-            if (queryTagsString != null && !queryTagsString.isEmpty()) {
-                String[] tagPairs = queryTagsString.split(",");
-                for (String tagPair : tagPairs) {
-                    String[] tokens = tagPair.split("=");
-                    queryTags.put(tokens[0], tokens[1]);
-                }
+        if (response.queryTags != null && !response.queryTags.isEmpty()) {
+            String[] tagPairs = response.queryTags.split(",");
+            for (String tagPair : tagPairs) {
+                String[] tokens = tagPair.split("=");
+                queryTags.put(tokens[0], tokens[1]);
             }
         }
-
     }
 
     /**
@@ -66,24 +49,15 @@ public abstract class QueryResponse {
     public static <T>  QuerySuccess<T> handleResponse(HttpResponse<String> response, Codec<T> codec) throws FaunaException {
         String body = response.body();
         try {
+            var responseInternal = mapper.readValue(body, QueryResponseInternal.class);
             if (response.statusCode() >= 400) {
-                ErrorHandler.handleErrorResponse(response.statusCode(), body, mapper);
+                ErrorHandler.handleErrorResponse(response.statusCode(), responseInternal);
             }
-            JsonNode json = mapper.readTree(response.body());
-            JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
-            if (statsNode != null) {
-                QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
-                return new QuerySuccess<>(codec, json, stats);
-            } else {
-                throw new ProtocolException(response.statusCode(), body);
-            }
+
+            return new QuerySuccess<>(codec, responseInternal);
         } catch (IOException exc) { // Jackson JsonProcessingException subclasses IOException
             throw new ProtocolException(exc, response.statusCode(), body);
         }
-    }
-
-    public JsonNode getRawJson() {
-        return rawJson;
     }
 
     public long getLastSeenTxn() {

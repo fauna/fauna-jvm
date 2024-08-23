@@ -3,23 +3,27 @@ package com.fauna.e2e;
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.e2e.beans.Author;
+import com.fauna.exception.AbortException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static com.fauna.query.builder.Query.fql;
-import static org.junit.jupiter.api.Assertions.*;
 import static com.fauna.codec.Parameterized.listOf;
 import static com.fauna.codec.Parameterized.mapOf;
 import static com.fauna.codec.Parameterized.pageOf;
 import static com.fauna.codec.Parameterized.optionalOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class E2EQueryTest {
     public static final FaunaClient c = Fauna.local();
@@ -172,5 +176,26 @@ public class E2EQueryTest {
 
         assertTrue(actual.isPresent());
         assertEquals(42, actual.get());
+    }
+
+    @Test
+    public void query_abortEmpty() throws IOException {
+        var q = fql("abort(null)");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertNull(e.getAbort());
+    }
+
+    @Test
+    public void query_abortDynamic() throws IOException {
+        var q = fql("abort(8)");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertEquals(8, e.getAbort());
+    }
+
+    @Test
+    public void query_abortClass() throws IOException {
+        var q = fql("abort({firstName:\"alice\"})");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertEquals("alice", e.getAbort(Author.class).getFirstName());
     }
 }

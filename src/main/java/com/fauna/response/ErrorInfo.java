@@ -12,12 +12,7 @@ public class ErrorInfo {
     private final ConstraintFailure[] constraintFailures;
     private final Object abort;
 
-    @JsonCreator
-    public ErrorInfo(
-        @JsonProperty("code") String code,
-        @JsonProperty("message") String message,
-        @JsonProperty("constraint_failures") ConstraintFailure[] constraintFailures,
-        @JsonProperty("abort") Object abort) {
+    public ErrorInfo(String code, String message, ConstraintFailure[] constraintFailures, Object abort) {
         this.code = code;
         this.message = message;
         this.constraintFailures = constraintFailures;

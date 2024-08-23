@@ -1,10 +1,10 @@
-package com.fauna.constants;
+package com.fauna.response;
 
 public final class ResponseFields {
 
     // Top-level fields
     public static final String DATA_FIELD_NAME = "data";
-    public static final String LAST_SEEN_TXN_FIELD_NAME = "txn_ts";
+    public static final String TXN_TS_FIELD_NAME = "txn_ts";
     public static final String STATIC_TYPE_FIELD_NAME = "static_type";
     public static final String STATS_FIELD_NAME = "stats";
     public static final String SCHEMA_VERSION_FIELD_NAME = "schema_version";

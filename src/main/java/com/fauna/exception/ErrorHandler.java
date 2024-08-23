@@ -3,7 +3,8 @@ package com.fauna.exception;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fauna.constants.ResponseFields;
+import com.fauna.response.QueryResponseInternal;
+import com.fauna.response.ResponseFields;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
 
@@ -31,8 +32,7 @@ public class ErrorHandler {
      * Handles errors based on the HTTP status code and response body.
      *
      * @param statusCode        The HTTP status code.
-     * @param body              The decoded QueryFailure body.
-     * @param mapper            Jackson ObjectMapper.
+     * @param response          The decoded response.
      * @throws AbortException
      * @throws AuthenticationException
      * @throws AuthorizationException
@@ -46,21 +46,9 @@ public class ErrorHandler {
      * @throws ThrottlingException
      *
      */
-    public static void handleErrorResponse(int statusCode, String body, ObjectMapper mapper) {
-        try {
-            JsonNode json = mapper.readTree(body);
-            JsonNode statsNode = json.get(ResponseFields.STATS_FIELD_NAME);
-            QueryStats stats = mapper.convertValue(statsNode, QueryStats.class);
-            if (stats != null) {
-                QueryFailure failure = new QueryFailure(statusCode, json, stats);
-                handleQueryFailure(statusCode, failure);
-            } else {
-                throw new ProtocolException(statusCode, body);
-            }
-        } catch (JsonProcessingException e) {
-            throw new ProtocolException(statusCode, body);
-        }
-        throw new ProtocolException(statusCode, body);
+    public static void handleErrorResponse(int statusCode, QueryResponseInternal response) throws JsonProcessingException {
+        QueryFailure failure = new QueryFailure(statusCode, response);
+        handleQueryFailure(statusCode, failure);
     }
 
     /**

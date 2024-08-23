@@ -3,6 +3,7 @@ package com.fauna.exception;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.response.QueryResponseInternal;
 import com.fauna.response.QueryStats;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -58,20 +59,16 @@ public class TestErrorHandler {
         ObjectNode stats = root.putObject("stats");
         error.put("code", args.code);
         String body = mapper.writeValueAsString(root);
-        assertThrows(args.exception, () -> ErrorHandler.handleErrorResponse(args.httpStatus, body, mapper));
+        var res = mapper.readValue(body, QueryResponseInternal.class);
+        assertThrows(args.exception, () -> ErrorHandler.handleErrorResponse(args.httpStatus, res));
     }
 
-    public void testHandleInvalidJson() {
-        assertThrows(ProtocolException.class,
-                () -> ErrorHandler.handleErrorResponse(400, "{not json", mapper));
-    }
-
-    public void testMissingStats() throws JsonProcessingException {
-        ObjectNode root = mapper.createObjectNode();
-        ObjectNode error = root.putObject("error");
-        error.put("code", "invalid_query");
-        String body = mapper.writeValueAsString(root);
-        assertThrows(ProtocolException.class,
-                () -> ErrorHandler.handleErrorResponse(400, body, mapper));
-    }
+//    public void testMissingStats() throws JsonProcessingException {
+//        ObjectNode root = mapper.createObjectNode();
+//        ObjectNode error = root.putObject("error");
+//        error.put("code", "invalid_query");
+//        String body = mapper.writeValueAsString(root);
+//        assertThrows(ProtocolException.class,
+//                () -> ErrorHandler.handleErrorResponse(400, body, mapper));
+//    }
 }

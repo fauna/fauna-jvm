@@ -1,24 +1,27 @@
 package com.fauna.response;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.codec.json.PassThroughDeserializer;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class ConstraintFailure {
-    private final String message;
-    private final String name;
-    private final Object[][] paths;
+    @JsonProperty("message")
+    private String message;
 
-    @JsonCreator
-    public ConstraintFailure(
-            @JsonProperty("message") String message,
-            @JsonProperty("name") String name,
-            @JsonProperty("paths") Object[][] paths) {
-        this.message = message;
-        this.name = name;
-        this.paths = paths;
-    }
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("paths")
+    @JsonDeserialize(using = PassThroughDeserializer.class)
+    private String pathsRaw;
+
+    private Optional<List<List<Object>>> pathsDecoded;
 
     public String getMessage() {
         return this.message;
@@ -35,8 +38,20 @@ public class ConstraintFailure {
      *
      * @return
      */
-    public Optional<Object[][]> getPaths() {
-        return Optional.ofNullable(this.paths);
+    public Optional<List<List<Object>>> getPaths() throws IOException {
+        if (pathsDecoded != null) return pathsDecoded;
+
+        var codec = DefaultCodecProvider.SINGLETON.get(Object.class);
+        var parser = new UTF8FaunaParser(this.pathsRaw);
+        var result = codec.decode(parser);
+
+        if (result == null) {
+            pathsDecoded = Optional.empty();
+        } else {
+            pathsDecoded = Optional.ofNullable((List<List<Object>>) result);
+        }
+
+        return pathsDecoded;
     }
 
 }
