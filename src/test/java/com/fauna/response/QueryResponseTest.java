@@ -78,7 +78,7 @@ class QueryResponseTest {
         assertEquals("ErrorCode", failureResponse.getErrorCode());
         assertEquals("ErrorMessage", failureResponse.getMessage());
         assertTrue(failureResponse.getConstraintFailures().isEmpty());
-        assertEquals(Optional.of("AbortData"), failureResponse.getAbort());
+        assertEquals(Optional.of("AbortData"), failureResponse.getAbortRaw());
     }
 
     @Test

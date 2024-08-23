@@ -7,22 +7,25 @@ import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestAbortException {
     ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void testAbortDataObject() throws JsonProcessingException {
+    public void testAbortDataObject() throws IOException {
         // Given
         ObjectNode root = mapper.createObjectNode();
         ObjectNode error = root.putObject("error");
         error.put("code", "abort");
         ObjectNode abort = error.putObject("abort");
-        abort.put("some", "reason");
+        ObjectNode num = abort.putObject("num");
+        num.put("@int", "42");
 
         QueryFailure failure = new QueryFailure(500, root, QueryResponse.DEFAULT_STATS);
 
@@ -30,13 +33,16 @@ public class TestAbortException {
         AbortException exc = new AbortException(failure);
 
         // Then
-        HashMap<String, String>  expected = new HashMap<>();
-        expected.put("some", "reason");
+        HashMap<String, Integer>  expected = new HashMap<>();
+        expected.put("num", 42);
         assertEquals(expected, exc.getAbort());
+
+        // Assert caching
+        assertSame(exc.getAbort(), exc.getAbort());
     }
 
     @Test
-    public void testAbortDataString() throws JsonProcessingException {
+    public void testAbortDataString() throws IOException {
         // Given
         ObjectNode root = mapper.createObjectNode();
         ObjectNode error = root.putObject("error");

@@ -3,7 +3,6 @@ package com.fauna.response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.constants.ResponseFields;
 
 import java.util.Optional;
@@ -15,7 +14,7 @@ public final class QueryFailure extends QueryResponse {
     private String errorCode = "";
     private String message = "";
     private ConstraintFailure[] constraintFailures;
-    private Object abort;
+    private String abortRaw;
 
     private String fullMessage = "";
 
@@ -41,12 +40,13 @@ public final class QueryFailure extends QueryResponse {
         JsonNode elem;
 
         if ((elem = json.get(ResponseFields.ERROR_FIELD_NAME)) != null) {
-
-            ErrorInfo info = new ObjectMapper().treeToValue(elem, ErrorInfo.class);
+            var mapper = new ObjectMapper();
+            ErrorInfo info = mapper.treeToValue(elem, ErrorInfo.class);
             errorCode = info.getCode() != null ? info.getCode() : "";
             message = info.getMessage() != null ? info.getMessage() : "";
             constraintFailures = info.getConstraintFailures();
-            abort = info.getAbort().isPresent() ? info.getAbort().get() : null;
+            // When we stop dealing with default object mappers we can do this more elegantly.
+            abortRaw = info.getAbort().isPresent() ? mapper.writeValueAsString(info.getAbort().get()) : null;
         }
 
         var maybeSummary = !this.getSummary().isEmpty() ? "\n---\n" + this.getSummary() : "";
@@ -79,7 +79,7 @@ public final class QueryFailure extends QueryResponse {
         return Optional.ofNullable(constraintFailures);
     }
 
-    public Optional<Object> getAbort() {
-        return Optional.ofNullable(this.abort);
+    public Optional<String> getAbortRaw() {
+        return Optional.ofNullable(this.abortRaw);
     }
 }
