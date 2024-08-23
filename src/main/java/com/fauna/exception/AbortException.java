@@ -32,7 +32,7 @@ public class AbortException extends ServiceException {
             abort = codec.decode(parser);
             return (T) abort;
         } else {
-            throw new RuntimeException("Abort Exception missing abort data.");
+            return null;
         }
     }
 }
