@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class QueryTagsDeserializer extends JsonDeserializer<Map<String, String>> {
     @Override
@@ -19,18 +21,15 @@ public class QueryTagsDeserializer extends JsonDeserializer<Map<String, String>>
             case VALUE_NULL:
                 return null;
             case VALUE_STRING:
-                var raw = jp.getValueAsString();
-                Map<String, String> ret = new HashMap<>();
-                if (raw.isEmpty()) {
-                    return ret;
+                var rawString = jp.getValueAsString();
+
+                if (rawString.isEmpty()) {
+                    return Map.of();
                 }
 
-                String[] tagPairs = jp.getValueAsString().split(",");
-                for (String tagPair : tagPairs) {
-                    String[] tokens = tagPair.split("=");
-                    ret.put(tokens[0], tokens[1]);
-                }
-                return ret;
+                return Arrays.stream(rawString.split(","))
+                        .map(queryTag -> queryTag.split("="))
+                        .collect(Collectors.toMap(t -> t[0], t -> t[1]));
             default:
                 throw new JsonParseException(jp, MessageFormat.format("Unexpected token `{0}` deserializing query tags", jp.currentToken()));
         }
