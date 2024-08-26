@@ -29,6 +29,7 @@ public class QueryTagsDeserializer extends JsonDeserializer<Map<String, String>>
 
                 return Arrays.stream(rawString.split(","))
                         .map(queryTag -> queryTag.split("="))
+                        .filter(parts -> parts.length >= 2)
                         .collect(Collectors.toMap(t -> t[0], t -> t[1]));
             default:
                 throw new JsonParseException(jp, MessageFormat.format("Unexpected token `{0}` deserializing query tags", jp.currentToken()));
