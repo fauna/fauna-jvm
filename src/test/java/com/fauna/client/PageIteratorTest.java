@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.InvalidRequestException;
 import com.fauna.response.QueryFailure;
+import com.fauna.response.wire.QueryResponseWire;
 import com.fauna.response.QuerySuccess;
 import com.fauna.codec.PageOf;
 import com.fauna.codec.ParameterizedOf;
@@ -46,7 +47,8 @@ public class PageIteratorTest {
         arr.add(num + "-a");
         arr.add(num + "-b");
 
-        QuerySuccess<PageOf<String>> success = new QuerySuccess(DefaultCodecProvider.SINGLETON.get(Page.class, String.class), root, null);
+        var res = MAPPER.readValue(root.toString(), QueryResponseWire.class);
+        QuerySuccess<PageOf<String>> success = new QuerySuccess(DefaultCodecProvider.SINGLETON.get(Page.class, String.class), res);
         return CompletableFuture.supplyAsync(() -> success);
     }
 
@@ -54,7 +56,8 @@ public class PageIteratorTest {
         ObjectNode root = MAPPER.createObjectNode();
         ObjectNode error = root.putObject("error");
         error.put("code", "invalid_query");
-        return CompletableFuture.failedFuture(new InvalidRequestException(new QueryFailure(400, root, null)));
+        var res = MAPPER.readValue(root.toString(), QueryResponseWire.class);
+        return CompletableFuture.failedFuture(new InvalidRequestException(new QueryFailure(400, res)));
     }
 
 

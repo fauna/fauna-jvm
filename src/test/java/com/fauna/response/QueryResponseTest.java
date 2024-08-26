@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.beans.ClassWithAttributes;
@@ -20,6 +19,7 @@ import java.util.Optional;
 
 import com.fauna.exception.ProtocolException;
 import com.fauna.codec.UTF8FaunaGenerator;
+import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
 class QueryResponseTest {
@@ -55,7 +55,7 @@ class QueryResponseTest {
     }
 
     @Test
-    public void getFromResponseBody_Failure() throws JsonProcessingException {
+    public void getFromResponseBody_Failure() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
         ObjectNode errorData = mapper.createObjectNode();
@@ -66,19 +66,14 @@ class QueryResponseTest {
         ObjectNode failureNode = mapper.createObjectNode();
         failureNode.put(ResponseFields.ERROR_FIELD_NAME, errorData);
 
-        String body = failureNode.toString();
+        var res = mapper.readValue(failureNode.toString(), QueryResponseWire.class);
+        QueryFailure response = new QueryFailure(400, res);
 
-        QueryResponse response = new QueryFailure(400, failureNode, null);
-
-        assertTrue(response instanceof QueryFailure);
-        assertEquals(failureNode, response.getRawJson());
-
-        QueryFailure failureResponse = (QueryFailure) response;
-        assertEquals(400, failureResponse.getStatusCode());
-        assertEquals("ErrorCode", failureResponse.getErrorCode());
-        assertEquals("ErrorMessage", failureResponse.getMessage());
-        assertTrue(failureResponse.getConstraintFailures().isEmpty());
-        assertEquals(Optional.of("AbortData"), failureResponse.getAbort());
+        assertEquals(400, response.getStatusCode());
+        assertEquals("ErrorCode", response.getErrorCode());
+        assertEquals("ErrorMessage", response.getMessage());
+        assertTrue(response.getConstraintFailures().isEmpty());
+        assertEquals(Optional.of("\"AbortData\""), response.getAbortString());
     }
 
     @Test

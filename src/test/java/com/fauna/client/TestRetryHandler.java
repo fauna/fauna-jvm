@@ -1,9 +1,12 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fauna.exception.ThrottlingException;
 import com.fauna.response.QueryFailure;
+import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
@@ -33,18 +36,24 @@ public class TestRetryHandler {
             this.failCount = failCount;
         }
 
-        public CompletableFuture<String> getResponse() {
+        public CompletableFuture<String> getResponse() throws IOException {
             responseCount += 1;
             if (responseCount > failCount) {
                 return CompletableFuture.supplyAsync(TestRetryHandler::timestamp);
             } else {
-                return CompletableFuture.failedFuture(new ThrottlingException(QueryFailure.fallback()));
+                return CompletableFuture.failedFuture(new ThrottlingException(new QueryFailure(500, new QueryResponseWire())));
             }
         }
     }
 
     public static Supplier<CompletableFuture<String>> respond(FakeResponder responder) {
-        return () -> responder.getResponse();
+        return () -> {
+            try {
+                return responder.getResponse();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 
     @Test

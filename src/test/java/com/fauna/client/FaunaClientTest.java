@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -148,7 +149,7 @@ class FaunaClientTest {
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QuerySuccess<Document> response = client.query(fql("Collection.create({ name: 'Dogs' })"), Document.class);
         assertEquals("success", response.getSummary());
-        assertEquals(0, response.getLastSeenTxn());
+        assertNull(response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
     }
 
@@ -168,7 +169,7 @@ class FaunaClientTest {
         Query fql = fql("Collection.create({ name: 'Dogs' })");
         QuerySuccess<Person> response = client.query(fql, Person.class);
         assertEquals("success", response.getSummary());
-        assertEquals(0, response.getLastSeenTxn());
+        assertNull(response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
     }
 
@@ -194,7 +195,7 @@ class FaunaClientTest {
         // Then
         assertEquals("Baz", data.getFirstName());
         assertEquals("success", response.getSummary());
-        assertEquals(0, response.getLastSeenTxn());
+        assertNull(response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
     }
 
@@ -206,7 +207,7 @@ class FaunaClientTest {
         CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql("Collection.create({ name: 'Dogs' })"), Document.class);
         QueryResponse response = future.get();
         assertEquals("success", response.getSummary());
-        assertEquals(0, response.getLastSeenTxn());
+        assertNull(response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
     }
 
@@ -294,7 +295,7 @@ class FaunaClientTest {
                 Document.class, QueryOptions.builder().build());
         // THEN
         QuerySuccess<Document> success = future.get();
-        assertEquals("", success.getSummary());
+        assertNull(success.getSummary());
         verify(mockHttpClient, times(2)).sendAsync(any(), any());
     }
 
