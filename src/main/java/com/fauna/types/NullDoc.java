@@ -17,6 +17,11 @@ public final class NullDoc<T> extends Nullable<T> {
         this.cause = cause;
     }
 
+    /**
+     * Get the cause of the null document.
+     *
+     * @return A string describing the cause of the null document.
+     */
     public String getCause() {
         return cause;
     }
@@ -26,11 +31,19 @@ public final class NullDoc<T> extends Nullable<T> {
         throw new NullDocumentException(id, coll, cause);
     }
 
+    /**
+     * Get the ID of the null document.
+     * @return The document ID.
+     */
     public String getId() {
         return id;
     }
 
-    public Module getColl() {
+    /**
+     * Get the Collection associated with the null document.
+     * @return A Module representing the collection.
+     */
+    public Module getCollection() {
         return coll;
     }
 
@@ -44,7 +57,7 @@ public final class NullDoc<T> extends Nullable<T> {
 
         var c = (NullDoc<?>) o;
         return id.equals(c.getId())
-                && coll.equals(c.getColl())
+                && coll.equals(c.getCollection())
                 && cause.equals(c.getCause());
     }
 
