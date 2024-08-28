@@ -66,7 +66,7 @@ public class PageIteratorTest {
         when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(successFuture(false, 0));
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         assertTrue(pageIterator.hasNext());
-        assertEquals(pageIterator.next().data(), List.of("0-a", "0-b"));
+        assertEquals(pageIterator.next().getData(), List.of("0-a", "0-b"));
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
     }
@@ -76,7 +76,7 @@ public class PageIteratorTest {
         when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(successFuture(false, 0));
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         // No call to hasNext here.
-        assertEquals(pageIterator.next().data(), List.of("0-a", "0-b"));
+        assertEquals(pageIterator.next().getData(), List.of("0-a", "0-b"));
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
     }
@@ -87,10 +87,10 @@ public class PageIteratorTest {
                 successFuture(true, 0), successFuture(false, 1));
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("0-a", "0-b"), pageIterator.next().data());
+        assertEquals(List.of("0-a", "0-b"), pageIterator.next().getData());
 
         assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("1-a", "1-b"), pageIterator.next().data());
+        assertEquals(List.of("1-a", "1-b"), pageIterator.next().getData());
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
     }
@@ -126,7 +126,7 @@ public class PageIteratorTest {
         assertEquals(page, pageIterator.next());
 
         assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("0-a", "0-b"), pageIterator.next().data());
+        assertEquals(List.of("0-a", "0-b"), pageIterator.next().getData());
 
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());

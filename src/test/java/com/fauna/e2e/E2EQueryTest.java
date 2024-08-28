@@ -145,7 +145,7 @@ public class E2EQueryTest {
         var q = fql("Author.all()");
 
         var qs = c.query(q, pageOf(Author.class));
-        var actual = qs.getData().data();
+        var actual = qs.getData().getData();
 
         assertEquals(2, actual.size());
         assertEquals("Alice", actual.get(0).getFirstName());

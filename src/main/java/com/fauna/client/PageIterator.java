@@ -85,8 +85,8 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         if (this.latestResult != null) {
             Page<E> page = this.latestResult;
             this.latestResult = null;
-            if (page.after() != null) {
-                Map<String, Object> args = Map.of("after", page.after());
+            if (page.getAfter() != null) {
+                Map<String, Object> args = Map.of("after", page.getAfter());
                 this.queryFuture = client.asyncQuery(fql(PAGINATE_QUERY, args), pageClass, options);
             }
             return page;
@@ -102,7 +102,7 @@ public class PageIterator<E> implements Iterator<Page<E>> {
     public Iterator<E> flatten() {
         return new Iterator<>() {
             private final PageIterator<E> pageIterator = PageIterator.this;
-            private Iterator<E> thisPage = pageIterator.hasNext() ? pageIterator.next().data().iterator() : null;
+            private Iterator<E> thisPage = pageIterator.hasNext() ? pageIterator.next().getData().iterator() : null;
             @Override
             public boolean hasNext() {
                 return thisPage != null && (thisPage.hasNext() || pageIterator.hasNext());
@@ -117,7 +117,7 @@ public class PageIterator<E> implements Iterator<Page<E>> {
                     return thisPage.next();
                 } catch (NoSuchElementException e) {
                     if (pageIterator.hasNext()) {
-                        this.thisPage = pageIterator.next().data().iterator();
+                        this.thisPage = pageIterator.next().getData().iterator();
                         return thisPage.next();
                     } else {
                         throw e;

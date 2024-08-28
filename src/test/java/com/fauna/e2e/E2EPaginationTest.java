@@ -39,8 +39,8 @@ public class E2EPaginationTest {
         PageIterator<Product> iter = client.paginate(fql("Product.firstWhere(.name == 'product-1')"), Product.class);
         assertTrue(iter.hasNext());
         Page<Product> page = iter.next();
-        assertEquals(1, page.data().size());
-        assertNull(page.after());
+        assertEquals(1, page.getData().size());
+        assertNull(page.getAfter());
         assertFalse(iter.hasNext());
         assertThrows(NoSuchElementException.class, iter::next);
     }
@@ -50,8 +50,8 @@ public class E2EPaginationTest {
         PageIterator<Product> iter = client.paginate(fql("Product.where(.quantity < 8)"), Product.class);
         assertTrue(iter.hasNext());
         Page<Product> page = iter.next();
-        assertEquals(8, page.data().size());
-        assertNull(page.after());
+        assertEquals(8, page.getData().size());
+        assertNull(page.getAfter());
         assertFalse(iter.hasNext());
         assertThrows(NoSuchElementException.class, iter::next);
     }
@@ -64,11 +64,11 @@ public class E2EPaginationTest {
         Page<Product> latest = first.getData();
         List<List<Product>> pages = new ArrayList<>();
 
-        pages.add(latest.data());
-        while (latest.after() != null) {
-            QuerySuccess<Page<Product>> paged = client.query(fql("Set.paginate(${after})", Map.of("after", latest.after())), pageOf);
+        pages.add(latest.getData());
+        while (latest.getAfter() != null) {
+            QuerySuccess<Page<Product>> paged = client.query(fql("Set.paginate(${after})", Map.of("after", latest.getAfter())), pageOf);
             latest = paged.getData();
-            pages.add(latest.data());
+            pages.add(latest.getData());
         }
         assertEquals(4, pages.size());
         assertEquals(2, pages.get(3).size());
@@ -80,7 +80,7 @@ public class E2EPaginationTest {
         List<Page<Product>> pages = new ArrayList<>();
         iter.forEachRemaining(pages::add);
         assertEquals(4, pages.size());
-        List<Product> products = pages.stream().flatMap(p -> p.data().stream()).collect(Collectors.toList());
+        List<Product> products = pages.stream().flatMap(p -> p.getData().stream()).collect(Collectors.toList());
         assertEquals(50, products.size());
     }
 

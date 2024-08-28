@@ -8,9 +8,24 @@ public final class NonNull<T> extends Nullable<T> {
         super(val);
     }
 
+    /**
+     * Get the wrapped value.
+     *
+     * @return The wrapped value
+     */
     @Override
     public T get() {
         return val;
+    }
+
+    /**
+     * Get the wrapped value.
+     *
+     * @return The wrapped value
+     */
+    public T getValue() {
+        // Allows for default serialization without attributes.
+        return get();
     }
 
     @Override

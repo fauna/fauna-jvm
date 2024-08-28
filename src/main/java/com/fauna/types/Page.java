@@ -17,11 +17,11 @@ public class Page<T>{
         this.after = after;
     }
 
-    public List<T> data() {
+    public List<T> getData() {
         return data;
     }
 
-    public String after() {
+    public String getAfter() {
         return after;
     }
 
