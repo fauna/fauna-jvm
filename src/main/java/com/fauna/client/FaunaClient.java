@@ -8,6 +8,7 @@ import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.StreamOptions;
+import com.fauna.response.StreamEvent;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.StreamTokenResponse;
 import com.fauna.query.builder.Query;
@@ -19,9 +20,12 @@ import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Flow;
 import java.util.function.Supplier;
 
 public abstract class FaunaClient {
@@ -277,15 +281,31 @@ public abstract class FaunaClient {
         return new PageIterator<>(this, fql, resultClass, options);
     }
 
-    public <E> StreamIterator stream(Query fql, Class<E> resultClass) {
+    // abstract <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> resultClass);
+    // abstract <E> CompletableFuture<FaunaStream<E>> asyncStream(StreamRequest streamRequest, Class<E> resultClass);
+
+    // abstract <E> FaunaStream<StreamEvent<E>> stream(Query fql, Class<E> resultClass);
+    //abstract <E> CompletableFuture<FaunaStream<StreamEvent<E>>> asyncStream(Query fql, Class<E> resultClass);
+
+    /*
+    public <E> FaunaStream stream(Query fql, Class<E> resultClass) {
         CompletableFuture<QuerySuccess<StreamTokenResponse>> tokenFuture = this.asyncQuery(fql, StreamTokenResponse.class);
-        return new StreamIterator(this, tokenFuture, resultClass, StreamOptions.builder().build());
+        return new FaunaStream(this, tokenFuture, resultClass, StreamOptions.builder().build());
+    } */
+
+    public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> resultClass) {
+        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest, codecProvider);
+        return new FaunaStream<E>(getHttpClient().sendAsync(streamReq,
+                HttpResponse.BodyHandlers.ofPublisher()), resultClass);
     }
 
-    // TODO: Maybe it would be better for this method to be called stream?
-    public CompletableFuture<HttpResponse<InputStream>> openStream(StreamRequest req) {
-        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(req, codecProvider);
-        return getHttpClient().sendAsync(streamReq,
-                HttpResponse.BodyHandlers.ofInputStream());
+    public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
+        CompletableFuture<QuerySuccess<StreamTokenResponse>> tokenFuture = this.asyncQuery(fql, StreamTokenResponse.class);
+        try {
+            return this.stream(new StreamRequest(tokenFuture.get().getData().getToken()), elementClass);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ClientException("Unable to subscribe to stream.", e);
+        }
+
     }
 }
