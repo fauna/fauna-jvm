@@ -26,8 +26,7 @@ public class StreamRequestCodec extends BaseCodec<StreamRequest> {
     @Override
     public void encode(UTF8FaunaGenerator gen, StreamRequest obj) throws IOException {
         gen.writeStartObject();
-        gen.writeFieldName(TOKEN_FIELD);
-        gen.writeStringValue(obj.getToken());
+        gen.writeString(TOKEN_FIELD, obj.getToken());
         // Only one of cursor / start_ts can be present, prefer cursor.
         if (obj.getCursor().isPresent()) {
             gen.writeString(CURSOR_FIELD, obj.getCursor().get());
