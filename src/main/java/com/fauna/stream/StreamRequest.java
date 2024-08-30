@@ -1,5 +1,7 @@
 package com.fauna.stream;
 
+import com.fauna.query.StreamTokenResponse;
+
 import java.util.Optional;
 
 /**
@@ -35,6 +37,10 @@ public class StreamRequest {
         if (token == null || token.isEmpty()) {
             throw new IllegalArgumentException("token cannot be null or empty");
         }
+    }
+
+    public static StreamRequest fromTokenResponse(StreamTokenResponse tokenResponse) {
+        return new StreamRequest(tokenResponse.getToken());
     }
 
     public String getToken() {
