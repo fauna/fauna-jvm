@@ -101,7 +101,7 @@ public class RequestBuilder {
         try {
             UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
             gen.writeStartObject();
-            gen.writeFieldName("query");
+            gen.writeFieldName(FieldNames.QUERY);
             Codec<Query> codec = provider.get(Query.class);
             codec.encode(gen, fql);
             gen.writeEndObject();

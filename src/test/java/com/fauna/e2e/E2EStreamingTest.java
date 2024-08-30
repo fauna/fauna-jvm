@@ -4,13 +4,13 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaStream;
 import com.fauna.e2e.beans.Product;
-import com.fauna.response.QuerySuccess;
 import com.fauna.response.StreamEvent;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.fauna.query.builder.Query.fql;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class E2EStreamingTest {
     public static final FaunaClient client = Fauna.local();
@@ -28,10 +29,10 @@ public class E2EStreamingTest {
     }
 
 
-    class InventorySubscriber implements Flow.Subscriber<StreamEvent<Product>> {
-        private AtomicLong timestamp = new AtomicLong(0);
+    static class InventorySubscriber implements Flow.Subscriber<StreamEvent<Product>> {
+        private final AtomicLong timestamp = new AtomicLong(0);
         private String cursor = null;
-        private AtomicInteger events = new AtomicInteger(0);
+        private final AtomicInteger events = new AtomicInteger(0);
         Map<String, Integer> inventory = new ConcurrentHashMap<>();
         Flow.Subscription subscription;
 
@@ -80,17 +81,24 @@ public class E2EStreamingTest {
         public int countEvents() {
             return events.get();
         }
+
+        public String status() {
+            return MessageFormat.format(
+                    "Processed {0} events, inventory {1} at cursor/timestamp: {2}/{3}",
+                    countEvents(), countInventory(), this.cursor, this.timestamp.get());
+        }
+
     }
 
     @Test
-    @Ignore
     public void query_streamOfPerson() throws InterruptedException {
         FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
-        QuerySuccess<Object> cheese = client.query(fql("Product.create({name: 'cheese', quantity: 1})"));
-        QuerySuccess<Object> bread = client.query(fql("Product.create({name: 'bread', quantity: 2})"));
-        QuerySuccess<Object> wine = client.query(fql("Product.create({name: 'wine', quantity: 3})"));
+        List<Product> products = new ArrayList<>();
+        products.add(client.query(fql("Product.create({name: 'cheese', quantity: 1})"), Product.class).getData());
+        products.add(client.query(fql("Product.create({name: 'bread', quantity: 2})"), Product.class).getData());
+        products.add(client.query(fql("Product.create({name: 'wine', quantity: 3})"), Product.class).getData());
         long start = System.currentTimeMillis();
         int events = inventory.countEvents();
         System.out.println("Events: " + events);
@@ -102,7 +110,8 @@ public class E2EStreamingTest {
             }
         }
         inventory.onComplete();
-
-
+        System.out.println(inventory.status());
+        Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
+        assertEquals(total, inventory.countInventory());
     }
 }
