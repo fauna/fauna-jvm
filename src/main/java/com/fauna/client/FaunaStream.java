@@ -1,8 +1,6 @@
 package com.fauna.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fauna.codec.Codec;
-import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
 import com.fauna.response.StreamEvent;
 import com.fauna.response.wire.StreamEventWire;

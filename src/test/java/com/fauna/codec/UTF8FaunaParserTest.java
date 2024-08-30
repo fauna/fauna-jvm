@@ -155,6 +155,20 @@ class UTF8FaunaParserTest {
     }
 
     @Test
+    public void testGetValueAsStreamToken() throws IOException {
+        String s = "{\"@stream\":\"0123456789abcdefABCDEF\"}";
+
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+        UTF8FaunaParser reader = new UTF8FaunaParser(inputStream);
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+                Map.entry(FaunaTokenType.STREAM, "0123456789abcdefABCDEF")
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
+    @Test
     public void testGetValueAsTimeFail() throws IOException {
         String invalidJson = "{\"@time\": \"abc\"}";
         InputStream invalidInputStream = new ByteArrayInputStream(invalidJson.getBytes());
@@ -626,6 +640,9 @@ class UTF8FaunaParserTest {
                     break;
                 case MODULE:
                     assertEquals(entry.getValue(), reader.getValueAsModule());
+                    break;
+                case STREAM:
+                    assertEquals(entry.getValue(), reader.getTaggedValueAsString());
                     break;
                 default:
                     assertNull(entry.getValue());
