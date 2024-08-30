@@ -26,6 +26,13 @@ public class RequestBuilder {
 
     private final HttpRequest.Builder baseRequestBuilder;
 
+    static class FieldNames {
+        static final String QUERY = "query";
+        static final String TOKEN = "token";
+        static final String CURSOR = "cursor";
+        static final String START_TS = "start_ts";
+    }
+
     static class Headers {
         static final String LAST_TXN_TS = "X-Last-Txn-Ts";
         static final String LINEARIZED = "X-Linearized";
@@ -103,10 +110,18 @@ public class RequestBuilder {
 
     public HttpRequest buildStreamRequest(StreamRequest req, CodecProvider provider) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
-        Codec<StreamRequest> codec = provider.get(StreamRequest.class);
         try {
             UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
-            codec.encode(gen, req);
+            gen.writeStartObject();
+            gen.writeFieldName(FieldNames.TOKEN);
+            gen.writeStringValue(req.getToken());
+            // Only one of cursor / start_ts can be present, prefer cursor.
+            if (req.getCursor().isPresent()) {
+                gen.writeString(FieldNames.CURSOR, req.getCursor().get());
+            } else if (req.getStartTs().isPresent()) {
+                // Cannot use ifPresent(...) because writeLong can throw an IOException.
+                gen.writeLong(FieldNames.START_TS, req.getStartTs().get());
+            }
             gen.writeEndObject();
             String body = gen.serialize();
             return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
