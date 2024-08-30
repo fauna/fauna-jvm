@@ -2,9 +2,11 @@ package com.fauna.client;
 
 import com.fauna.codec.*;
 import com.fauna.query.QueryOptions;
+import com.fauna.stream.StreamRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.io.IOException;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.time.Duration;
@@ -62,6 +64,37 @@ class RequestBuilderTest {
         assertEquals("true", headers.firstValue(TYPE_CHECK).orElseThrow());
         assertNotNull(headers.firstValue(QUERY_TAGS));
         assertEquals("traceParent", headers.firstValue(TRACE_PARENT).orElseThrow());
+    }
+
+    @Test
+    void buildStreamRequestBody_shouldOnlyIncludeToken() throws IOException {
+        // Given
+        StreamRequest request = new StreamRequest("tkn");
+        // When
+        String body = requestBuilder.buildStreamRequestBody(request);
+        // Then
+        assertEquals("{\"token\":\"tkn\"}", body);
+    }
+
+    @Test
+    void buildStreamRequestBody_shouldIncludeCursor() throws IOException {
+        // Given
+        StreamRequest request = new StreamRequest("tkn", "cur");
+        // When
+        String body = requestBuilder.buildStreamRequestBody(request);
+        // Then
+        assertEquals("{\"token\":\"tkn\",\"cursor\":\"cur\"}", body);
+    }
+
+    @Test
+    void buildStreamRequestBody_shouldIncludeTimestamp() throws IOException {
+        // Given
+        Long timestamp = Long.MAX_VALUE / 2;
+        StreamRequest request = new StreamRequest("tkn", Long.MAX_VALUE / 2);
+        // When
+        String body = requestBuilder.buildStreamRequestBody(request);
+        // Then
+        assertEquals("{\"token\":\"tkn\",\"start_ts\":4611686018427387903}", body);
     }
 
     @Test

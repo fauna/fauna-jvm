@@ -1,5 +1,7 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
@@ -9,9 +11,11 @@ import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -108,23 +112,29 @@ public class RequestBuilder {
         }
     }
 
-    public HttpRequest buildStreamRequest(StreamRequest req, CodecProvider provider) {
+    public String buildStreamRequestBody(StreamRequest request) throws IOException {
+        // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
+        // start_ts is a JSON integer, not a tagged '@long'.
+        ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
+        JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
+        gen.writeStartObject();
+        gen.writeStringField(FieldNames.TOKEN, request.getToken());
+        // Only one of cursor / start_ts can be present, prefer cursor.
+        if (request.getCursor().isPresent()) {
+            gen.writeStringField(FieldNames.CURSOR, request.getCursor().get());
+        } else if (request.getStartTs().isPresent()) {
+            // Cannot use ifPresent(...) because writeLong can throw an IOException.
+            gen.writeNumberField(FieldNames.START_TS, request.getStartTs().get());
+        }
+        gen.writeEndObject();
+        gen.flush();
+        return requestBytes.toString(StandardCharsets.UTF_8);
+    }
+
+    public HttpRequest buildStreamRequest(StreamRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         try {
-            UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
-            gen.writeStartObject();
-            gen.writeFieldName(FieldNames.TOKEN);
-            gen.writeStringValue(req.getToken());
-            // Only one of cursor / start_ts can be present, prefer cursor.
-            if (req.getCursor().isPresent()) {
-                gen.writeString(FieldNames.CURSOR, req.getCursor().get());
-            } else if (req.getStartTs().isPresent()) {
-                // Cannot use ifPresent(...) because writeLong can throw an IOException.
-                gen.writeLong(FieldNames.START_TS, req.getStartTs().get());
-            }
-            gen.writeEndObject();
-            String body = gen.serialize();
-            return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            return builder.POST(HttpRequest.BodyPublishers.ofString(buildStreamRequestBody(request))).build();
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Stream request.", e);
         }

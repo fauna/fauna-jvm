@@ -38,24 +38,4 @@ public class StreamRequestTest {
         assertEquals(1234L, req.getStartTs().get());
     }
 
-    @Test
-    public void testSerialization() throws IOException {
-        UTF8FaunaGenerator generator = new UTF8FaunaGenerator();
-        Codec<StreamRequest> codec = provider.get(StreamRequest.class);
-        StreamRequest req = new StreamRequest("abc");
-        codec.encode(generator, req);
-        // End object '}' has to be manually added in RequestBuilder.java
-        assertEquals("{\"token\":\"abc\"", generator.serialize());
-    }
-
-    @Test
-    public void testSerializationWithCursor() throws IOException {
-        UTF8FaunaGenerator generator = new UTF8FaunaGenerator();
-        Codec<StreamRequest> codec = provider.get(StreamRequest.class);
-        StreamRequest req = new StreamRequest("abc", "def");
-        codec.encode(generator, req);
-        // End object '}' has to be manually added in RequestBuilder.java
-        assertEquals("{\"token\":\"abc\",\"cursor\":\"def\"", generator.serialize());
-    }
-
 }

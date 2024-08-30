@@ -284,7 +284,7 @@ public abstract class FaunaClient {
     public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> resultClass) {
         // TODO: I don't think there's a need for an asyncStream method, as the FaunaStream constructor returns
         // immediately.
-        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest, codecProvider);
+        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest);
         return new FaunaStream<>(getHttpClient().sendAsync(streamReq,
                 HttpResponse.BodyHandlers.ofPublisher()), resultClass);
     }
@@ -292,7 +292,8 @@ public abstract class FaunaClient {
     public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
         CompletableFuture<QuerySuccess<StreamTokenResponse>> tokenFuture = this.asyncQuery(fql, StreamTokenResponse.class);
         try {
-            return this.stream(new StreamRequest(tokenFuture.get().getData().getToken()), elementClass);
+            QuerySuccess<StreamTokenResponse> resp = tokenFuture.get();
+            return this.stream(new StreamRequest(resp.getData().getToken()), elementClass);
         } catch (InterruptedException | ExecutionException e) {
             throw new ClientException("Unable to subscribe to stream.", e);
         }
