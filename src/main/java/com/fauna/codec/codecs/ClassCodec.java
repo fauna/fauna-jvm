@@ -47,8 +47,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
             }
 
             var ta = attr.typeArgument() != void.class ? attr.typeArgument() : null;
-            var codec = provider.get(field.getType(), ta);
-            FieldInfo info = new FieldInfo(field, attr.name(), codec);
+            // Don't init the codec here because of potential circular references; instead use a provider.
+            FieldInfo info = new FieldInfo(field, attr.name(), ta, provider);
             fieldsList.add(info);
             byNameMap.put(info.getName(), info);
         }
@@ -86,7 +86,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
                 try {
                     fi.getProperty().setAccessible(true);
                     @SuppressWarnings("unchecked")
-                    T value = (T) fi.getProperty().get(obj);
+                    T value = obj != null ? (T) fi.getProperty().get(obj) : null;
                     @SuppressWarnings("unchecked")
                     Codec<T> codec = fi.getCodec();
                     codec.encode(gen, value);
