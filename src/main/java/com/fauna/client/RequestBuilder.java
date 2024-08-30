@@ -114,16 +114,16 @@ public class RequestBuilder {
 
     public String buildStreamRequestBody(StreamRequest request) throws IOException {
         // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
-        // start_ts is a JSON integer, not a tagged '@long'.
+        // start_ts is a JSON numeric/integer, not a tagged '@long'.
         ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
         JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
         gen.writeStartObject();
         gen.writeStringField(FieldNames.TOKEN, request.getToken());
         // Only one of cursor / start_ts can be present, prefer cursor.
+        // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
         if (request.getCursor().isPresent()) {
             gen.writeStringField(FieldNames.CURSOR, request.getCursor().get());
         } else if (request.getStartTs().isPresent()) {
-            // Cannot use ifPresent(...) because writeLong can throw an IOException.
             gen.writeNumberField(FieldNames.START_TS, request.getStartTs().get());
         }
         gen.writeEndObject();

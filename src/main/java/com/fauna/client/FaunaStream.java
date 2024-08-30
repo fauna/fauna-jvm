@@ -9,10 +9,6 @@ import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow.Publisher;
@@ -53,10 +49,10 @@ public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E
             while (true) {
                 try {
                     this.subscription.request(1);
+                    // TODO: Some kind of backoff here, so each subscription doesn't use a whole core.
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
-                    // handle: log or throw in a wrapped RuntimeException
-                    throw new RuntimeException("InterruptedException caught in lambda", e);
+                    throw new ClientException("Processing thread interrupted.", e);
                 }
 
             }
@@ -66,8 +62,6 @@ public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E
 
     @Override
     public void onNext(List<ByteBuffer> buffers) {
-        String timestamp = ZonedDateTime.now( ZoneOffset.UTC ).format( DateTimeFormatter.ISO_INSTANT );
-        System.out.println(MessageFormat.format("{0} -> processing {1} buffers " , timestamp, buffers.size()));
         try {
             // TODO: Use a codec for StreamEventWire (or possibly decode straight to StreamEvent).
             // I think this will also allow us to handle the case where onNext gets called with multiple events in
