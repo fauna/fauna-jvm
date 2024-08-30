@@ -94,7 +94,7 @@ public class E2EStreamingTest {
         long start = System.currentTimeMillis();
         int events = inventory.countEvents();
         System.out.println("Events: " + events);
-        while (System.currentTimeMillis() < start + 5_000) {
+        while (System.currentTimeMillis() < start + 2_000) {
             Thread.sleep(10);
             int latest = inventory.countEvents();
             if (latest > events) {

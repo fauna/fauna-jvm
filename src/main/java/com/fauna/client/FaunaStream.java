@@ -27,14 +27,14 @@ import java.util.stream.Collectors;
 public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E>> {
     ObjectMapper mapper = new ObjectMapper();
     private final Class elementClass;
-    private final Codec<StreamEventWire> eventCodec;
+    // private final Codec<StreamEventWire> eventCodec;
     private Subscription subscription;
     private Thread processor;
     private Subscriber<? super StreamEvent<E>> eventSubscriber;
 
     public FaunaStream(CompletableFuture<HttpResponse<Publisher<List<ByteBuffer>>>> streamResponse, Class<E> elementClass) {
         this.elementClass = elementClass;
-        this.eventCodec = DefaultCodecProvider.SINGLETON.get(StreamEventWire.class);
+        // this.eventCodec = StreamEventCodec(elementClass);
         streamResponse.thenAccept(response -> {response.body().subscribe(this);});
     }
 
