@@ -28,9 +28,27 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
             case START_PAGE:
                 return decodePage(parser, FaunaTokenType.END_PAGE);
             case START_OBJECT:
+                // Handles a special case where calls with Set.paginate do not
+                // return an object with a @set tag.
                 return decodePage(parser, FaunaTokenType.END_OBJECT);
+            case START_ARRAY:
+                @SuppressWarnings("unchecked")
+                L res = (L) new Page<>(listCodec.decode(parser), null);
+                return res;
             case START_DOCUMENT:
-                return wrapDocumentInPage(parser);
+            case START_REF:
+            case STRING:
+            case BYTES:
+            case INT:
+            case LONG:
+            case DOUBLE:
+            case DATE:
+            case TIME:
+            case TRUE:
+            case FALSE:
+            case MODULE:
+                // In the event the user requests a Page<T> but the query just returns T
+                return wrapInPage(parser);
             default:
                 throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
         }
@@ -78,7 +96,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         return res;
     }
 
-    private L wrapDocumentInPage(UTF8FaunaParser parser) throws IOException {
+    private L wrapInPage(UTF8FaunaParser parser) throws IOException {
         E elem = this.elementCodec.decode(parser);
         @SuppressWarnings("unchecked")
         L res = (L) new Page<>(List.of(elem), null);

@@ -106,11 +106,20 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
     }
 
     /**
+     * Gets a copy of the underlying data as a Map.
+     *
+     * @return The data.
+     */
+    public Map<String,Object> getData() {
+        return Map.copyOf(data);
+    }
+
+    /**
      * Gets the count of key-value pairs contained in the document.
      *
      * @return The number of key-value pairs.
      */
-    public int getCount() {
+    public int size() {
         return data.size();
     }
 
@@ -133,23 +142,5 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
      */
     public Object get(String key) {
         return data.get(key);
-    }
-
-    /**
-     * Gets a collection containing the keys of the data in the document.
-     *
-     * @return A collection containing the keys of the data in the document.
-     */
-    public Enumeration<String> getKeys() {
-        return data.keys();
-    }
-
-    /**
-     * Gets a collection containing the values of the data in the document.
-     *
-     * @return A collection containing the values of the data in the document.
-     */
-    public Enumeration<Object> getValues() {
-        return data.elements();
     }
 }

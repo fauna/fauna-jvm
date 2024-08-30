@@ -322,10 +322,10 @@ class FaunaClientTest {
         PageIterator<Product> iter = client.paginate(fql("Document.all()"), Product.class, options);
         assertTrue(iter.hasNext());
         Page<Product> firstPage = iter.next();
-        assertEquals("product-0", firstPage.data().get(0).getName());
+        assertEquals("product-0", firstPage.getData().get(0).getName());
         assertTrue(iter.hasNext());
         Page<Product> secondPage = iter.next();
-        assertEquals("product-1", secondPage.data().get(0).getName());
+        assertEquals("product-1", secondPage.getData().get(0).getName());
         assertFalse(iter.hasNext());
 
     }
