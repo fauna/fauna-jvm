@@ -12,10 +12,12 @@ import com.fauna.codec.codecs.QueryArrCodec;
 import com.fauna.codec.codecs.QueryCodec;
 import com.fauna.codec.codecs.QueryLiteralCodec;
 import com.fauna.codec.codecs.QueryObjCodec;
+import com.fauna.codec.codecs.QueryValCodec;
 import com.fauna.query.builder.Query;
 import com.fauna.query.builder.QueryArr;
 import com.fauna.query.builder.QueryLiteral;
 import com.fauna.query.builder.QueryObj;
+import com.fauna.query.builder.QueryVal;
 import com.fauna.types.BaseDocument;
 import com.fauna.types.Document;
 import com.fauna.types.NamedDocument;
@@ -38,6 +40,7 @@ public class DefaultCodecProvider implements CodecProvider {
         registry.put(CodecRegistryKey.from(Query.class), new QueryCodec(this));
         registry.put(CodecRegistryKey.from(QueryObj.class), new QueryObjCodec(this));
         registry.put(CodecRegistryKey.from(QueryArr.class), new QueryArrCodec(this));
+        registry.put(CodecRegistryKey.from(QueryVal.class), new QueryValCodec(this));
         registry.put(CodecRegistryKey.from(QueryLiteral.class), new QueryLiteralCodec());
 
         var bdc = new BaseDocumentCodec(this);

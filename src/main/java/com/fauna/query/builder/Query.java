@@ -1,10 +1,7 @@
 package com.fauna.query.builder;
 
-import com.fauna.codec.CodecProvider;
 import com.fauna.query.template.FaunaTemplate;
-import com.fauna.codec.UTF8FaunaGenerator;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Spliterator;
@@ -15,7 +12,7 @@ import java.util.stream.StreamSupport;
  * Represents a Fauna query that is constructed from fragments.
  * This class allows the building of queries from literal and variable parts.
  */
-public class Query{
+public class Query extends QueryFragment<QueryFragment[]> {
 
     private final QueryFragment[] fql;
 
@@ -62,9 +59,10 @@ public class Query{
     /**
      * Retrieves the list of fragments that make up this query.
      *
-     * @return a list of Fragments.
+     * @return an array of Fragments.
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
+    @Override
     public QueryFragment[] get() {
         return this.fql;
     }
