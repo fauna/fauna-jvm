@@ -1,5 +1,6 @@
 package com.fauna.codec;
 
+import com.fauna.beans.Circular;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -43,5 +44,13 @@ public class DefaultCodecProviderTest {
         Codec<List<Integer>> codec = (Codec<List<Integer>>) (Codec) cp.get(list.getClass(), Integer.class);
         assertNotNull(codec);
         assertEquals(List.class, codec.getCodecClass());
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void get_generateForClassWithCircularRef() {
+        Codec<Circular> codec = cp.get(Circular.class, null);
+        assertNotNull(codec);
+        assertEquals(Circular.class, codec.getCodecClass());
     }
 }

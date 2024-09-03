@@ -77,7 +77,7 @@ class QueryTest {
     }
 
     @Test
-    public void testQueryBuilderSubQueries() {
+    public void testQueryBuilderSubQueries() throws IOException {
         Map<String, Object> user = Map.of(
                 "name", "Dino",
                 "age", 0,
@@ -85,7 +85,7 @@ class QueryTest {
 
         Query inner = fql("let x = ${my_var}", Map.of("my_var", user));
         Query actual = fql("${inner}\nx { name }", Map.of("inner", inner));
-        QueryFragment[] expected = new QueryFragment[]{new QueryVal(inner), new QueryLiteral("\nx { name }")};
+        QueryFragment[] expected = new QueryFragment[]{inner, new QueryLiteral("\nx { name }")};
         assertArrayEquals(expected, actual.get());
     }
 
