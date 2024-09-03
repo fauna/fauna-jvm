@@ -1,8 +1,12 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.annotation.FaunaColl;
 import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaFieldImpl;
+import com.fauna.annotation.FaunaId;
+import com.fauna.annotation.FaunaIdImpl;
 import com.fauna.annotation.FaunaIgnore;
+import com.fauna.annotation.FaunaTs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.enums.FaunaTokenType;
@@ -10,6 +14,8 @@ import com.fauna.exception.ClientException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.mapping.FieldName;
+import com.fauna.mapping.FieldType;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -39,16 +45,20 @@ public class ClassCodec<T> extends BaseCodec<T> {
                 continue;
             }
 
-            var attr = new FaunaFieldImpl(field, field.getAnnotation(FaunaField.class));
+            FieldType fieldType = getFieldType(field);
 
-            if (byNameMap.containsKey(attr.name())) {
+            var attr = new FaunaFieldImpl(field.getAnnotation(FaunaField.class));
+
+            var name = attr.name() != null ? attr.name() : FieldName.canonical(field.getName());
+            if (byNameMap.containsKey(name)) {
                 throw new IllegalArgumentException(
-                        "Duplicate field name " + attr.name() + " in " + ty);
+                        "Duplicate field name " + name + " in " + ty);
             }
 
-            var ta = attr.typeArgument() != void.class ? attr.typeArgument() : null;
+            var ta = attr.genericTypeArgument() != void.class ? attr.genericTypeArgument() : null;
+
             // Don't init the codec here because of potential circular references; instead use a provider.
-            FieldInfo info = new FieldInfo(field, attr.name(), ta, provider);
+            FieldInfo info = new FieldInfo(field, name, ta, provider, fieldType);
             fieldsList.add(info);
             byNameMap.put(info.getName(), info);
         }
@@ -56,6 +66,21 @@ public class ClassCodec<T> extends BaseCodec<T> {
         this.shouldEscapeObject = TAGS.stream().anyMatch(byNameMap.keySet()::contains);
         this.fields = List.copyOf(fieldsList);
         this.fieldsByName = Map.copyOf(byNameMap);
+    }
+
+    private FieldType getFieldType(Field field) {
+        if (field.getAnnotation(FaunaId.class) != null) {
+            var impl = new FaunaIdImpl(field.getAnnotation(FaunaId.class));
+            if (impl.isClientGenerate()) {
+                return FieldType.ClientGeneratedId;
+            } else {
+                return FieldType.ServerGeneratedId;
+            }
+        }
+
+        if (field.getAnnotation(FaunaTs.class) != null) return FieldType.Ts;
+        if (field.getAnnotation(FaunaColl.class) != null) return FieldType.Coll;
+        return FieldType.Field;
     }
 
     @Override
@@ -82,11 +107,25 @@ public class ClassCodec<T> extends BaseCodec<T> {
         }
         for (FieldInfo fi : fields) {
             if (!fi.getName().startsWith("this$")) {
-                gen.writeFieldName(fi.getName());
+                var fieldType = fi.getFieldType();
+                if (fieldType == FieldType.Coll || fieldType == FieldType.Ts || fieldType == FieldType.ServerGeneratedId) {
+                    // never encode coll and ts and server generated IDs
+                    continue;
+                }
+
+                var fieldName = fi.getName();
                 try {
-                    fi.getProperty().setAccessible(true);
+                    fi.getField().setAccessible(true);
                     @SuppressWarnings("unchecked")
-                    T value = obj != null ? (T) fi.getProperty().get(obj) : null;
+                    T value = obj != null ? (T) fi.getField().get(obj) : null;
+
+                    if (fieldType == FieldType.ClientGeneratedId && value == null) {
+                        // The field is a client generated ID but set to null, so assume they're doing something
+                        // other than creating the object.
+                        continue;
+                    }
+
+                    gen.writeFieldName(fieldName);
                     @SuppressWarnings("unchecked")
                     Codec<T> codec = fi.getCodec();
                     codec.encode(gen, value);
@@ -151,12 +190,12 @@ public class ClassCodec<T> extends BaseCodec<T> {
         if (field != null) {
 
             String id = parser.getValueAsString();
-            field.getProperty().setAccessible(true);
+            field.getField().setAccessible(true);
 
             if (field.getType() == Long.class) {
-                field.getProperty().set(instance, Long.parseLong(id));
+                field.getField().set(instance, Long.parseLong(id));
             } else if (field.getType() == String.class) {
-                field.getProperty().set(instance, id);
+                field.getField().set(instance, id);
             }
         }
     }
@@ -167,9 +206,9 @@ public class ClassCodec<T> extends BaseCodec<T> {
         FieldInfo field = fieldsByName.get(fieldName);
         if (field != null) {
             String name = parser.getValueAsString();
-            field.getProperty().setAccessible(true);
+            field.getField().setAccessible(true);
             if (field.getType() == String.class) {
-                field.getProperty().set(instance, name);
+                field.getField().set(instance, name);
             }
         }
     }
@@ -179,8 +218,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
         if (field == null) {
             parser.skip();
         } else {
-            field.getProperty().setAccessible(true);
-            field.getProperty().set(instance, field.getCodec().decode(parser));
+            field.getField().setAccessible(true);
+            field.getField().set(instance, field.getCodec().decode(parser));
         }
     }
 }

@@ -20,10 +20,10 @@ public class ClassWithParameterizedFields {
     @FaunaField(name = "first_name")
     public String firstName;
 
-    @FaunaField(name = "a_list", typeArgument = String.class)
+    @FaunaField(name = "a_list", genericTypeArgument = String.class)
     public List<String> list;
 
-    @FaunaField(name = "a_map", typeArgument = Integer.class)
+    @FaunaField(name = "a_map", genericTypeArgument = Integer.class)
     public Map<String,Integer> map;
 
     @Override
