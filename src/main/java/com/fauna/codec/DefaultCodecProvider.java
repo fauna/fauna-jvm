@@ -44,7 +44,6 @@ public class DefaultCodecProvider implements CodecProvider {
 
         registry.put(CodecRegistryKey.from(StreamTokenResponse.class), new StreamTokenResponseCodec());
 
-        // registry.put(CodecRegistryKey.from(StreamEvent.class), new StreamEventCodec(this));
 
         var bdc = new BaseDocumentCodec(this);
         registry.put(CodecRegistryKey.from(BaseDocument.class), bdc);
