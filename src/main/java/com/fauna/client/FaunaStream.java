@@ -49,7 +49,9 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
     @Override
     public void onNext(List<ByteBuffer> buffers) {
         try {
+
             // TODO: Use a codec for StreamEventWire (or possibly decode straight to StreamEvent).
+            // Task BT-5084 exists to handle this.
             // I think this will also allow us to handle the case where onNext gets called with multiple events in
             // the buffers, or if the buffers have an incomplete event (e.g. with a large document).
             // StreamEventWire wire = eventCodec.decode(new UTF8FaunaParser(buffers));

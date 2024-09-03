@@ -4,6 +4,7 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaStream;
 import com.fauna.e2e.beans.Product;
+import com.fauna.query.builder.Query;
 import com.fauna.response.StreamEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class E2EStreamingTest {
     public static final FaunaClient client = Fauna.local();
+    private static final Random random = new Random();
 
     @BeforeAll
     public static void setup() {
@@ -83,7 +86,7 @@ public class E2EStreamingTest {
     }
 
     @Test
-    public void query_streamOfPerson() throws InterruptedException {
+    public void query_streamOfProduct() throws InterruptedException {
         FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
@@ -91,6 +94,53 @@ public class E2EStreamingTest {
         products.add(client.query(fql("Product.create({name: 'cheese', quantity: 1})"), Product.class).getData());
         products.add(client.query(fql("Product.create({name: 'bread', quantity: 2})"), Product.class).getData());
         products.add(client.query(fql("Product.create({name: 'wine', quantity: 3})"), Product.class).getData());
+        long start = System.currentTimeMillis();
+        int events = inventory.countEvents();
+        System.out.println("Events: " + events);
+        while (System.currentTimeMillis() < start + 2_000) {
+            Thread.sleep(10);
+            int latest = inventory.countEvents();
+            if (latest > events) {
+                events = latest;
+            }
+        }
+        inventory.onComplete();
+        System.out.println(inventory.status());
+        Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
+        assertEquals(total, inventory.countInventory());
+    }
+
+    @Test
+    public void handleLargeEvents() throws InterruptedException {
+        FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
+        InventorySubscriber inventory = new InventorySubscriber();
+        stream.subscribe(inventory);
+        List<Product> products = new ArrayList<>();
+
+        byte[] image = new byte[20];
+        random.nextBytes(image);
+        // Product cheese = new Product("cheese", 1, image);
+        String candidateChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder fifteenKName = new StringBuilder();
+        for (int i = 0; i < 1024 * 15; i++) {
+            fifteenKName.append(candidateChars.charAt(random.nextInt(candidateChars.length())));
+        }
+        assertEquals(fifteenKName.length(), 15360); // 15k string works.
+        products.add(client.query(fql("Product.create({name: ${name}, quantity: 1})",
+                Map.of("name", fifteenKName.toString())), Product.class).getData());
+
+        StringBuilder sixteenKName = new StringBuilder();
+        for (int i = 0; i < 1024 * 16; i++) {
+            sixteenKName.append(candidateChars.charAt(random.nextInt(candidateChars.length())));
+        }
+        assertEquals(sixteenKName.length(), 16384);
+
+        // 16k string causes the stream to throw.
+        // FaunaStream onError: com.fasterxml.jackson.databind.JsonMappingException: Unexpected end-of-input: was
+        // expecting closing quote for a string value at [Source: ...
+        products.add(client.query(fql("Product.create({name: ${name}, quantity: 1})",
+                Map.of("name", sixteenKName.toString())), Product.class).getData());
+
         long start = System.currentTimeMillis();
         int events = inventory.countEvents();
         System.out.println("Events: " + events);
