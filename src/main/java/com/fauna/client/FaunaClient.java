@@ -17,9 +17,12 @@ import com.fauna.codec.ParameterizedOf;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Flow;
 import java.util.function.Supplier;
 
 public abstract class FaunaClient {
@@ -291,25 +294,51 @@ public abstract class FaunaClient {
     }
 
     /**
-     * Send a request to the Fauna stream endpoint to start a stream.
-     * @param streamRequest     The request object including a stream token, and optionally a cursor, or timestamp.
-     * @param elementClass      The expected class of the stream events.
-     * @return FaunaStream      A publisher, implementing Flow.Publisher<StreamEvent<E>> from the Java Flow API.
+     * Send a request to the Fauna stream endpoint, and return a CompletableFuture that completes with the FaunaStream
+     * publisher.
+     *
+     * @param streamRequest         The request object including a stream token, and optionally a cursor, or timestamp.
+     * @param elementClass          The expected class &lt;E&gt; of the stream events.
+     * @return CompletableFuture    A CompletableFuture of FaunaStream<E>.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> elementClass) {
+    public <E> CompletableFuture<FaunaStream<E>> asyncStream(StreamRequest streamRequest, Class<E> elementClass) {
         HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest);
-        return new FaunaStream<>(getHttpClient().sendAsync(streamReq,
-                HttpResponse.BodyHandlers.ofPublisher()), elementClass);
+        CompletableFuture<FaunaStream<E>> resp = getHttpClient().sendAsync(streamReq,
+                HttpResponse.BodyHandlers.ofPublisher()).thenCompose(response -> {
+                    CompletableFuture<FaunaStream<E>> publisher = new CompletableFuture<>();
+                    FaunaStream fstream = new FaunaStream<E>(elementClass);
+                    response.body().subscribe(fstream);
+                    publisher.complete(fstream);
+                    return publisher;
+                });
+        return resp;
     }
 
     /**
-     * Start a Fauna stream based on an FQL query. This method sends two requests, one to the query endpoint to get
-     * the stream token, and then another request to the stream endpoint which return the FaunaStream publisher.
+     * Send a request to the Fauna stream endpoint to start a stream, and return a FaunaStream publisher.
+     * @param streamRequest     The request object including a stream token, and optionally a cursor, or timestamp.
+     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     */
+    public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> elementClass) {
+        try {
+            return this.asyncStream(streamRequest, elementClass).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ClientException("Unable to subscribe to stream.", e);
+        }
+
+    }
+
+    /**
+     * Start a Fauna stream based on an FQL query, and return a CompletableFuture of the resulting FaunaStream
+     * publisher. This method sends two requests, one to the query endpoint to get the stream token, and then another
+     * to the stream endpoint. This method is equivalent to calling the query, then the stream methods on FaunaClient.
      *
      * @param fql               The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
-     * @param elementClass      The expected class of the stream events.
-     * @return FaunaStream      A publisher, implementing Flow.Publisher<StreamEvent<E>> from the Java Flow API.
+     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
      * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
     public <E> CompletableFuture<FaunaStream<E>> asyncStream(Query fql, Class<E> elementClass) {
@@ -318,9 +347,9 @@ public abstract class FaunaClient {
     }
 
     /**
-     * Start a Fauna stream based on an FQL query, and return a CompletableFuture of the resulting FaunaStream
-     * publisher. This method sends two requests, one to the query endpoint to get the stream token, and then another
-     * to the stream endpoint. This method is equivalent to calling the query, then the stream methods on FaunaClient.
+     *
+     * Start a Fauna stream based on an FQL query. This method sends two requests, one to the query endpoint to get
+     * the stream token, and then another request to the stream endpoint which return the FaunaStream publisher.
      *
      * <p>
      * Query = fql("Product.all().toStream()");
@@ -328,8 +357,8 @@ public abstract class FaunaClient {
      * FaunaStream&lt;Product&gt; faunaStream = client.stream(new StreamRequest(tokenResp.getData.getToken(), Product.class)
      *
      * @param fql               The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
-     * @param elementClass      The expected class of the stream events.
-     * @return FaunaStream      A publisher, implementing Flow.Publisher<StreamEvent<E>> from the Java Flow API.
+     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
      * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
     public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {

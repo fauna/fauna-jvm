@@ -15,27 +15,26 @@ import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.Flow.Processor;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
+import java.util.concurrent.SubmissionPublisher;
 import java.util.stream.Collectors;
 
 
-public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E>> {
+public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implements Processor<List<ByteBuffer>, StreamEvent<E>> {
     ObjectMapper mapper = new ObjectMapper();
     private final Class elementClass;
-    // private final Codec<StreamEventWire> eventCodec;
     private Subscription subscription;
-    private Thread processor;
     private Subscriber<? super StreamEvent<E>> eventSubscriber;
 
-    public FaunaStream(CompletableFuture<HttpResponse<Publisher<List<ByteBuffer>>>> streamResponse, Class<E> elementClass) {
+    public FaunaStream(Class<E> elementClass) {
         this.elementClass = elementClass;
-        // this.eventCodec = StreamEventCodec(elementClass);
-        streamResponse.thenAccept(response -> {response.body().subscribe(this);});
     }
 
     @Override
     public void subscribe(Subscriber<? super StreamEvent<E>> subscriber) {
         if (this.eventSubscriber == null) {
             this.eventSubscriber = subscriber;
+            super.subscribe(subscriber);
+            this.subscription.request(1);
         } else {
             throw new ClientException("Only one subscriber is supported.");
         }
@@ -45,19 +44,6 @@ public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E
     @Override
     public void onSubscribe(Subscription subscription) {
         this.subscription = subscription;
-        this.processor = new Thread(() -> {
-            while (true) {
-                try {
-                    this.subscription.request(1);
-                    // TODO: Some kind of backoff here, so each subscription doesn't use a whole core.
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    throw new ClientException("Processing thread interrupted.", e);
-                }
-
-            }
-        });
-        this.processor.start();
     }
 
     @Override
@@ -71,11 +57,12 @@ public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E
                     .map(b -> StandardCharsets.UTF_8.decode(b).toString())
                     .collect(Collectors.joining());
             StreamEventWire wire = mapper.readValue(bufs, StreamEventWire.class);
-            this.eventSubscriber.onNext(new StreamEvent<E>(wire, elementClass));
+            this.submit(new StreamEvent<E>(wire, elementClass));
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            this.subscription.request(1);
         }
-
     }
 
     @Override
@@ -88,8 +75,7 @@ public class FaunaStream<E> implements Processor<List<ByteBuffer>, StreamEvent<E
     @Override
     public void onComplete() {
         this.subscription.cancel();
-        this.processor.interrupt();
-        System.out.println("FaunaStream onComplete: ");
+        System.out.println("FaunaStream onComplete.");
 
     }
 }

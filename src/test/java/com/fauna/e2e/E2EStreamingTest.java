@@ -39,16 +39,7 @@ public class E2EStreamingTest {
         @Override
         public void onSubscribe(Flow.Subscription subscription) {
             this.subscription = subscription;
-            new Thread(() -> {
-                while (true) {
-                    this.subscription.request(1);
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+            this.subscription.request(1);
         }
 
         @Override
@@ -60,11 +51,12 @@ public class E2EStreamingTest {
             this.timestamp.updateAndGet(value -> value < event.getTimestamp() ? value : event.getTimestamp());
             this.cursor = event.getCursor();
             System.out.println("Total inventory: " + this.countInventory());
+            this.subscription.request(1);
         }
 
         @Override
         public void onError(Throwable throwable) {
-
+            System.err.println("Oopsie: " + throwable.getMessage());
         }
 
         @Override
