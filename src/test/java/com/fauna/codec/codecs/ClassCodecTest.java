@@ -1,6 +1,7 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.beans.ClassWithFaunaIgnore;
+import com.fauna.beans.ClassWithOptionalFields;
 import com.fauna.beans.ClassWithParameterizedFields;
 import com.fauna.beans.ClassWithRefTagCollision;
 import com.fauna.beans.ClassWithAttributes;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.fauna.codec.codecs.Fixtures.ESCAPED_OBJECT_WIRE_WITH;
@@ -47,6 +49,15 @@ public class ClassCodecTest extends TestBase {
     public static String CLASS_WITH_FAUNA_IGNORE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\"}";
     public static final ClassWithFaunaIgnore CLASS_WITH_FAUNA_IGNORE = new ClassWithFaunaIgnore("foo", "bar", null);
 
+    // Class with Optional fields
+    private static final Object CLASS_WITH_OPTIONAL_FIELDS_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithOptionalFields.class);
+    private static final String CLASS_WITH_OPTIONAL_FIELDS_NON_NULL_WIRE =  "{\"firstName\":\"foo\",\"lastName\":\"bar\"}";
+    private static final ClassWithOptionalFields CLASS_WITH_OPTIONAL_NON_NULL_FIELDS = new ClassWithOptionalFields("foo", Optional.of("bar"));
+    private static final String CLASS_WITH_OPTIONAL_FIELDS_EMPTY_WIRE =  "{\"firstName\":\"foo\",\"lastName\":null}";
+    private static final ClassWithOptionalFields CLASS_WITH_OPTIONAL_EMPTY_FIELDS = new ClassWithOptionalFields("foo", Optional.empty());
+    private static final String CLASS_WITH_OPTIONAL_FIELDS_NULL_WIRE =  "{\"firstName\":\"foo\"}";
+    private static final ClassWithOptionalFields CLASS_WITH_OPTIONAL_NULL_FIELDS = new ClassWithOptionalFields("foo", null);
+
     public static Stream<Arguments> testCases() {
         return Stream.of(
                 Arguments.of(TestType.RoundTrip, CLASS_WITH_PARAMETERIZED_FIELDS_CODEC, CLASS_WITH_PARAMETERIZED_FIELDS_WIRE, CLASS_WITH_PARAMETERIZED_FIELDS, null),
@@ -55,7 +66,10 @@ public class ClassCodecTest extends TestBase {
                 Arguments.of(TestType.Encode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WIRE, CLASS_WITH_FAUNA_IGNORE_WITH_AGE, null),
                 Arguments.of(TestType.Decode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE, CLASS_WITH_FAUNA_IGNORE, null),
                 Arguments.of(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, DOCUMENT_WIRE, CLASS_WITH_ATTRIBUTES, null),
-                Arguments.of(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION)
+                Arguments.of(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
+                Arguments.of(TestType.RoundTrip, CLASS_WITH_OPTIONAL_FIELDS_CODEC, CLASS_WITH_OPTIONAL_FIELDS_NON_NULL_WIRE, CLASS_WITH_OPTIONAL_NON_NULL_FIELDS, null),
+                Arguments.of(TestType.RoundTrip, CLASS_WITH_OPTIONAL_FIELDS_CODEC, CLASS_WITH_OPTIONAL_FIELDS_NULL_WIRE, CLASS_WITH_OPTIONAL_NULL_FIELDS, null),
+                Arguments.of(TestType.RoundTrip, CLASS_WITH_OPTIONAL_FIELDS_CODEC, CLASS_WITH_OPTIONAL_FIELDS_EMPTY_WIRE, CLASS_WITH_OPTIONAL_EMPTY_FIELDS, null)
         );
     }
 

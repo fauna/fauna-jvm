@@ -82,11 +82,17 @@ public class ClassCodec<T> extends BaseCodec<T> {
         }
         for (FieldInfo fi : fields) {
             if (!fi.getName().startsWith("this$")) {
-                gen.writeFieldName(fi.getName());
+                var fieldName = fi.getName();
                 try {
                     fi.getProperty().setAccessible(true);
                     @SuppressWarnings("unchecked")
                     T value = obj != null ? (T) fi.getProperty().get(obj) : null;
+
+                    if (value == null) {
+                        continue;
+                    }
+
+                    gen.writeFieldName(fieldName);
                     @SuppressWarnings("unchecked")
                     Codec<T> codec = fi.getCodec();
                     codec.encode(gen, value);
