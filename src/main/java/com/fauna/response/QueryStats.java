@@ -16,6 +16,8 @@ public final class QueryStats {
 
     public final int queryTimeMs;
 
+    public final int processingTimeMs;
+
     public final int contentionRetries;
 
     public final int storageBytesRead;
@@ -33,11 +35,13 @@ public final class QueryStats {
             @JsonProperty(ResponseFields.STATS_CONTENTION_RETRIES) int contentionRetries,
             @JsonProperty(ResponseFields.STATS_STORAGE_BYTES_READ) int storageBytesRead,
             @JsonProperty(ResponseFields.STATS_STORAGE_BYTES_WRITE) int storageBytesWrite,
+            @JsonProperty(ResponseFields.STATS_PROCESSING_TIME_MS) int processingTimeMs,
             @JsonProperty(ResponseFields.STATS_RATE_LIMITS_HIT) List<String> rateLimitsHit) {
         this.computeOps = computeOps;
         this.readOps = readOps;
         this.writeOps = writeOps;
         this.queryTimeMs = queryTimeMs;
+        this.processingTimeMs = queryTimeMs;
         this.contentionRetries = contentionRetries;
         this.storageBytesRead = storageBytesRead;
         this.storageBytesWrite = storageBytesWrite;

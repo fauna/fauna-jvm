@@ -13,7 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.Stack;
 
 import static com.fauna.enums.FaunaTokenType.*;
 
@@ -31,6 +36,7 @@ public class UTF8FaunaParser {
     private static final String DOC_TAG = "@doc";
     private static final String MOD_TAG = "@mod";
     private static final String SET_TAG = "@set";
+    private static final String STREAM_TAG = "@stream";
     private static final String OBJECT_TAG = "@object";
     private static final String BYTES_TAG = "@bytes";
 
@@ -183,6 +189,9 @@ public class UTF8FaunaParser {
                         break;
                     case MOD_TAG:
                         handleTaggedString(FaunaTokenType.MODULE);
+                        break;
+                    case STREAM_TAG:
+                        handleTaggedString(FaunaTokenType.STREAM);
                         break;
                     case OBJECT_TAG:
                         advanceTrue();

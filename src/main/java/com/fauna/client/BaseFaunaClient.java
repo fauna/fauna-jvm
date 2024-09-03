@@ -11,6 +11,7 @@ public final class BaseFaunaClient extends FaunaClient {
 
     private final HttpClient httpClient;
     private final RequestBuilder baseRequestBuilder;
+    private final RequestBuilder streamRequestBuilder;
     private final RetryStrategy retryStrategy;
 
     /**
@@ -32,6 +33,7 @@ public final class BaseFaunaClient extends FaunaClient {
             throw new IllegalArgumentException("HttpClient cannot be null.");
         } else {
             this.baseRequestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
+            this.streamRequestBuilder = RequestBuilder.streamRequestBuilder(faunaConfig);
         }
         this.retryStrategy = retryStrategy;
     }
@@ -49,6 +51,10 @@ public final class BaseFaunaClient extends FaunaClient {
 
     RequestBuilder getRequestBuilder() {
         return this.baseRequestBuilder;
+    }
+
+    RequestBuilder getStreamRequestBuilder() {
+        return this.streamRequestBuilder;
     }
 
     HttpClient getHttpClient() {

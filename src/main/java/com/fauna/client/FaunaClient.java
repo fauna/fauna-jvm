@@ -7,6 +7,8 @@ import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
+import com.fauna.stream.StreamRequest;
+import com.fauna.query.StreamTokenResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
@@ -15,9 +17,12 @@ import com.fauna.codec.ParameterizedOf;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Flow;
 import java.util.function.Supplier;
 
 public abstract class FaunaClient {
@@ -30,6 +35,7 @@ public abstract class FaunaClient {
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
+    abstract RequestBuilder getStreamRequestBuilder();
 
     public FaunaClient(String secret) {
         this.faunaSecret = secret;
@@ -264,11 +270,103 @@ public abstract class FaunaClient {
     }
     //endregion
 
-    public <E> PageIterator<E> paginate(Query fql, Class<E> resultClass) {
-        return new PageIterator<>(this, fql, resultClass, null);
+    /**
+     * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
+     * @param fql               The FQL query to be executed.
+     * @param elementClass      The expected class of the query result.
+     * @return QuerySuccess     The successful query result.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     */
+    public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass) {
+        return new PageIterator<>(this, fql, elementClass, null);
     }
 
-    public <E> PageIterator<E> paginate(Query fql, Class<E> resultClass, QueryOptions options) {
-        return new PageIterator<>(this, fql, resultClass, options);
+    /**
+     * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
+     * @param fql               The FQL query to be executed.
+     * @param elementClass      The expected class of the query result.
+     * @param options           A (nullable) set of options to pass to the query.
+     * @return QuerySuccess     The successful query result.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     */
+    public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass, QueryOptions options) {
+        return new PageIterator<>(this, fql, elementClass, options);
+    }
+
+    /**
+     * Send a request to the Fauna stream endpoint, and return a CompletableFuture that completes with the FaunaStream
+     * publisher.
+     *
+     * @param streamRequest         The request object including a stream token, and optionally a cursor, or timestamp.
+     * @param elementClass          The expected class &lt;E&gt; of the stream events.
+     * @return CompletableFuture    A CompletableFuture of FaunaStream<E>.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     */
+    public <E> CompletableFuture<FaunaStream<E>> asyncStream(StreamRequest streamRequest, Class<E> elementClass) {
+        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest);
+        CompletableFuture<FaunaStream<E>> resp = getHttpClient().sendAsync(streamReq,
+                HttpResponse.BodyHandlers.ofPublisher()).thenCompose(response -> {
+                    CompletableFuture<FaunaStream<E>> publisher = new CompletableFuture<>();
+                    FaunaStream fstream = new FaunaStream<E>(elementClass);
+                    response.body().subscribe(fstream);
+                    publisher.complete(fstream);
+                    return publisher;
+                });
+        return resp;
+    }
+
+    /**
+     * Send a request to the Fauna stream endpoint to start a stream, and return a FaunaStream publisher.
+     * @param streamRequest     The request object including a stream token, and optionally a cursor, or timestamp.
+     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     */
+    public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> elementClass) {
+        try {
+            return this.asyncStream(streamRequest, elementClass).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ClientException("Unable to subscribe to stream.", e);
+        }
+
+    }
+
+    /**
+     * Start a Fauna stream based on an FQL query, and return a CompletableFuture of the resulting FaunaStream
+     * publisher. This method sends two requests, one to the query endpoint to get the stream token, and then another
+     * to the stream endpoint. This method is equivalent to calling the query, then the stream methods on FaunaClient.
+     *
+     * @param fql               The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
+     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
+     */
+    public <E> CompletableFuture<FaunaStream<E>> asyncStream(Query fql, Class<E> elementClass) {
+        return this.asyncQuery(fql, StreamTokenResponse.class).thenApply(
+                queryResponse -> this.stream(StreamRequest.fromTokenResponse(queryResponse.getData()), elementClass));
+    }
+
+    /**
+     *
+     * Start a Fauna stream based on an FQL query. This method sends two requests, one to the query endpoint to get
+     * the stream token, and then another request to the stream endpoint which return the FaunaStream publisher.
+     *
+     * <p>
+     * Query = fql("Product.all().toStream()");
+     * QuerySuccess&lt;StreamTokenResponse&gt; tokenResp = client.query(fql, StreamTokenResponse.class);
+     * FaunaStream&lt;Product&gt; faunaStream = client.stream(new StreamRequest(tokenResp.getData.getToken(), Product.class)
+     *
+     * @param fql               The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
+     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
+     */
+    public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
+        try {
+            return this.asyncStream(fql, elementClass).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ClientException("Unable to subscribe to stream.", e);
+        }
+
     }
 }

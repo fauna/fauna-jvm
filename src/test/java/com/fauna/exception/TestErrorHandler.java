@@ -17,7 +17,7 @@ public class TestErrorHandler {
 
     ObjectMapper mapper = new ObjectMapper();
     QueryStats stats = new QueryStats(0, 0, 0, 0,
-            0, 0, 0, List.of());
+            0, 0, 0, 0, List.of());
 
     public static class TestArgs {
         public int httpStatus;

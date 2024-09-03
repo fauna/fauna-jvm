@@ -40,6 +40,8 @@ public enum FaunaTokenType {
 
     NULL,
 
+    STREAM,
+
     MODULE,
     END_SET,
     START_SET;

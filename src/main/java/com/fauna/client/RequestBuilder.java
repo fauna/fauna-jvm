@@ -1,16 +1,21 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
+import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,8 +26,16 @@ public class RequestBuilder {
 
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
+    private static final String STREAM_PATH = "/stream/1";
 
     private final HttpRequest.Builder baseRequestBuilder;
+
+    static class FieldNames {
+        static final String QUERY = "query";
+        static final String TOKEN = "token";
+        static final String CURSOR = "cursor";
+        static final String START_TS = "start_ts";
+    }
 
     static class Headers {
         static final String LAST_TXN_TS = "X-Last-Txn-Ts";
@@ -61,6 +74,10 @@ public class RequestBuilder {
         return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret());
     }
 
+    public static RequestBuilder streamRequestBuilder(FaunaConfig config) {
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret());
+    }
+
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
@@ -84,7 +101,7 @@ public class RequestBuilder {
         try {
             UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
             gen.writeStartObject();
-            gen.writeFieldName("query");
+            gen.writeFieldName(FieldNames.QUERY);
             Codec<Query> codec = provider.get(Query.class);
             codec.encode(gen, fql);
             gen.writeEndObject();
@@ -93,6 +110,35 @@ public class RequestBuilder {
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Query request.", e);
         }
+    }
+
+    public String buildStreamRequestBody(StreamRequest request) throws IOException {
+        // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
+        // start_ts is a JSON numeric/integer, not a tagged '@long'.
+        ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
+        JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
+        gen.writeStartObject();
+        gen.writeStringField(FieldNames.TOKEN, request.getToken());
+        // Only one of cursor / start_ts can be present, prefer cursor.
+        // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
+        if (request.getCursor().isPresent()) {
+            gen.writeStringField(FieldNames.CURSOR, request.getCursor().get());
+        } else if (request.getStartTs().isPresent()) {
+            gen.writeNumberField(FieldNames.START_TS, request.getStartTs().get());
+        }
+        gen.writeEndObject();
+        gen.flush();
+        return requestBytes.toString(StandardCharsets.UTF_8);
+    }
+
+    public HttpRequest buildStreamRequest(StreamRequest request) {
+        HttpRequest.Builder builder = baseRequestBuilder.copy();
+        try {
+            return builder.POST(HttpRequest.BodyPublishers.ofString(buildStreamRequestBody(request))).build();
+        } catch (IOException e) {
+            throw new ClientException("Unable to build Fauna Stream request.", e);
+        }
+
     }
 
     private static String buildAuthHeader(String token) {
