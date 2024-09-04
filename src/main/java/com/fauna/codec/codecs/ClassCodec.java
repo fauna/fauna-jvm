@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,12 @@ public class ClassCodec<T> extends BaseCodec<T> {
         List<FieldInfo> fieldsList = new ArrayList<>();
         Map<String, FieldInfo> byNameMap = new HashMap<>();
 
-        for (Field field : ((Class<?>) ty).getDeclaredFields()) {
+        List<Field> fields = new ArrayList<>();
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            fields.addAll(Arrays.asList(c.getDeclaredFields()));
+        }
+
+        for (Field field : fields) {
             if (field.getAnnotation(FaunaIgnore.class) != null) {
                 continue;
             }
