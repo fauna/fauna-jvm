@@ -1,14 +1,14 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
@@ -42,7 +42,7 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
                 L typed = (L) map;
                 return typed;
             default:
-                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -75,6 +75,11 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
 
     @Override
     public Class<?> getCodecClass() {
-        return Map.class;
+        return valueCodec.getCodecClass();
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.Object};
     }
 }

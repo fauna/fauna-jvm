@@ -2,6 +2,7 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
+import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
@@ -56,7 +57,7 @@ public class DynamicCodec extends BaseCodec<Object> {
                 return parser.getValueAsBoolean();
         }
 
-        throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+        throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
     }
 
     @Override
@@ -72,5 +73,10 @@ public class DynamicCodec extends BaseCodec<Object> {
     @Override
     public Class<Object> getCodecClass() {
         return Object.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.Object, FaunaType.Array, FaunaType.Set, FaunaType.Ref, FaunaType.Document, FaunaType.Module, FaunaType.Int, FaunaType.String, FaunaType.Date, FaunaType.Time, FaunaType.Double, FaunaType.Boolean, FaunaType.Long};
     }
 }

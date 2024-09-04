@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -19,7 +20,7 @@ public class BoolCodec extends BaseCodec<Boolean> {
             case FALSE:
                 return parser.getValueAsBoolean();
             default:
-                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -35,5 +36,10 @@ public class BoolCodec extends BaseCodec<Boolean> {
     @Override
     public Class<Boolean> getCodecClass() {
         return Boolean.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.Boolean};
     }
 }

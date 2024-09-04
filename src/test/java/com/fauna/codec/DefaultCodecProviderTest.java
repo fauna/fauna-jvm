@@ -1,6 +1,8 @@
 package com.fauna.codec;
 
 import com.fauna.beans.Circular;
+import com.fauna.codec.codecs.ListCodec;
+import com.fauna.codec.codecs.MapCodec;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -25,7 +27,8 @@ public class DefaultCodecProviderTest {
     public void get_generatesListCodec() {
         Codec<List<Integer>> codec = (Codec<List<Integer>>) (Codec) cp.get(List.class, Integer.class);
         assertNotNull(codec);
-        assertEquals(List.class, codec.getCodecClass());
+        assertEquals(ListCodec.class, codec.getClass());
+        assertEquals(Integer.class, codec.getCodecClass());
     }
 
     @Test
@@ -34,7 +37,8 @@ public class DefaultCodecProviderTest {
         var map = Map.of();
         Codec<Map<String,Integer>> codec = (Codec<Map<String,Integer>>) (Codec) cp.get(map.getClass(), Integer.class);
         assertNotNull(codec);
-        assertEquals(Map.class, codec.getCodecClass());
+        assertEquals(MapCodec.class, codec.getClass());
+        assertEquals(Integer.class, codec.getCodecClass());
     }
 
     @Test
@@ -43,7 +47,8 @@ public class DefaultCodecProviderTest {
         var list = List.of();
         Codec<List<Integer>> codec = (Codec<List<Integer>>) (Codec) cp.get(list.getClass(), Integer.class);
         assertNotNull(codec);
-        assertEquals(List.class, codec.getCodecClass());
+        assertEquals(ListCodec.class, codec.getClass());
+        assertEquals(Integer.class, codec.getCodecClass());
     }
 
     @Test

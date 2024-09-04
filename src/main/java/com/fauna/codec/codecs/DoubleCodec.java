@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -20,7 +21,7 @@ public class DoubleCodec extends BaseCodec<Double> {
             case DOUBLE:
                 return parser.getValueAsDouble();
             default:
-                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -36,5 +37,10 @@ public class DoubleCodec extends BaseCodec<Double> {
     @Override
     public Class<Double> getCodecClass() {
         return Double.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.Int, FaunaType.Long, FaunaType.Double};
     }
 }

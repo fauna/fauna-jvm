@@ -53,7 +53,7 @@ public class BaseDocumentCodecTest extends TestBase {
                 Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_WIRE, DOCUMENT, null),
                 Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, NAMED_DOCUMENT_WIRE, NAMED_DOCUMENT, null),
                 Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
-                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, null, new ClientException("Unexpected type `class com.fauna.types.DocumentRef` decoding with `class com.fauna.codec.codecs.BaseDocumentCodec`")),
+                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, null, new ClientException("Unexpected type `class com.fauna.types.DocumentRef` decoding with `BaseDocumentCodec<BaseDocument>`")),
                 Arguments.of(TestType.Encode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, DOCUMENT, null),
                 Arguments.of(TestType.Encode, BASE_DOCUMENT_CODEC, NAMED_DOCUMENT_REF_WIRE, NAMED_DOCUMENT, null)
         );

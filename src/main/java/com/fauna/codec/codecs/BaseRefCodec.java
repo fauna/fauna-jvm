@@ -1,6 +1,7 @@
 package com.fauna.codec.codecs;
 
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -20,7 +21,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
             case START_REF:
                 return (BaseRef) decodeInternal(parser);
             default:
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -65,5 +66,10 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
     @Override
     public Class<BaseRef> getCodecClass() {
         return BaseRef.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.Ref};
     }
 }

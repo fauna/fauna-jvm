@@ -1,6 +1,6 @@
 package com.fauna.codec.codecs;
 
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.*;

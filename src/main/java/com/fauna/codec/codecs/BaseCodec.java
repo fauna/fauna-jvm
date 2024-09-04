@@ -1,7 +1,8 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
@@ -16,14 +17,19 @@ public abstract class BaseCodec<T> implements Codec<T> {
     ));
 
     protected String unexpectedTokenExceptionMessage(FaunaTokenType token) {
-        return MessageFormat.format("Unexpected token `{0}` decoding with `{1}`", token, this.getClass());
+        return MessageFormat.format("Unexpected token `{0}` decoding with `{1}<{2}>`", token, this.getClass().getSimpleName(), this.getCodecClass().getSimpleName());
+    }
+
+    protected String unsupportedTypeDecodingMessage(FaunaType type, FaunaType[] supportedTypes) {
+        var supportedString = Arrays.toString(supportedTypes);
+        return MessageFormat.format("Unable to decode `{0}` with `{1}<{2}>`. Supported types for codec are {3}.", type, this.getClass().getSimpleName(), this.getCodecClass().getSimpleName(), supportedString);
     }
 
     protected String unexpectedTypeWhileDecoding(Type type) {
-        return MessageFormat.format("Unexpected type `{0}` decoding with `{1}`", type, this.getClass());
+        return MessageFormat.format("Unexpected type `{0}` decoding with `{1}<{2}>`", type, this.getClass().getSimpleName(), this.getCodecClass().getSimpleName());
     }
 
     protected String unsupportedTypeMessage(Type type){
-        return MessageFormat.format("Cannot encode `{0}` with `{1}`", type, this.getClass());
+        return MessageFormat.format("Cannot encode `{0}` with `{1}<{2}>`", type, this.getClass(), this.getCodecClass());
     }
 }

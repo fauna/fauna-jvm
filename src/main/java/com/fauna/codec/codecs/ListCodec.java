@@ -1,7 +1,8 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -34,7 +35,7 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
                 var typed = (L) list;
                 return typed;
             default:
-                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -55,6 +56,11 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
 
     @Override
     public Class<?> getCodecClass() {
-        return List.class;
+        return elementCodec.getCodecClass();
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.Array};
     }
 }

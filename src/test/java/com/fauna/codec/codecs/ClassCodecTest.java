@@ -9,6 +9,7 @@ import com.fauna.beans.ClassWithRefTagCollision;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.Module;
 import org.junit.jupiter.api.Test;
@@ -91,5 +92,12 @@ public class ClassCodecTest extends TestBase {
         var wire = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
         var obj = new ClassWithInheritanceL2("foo","bar",42);
         runCase(TestType.RoundTrip, codec, wire, obj, null);
+    }
+
+    @Test
+    public void class_wrongCodecType() throws IOException {
+        var codec = DefaultCodecProvider.SINGLETON.get(ClassWithAttributes.class);
+        var wire = "[]";
+        runCase(TestType.Decode, codec, wire, null, new ClientException("Unable to decode `Array` with `ClassCodec<ClassWithAttributes>`. Supported types for codec are [Null, Object, Document, Ref]."));
     }
 }
