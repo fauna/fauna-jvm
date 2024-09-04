@@ -14,10 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,10 +28,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class E2EStreamingTest {
     public static final FaunaClient client = Fauna.local();
     private static final Random random = new Random();
+    private static final String candidateChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
     @BeforeAll
     public static void setup() {
         Fixtures.ProductCollection(client);
+    }
+
+    public static String randomName(int length) {
+        return Stream.generate(
+                () -> candidateChars.charAt(random.nextInt(candidateChars.length()))).map(
+                        c -> Character.toString(c)).limit(length).collect(Collectors.joining());
+    }
+
+    public static Query createProduct() {
+        return fql("Product.create({name: ${name}, quantity: ${quantity}})",
+                Map.of("name", randomName(5), "quantity", random.nextInt(1, 16)));
     }
 
 
@@ -120,7 +135,6 @@ public class E2EStreamingTest {
         byte[] image = new byte[20];
         random.nextBytes(image);
         // Product cheese = new Product("cheese", 1, image);
-        String candidateChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder fifteenKName = new StringBuilder();
         for (int i = 0; i < 1024 * 15; i++) {
             fifteenKName.append(candidateChars.charAt(random.nextInt(candidateChars.length())));
@@ -156,4 +170,20 @@ public class E2EStreamingTest {
         Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
         assertEquals(total, inventory.countInventory());
     }
+
+    @Test
+    public void handleManyEvents() throws InterruptedException {
+        FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
+        InventorySubscriber inventory = new InventorySubscriber();
+
+        stream.subscribe(inventory);
+        List<CompletableFuture<Product>> productFutures = new ArrayList<>();
+        Stream.generate(E2EStreamingTest::createProduct).limit(10_000).forEach(
+                fql -> productFutures.add(client.asyncQuery(fql, Product.class).thenApply(success -> success.getData())));
+        Thread.sleep(10_000);
+
+        int totalInventory = productFutures.stream().map(p -> p.join().getQuantity()).reduce(0, Integer::sum);
+        assertEquals(totalInventory, inventory.countInventory());
+    }
+
 }
