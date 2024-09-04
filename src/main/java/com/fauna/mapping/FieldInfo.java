@@ -8,28 +8,34 @@ import java.lang.reflect.Field;
 public final class FieldInfo {
 
     private final String name;
-    private final Field property;
+    private final Field field;
     private final Class<?> typeArg;
     private final CodecProvider provider;
+    private final FieldType fieldType;
     private Codec<?> codec;
 
-    public FieldInfo(Field prop, String name, Class<?> typeArg, CodecProvider provider) {
+    public FieldInfo(Field field, String name, Class<?> typeArg, CodecProvider provider, FieldType fieldType) {
         this.name = name;
-        this.property = prop;
+        this.field = field;
         this.typeArg = typeArg;
         this.provider = provider;
+        this.fieldType = fieldType;
     }
 
     public String getName() {
         return name;
     }
 
-    public Field getProperty() {
-        return property;
+    public Field getField() {
+        return field;
     }
 
     public Class<?> getType() {
-        return property.getType();
+        return field.getType();
+    }
+
+    public FieldType getFieldType() {
+        return fieldType;
     }
 
     public Codec getCodec() {
@@ -39,7 +45,7 @@ public final class FieldInfo {
             // check again in case it was set by another thread
             if (codec != null) return codec;
 
-            codec = provider.get(property.getType(), typeArg);
+            codec = provider.get(field.getType(), typeArg);
         }
 
         return codec;

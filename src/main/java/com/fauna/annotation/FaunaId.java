@@ -6,12 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Attribute used to specify properties of a field in a Fauna object.
+ * Attribute used to indicate that the field is the Fauna ID.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface FaunaField {
+public @interface FaunaId {
 
-    String name() default "";
-    Class<?> genericTypeArgument() default void.class;
+    boolean isClientGenerate() default false;
+
 }

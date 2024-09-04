@@ -1,6 +1,8 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.beans.ClassWithClientGeneratedIdCollTsAnnotations;
 import com.fauna.beans.ClassWithFaunaIgnore;
+import com.fauna.beans.ClassWithIdCollTsAnnotations;
 import com.fauna.beans.ClassWithParameterizedFields;
 import com.fauna.beans.ClassWithRefTagCollision;
 import com.fauna.beans.ClassWithAttributes;
@@ -13,8 +15,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.fauna.codec.codecs.Fixtures.ESCAPED_OBJECT_WIRE_WITH;
@@ -47,6 +51,19 @@ public class ClassCodecTest extends TestBase {
     public static String CLASS_WITH_FAUNA_IGNORE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\"}";
     public static final ClassWithFaunaIgnore CLASS_WITH_FAUNA_IGNORE = new ClassWithFaunaIgnore("foo", "bar", null);
 
+    // Class with Id, Coll, Ts annotations
+    private static final Object CLASS_WITH_ID_COLL_TS_ANNOTATIONS_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithIdCollTsAnnotations.class);
+    private static final String CLASS_WITH_ID_COLL_TS_ANNOTATIONS_WIRE =  "{\"firstName\":\"foo\",\"lastName\":\"bar\"}";
+    private static final ClassWithIdCollTsAnnotations CLASS_WITH_ID_COLL_TS_ANNOTATIONS = new ClassWithIdCollTsAnnotations("123", new Module("mod"), Instant.parse("2024-01-23T13:33:10.300Z"), "foo", "bar");
+
+
+    // Class with Client Generated Id, Coll, Ts annotations
+    private static final Object CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithClientGeneratedIdCollTsAnnotations.class);
+    private static final String CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS_WIRE =  "{\"id\":\"123\",\"firstName\":\"foo\",\"lastName\":\"bar\"}";
+    private static final ClassWithClientGeneratedIdCollTsAnnotations CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS = new ClassWithClientGeneratedIdCollTsAnnotations("123", new Module("mod"), Instant.parse("2024-01-23T13:33:10.300Z"), "foo", "bar");
+    private static final ClassWithClientGeneratedIdCollTsAnnotations CLASS_WITH_CLIENT_GENERATED_ID_NULL_ANNOTATIONS = new ClassWithClientGeneratedIdCollTsAnnotations(null, new Module("mod"), Instant.parse("2024-01-23T13:33:10.300Z"), "foo", "bar");
+
+
     public static Stream<Arguments> testCases() {
         return Stream.of(
                 Arguments.of(TestType.RoundTrip, CLASS_WITH_PARAMETERIZED_FIELDS_CODEC, CLASS_WITH_PARAMETERIZED_FIELDS_WIRE, CLASS_WITH_PARAMETERIZED_FIELDS, null),
@@ -55,7 +72,10 @@ public class ClassCodecTest extends TestBase {
                 Arguments.of(TestType.Encode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WIRE, CLASS_WITH_FAUNA_IGNORE_WITH_AGE, null),
                 Arguments.of(TestType.Decode, CLASS_WITH_FAUNA_IGNORE_CODEC, CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE, CLASS_WITH_FAUNA_IGNORE, null),
                 Arguments.of(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, DOCUMENT_WIRE, CLASS_WITH_ATTRIBUTES, null),
-                Arguments.of(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION)
+                Arguments.of(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
+                Arguments.of(TestType.Encode, CLASS_WITH_ID_COLL_TS_ANNOTATIONS_CODEC, CLASS_WITH_ID_COLL_TS_ANNOTATIONS_WIRE, CLASS_WITH_ID_COLL_TS_ANNOTATIONS, null),
+                Arguments.of(TestType.Encode, CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS_CODEC, CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS_WIRE, CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS, null),
+                Arguments.of(TestType.Encode, CLASS_WITH_CLIENT_GENERATED_ID_COLL_TS_ANNOTATIONS_CODEC, CLASS_WITH_ID_COLL_TS_ANNOTATIONS_WIRE, CLASS_WITH_CLIENT_GENERATED_ID_NULL_ANNOTATIONS, null)
         );
     }
 

@@ -12,7 +12,7 @@ public class ClassWithAttributes {
     @FaunaField(name = "last_name")
     private String lastName;
 
-    @FaunaField(name = "age", nullable = true)
+    @FaunaField(name = "age")
     private Integer age;
 
     public ClassWithAttributes(String firstName, String lastName, int age) {
