@@ -1,0 +1,42 @@
+package com.fauna.codec.codecs;
+
+import com.fauna.codec.UTF8FaunaGenerator;
+import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.ClientException;
+
+import java.io.IOException;
+
+public class EnumCodec<T> extends BaseCodec<T> {
+    private final Class<T> enumType;
+
+    public EnumCodec(Class<T> enumType) {
+        this.enumType = enumType;
+    }
+
+    @Override
+    public T decode(UTF8FaunaParser parser) throws IOException {
+        switch (parser.getCurrentTokenType()) {
+            case NULL:
+                return null;
+            case STRING:
+                //noinspection unchecked
+                return (T) Enum.valueOf((Class<Enum>) enumType, parser.getValueAsString());
+            default:
+                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+        }
+    }
+
+    @Override
+    public void encode(UTF8FaunaGenerator gen, T obj) throws IOException {
+        if (obj == null) {
+            gen.writeNullValue();
+        } else {
+            gen.writeStringValue(((Enum) obj).name());
+        }
+    }
+
+    @Override
+    public Class<?> getCodecClass() {
+        return Enum.class;
+    }
+}

@@ -3,6 +3,7 @@ package com.fauna.codec;
 import com.fauna.codec.codecs.BaseDocumentCodec;
 import com.fauna.codec.codecs.ClassCodec;
 import com.fauna.codec.codecs.DynamicCodec;
+import com.fauna.codec.codecs.EnumCodec;
 import com.fauna.codec.codecs.ListCodec;
 import com.fauna.codec.codecs.MapCodec;
 import com.fauna.codec.codecs.NullableCodec;
@@ -100,6 +101,10 @@ public class DefaultCodecProvider implements CodecProvider {
         if (clazz == Nullable.class) {
             Codec<E> valueCodec = this.get(ta, null);
             return (Codec<T>) new NullableCodec<E,Nullable<E>>(valueCodec);
+        }
+
+        if (clazz.isEnum()) {
+            return new EnumCodec<>(clazz);
         }
 
         return new ClassCodec<>(clazz, this);
