@@ -23,22 +23,13 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.fauna.codec.codecs.Fixtures.ESCAPED_OBJECT_WIRE_WITH;
 
 
 public class ClassCodecTest extends TestBase {
-
-    // Class with tag collision
-    public static final Codec<ClassWithRefTagCollision> CLASS_WITH_REF_TAG_COLLISION_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithRefTagCollision.class);
-    public static final String REF_TAG_COLLISION_WIRE = ESCAPED_OBJECT_WIRE_WITH("@ref");
-    public static final ClassWithRefTagCollision CLASS_WITH_REF_TAG_COLLISION = new ClassWithRefTagCollision("not");
-
-    // Class with parameterized Fields
-    public static final Codec<ClassWithParameterizedFields>  CLASS_WITH_PARAMETERIZED_FIELDS_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithParameterizedFields.class);
-    public static final String CLASS_WITH_PARAMETERIZED_FIELDS_WIRE = "{\"first_name\":\"foo\",\"a_list\":[\"item1\"],\"a_map\":{\"key1\":{\"@int\":\"42\"}}}";
-    public static final ClassWithParameterizedFields CLASS_WITH_PARAMETERIZED_FIELDS = new ClassWithParameterizedFields("foo",  List.of("item1"), Map.of("key1", 42));
 
     // Class with FaunaField attributes
     public static final Codec<ClassWithAttributes> CLASS_WITH_ATTRIBUTES_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithAttributes.class);
@@ -47,6 +38,15 @@ public class ClassCodecTest extends TestBase {
     public static final String NULL_DOC_WIRE = "{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"},\"exists\":false,\"cause\":\"not found\"}}";
     public static final NullDocumentException NULL_DOC_EXCEPTION = new NullDocumentException("123", new Module("Foo"), "not found");
 
+    // Class with tag collision
+    public static final Codec<ClassWithRefTagCollision> CLASS_WITH_REF_TAG_COLLISION_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithRefTagCollision.class);
+    public static final String REF_TAG_COLLISION_WIRE = ESCAPED_OBJECT_WIRE_WITH("@ref");
+    public static final ClassWithRefTagCollision CLASS_WITH_REF_TAG_COLLISION = new ClassWithRefTagCollision("not");
+
+    // Class with parameterized Fields
+    public static final Codec<ClassWithParameterizedFields>  CLASS_WITH_PARAMETERIZED_FIELDS_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithParameterizedFields.class);
+    public static final String CLASS_WITH_PARAMETERIZED_FIELDS_WIRE = "{\"first_name\":\"foo\",\"a_list\":[{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}],\"a_map\":{\"key1\":{\"@int\":\"42\"}},\"an_optional\":\"Fauna\"}";
+    public static final ClassWithParameterizedFields CLASS_WITH_PARAMETERIZED_FIELDS = new ClassWithParameterizedFields("foo",  List.of(CLASS_WITH_ATTRIBUTES), Map.of("key1", 42), Optional.of("Fauna"));
 
     // Class with FaunaIgnore attributes
     public static final Codec<ClassWithFaunaIgnore> CLASS_WITH_FAUNA_IGNORE_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithFaunaIgnore.class);

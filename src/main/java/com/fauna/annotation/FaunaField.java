@@ -13,5 +13,4 @@ import java.lang.annotation.Target;
 public @interface FaunaField {
 
     String name() default "";
-    Class<?> genericTypeArgument() default void.class;
 }

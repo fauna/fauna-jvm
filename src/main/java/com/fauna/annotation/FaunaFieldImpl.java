@@ -14,11 +14,6 @@ public class FaunaFieldImpl implements FaunaField {
     }
 
     @Override
-    public Class<?> genericTypeArgument() {
-        return annotation != null ? annotation.genericTypeArgument() : null;
-    }
-
-    @Override
     public Class<? extends java.lang.annotation.Annotation> annotationType() {
         return FaunaField.class;
     }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -115,7 +116,7 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_arrayOfPerson() {
+    public void query_arrayOfPersonIncoming() {
         var q = fql("Author.all().toArray()");
 
         var res = c.query(q, listOf(Author.class));
@@ -125,6 +126,17 @@ public class E2EQueryTest {
         var elem = res.getData().get(0);
         assertEquals("Alice", elem.getFirstName());
     }
+
+    @Test
+    public void query_arrayOfPersonOutgoing() {
+        var q = fql("${var}", Map.of("var", List.of(new Author("alice","smith","w", 42))));
+
+        var res = c.query(q);
+
+        List<Map<String, Object>> elem = (List<Map<String, Object>>) res.getData();
+        assertEquals("alice", elem.get(0).get("firstName"));
+    }
+
 
     @Test
     public void query_mapOfPerson() {
