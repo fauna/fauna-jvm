@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fauna.enums.FaunaTokenType;
 import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 import java.io.ByteArrayInputStream;

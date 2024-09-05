@@ -9,6 +9,8 @@ import com.fauna.beans.ClassWithRefTagCollision;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
+import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.Module;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -91,5 +94,16 @@ public class ClassCodecTest extends TestBase {
         var wire = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
         var obj = new ClassWithInheritanceL2("foo","bar",42);
         runCase(TestType.RoundTrip, codec, wire, obj, null);
+    }
+
+    public static Stream<Arguments> unsupportedTypeCases() {
+        return unsupportedTypeCases(CLASS_WITH_ATTRIBUTES_CODEC);
+    }
+
+    @ParameterizedTest(name = "ClassCodecUnsupportedTypes({index}) -> {0}:{1}")
+    @MethodSource("unsupportedTypeCases")
+    public void class_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
+        var exMsg = MessageFormat.format("Unable to decode `{0}` with `ClassCodec<ClassWithAttributes>`. Supported types for codec are [Document, Null, Object, Ref].", type);
+        runCase(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, wire, null, new ClientException(exMsg));
     }
 }

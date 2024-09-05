@@ -2,11 +2,14 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
+import com.fauna.exception.ClientException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -34,5 +37,16 @@ public class MapCodecTest extends TestBase {
     @MethodSource("tags")
     public void map_escapeOnReservedKey(String tag) throws IOException {
         runCase(TestType.RoundTrip, MAP_STRING_CODEC, ESCAPED_OBJECT_WIRE_WITH(tag), Map.of(tag, "not"), null);
+    }
+
+    public static Stream<Arguments> unsupportedTypeCases() {
+        return unsupportedTypeCases(MAP_STRING_CODEC);
+    }
+
+    @ParameterizedTest(name = "MapCodecUnsupportedTypes({index}) -> {0}:{1}")
+    @MethodSource("unsupportedTypeCases")
+    public void map_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
+        var exMsg = MessageFormat.format("Unable to decode `{0}` with `MapCodec<String>`. Supported types for codec are [Null, Object].", type);
+        runCase(TestType.Decode, MAP_STRING_CODEC, wire, null, new ClientException(exMsg));
     }
 }

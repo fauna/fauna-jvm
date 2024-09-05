@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
@@ -26,5 +27,10 @@ public class QueryLiteralCodec extends BaseCodec<QueryLiteral> {
     @Override
     public Class<QueryLiteral> getCodecClass() {
         return QueryLiteral.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[0];
     }
 }

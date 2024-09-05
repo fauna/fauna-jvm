@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
@@ -22,7 +23,7 @@ public class EnumCodec<T> extends BaseCodec<T> {
                 //noinspection unchecked
                 return (T) Enum.valueOf((Class<Enum>) enumType, parser.getValueAsString());
             default:
-                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -37,6 +38,11 @@ public class EnumCodec<T> extends BaseCodec<T> {
 
     @Override
     public Class<?> getCodecClass() {
-        return Enum.class;
+        return enumType;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Null, FaunaType.String};
     }
 }

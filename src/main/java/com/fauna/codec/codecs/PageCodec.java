@@ -1,7 +1,8 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -50,7 +51,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
                 // In the event the user requests a Page<T> but the query just returns T
                 return wrapInPage(parser);
             default:
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -65,7 +66,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
 
     @Override
     public Class<?> getCodecClass() {
-        return Page.class;
+        return elementCodec.getCodecClass();
     }
 
 
@@ -101,5 +102,10 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         @SuppressWarnings("unchecked")
         L res = (L) new Page<>(List.of(elem), null);
         return res;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.String, FaunaType.Time};
     }
 }

@@ -2,9 +2,11 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
+import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
+import com.fauna.query.StreamTokenResponse;
 import com.fauna.types.*;
 
 import java.io.IOException;
@@ -27,6 +29,8 @@ public class DynamicCodec extends BaseCodec<Object> {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
+            case BYTES:
+                return provider.get(byte[].class).decode(parser);
             case START_OBJECT:
                 return map.decode(parser);
             case START_ARRAY:
@@ -37,6 +41,8 @@ public class DynamicCodec extends BaseCodec<Object> {
                 return provider.get(DocumentRef.class).decode(parser);
             case START_DOCUMENT:
                 return provider.get(Document.class).decode(parser);
+            case STREAM:
+                return provider.get(StreamTokenResponse.class).decode(parser);
             case MODULE:
                 return parser.getValueAsModule();
             case INT:
@@ -56,7 +62,7 @@ public class DynamicCodec extends BaseCodec<Object> {
                 return parser.getValueAsBoolean();
         }
 
-        throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+        throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
     }
 
     @Override
@@ -72,5 +78,10 @@ public class DynamicCodec extends BaseCodec<Object> {
     @Override
     public Class<Object> getCodecClass() {
         return Object.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.Stream, FaunaType.String, FaunaType.Time};
     }
 }

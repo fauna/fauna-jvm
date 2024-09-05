@@ -1,7 +1,8 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
@@ -42,5 +43,10 @@ public class OptionalCodec<E,L extends Optional<E>> extends BaseCodec<L> {
     @Override
     public Class<?> getCodecClass() {
         return Optional.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return valueCodec.getSupportedTypes();
     }
 }

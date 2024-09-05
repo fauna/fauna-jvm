@@ -9,7 +9,8 @@ import com.fauna.annotation.FaunaIgnore;
 import com.fauna.annotation.FaunaTs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.codec.UTF8FaunaGenerator;
@@ -91,16 +92,25 @@ public class ClassCodec<T> extends BaseCodec<T> {
 
     @Override
     public T decode(UTF8FaunaParser parser) {
-        try {
-            FaunaTokenType endToken = parser.getCurrentTokenType().getEndToken();
-            Object instance = createInstance();
-            setFields(instance, parser, endToken);
-            @SuppressWarnings("unchecked")
-            T typed = (T) instance;
-            return typed;
-        } catch (IllegalAccessException | ClassNotFoundException | InvocationTargetException | InstantiationException |
-                 NoSuchMethodException | IOException e) {
-            throw new RuntimeException(e);
+        switch (parser.getCurrentTokenType()) {
+            case NULL:
+                return null;
+            case START_REF:
+            case START_DOCUMENT:
+            case START_OBJECT:
+                try {
+                    FaunaTokenType endToken = parser.getCurrentTokenType().getEndToken();
+                    Object instance = createInstance();
+                    setFields(instance, parser, endToken);
+                    @SuppressWarnings("unchecked")
+                    T typed = (T) instance;
+                    return typed;
+                } catch (IllegalAccessException | ClassNotFoundException | InvocationTargetException | InstantiationException |
+                         NoSuchMethodException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+            default:
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -151,6 +161,11 @@ public class ClassCodec<T> extends BaseCodec<T> {
     @Override
     public Class<T> getCodecClass() {
         return this.type;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Document, FaunaType.Null, FaunaType.Object, FaunaType.Ref};
     }
 
     private Object createInstance() throws InvocationTargetException, InstantiationException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException {

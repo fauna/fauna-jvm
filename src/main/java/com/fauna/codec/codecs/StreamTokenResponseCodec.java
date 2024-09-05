@@ -1,8 +1,9 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.enums.FaunaTokenType;
+import com.fauna.codec.FaunaTokenType;
 import com.fauna.exception.ClientException;
 import com.fauna.query.StreamTokenResponse;
 
@@ -15,7 +16,7 @@ public class StreamTokenResponseCodec extends BaseCodec<StreamTokenResponse> {
         if (parser.getCurrentTokenType() == FaunaTokenType.STREAM) {
             return new StreamTokenResponse(parser.getTaggedValueAsString());
         } else {
-            throw new ClientException("Unexpected token type for stream token: " + parser.getCurrentTokenType());
+            throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -28,5 +29,10 @@ public class StreamTokenResponseCodec extends BaseCodec<StreamTokenResponse> {
     @Override
     public Class<?> getCodecClass() {
         return StreamTokenResponse.class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Stream};
     }
 }

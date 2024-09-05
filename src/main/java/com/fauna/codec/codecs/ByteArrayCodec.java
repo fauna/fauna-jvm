@@ -1,5 +1,6 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -18,7 +19,7 @@ public class ByteArrayCodec extends BaseCodec<byte[]> {
             case BYTES:
                 return parser.getValueAsByteArray();
             default:
-                throw new ClientException(this.unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -35,5 +36,10 @@ public class ByteArrayCodec extends BaseCodec<byte[]> {
     @Override
     public Class<?> getCodecClass() {
         return byte[].class;
+    }
+
+    @Override
+    public FaunaType[] getSupportedTypes() {
+        return new FaunaType[]{FaunaType.Bytes, FaunaType.Null};
     }
 }

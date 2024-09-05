@@ -3,7 +3,6 @@ package com.fauna.codec;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fauna.enums.FaunaTokenType;
 import com.fauna.types.Module;
 import com.fauna.exception.ClientException;
 import java.io.ByteArrayInputStream;
@@ -20,7 +19,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import static com.fauna.enums.FaunaTokenType.*;
+import static com.fauna.codec.FaunaTokenType.*;
 
 /**
  * Represents a reader that provides fast, non-cached, forward-only access to serialized data.
