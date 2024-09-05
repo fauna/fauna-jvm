@@ -32,7 +32,6 @@ public abstract class TestBase {
 
     public static Stream<Arguments> unsupportedTypeCases(Codec codec) {
         return Arrays.stream(FaunaType.values())
-                .filter(f -> f != FaunaType.Unknown)
                 .filter(f -> Arrays.stream(codec.getSupportedTypes()).noneMatch(f::equals))
                 .map(f -> Arguments.of(Helpers.getWire(f), f));
     }

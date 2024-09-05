@@ -81,7 +81,6 @@ public class DynamicCodecTest extends TestBase {
     @Test
     public void dynamic_shouldSupportAllTypes()  {
         var arr = Arrays.stream(FaunaType.values())
-                .filter(f -> f != FaunaType.Unknown)
                 .filter(f -> Arrays.stream(DYNAMIC_CODEC.getSupportedTypes()).noneMatch(f::equals)).toArray();
         assertEquals("[]", Arrays.toString(arr));
     }

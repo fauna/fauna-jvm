@@ -42,9 +42,7 @@ public enum FaunaTokenType {
 
     STREAM,
 
-    MODULE,
-    END_SET,
-    START_SET;
+    MODULE;
 
     public FaunaTokenType getEndToken() throws IOException {
         switch (this) {
@@ -52,23 +50,27 @@ public enum FaunaTokenType {
             case START_OBJECT: return END_OBJECT;
             case START_ARRAY: return END_ARRAY;
             case START_PAGE: return END_PAGE;
-            case START_SET: return END_SET;
             case START_REF: return END_REF;
-            default: throw new IOException("No end token for " + this.name());
+            default: throw new IllegalStateException("No end token for " + this.name());
         }
     }
 
     public FaunaType getFaunaType() {
         switch (this) {
             case START_OBJECT:
+            case END_OBJECT:
                 return FaunaType.Object;
             case START_ARRAY:
+            case END_ARRAY:
                 return FaunaType.Array;
             case START_PAGE:
+            case END_PAGE:
                 return FaunaType.Set;
             case START_REF:
+            case END_REF:
                 return FaunaType.Ref;
             case START_DOCUMENT:
+            case END_DOCUMENT:
                 return FaunaType.Document;
             case STRING:
                 return FaunaType.String;
@@ -94,7 +96,7 @@ public enum FaunaTokenType {
             case MODULE:
                 return FaunaType.Module;
             default:
-                return FaunaType.Unknown;
+                throw new IllegalStateException("No associated FaunaType for FaunaTokenType: " + this);
         }
     }
 }

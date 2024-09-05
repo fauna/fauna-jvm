@@ -12,5 +12,9 @@ public enum FaunaType {
     Ref,
     Document,
     Array,
-    Bytes, Null, Stream, Module, Set, Unknown
+    Bytes,
+    Null,
+    Stream,
+    Module,
+    Set
 }
