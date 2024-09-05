@@ -6,6 +6,7 @@ import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
+import com.fauna.query.StreamTokenResponse;
 import com.fauna.types.*;
 
 import java.io.IOException;
@@ -28,6 +29,8 @@ public class DynamicCodec extends BaseCodec<Object> {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
+            case BYTES:
+                return provider.get(byte[].class).decode(parser);
             case START_OBJECT:
                 return map.decode(parser);
             case START_ARRAY:
@@ -38,6 +41,8 @@ public class DynamicCodec extends BaseCodec<Object> {
                 return provider.get(DocumentRef.class).decode(parser);
             case START_DOCUMENT:
                 return provider.get(Document.class).decode(parser);
+            case STREAM:
+                return provider.get(StreamTokenResponse.class).decode(parser);
             case MODULE:
                 return parser.getValueAsModule();
             case INT:
@@ -77,6 +82,6 @@ public class DynamicCodec extends BaseCodec<Object> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Object, FaunaType.Array, FaunaType.Set, FaunaType.Ref, FaunaType.Document, FaunaType.Module, FaunaType.Int, FaunaType.String, FaunaType.Date, FaunaType.Time, FaunaType.Double, FaunaType.Boolean, FaunaType.Long};
+        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.Stream, FaunaType.String, FaunaType.Time};
     }
 }

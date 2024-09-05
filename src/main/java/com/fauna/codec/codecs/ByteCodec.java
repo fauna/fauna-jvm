@@ -39,6 +39,6 @@ public class ByteCodec extends BaseCodec<Byte> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Int};
+        return new FaunaType[]{FaunaType.Int, FaunaType.Null};
     }
 }

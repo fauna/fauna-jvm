@@ -87,6 +87,6 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Ref, FaunaType.Document};
+        return new FaunaType[]{FaunaType.Document, FaunaType.Null, FaunaType.Ref};
     }
 }

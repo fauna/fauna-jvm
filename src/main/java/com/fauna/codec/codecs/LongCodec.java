@@ -40,6 +40,6 @@ public class LongCodec extends BaseCodec<Long> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Int, FaunaType.Long};
+        return new FaunaType[]{FaunaType.Int, FaunaType.Long, FaunaType.Null};
     }
 }

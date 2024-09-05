@@ -40,6 +40,6 @@ public class LocalDateCodec extends BaseCodec<LocalDate> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Date};
+        return new FaunaType[]{FaunaType.Date, FaunaType.Null};
     }
 }

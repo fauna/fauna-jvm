@@ -3,15 +3,18 @@ package com.fauna.codec.codecs;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.*;
 import com.fauna.types.Module;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -19,7 +22,7 @@ import java.util.stream.Stream;
 
 public class BaseDocumentCodecTest extends TestBase {
     public static final Codec<BaseDocument> BASE_DOCUMENT_CODEC = DefaultCodecProvider.SINGLETON.get(BaseDocument.class);
-    
+
     // Docs
     public static final String DOCUMENT_WIRE = "{\"@doc\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Foo\"},\"ts\":{\"@time\":\"2023-12-15T01:01:01.0010010Z\"},\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}}";
     public static final Document DOCUMENT = new Document(
@@ -63,5 +66,16 @@ public class BaseDocumentCodecTest extends TestBase {
     @MethodSource("testCases")
     public <T,E extends Exception> void baseDoc_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
         runCase(testType, codec, wire, obj, exception);
+    }
+
+    public static Stream<Arguments> unsupportedTypeCases() {
+        return unsupportedTypeCases(BASE_DOCUMENT_CODEC);
+    }
+
+    @ParameterizedTest(name = "BaseDocCodecUnsupportedTypes({index}) -> {0}:{1}")
+    @MethodSource("unsupportedTypeCases")
+    public void baseDoc_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
+        var exMsg = MessageFormat.format("Unable to decode `{0}` with `BaseDocumentCodec<BaseDocument>`. Supported types for codec are [Document, Null, Ref].", type);
+        runCase(TestType.Decode, BASE_DOCUMENT_CODEC, wire, null, new ClientException(exMsg));
     }
 }

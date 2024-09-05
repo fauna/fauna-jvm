@@ -3,17 +3,27 @@ package com.fauna.codec.codecs;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
+import com.fauna.codec.Helpers;
+import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
+import com.fauna.query.StreamTokenResponse;
 import com.fauna.types.Module;
 import com.fauna.types.*;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class DynamicCodecTest extends TestBase {
@@ -56,7 +66,9 @@ public class DynamicCodecTest extends TestBase {
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, DOCUMENT_REF_WIRE, DOCUMENT_REF, null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, NAMED_DOCUMENT_WIRE, NAMED_DOCUMENT, null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, NAMED_DOCUMENT_REF_WIRE, NAMED_DOCUMENT_REF, null),
-                Arguments.of(TestType.Decode, DYNAMIC_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION)
+                Arguments.of(TestType.Decode, DYNAMIC_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
+                Arguments.of(TestType.Decode, DYNAMIC_CODEC, "{\"@stream\":\"token\"}", new StreamTokenResponse("token"), null),
+                Arguments.of(TestType.Decode, DYNAMIC_CODEC, "{\"@bytes\": \"RmF1bmE=\"}", new byte[]{70, 97, 117, 110, 97}, null)
         );
     }
 
@@ -64,5 +76,13 @@ public class DynamicCodecTest extends TestBase {
     @MethodSource("testCases")
     public <T,E extends Exception> void dynamic_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
         runCase(testType, codec, wire, obj, exception);
+    }
+
+    @Test
+    public void dynamic_shouldSupportAllTypes()  {
+        var arr = Arrays.stream(FaunaType.values())
+                .filter(f -> f != FaunaType.Unknown)
+                .filter(f -> Arrays.stream(DYNAMIC_CODEC.getSupportedTypes()).noneMatch(f::equals)).toArray();
+        assertEquals("[]", Arrays.toString(arr));
     }
 }

@@ -40,6 +40,6 @@ public class BoolCodec extends BaseCodec<Boolean> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Boolean};
+        return new FaunaType[]{FaunaType.Boolean, FaunaType.Null};
     }
 }

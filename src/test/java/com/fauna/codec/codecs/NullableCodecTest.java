@@ -3,6 +3,8 @@ package com.fauna.codec.codecs;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
+import com.fauna.exception.ClientException;
 import com.fauna.types.*;
 import com.fauna.types.Module;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,6 +12,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -63,5 +66,17 @@ public class NullableCodecTest extends TestBase {
     @MethodSource("testCases")
     public <T,E extends Exception> void nullable_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
         runCase(testType, codec, wire, obj, exception);
+    }
+
+    public static Stream<Arguments> unsupportedTypeCases() {
+        return unsupportedTypeCases(NULLABLE_DOC_CODEC);
+    }
+
+    @ParameterizedTest(name = "NullableCodecUnsupportedTypes({index}) -> {0}:{1}")
+    @MethodSource("unsupportedTypeCases")
+    public void nullable_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
+        // This codec will pass through the supported types of the underlying codec
+        var exMsg = MessageFormat.format("Unable to decode `{0}` with `BaseDocumentCodec<BaseDocument>`. Supported types for codec are [Document, Null, Ref].", type);
+        runCase(TestType.Decode, NULLABLE_DOC_CODEC, wire, null, new ClientException(exMsg));
     }
 }

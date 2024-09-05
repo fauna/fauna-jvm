@@ -106,6 +106,6 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Object, FaunaType.Array, FaunaType.Set, FaunaType.Ref, FaunaType.Document, FaunaType.Module, FaunaType.Int, FaunaType.String, FaunaType.Date, FaunaType.Time, FaunaType.Double, FaunaType.Boolean, FaunaType.Long};
+        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.String, FaunaType.Time};
     }
 }

@@ -40,6 +40,6 @@ public class ByteArrayCodec extends BaseCodec<byte[]> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Bytes};
+        return new FaunaType[]{FaunaType.Bytes, FaunaType.Null};
     }
 }

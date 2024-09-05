@@ -41,6 +41,6 @@ public class StringCodec extends BaseCodec<String> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.String, FaunaType.Bytes };
+        return new FaunaType[]{FaunaType.Bytes, FaunaType.Null, FaunaType.String};
     }
 }

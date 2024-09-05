@@ -3,12 +3,15 @@ package com.fauna.codec.codecs;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
+import com.fauna.exception.ClientException;
 import com.fauna.types.Page;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -41,5 +44,16 @@ public class PageCodecTest extends TestBase {
     public <T,E extends Exception> void page_runTestCases(TestType testType, Class<T> pageElemClass, String wire, Object obj, E exception) throws IOException {
         var codec = pageCodecOf(pageElemClass);
         runCase(testType, codec, wire, obj, exception);
+    }
+
+    public static Stream<Arguments> unsupportedTypeCases() {
+        return unsupportedTypeCases(pageCodecOf(Object.class));
+    }
+
+    @ParameterizedTest(name = "PageCodecUnsupportedTypes({index}) -> {0}:{1}")
+    @MethodSource("unsupportedTypeCases")
+    public void page_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
+        var exMsg = MessageFormat.format("Unable to decode `{0}` with `PageCodec<Object>`. Supported types for codec are [Array, Boolean, Bytes, Date, Double, Document, Int, Long, Module, Null, Object, Ref, Set, String, Time].", type);
+        runCase(TestType.Decode, pageCodecOf(Object.class), wire, null, new ClientException(exMsg));
     }
 }

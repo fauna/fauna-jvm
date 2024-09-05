@@ -2,6 +2,8 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaType;
+import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.BaseRef;
 import com.fauna.types.DocumentRef;
@@ -12,6 +14,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.stream.Stream;
 
 
@@ -35,6 +38,7 @@ public class BaseRefCodecTest extends TestBase {
                 Arguments.of(TestType.RoundTrip, BASE_REF_CODEC, DOCUMENT_REF_WIRE, DOCUMENT_REF, null),
                 Arguments.of(TestType.RoundTrip, BASE_REF_CODEC, NAMED_DOCUMENT_REF_WIRE, NAMED_DOCUMENT_REF, null),
                 Arguments.of(TestType.Decode, BASE_REF_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION)
+
         );
     }
 
@@ -42,5 +46,16 @@ public class BaseRefCodecTest extends TestBase {
     @MethodSource("testCases")
     public <T,E extends Exception> void baseRef_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
         runCase(testType, codec, wire, obj, exception);
+    }
+
+    public static Stream<Arguments> unsupportedTypeCases() {
+        return unsupportedTypeCases(BASE_REF_CODEC);
+    }
+
+    @ParameterizedTest(name = "BaseRefCodecUnsupportedTypes({index}) -> {0}:{1}")
+    @MethodSource("unsupportedTypeCases")
+    public void baseRef_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
+        var exMsg = MessageFormat.format("Unable to decode `{0}` with `BaseRefCodec<BaseRef>`. Supported types for codec are [Null, Ref].", type);
+        runCase(TestType.Decode, BASE_REF_CODEC, wire, null, new ClientException(exMsg));
     }
 }

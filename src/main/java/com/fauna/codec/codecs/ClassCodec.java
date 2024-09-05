@@ -165,7 +165,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Object, FaunaType.Document, FaunaType.Ref};
+        return new FaunaType[]{FaunaType.Document, FaunaType.Null, FaunaType.Object, FaunaType.Ref};
     }
 
     private Object createInstance() throws InvocationTargetException, InstantiationException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException {

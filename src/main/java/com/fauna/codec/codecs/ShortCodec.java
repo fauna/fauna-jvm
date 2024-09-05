@@ -40,6 +40,6 @@ public class ShortCodec extends BaseCodec<Short> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Int};
+        return new FaunaType[]{FaunaType.Int, FaunaType.Null};
     }
 }

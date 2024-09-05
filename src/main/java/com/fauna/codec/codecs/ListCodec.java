@@ -61,6 +61,6 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Array};
+        return new FaunaType[]{FaunaType.Array, FaunaType.Null};
     }
 }

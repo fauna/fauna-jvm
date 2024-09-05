@@ -40,6 +40,6 @@ public class ModuleCodec extends BaseCodec<Module> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Module};
+        return new FaunaType[]{FaunaType.Module, FaunaType.Null};
     }
 }

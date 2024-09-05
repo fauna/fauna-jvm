@@ -41,6 +41,6 @@ public class FloatCodec extends BaseCodec<Float> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Int, FaunaType.Long, FaunaType.Double};
+        return new FaunaType[]{FaunaType.Double, FaunaType.Int, FaunaType.Long, FaunaType.Null};
     }
 }
