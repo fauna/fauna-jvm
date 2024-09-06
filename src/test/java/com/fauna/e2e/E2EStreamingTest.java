@@ -178,6 +178,10 @@ public class E2EStreamingTest {
 
         stream.subscribe(inventory);
         List<CompletableFuture<Product>> productFutures = new ArrayList<>();
+        // FaunaStream onError: com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException:
+        // Unrecognized field "error" (class com.fauna.response.wire.StreamEventWire), not marked as ignorable (5 known properties: "data", "txn_ts", "cursor", "stats", "type"])
+        // at [Source: (String)"{"type":"error","error":{"code":"stream_overflow","message":"Too many events to process."},"stats":{"read_ops":0,"storage_bytes_read":0,"compute_ops":0,"processing_time_ms":0,"rate_limits_hit":[]}}
+        //"; line: 1, column: 26] (through reference chain: com.fauna.response.wire.StreamEventWire["error"])
         Stream.generate(E2EStreamingTest::createProduct).limit(10_000).forEach(
                 fql -> productFutures.add(client.asyncQuery(fql, Product.class).thenApply(success -> success.getData())));
         Thread.sleep(10_000);
