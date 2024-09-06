@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -18,8 +19,8 @@ import static com.fauna.codec.codecs.Fixtures.ESCAPED_OBJECT_WIRE_WITH;
 
 public class MapCodecTest extends TestBase {
 
-    public static final Codec<Map<String,Integer>> MAP_INT_CODEC = (Codec<Map<String, Integer>>) (Codec) DefaultCodecProvider.SINGLETON.get(Map.class, Integer.class);
-    public static final Codec<Map<String, String>> MAP_STRING_CODEC = (Codec<Map<String,String>>) (Codec) DefaultCodecProvider.SINGLETON.get(Map.class, String.class);
+    public static final Codec<Map<String,Integer>> MAP_INT_CODEC = (Codec<Map<String, Integer>>) (Codec) DefaultCodecProvider.SINGLETON.get(Map.class, new Type[]{String.class, Integer.class});
+    public static final Codec<Map<String, String>> MAP_STRING_CODEC = (Codec<Map<String,String>>) (Codec) DefaultCodecProvider.SINGLETON.get(Map.class, new Type[]{String.class, String.class});
 
 
     public static Stream<Arguments> testCases() {

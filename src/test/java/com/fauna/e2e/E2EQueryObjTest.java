@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static com.fauna.codec.Parameterized.mapOf;
+import static com.fauna.codec.Generic.mapOf;
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

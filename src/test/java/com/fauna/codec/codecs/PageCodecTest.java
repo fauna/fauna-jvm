@@ -5,12 +5,14 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
+import com.fauna.types.Document;
 import com.fauna.types.Page;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Stream;
@@ -26,7 +28,7 @@ public class PageCodecTest extends TestBase {
 
     public static <T> Codec<Page<T>> pageCodecOf(Class<T> clazz) {
         //noinspection unchecked,rawtypes
-        return (Codec<Page<T>>) (Codec) DefaultCodecProvider.SINGLETON.get(Page.class, clazz);
+        return (Codec<Page<T>>) (Codec) DefaultCodecProvider.SINGLETON.get(Page.class, new Type[]{clazz});
     }
 
     public static Stream<Arguments> testCases() {

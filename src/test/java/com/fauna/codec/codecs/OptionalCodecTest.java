@@ -9,13 +9,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 
 public class OptionalCodecTest extends TestBase {
-    public static final Codec<Optional<String>> OPTIONAL_STRING_CODEC = (Codec<Optional<String>>) (Codec) DefaultCodecProvider.SINGLETON.get(Optional.class, String.class);
+    public static final Codec<Optional<String>> OPTIONAL_STRING_CODEC = (Codec<Optional<String>>) (Codec) DefaultCodecProvider.SINGLETON.get(Optional.class, new Type[]{String.class});
 
     public static Stream<Arguments> testCases() {
         return Stream.of(

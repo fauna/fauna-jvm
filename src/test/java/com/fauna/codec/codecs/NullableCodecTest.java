@@ -12,14 +12,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public class NullableCodecTest extends TestBase {
-    public static final Codec<Nullable<Document>> NULLABLE_DOC_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, Document.class);
-    public static final Codec<Nullable<ClassWithAttributes>> NULLABLE_ClASS_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, ClassWithAttributes.class);
+    public static final Codec<Nullable<Document>> NULLABLE_DOC_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, new Type[]{Document.class});
+    public static final Codec<Nullable<ClassWithAttributes>> NULLABLE_ClASS_CODEC = (Codec)DefaultCodecProvider.SINGLETON.get(Nullable.class, new Type[]{ClassWithAttributes.class});
     
     // Class with attributes
     public static final String CLASS_WITH_ATTRIBUTES_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";

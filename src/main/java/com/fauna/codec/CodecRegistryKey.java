@@ -1,22 +1,23 @@
 package com.fauna.codec;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class CodecRegistryKey {
     private final Class<?> base;
-    private final Type typeArg;
-    public <T> CodecRegistryKey(Class<T> clazz, Type typeArg) {
+    private final Type[] typeArgs;
+    public <T> CodecRegistryKey(Class<T> clazz, Type[] typeArgs) {
         base = clazz;
-        this.typeArg = typeArg;
+        this.typeArgs = typeArgs;
     }
 
     public static <T> CodecRegistryKey from(Class<T> clazz) {
         return new CodecRegistryKey(clazz, null);
     }
 
-    public static <T> CodecRegistryKey from(Class<T> clazz, Type typeArg) {
-        return new CodecRegistryKey(clazz, typeArg);
+    public static <T> CodecRegistryKey from(Class<T> clazz, Type[] typeArgs) {
+        return new CodecRegistryKey(clazz, typeArgs);
     }
 
     @Override
@@ -25,7 +26,7 @@ public class CodecRegistryKey {
             return true;
         } else if (other instanceof CodecRegistryKey) {
             CodecRegistryKey otherCRK = (CodecRegistryKey) other;
-            return Objects.equals(base, otherCRK.base) && Objects.equals(typeArg, otherCRK.typeArg);
+            return Objects.equals(base, otherCRK.base) && Arrays.equals(typeArgs, otherCRK.typeArgs);
         } else {
             return false;
         }
@@ -33,6 +34,6 @@ public class CodecRegistryKey {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(base, typeArg);
+        return Objects.hash(base, Arrays.hashCode(typeArgs));
     }
 }
