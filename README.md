@@ -1,9 +1,9 @@
-# The Official Java Driver for [Fauna](https://fauna.com). (alpha)
+# The Official JVM Driver for [Fauna](https://fauna.com). (alpha)
 
 > [!CAUTION]
 > This driver is currently in alpha and should not be used in production.
 
-The Fauna Java driver is a lightweight, open-source wrapper for Fauna's [HTTP
+The Fauna JVM driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
 use the driver to run FQL queries and get results from a Java application.
 
