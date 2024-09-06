@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,10 +64,17 @@ public class ClassCodec<T> extends BaseCodec<T> {
                         "Duplicate field name " + name + " in " + ty);
             }
 
-            var ta = attr.genericTypeArgument() != void.class ? attr.genericTypeArgument() : null;
+            Type type = field.getGenericType();
+            FieldInfo info;
 
             // Don't init the codec here because of potential circular references; instead use a provider.
-            FieldInfo info = new FieldInfo(field, name, ta, provider, fieldType);
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pType = (ParameterizedType)type;
+                info = new FieldInfo(field, name, (Class<?>) pType.getRawType(), pType.getActualTypeArguments(), provider, fieldType);
+            } else {
+                info = new FieldInfo(field, name, field.getType(), null, provider, fieldType);
+            }
+
             fieldsList.add(info);
             byNameMap.put(info.getName(), info);
         }
