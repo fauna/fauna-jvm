@@ -1,4 +1,4 @@
-# The Official JVM Driver for [Fauna](https://fauna.com). (alpha)
+# The Official JVM Driver for [Fauna](https://fauna.com) (alpha)
 
 > [!CAUTION]
 > This driver is currently in alpha and should not be used in production.
