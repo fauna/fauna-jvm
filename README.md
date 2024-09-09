@@ -247,7 +247,7 @@ class Person {
 
 You can use the `com.fauna.annotation` package to modify encoding and decoding of 
 specific fields in classes used as arguments and results of queries.
-* `@FaunaId`: Should only be used once per class and be associated with a field named `id` if it represents the ID of a document. It will not be encoded unless the `isClientGenerated` flag is set.
+* `@FaunaId`: Should only be used once per class and be associated with a field named `id` that represents the Fauna document ID. It's not encoded unless the `isClientGenerated` flag is`true`.
 * `@FaunaTs`: Should only be used once per class and be associated with a field named `ts` if it represents the timestamp of a document. It will never be encoded.
 * `@FaunaColl`: Typically goes unmodeled. Should only be used once per class and be associated with a field named `coll` if represents the collection field of a document. It will never be encoded.
 * `@FaunaField`: Can be associated with any field to override its name in Fauna.
