@@ -43,14 +43,7 @@ public final class FieldInfo {
         synchronized (this) {
             // check again in case it was set by another thread
             if (codec != null) return codec;
-
-            if (genericTypeArgs == null || genericTypeArgs.length == 0) {
-                codec = provider.get(clazz, null);
-            } else if (genericTypeArgs.length == 1) {
-                codec = provider.get(clazz, (Class<?>) genericTypeArgs[0]);
-            } else {
-                codec = provider.get(clazz, (Class<?>)  genericTypeArgs[1]);
-            }
+            codec = provider.get(clazz, genericTypeArgs);
         }
 
         return codec;

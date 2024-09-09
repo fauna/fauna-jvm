@@ -27,6 +27,7 @@ import com.fauna.types.NamedDocument;
 import com.fauna.types.Nullable;
 import com.fauna.types.Page;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,11 +63,11 @@ public class DefaultCodecProvider implements CodecProvider {
     }
 
     @Override
-    public <T,E> Codec<T> get(Class<T> clazz, Class<E> typeArg) {
-        CodecRegistryKey key = CodecRegistryKey.from(clazz, typeArg);
+    public <T> Codec<T> get(Class<T> clazz, Type[] typeArgs) {
+        CodecRegistryKey key = CodecRegistryKey.from(clazz, typeArgs);
 
         if (!registry.contains(key)) {
-            var codec = generate(clazz, typeArg);
+            var codec = generate(clazz, typeArgs);
             registry.put(key, codec);
         }
 
@@ -74,33 +75,35 @@ public class DefaultCodecProvider implements CodecProvider {
     }
 
     @SuppressWarnings({"unchecked"})
-    private <T,E> Codec<T> generate(Class<T> clazz, Class<E> typeArg) {
-        var ta = (Class<E>) (typeArg == null ? Object.class : typeArg);
-        if (List.class.isAssignableFrom(clazz)) {
-            Codec<E> elemCodec = this.get(ta, null);
+    private <T,E> Codec<T> generate(Class<T> clazz, Type[] typeArgs) {
+        if (Map.class.isAssignableFrom(clazz)) {
+            var ta = typeArgs == null || typeArgs.length <= 1 ? Object.class : typeArgs[1];
+            Codec<?> valueCodec = this.get((Class<?>) ta, null);
 
-            return (Codec<T>) new ListCodec<E,List<E>>(elemCodec);
+            return (Codec<T>) new MapCodec<E,Map<String,E>>((Codec<E>) valueCodec);
         }
 
-        if (Map.class.isAssignableFrom(clazz)) {
-            Codec<E> valueCodec = this.get(ta, null);
+        var ta = typeArgs == null || typeArgs.length == 0 ? Object.class : typeArgs[0];
 
-            return (Codec<T>) new MapCodec<E,Map<String,E>>(valueCodec);
+        if (List.class.isAssignableFrom(clazz)) {
+            Codec<?> elemCodec = this.get((Class<?>) ta, null);
+
+            return (Codec<T>) new ListCodec<E,List<E>>((Codec<E>) elemCodec);
         }
 
         if (clazz == Optional.class) {
-            Codec<E> valueCodec = this.get(ta, null);
-            return (Codec<T>) new OptionalCodec<E,Optional<E>>(valueCodec);
+            Codec<?> valueCodec = this.get((Class<?>) ta, null);
+            return (Codec<T>) new OptionalCodec<E,Optional<E>>((Codec<E>) valueCodec);
         }
 
         if (clazz == Page.class) {
-            Codec<E> valueCodec = this.get(ta, null);
-            return (Codec<T>) new PageCodec<E,Page<E>>(valueCodec);
+            Codec<?> valueCodec = this.get((Class<?>) ta, null);
+            return (Codec<T>) new PageCodec<E,Page<E>>((Codec<E>) valueCodec);
         }
 
         if (clazz == Nullable.class) {
-            Codec<E> valueCodec = this.get(ta, null);
-            return (Codec<T>) new NullableCodec<E,Nullable<E>>(valueCodec);
+            Codec<?> valueCodec = this.get((Class<?>) ta, null);
+            return (Codec<T>) new NullableCodec<E,Nullable<E>>((Codec<E>) valueCodec);
         }
 
         if (clazz.isEnum()) {

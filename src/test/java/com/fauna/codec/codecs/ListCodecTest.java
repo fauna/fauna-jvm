@@ -4,11 +4,13 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.exception.ClientException;
+import com.fauna.types.Document;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Stream;
@@ -16,7 +18,7 @@ import java.util.stream.Stream;
 
 public class ListCodecTest extends TestBase {
 
-    public static final Codec<List<Integer>> LIST_INT_CODEC = (Codec<List<Integer>>) (Codec) DefaultCodecProvider.SINGLETON.get(List.class, int.class);
+    public static final Codec<List<Integer>> LIST_INT_CODEC = (Codec<List<Integer>>) (Codec) DefaultCodecProvider.SINGLETON.get(List.class, new Type[]{int.class});
 
     public static Stream<Arguments> testCases() {
         return Stream.of(
