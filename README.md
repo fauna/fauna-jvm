@@ -226,7 +226,8 @@ options](#query-options).
 
 
 ### Define a custom class for your data
-These should be simple POJOs.
+
+Use annotations to map a Java class to a Fauna document or object shape:
 
 ```java
 import com.fauna.annotation.FaunaField;
