@@ -82,7 +82,7 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
 import com.fauna.types.Page;
 
-import static com.fauna.codec.generic.pageOf;
+import com.fauna.codec.Generic.PageOf;
 import static com.fauna.query.builder.Query.fql;
 
 
