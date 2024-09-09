@@ -249,7 +249,7 @@ You can use the `com.fauna.annotation` package to modify encoding and decoding o
 specific fields in classes used as arguments and results of queries.
 * `@FaunaId`: Should only be used once per class and be associated with a field named `id` that represents the Fauna document ID. It's not encoded unless the `isClientGenerated` flag is`true`.
 * `@FaunaTs`: Should only be used once per class and be associated with a field named `ts` that represents the timestamp of a document. It's not encoded.
-* `@FaunaColl`: Typically goes unmodeled. Should only be used once per class and be associated with a field named `coll` if represents the collection field of a document. It will never be encoded.
+* `@FaunaColl`: Typically goes unmodeled. Should only be used once per class and be associated with a field named `coll` that represents the collection field of a document. It will never be encoded.
 * `@FaunaField`: Can be associated with any field to override its name in Fauna.
 * `@FaunaIgnore`: Can be used to ignore fields during encoding and decoding.
 
@@ -439,7 +439,7 @@ To get a stream token, append
 or
 [`changesOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/changeson)
 to a set from a [supported
-source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources
+source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
 
 To start and subscribe to the stream, use a stream token to create a
 `StreamRequest` and pass the `StreamRequest` to  `stream()` or `asyncStream()`:
