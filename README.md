@@ -402,3 +402,151 @@ QueryOptions options = QueryOptions.builder()
 
 QuerySuccess result = client.query(query, String.class, options);
 ```
+
+## Event streaming
+
+The driver supports [event streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+
+To get a stream token, append
+[`toStream()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/tostream)
+or
+[`changesOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/changeson)
+to a set from a [supported
+source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources
+
+To start and subscribe to the stream, use a stream token to create a
+`StreamRequest` and pass the `StreamRequest` to  `stream()` or `asyncStream()`:
+
+```java
+// Get a stream token.
+Query query = fql("Product.all().toStream() { name, stock }");
+QuerySuccess<StreamTokenResponse> tokenResponse = client.query(query, StreamTokenResponse.class);
+String streamToken = tokenResponse.getData().getToken();
+
+// Create a StreamRequest.
+StreamRequest request = new StreamRequest(streamToken);
+
+// Use stream() when you want to ensure the stream is ready before proceeding
+// with other operations, or when working in a synchronous context.
+FaunaStream<Product> stream = client.stream(request, Product.class);
+
+// Use asyncStream() when you want to start the stream operation without blocking,
+// which is useful in asynchronous applications or when you need to perform other
+// tasks while waiting for the stream to be established.
+CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(request, Product.class);
+```
+
+Alternatively, you also pass an FQL that returns a stream token to `stream()` or
+`asyncStream()`:
+
+```java
+Query query = fql("Product.all().toStream() { name, stock }");
+// Create and subscribe to a stream in one step.
+// stream() example:
+FaunaStream<Product> stream = client.stream(query, Product.class);
+// asyncStream() example:
+CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(query, Product.class);
+```
+
+### Create a subscriber class
+
+The methods return a `FaunaStream` publisher that lets you handle events as they
+arrive. Create a class with the `Flow.Subscriber` interface to process
+events:
+
+```java
+package org.example;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.fauna.client.Fauna;
+import com.fauna.client.FaunaClient;
+import com.fauna.client.FaunaStream;
+import com.fauna.exception.FaunaException;
+import static com.fauna.query.builder.Query.fql;
+import com.fauna.response.StreamEvent;
+
+// Import the Product class for event data.
+import org.example.Product;
+
+public class App {
+    public static void main(String[] args) throws InterruptedException {
+        try {
+            FaunaClient client = Fauna.client();
+
+            // Create a stream of all products. Project the name and stock.
+            FaunaStream<Product> stream = client.stream(fql("Product.all().toStream() { name, stock }"), Product.class);
+
+            // Create a subscriber to handle stream events.
+            ProductSubscriber subscriber = new ProductSubscriber();
+            stream.subscribe(subscriber);
+
+            // Wait for the subscriber to complete.
+            subscriber.awaitCompletion();
+        } catch (FaunaException e) {
+            System.err.println("Fauna error occurred: " + e.getMessage());
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static class ProductSubscriber implements Flow.Subscriber<StreamEvent<Product>> {
+        private final AtomicInteger eventCount = new AtomicInteger(0);
+        private Flow.Subscription subscription;
+        private final int maxEvents;
+        private final CountDownLatch completionLatch = new CountDownLatch(1);
+
+        public ProductSubscriber() {
+            // Stream closes after 3 events.
+            this.maxEvents = 3;
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            this.subscription = subscription;
+            subscription.request(1);
+        }
+
+        @Override
+        public void onNext(StreamEvent<Product> event) {
+            // Handle each event...
+            int count = eventCount.incrementAndGet();
+            System.out.println("Received event " + count + ":");
+            System.out.println("  Cursor: " + event.getCursor());
+            System.out.println("  Timestamp: " + event.getTimestamp());
+            System.out.println("  Data: " + event.getData().orElse(null));
+
+            if (count >= maxEvents) {
+                System.out.println("Closing stream after " + maxEvents + " events");
+                subscription.cancel();
+                completionLatch.countDown();
+            } else {
+                subscription.request(1);
+            }
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            System.err.println("Error in stream: " + throwable.getMessage());
+            completionLatch.countDown();
+        }
+
+        @Override
+        public void onComplete() {
+            System.out.println("Stream completed.");
+            completionLatch.countDown();
+        }
+
+        public int getEventCount() {
+            return eventCount.get();
+        }
+
+        public void awaitCompletion() throws InterruptedException {
+            completionLatch.await();
+        }
+    }
+}
+```
