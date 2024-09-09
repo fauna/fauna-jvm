@@ -253,7 +253,7 @@ specific fields in classes used as arguments and results of queries.
 * `@FaunaField`: Can be associated with any field to override its name in Fauna.
 * `@FaunaIgnore`: Can be used to ignore fields during encoding and decoding.
 
-In the `com.fauna.codec` package, you use classes to handle type erasure when the top-level result
+Use classes in the `com.fauna.codec` package to handle type erasure when the top-level result
 of a query is a generic, including:
 * `PageOf<T>` where `T` is the element type.
 * `ListOf<T>` where `T` is the element type.
