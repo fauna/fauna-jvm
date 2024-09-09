@@ -75,15 +75,16 @@ package org.example;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import com.fauna.annotation.FaunaField;
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.generic.PageOf;
 import com.fauna.types.Page;
+
+import static com.fauna.codec.generic.pageOf;
+import static com.fauna.query.builder.Query.fql;
+
 
 public class App {
 
@@ -104,7 +105,7 @@ public class App {
             FaunaClient client = Fauna.client();
 
             // Compose a query.
-            Query query = Query.fql("""
+            Query query = fql("""
                 Product.sortedByPriceLowToHigh() {
                     name,
                     description,
@@ -132,14 +133,14 @@ public class App {
         // Use `query()` to run a synchronous query.
         // Synchronous queries block the current thread until the query completes.
         // Accepts the query, expected result class, and a nullable set of query options.
-        QuerySuccess<Page<Product>> result = client.query(query, new PageOf<>(Product.class));
+        QuerySuccess<Page<Product>> result = client.query(query, pageOf(Product.class));
         printResults(result.getData());
     }
 
     private static void runAsynchronousQuery(FaunaClient client, Query query) throws ExecutionException, InterruptedException {
         // Use `asyncQuery()` to run an asynchronous, non-blocking query.
         // Accepts the query, expected result class, and a nullable set of query options.
-        CompletableFuture<QuerySuccess<Page<Product>>> futureResult = client.asyncQuery(query, new PageOf<>(Product.class));
+        CompletableFuture<QuerySuccess<Page<Product>>> futureResult = client.asyncQuery(query, pageOf(Product.class));
 
         QuerySuccess<Page<Product>> result = futureResult.get();
         printResults(result.getData());
@@ -224,15 +225,40 @@ or `asyncQuery()`. These options control how the query runs in Fauna. See [Query
 options](#query-options).
 
 
-### Define a result class
+### Define a custom class for your data
+These should be simple POJOs.
 
-You can use the `com.fauna.annotation`  package to define a result class for a
-Fauna document. The package provides annotations like `@FaunaField` and
-`@FaunaIgnore` to map Fauna documents to Java classes and fields.
+```java
+import com.fauna.annotation.FaunaField;
+import com.fauna.annotation.FaunaId;
 
-Use the `com.fauna.serialization` package to handle deserialization for
-generics, such as `PageOf`, `ListOf`, and `MapOf`.
+class Person {
+    
+    @FaunaId
+    private String id;
+    
+    private String firstName;
 
+    @FaunaField( name = "dob")
+    private String dateOfBirth;
+}
+```
+
+You can use the `com.fauna.annotation` package to modify encoding and decoding of 
+specific fields in classes used as arguments and results of queries.
+* `@FaunaId`: Should only be used once per class and be associated with a field named `id` if it represents the ID of a document. It will not be encoded unless the `isClientGenerated` flag is set.
+* `@FaunaTs`: Should only be used once per class and be associated with a field named `ts` if it represents the timestamp of a document. It will never be encoded.
+* `@FaunaColl`: Typically goes unmodeled. Should only be used once per class and be associated with a field named `coll` if represents the collection field of a document. It will never be encoded.
+* `@FaunaField`: Can be associated with any field to override its name in Fauna.
+* `@FaunaIgnore`: Can be used to ignore fields during encoding and decoding.
+
+In the `com.fauna.codec` package, you use classes to handle type erasure when the top-level result
+of a query is a generic, including:
+* `PageOf<T>` where `T` is the element type.
+* `ListOf<T>` where `T` is the element type.
+* `MapOf<T>` where `T` is the value type.
+* `OptionalOf<T>` where `T` is the value type.
+* `NullableOf<T>` where `T` is the value type. This is specifically for cases when returning a Fauna Document that may be null and you want to receive a concrete NullDoc<T> or NonNullDoc<T> instead of catching a NullDocumentException.
 
 ### Variable interpolation
 
