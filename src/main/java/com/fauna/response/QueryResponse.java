@@ -10,9 +10,7 @@ import com.fauna.response.wire.QueryResponseWire;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class QueryResponse {
 
@@ -34,7 +32,7 @@ public abstract class QueryResponse {
     }
 
     /**
-     * Handle a HTTPResponse and return a QuerySucces, or throw a FaunaException.
+     * Handle a HTTPResponse and return a QuerySuccess, or throw a FaunaException.
      * @param response          The HTTPResponse object.
      * @return                  A successful response from Fauna.
      * @throws FaunaException
@@ -46,7 +44,6 @@ public abstract class QueryResponse {
             if (response.statusCode() >= 400) {
                 ErrorHandler.handleErrorResponse(response.statusCode(), responseInternal, body);
             }
-
             return new QuerySuccess<>(codec, responseInternal);
         } catch (IOException exc) { // Jackson JsonProcessingException subclasses IOException
             throw new ProtocolException(exc, response.statusCode(), body);

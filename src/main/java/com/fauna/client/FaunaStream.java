@@ -1,32 +1,31 @@
 package com.fauna.client;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fauna.codec.Codec;
+import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
 import com.fauna.response.StreamEvent;
-import com.fauna.response.wire.StreamEventWire;
+import com.fauna.response.wire.MultiByteBufferInputStream;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.Flow.Processor;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.SubmissionPublisher;
-import java.util.stream.Collectors;
 
 
 public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implements Processor<List<ByteBuffer>, StreamEvent<E>> {
     ObjectMapper mapper = new ObjectMapper();
-    private final Class elementClass;
+    private final Codec<E> dataCodec;
     private Subscription subscription;
     private Subscriber<? super StreamEvent<E>> eventSubscriber;
+    private MultiByteBufferInputStream buffer = null;
 
     public FaunaStream(Class<E> elementClass) {
-        this.elementClass = elementClass;
+        this.dataCodec = DefaultCodecProvider.SINGLETON.get(elementClass);
     }
 
     @Override
@@ -49,17 +48,27 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
     @Override
     public void onNext(List<ByteBuffer> buffers) {
         try {
-            // TODO: Use a codec for StreamEventWire (or possibly decode straight to StreamEvent).
-            // I think this will also allow us to handle the case where onNext gets called with multiple events in
-            // the buffers, or if the buffers have an incomplete event (e.g. with a large document).
-            // StreamEventWire wire = eventCodec.decode(new UTF8FaunaParser(buffers));
-            String bufs = buffers.stream()
-                    .map(b -> StandardCharsets.UTF_8.decode(b).toString())
-                    .collect(Collectors.joining());
-            StreamEventWire wire = mapper.readValue(bufs, StreamEventWire.class);
-            this.submit(new StreamEvent<E>(wire, elementClass));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            // Using synchronized is probably not the fastest way to do this.
+            synchronized (this) {
+                if (this.buffer == null) {
+                    this.buffer = new MultiByteBufferInputStream(buffers);
+                } else {
+                    this.buffer.add(buffers);
+                }
+                try {
+                    JsonParser parser = mapper.getFactory().createParser(buffer);
+                    StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
+                    this.submit(event);
+                    this.buffer = null;
+                } catch (ClientException e) {
+                    // Maybe we got a partial event...
+                    this.buffer.reset();
+                } catch (IOException e) {
+                    throw new ClientException("Unable to decode stream", e);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
         } finally {
             this.subscription.request(1);
         }

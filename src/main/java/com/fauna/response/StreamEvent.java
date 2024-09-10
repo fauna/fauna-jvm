@@ -1,35 +1,95 @@
 package com.fauna.response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.codec.Codec;
-import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
-import com.fauna.response.wire.StreamEventWire;
-import com.fauna.types.Document;
 
 import java.io.IOException;
 import java.util.Optional;
 
-public class StreamEvent<E> {
-    private final StreamEventWire wire;
-    private final Class<E> elementClass;
-    private final E data;
+import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
+import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
+import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
+import static com.fauna.constants.ResponseFields.DATA_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.ERROR_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.STREAM_CURSOR_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
-    public StreamEvent(StreamEventWire wire, Class<E> elementClass) {
-        this.wire = wire;
-        this.elementClass = elementClass;
-        try {
-            Codec<E> elementCodec = DefaultCodecProvider.SINGLETON.get(elementClass);
-            if (wire.getData() != null && wire.getData() != "null") {
-                this.data = elementCodec.decode(new UTF8FaunaParser(wire.getData()));
-            } else {
-                this.data = null;
+public class StreamEvent<E> {
+    private static final Codec<QueryStats> statsCodec = DefaultCodecProvider.SINGLETON.get(QueryStats.class);
+    public enum EventType {
+        STATUS, ADD, UPDATE, REMOVE
+    }
+
+    private final EventType type;
+    private final String cursor;
+    private final Long txn_ts;
+    private final E data;
+    private final QueryStats stats;
+
+
+    public StreamEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats) {
+        this.type = type;
+        this.cursor = cursor;
+        this.txn_ts = txn_ts;
+        this.data = data;
+        this.stats = stats;
+    }
+
+    private static StreamEvent.EventType parseEventType(JsonParser parser) throws IOException {
+        if (parser.nextToken() == VALUE_STRING) {
+            String typeString = parser.getText().toUpperCase();
+            try {
+                return StreamEvent.EventType.valueOf(typeString);
+            } catch (IllegalArgumentException e) {
+                throw new ClientException("Invalid event type: " + typeString, e);
             }
-        } catch (IOException e) {
-            throw new ClientException("Failed to parse data.", e);
+        } else {
+            throw new ClientException("Event type should be a string, but got a " + parser.currentToken().asString());
+        }
+    }
+
+    public static <E> StreamEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
+        if (parser.nextToken() == START_OBJECT) {
+            String cursor = null;
+            StreamEvent.EventType eventType = null;
+            QueryStats stats = null;
+            E data = null;
+            Long txn_ts = null;
+            while (parser.nextToken() == FIELD_NAME) {
+                String fieldName = parser.getValueAsString();
+                switch (fieldName) {
+                    case STREAM_CURSOR_FIELD_NAME:
+                        parser.nextToken();
+                        cursor = parser.getText();
+                        break;
+                    case DATA_FIELD_NAME:
+                        UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
+                        if (faunaParser.getCurrentTokenType() == FaunaTokenType.NONE) {
+                            faunaParser.read();
+                        }
+                        data = dataCodec.decode(faunaParser);
+                        break;
+                    case STREAM_TYPE_FIELD_NAME: eventType = parseEventType(parser);
+                    break;
+                    case STATS_FIELD_NAME:
+                        stats = QueryStats.parseStats(parser);
+                        break;
+                    case LAST_SEEN_TXN_FIELD_NAME:
+                        parser.nextToken();
+                        txn_ts = parser.getValueAsLong();
+                        break;
+                    case ERROR_FIELD_NAME: throw new ClientException("TODO handle errors");
+                }
+            }
+            return new StreamEvent(eventType, cursor, txn_ts, data, stats);
+        } else {
+            throw new ClientException("Invalid event starting with: " + parser.currentToken());
         }
     }
 
@@ -37,12 +97,16 @@ public class StreamEvent<E> {
         return Optional.ofNullable(data);
     }
 
-    public Long getTimestamp() {
-        return this.wire.getTxnTs();
+    public Optional<Long> getTimestamp() {
+        return Optional.ofNullable(txn_ts);
     }
 
     public String getCursor() {
-        return this.wire.getCursor();
+        return cursor;
+    }
+
+    public QueryStats getStats() {
+        return stats;
     }
 
 
