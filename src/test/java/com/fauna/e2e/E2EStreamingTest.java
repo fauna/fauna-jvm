@@ -62,11 +62,11 @@ public class E2EStreamingTest {
 
         @Override
         public void onNext(StreamEvent<Product> event) {
-            System.out.println(MessageFormat.format("Event {0}, {1}", event.getCursor(), event.getTimestamp()));
+            System.out.println(MessageFormat.format("Event {0}, {1}", event.getCursor(), event.getTimestamp().orElse(-1L)));
             events.addAndGet(1);
             event.getData().ifPresent(product -> inventory.put(product.getName(), product.getQuantity()));
             // Fauna delivers events to the client in order, but it's up to the user to keep those events in order.
-            this.timestamp.updateAndGet(value -> value < event.getTimestamp() ? value : event.getTimestamp());
+            event.getTimestamp().ifPresent(ts -> this.timestamp.updateAndGet(value -> value < ts ? value : ts));
             this.cursor = event.getCursor();
             System.out.println("Total inventory: " + this.countInventory());
             this.subscription.request(1);
