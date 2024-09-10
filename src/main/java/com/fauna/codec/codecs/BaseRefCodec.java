@@ -14,7 +14,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
     public static final BaseRefCodec SINGLETON = new BaseRefCodec();
 
     @Override
-    public BaseRef decode(UTF8FaunaParser parser) throws IOException {
+    public BaseRef decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -25,7 +25,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
         }
     }
 
-    private Object decodeInternal(UTF8FaunaParser parser) throws IOException {
+    private Object decodeInternal(UTF8FaunaParser parser) throws CodecException {
         var builder = new InternalDocument.Builder();
 
         while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
@@ -50,7 +50,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, BaseRef obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, BaseRef obj) throws CodecException {
         gen.writeStartRef();
 
         if (obj instanceof DocumentRef) {

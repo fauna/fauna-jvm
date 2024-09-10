@@ -7,7 +7,6 @@ import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +19,7 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws IOException {
+    public L decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -47,7 +46,7 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
             return;

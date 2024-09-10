@@ -2,7 +2,7 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,6 +36,6 @@ public class EnumCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void enum_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `EnumCodec<TestEnum>`. Supported types for codec are [Null, String].", type);
-        runCase(TestType.Decode, DefaultCodecProvider.SINGLETON.get(TestEnum.class), wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, DefaultCodecProvider.SINGLETON.get(TestEnum.class), wire, null, new CodecException(exMsg));
     }
 }

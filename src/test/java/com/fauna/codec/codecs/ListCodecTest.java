@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Document;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -41,6 +41,6 @@ public class ListCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void list_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `ListCodec<Integer>`. Supported types for codec are [Array, Null].", type);
-        runCase(TestType.Decode, LIST_INT_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, LIST_INT_CODEC, wire, null, new CodecException(exMsg));
     }
 }

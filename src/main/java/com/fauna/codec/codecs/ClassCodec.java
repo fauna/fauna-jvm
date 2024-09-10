@@ -100,7 +100,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public T decode(UTF8FaunaParser parser) {
+    public T decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -124,7 +124,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, T obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, T obj) throws CodecException {
         if (shouldEscapeObject) {
             gen.writeStartEscapedObject();
         } else {

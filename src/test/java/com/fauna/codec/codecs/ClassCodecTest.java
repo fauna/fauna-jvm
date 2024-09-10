@@ -10,7 +10,7 @@ import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.Module;
 import org.junit.jupiter.api.Test;
@@ -104,6 +104,6 @@ public class ClassCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void class_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `ClassCodec<ClassWithAttributes>`. Supported types for codec are [Document, Null, Object, Ref].", type);
-        runCase(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, CLASS_WITH_ATTRIBUTES_CODEC, wire, null, new CodecException(exMsg));
     }
 }

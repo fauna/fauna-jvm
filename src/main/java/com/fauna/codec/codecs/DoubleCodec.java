@@ -5,14 +5,12 @@ import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
-
 public class DoubleCodec extends BaseCodec<Double> {
 
     public static final DoubleCodec singleton = new DoubleCodec();
 
     @Override
-    public Double decode(UTF8FaunaParser parser) throws IOException {
+    public Double decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -26,7 +24,7 @@ public class DoubleCodec extends BaseCodec<Double> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Double obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Double obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

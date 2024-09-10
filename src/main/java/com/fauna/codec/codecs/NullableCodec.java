@@ -11,8 +11,6 @@ import com.fauna.types.NonNull;
 import com.fauna.types.NullDoc;
 import com.fauna.types.Nullable;
 
-import java.io.IOException;
-
 public class NullableCodec<E,L extends Nullable<E>> extends BaseCodec<L> {
 
     private final Codec<E> valueCodec;
@@ -23,7 +21,7 @@ public class NullableCodec<E,L extends Nullable<E>> extends BaseCodec<L> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public L decode(UTF8FaunaParser parser) throws IOException {
+    public L decode(UTF8FaunaParser parser) throws CodecException {
         if (parser.getCurrentTokenType() == FaunaTokenType.NULL) {
             return null;
         }
@@ -40,7 +38,7 @@ public class NullableCodec<E,L extends Nullable<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
         if (obj instanceof NonNull) {
             @SuppressWarnings("unchecked")
             NonNull<E> nn = (NonNull<E>) obj;

@@ -6,10 +6,7 @@ import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
-import com.fauna.query.builder.QueryFragment;
 import com.fauna.query.builder.QueryObj;
-
-import java.io.IOException;
 
 public class QueryObjCodec extends BaseCodec<QueryObj> {
 
@@ -21,12 +18,12 @@ public class QueryObjCodec extends BaseCodec<QueryObj> {
     }
 
     @Override
-    public QueryObj decode(UTF8FaunaParser parser) throws IOException {
+    public QueryObj decode(UTF8FaunaParser parser) throws CodecException {
         throw new CodecException("Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryObj obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, QueryObj obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

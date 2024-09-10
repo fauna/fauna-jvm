@@ -5,8 +5,8 @@ import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public class OptionalCodec<E,L extends Optional<E>> extends BaseCodec<L> {
@@ -18,7 +18,7 @@ public class OptionalCodec<E,L extends Optional<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws IOException {
+    public L decode(UTF8FaunaParser parser) throws CodecException {
         if (parser.getCurrentTokenType() == FaunaTokenType.NULL) {
             @SuppressWarnings("unchecked")
             L res = (L) Optional.empty();
@@ -31,7 +31,7 @@ public class OptionalCodec<E,L extends Optional<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
         if (obj == null || obj.isEmpty()) {
             gen.writeNullValue();
             return;

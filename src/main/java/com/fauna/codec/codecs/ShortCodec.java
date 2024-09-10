@@ -5,14 +5,12 @@ import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
-
 public class ShortCodec extends BaseCodec<Short> {
 
     public static final ShortCodec singleton = new ShortCodec();
 
     @Override
-    public Short decode(UTF8FaunaParser parser) throws IOException {
+    public Short decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -24,7 +22,7 @@ public class ShortCodec extends BaseCodec<Short> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Short obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Short obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

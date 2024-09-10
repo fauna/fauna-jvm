@@ -44,7 +44,7 @@ public class ErrorHandler {
      * @throws ThrottlingException
      *
      */
-    public static void handleErrorResponse(int statusCode, QueryResponseWire response, String body) throws IOException {
+    public static void handleErrorResponse(int statusCode, QueryResponseWire response, String body) {
         QueryFailure failure = new QueryFailure(statusCode, response);
         handleQueryFailure(statusCode, failure);
         throw new ProtocolException(statusCode, body);

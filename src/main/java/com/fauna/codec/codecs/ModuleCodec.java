@@ -6,14 +6,12 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.Module;
 
-import java.io.IOException;
-
 public class ModuleCodec extends BaseCodec<Module> {
 
     public static final ModuleCodec SINGLETON = new ModuleCodec();
 
     @Override
-    public Module decode(UTF8FaunaParser parser) throws IOException {
+    public Module decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -25,7 +23,7 @@ public class ModuleCodec extends BaseCodec<Module> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Module obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Module obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

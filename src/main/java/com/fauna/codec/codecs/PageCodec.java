@@ -22,7 +22,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws IOException {
+    public L decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -56,7 +56,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -70,7 +70,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
 
-    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws IOException {
+    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws CodecException {
         List<E> data = null;
         String after = null;
 
@@ -97,7 +97,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         return res;
     }
 
-    private L wrapInPage(UTF8FaunaParser parser) throws IOException {
+    private L wrapInPage(UTF8FaunaParser parser) throws CodecException {
         E elem = this.elementCodec.decode(parser);
         @SuppressWarnings("unchecked")
         L res = (L) new Page<>(List.of(elem), null);

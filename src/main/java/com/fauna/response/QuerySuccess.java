@@ -3,6 +3,7 @@ package com.fauna.response;
 import com.fauna.codec.Codec;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
+import com.fauna.exception.CodecException;
 import com.fauna.response.wire.QueryResponseWire;
 
 import java.io.IOException;
@@ -20,13 +21,15 @@ public final class QuerySuccess<T> extends QueryResponse {
      * @param codec        A codec for the response data type.
      * @param response     The parsed response.
      */
-    public QuerySuccess(Codec<T> codec, QueryResponseWire response)
-            throws IOException {
+    public QuerySuccess(Codec<T> codec, QueryResponseWire response) {
         super(response);
 
-        UTF8FaunaParser reader = new UTF8FaunaParser(response.getData());
-        this.data = codec.decode(reader);
-
+        try {
+            UTF8FaunaParser reader = UTF8FaunaParser.fromString(response.getData());
+            this.data = codec.decode(reader);
+        } catch (CodecException exc) {
+            throw new ClientResponseException("Failed to decode response.", exc);
+        }
         this.staticType = response.getStaticType();
     }
 

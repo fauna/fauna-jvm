@@ -1,5 +1,6 @@
 package com.fauna.response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.exception.ClientResponseException;
@@ -45,8 +46,8 @@ public abstract class QueryResponse {
                 ErrorHandler.handleErrorResponse(response.statusCode(), responseInternal, body);
             }
             return new QuerySuccess<>(codec, responseInternal);
-        } catch (IOException exc) { // Jackson JsonProcessingException subclasses IOException
-            throw new ProtocolException(exc, response.statusCode(), body);
+        } catch (JsonProcessingException exc) { // Jackson JsonProcessingException subclasses IOException
+            throw new ClientResponseException("Failed to handle error response.", exc, response.statusCode());
         }
     }
 

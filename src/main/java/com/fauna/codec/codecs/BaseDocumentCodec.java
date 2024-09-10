@@ -21,7 +21,7 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
     }
 
     @Override
-    public BaseDocument decode(UTF8FaunaParser parser) throws IOException {
+    public BaseDocument decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -36,7 +36,7 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
         }
     }
 
-    private Object decodeInternal(UTF8FaunaParser parser) throws IOException {
+    private Object decodeInternal(UTF8FaunaParser parser) throws CodecException {
         var builder = new InternalDocument.Builder();
         var valueCodec = provider.get(Object.class);
 
@@ -67,7 +67,7 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, BaseDocument obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, BaseDocument obj) throws CodecException {
         gen.writeStartRef();
 
         if (obj instanceof Document) {

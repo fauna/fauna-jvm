@@ -5,7 +5,6 @@ import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 public class LocalDateCodec extends BaseCodec<LocalDate> {
@@ -13,7 +12,7 @@ public class LocalDateCodec extends BaseCodec<LocalDate> {
     public static final LocalDateCodec SINGLETON = new LocalDateCodec();
 
     @Override
-    public LocalDate decode(UTF8FaunaParser parser) throws IOException {
+    public LocalDate decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -25,7 +24,7 @@ public class LocalDateCodec extends BaseCodec<LocalDate> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, LocalDate obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, LocalDate obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

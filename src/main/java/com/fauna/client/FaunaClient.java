@@ -88,7 +88,7 @@ public abstract class FaunaClient {
      */
     public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, Class<T> resultClass, QueryOptions options) {
         if (Objects.isNull(fql)) {
-            throw new ClientRequestException("The provided FQL query is null.");
+            throw new IllegalArgumentException("The provided FQL query is null.");
         }
         Codec<T> codec = codecProvider.get(resultClass, null);
         return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(

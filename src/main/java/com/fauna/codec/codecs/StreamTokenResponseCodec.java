@@ -7,12 +7,10 @@ import com.fauna.codec.FaunaTokenType;
 import com.fauna.exception.CodecException;
 import com.fauna.query.StreamTokenResponse;
 
-import java.io.IOException;
-
 public class StreamTokenResponseCodec extends BaseCodec<StreamTokenResponse> {
 
     @Override
-    public StreamTokenResponse decode(UTF8FaunaParser parser) throws IOException {
+    public StreamTokenResponse decode(UTF8FaunaParser parser) throws CodecException {
         if (parser.getCurrentTokenType() == FaunaTokenType.STREAM) {
             return new StreamTokenResponse(parser.getTaggedValueAsString());
         } else {
@@ -21,7 +19,7 @@ public class StreamTokenResponseCodec extends BaseCodec<StreamTokenResponse> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, StreamTokenResponse obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, StreamTokenResponse obj) throws CodecException {
         throw new CodecException("Cannot encode StreamTokenResponse");
 
     }

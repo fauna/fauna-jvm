@@ -5,7 +5,6 @@ import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
 import java.time.Instant;
 
 public class InstantCodec extends BaseCodec<Instant> {
@@ -13,7 +12,7 @@ public class InstantCodec extends BaseCodec<Instant> {
     public static final InstantCodec SINGLETON = new InstantCodec();
 
     @Override
-    public Instant decode(UTF8FaunaParser parser) throws IOException {
+    public Instant decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -25,7 +24,7 @@ public class InstantCodec extends BaseCodec<Instant> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Instant obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Instant obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
