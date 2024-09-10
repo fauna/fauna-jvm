@@ -216,8 +216,8 @@ Use `fql` templates to compose FQL queries. To run the query, pass the template
 and an expected result class to `query()` or `asyncQuery()`:
 
 ```java
-Query query = Query.fql("Product.sortedByPriceLowToHigh()");
-QuerySuccess<Page<Product>> result = client.query(query, new PageOf<>(Product.class));
+Query query = fql("Product.sortedByPriceLowToHigh()");
+QuerySuccess<Page<Product>> result = client.query(query, pageOf(Product.class));
 ```
 
 You can also pass a nullable set of [query options](#query-options) to `query()`
