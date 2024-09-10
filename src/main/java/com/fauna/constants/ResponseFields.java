@@ -28,6 +28,8 @@ public final class ResponseFields {
     public static final String ERROR_MESSAGE_FIELD_NAME = "message";
     public static final String ERROR_CONSTRAINT_FAILURES_FIELD_NAME = "constraint_failures";
     public static final String ERROR_ABORT_FIELD_NAME = "abort";
+    public static final String ERROR_NAME_FIELD_NAME = "name";
+    public static final String ERROR_PATHS_FIELD_NAME = "paths";
 
     // Stream-related fields
     public static final String STREAM_TYPE_FIELD_NAME = "type";

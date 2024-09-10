@@ -6,10 +6,8 @@ import com.fauna.codec.Codec;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
-import com.fauna.exception.ProtocolException;
 import com.fauna.response.wire.QueryResponseWire;
 
-import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
@@ -30,6 +28,15 @@ public abstract class QueryResponse {
         summary = response.getSummary();
         stats = response.getStats();
         queryTags = response.getQueryTags();
+    }
+
+    QueryResponse(Long lastSeenTxn, String summary, Long schemaVersion,
+                  Map<String, String> queryTags, QueryStats stats) {
+        this.lastSeenTxn = lastSeenTxn;
+        this.summary = summary;
+        this.schemaVersion = schemaVersion;
+        this.stats = stats;
+        this.queryTags = queryTags;
     }
 
     /**
