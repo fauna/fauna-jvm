@@ -463,7 +463,7 @@ FaunaStream<Product> stream = client.stream(request, Product.class);
 CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(request, Product.class);
 ```
 
-Alternatively, you also pass an FQL that returns a stream token to `stream()` or
+Alternatively, you can pass an FQL that returns a stream token to `stream()` or
 `asyncStream()`:
 
 ```java
