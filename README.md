@@ -82,7 +82,7 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
 import com.fauna.types.Page;
 
-import com.fauna.codec.Generic.PageOf;
+import static com.fauna.codec.Generic.pageOf;
 import static com.fauna.query.builder.Query.fql;
 
 
@@ -148,14 +148,14 @@ public class App {
 
     // Iterate through the products in the page.
     private static void printResults(Page<Product> page) {
-        for (Product product : page.data()) {
+        for (Product product : page.getData()) {
             System.out.println("Name: " + product.name);
             System.out.println("Description: " + product.description);
             System.out.println("Price: " + product.price);
             System.out.println("--------");
         }
         // Print the `after` cursor to paginate through results.
-        System.out.println("After: " + page.after());
+        System.out.println("After: " + page.getAfter());
     }
 }
 ```
@@ -234,10 +234,10 @@ import com.fauna.annotation.FaunaField;
 import com.fauna.annotation.FaunaId;
 
 class Person {
-    
+
     @FaunaId
     private String id;
-    
+
     private String firstName;
 
     @FaunaField( name = "dob")
@@ -245,7 +245,7 @@ class Person {
 }
 ```
 
-You can use the `com.fauna.annotation` package to modify encoding and decoding of 
+You can use the `com.fauna.annotation` package to modify encoding and decoding of
 specific fields in classes used as arguments and results of queries.
 * `@FaunaId`: Should only be used once per class and be associated with a field named `id` that represents the Fauna document ID. It's not encoded unless the `isClientGenerated` flag is`true`.
 * `@FaunaTs`: Should only be used once per class and be associated with a field named `ts` that represents the timestamp of a document. It's not encoded.
