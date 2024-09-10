@@ -66,16 +66,20 @@ public class StreamEvent<E> {
                 switch (fieldName) {
                     case STREAM_CURSOR_FIELD_NAME:
                         parser.nextToken();
-                        cursor = parser.getText(); break;
+                        cursor = parser.getText();
+                        break;
                     case DATA_FIELD_NAME:
                         UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
                         if (faunaParser.getCurrentTokenType() == FaunaTokenType.NONE) {
                             faunaParser.read();
                         }
-                        data = dataCodec.decode(faunaParser); break;
-                    case STREAM_TYPE_FIELD_NAME: eventType = parseEventType(parser); break;
+                        data = dataCodec.decode(faunaParser);
+                        break;
+                    case STREAM_TYPE_FIELD_NAME: eventType = parseEventType(parser);
+                    break;
                     case STATS_FIELD_NAME:
                         stats = QueryStats.parseStats(parser);
+                        break;
                     case LAST_SEEN_TXN_FIELD_NAME:
                         parser.nextToken();
                         txn_ts = parser.getValueAsLong();
