@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
-import com.fauna.exception.PartialDecodeException;
 import com.fauna.response.StreamEvent;
 import com.fauna.response.wire.MultiByteBufferInputStream;
 
@@ -61,7 +60,7 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                     StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
                     this.submit(event);
                     this.buffer = null;
-                } catch (PartialDecodeException e) {
+                } catch (ClientException e) {
                     // Maybe we got a partial event...
                     this.buffer.reset();
                 } catch (IOException e) {
