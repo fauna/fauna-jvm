@@ -173,7 +173,7 @@ public class E2EStreamingTest {
         assertEquals(total, inventory.countInventory());
     }
 
-    @Disabled("Will fix this for GA, I think the other drivers have this bug too.")
+    @Disabled("This test sometimes causes Fauna to generate an error for getting too far behind.")
     @Test
     public void handleManyEvents() throws InterruptedException {
         FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);

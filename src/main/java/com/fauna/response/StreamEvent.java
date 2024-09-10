@@ -1,11 +1,13 @@
 package com.fauna.response;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
+import com.fauna.response.wire.ErrorInfoWire;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -23,7 +25,7 @@ import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 public class StreamEvent<E> {
     private static final Codec<QueryStats> statsCodec = DefaultCodecProvider.SINGLETON.get(QueryStats.class);
     public enum EventType {
-        STATUS, ADD, UPDATE, REMOVE
+        STATUS, ADD, UPDATE, REMOVE, ERROR
     }
 
     private final EventType type;
@@ -31,14 +33,16 @@ public class StreamEvent<E> {
     private final Long txn_ts;
     private final E data;
     private final QueryStats stats;
+    private final ErrorInfoWire error;
 
 
-    public StreamEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats) {
+    public StreamEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats, ErrorInfoWire error) {
         this.type = type;
         this.cursor = cursor;
         this.txn_ts = txn_ts;
         this.data = data;
         this.stats = stats;
+        this.error = error;
     }
 
     private static StreamEvent.EventType parseEventType(JsonParser parser) throws IOException {
@@ -61,6 +65,7 @@ public class StreamEvent<E> {
             QueryStats stats = null;
             E data = null;
             Long txn_ts = null;
+            ErrorInfoWire errorInfo = null;
             while (parser.nextToken() == FIELD_NAME) {
                 String fieldName = parser.getValueAsString();
                 switch (fieldName) {
@@ -84,13 +89,20 @@ public class StreamEvent<E> {
                         parser.nextToken();
                         txn_ts = parser.getValueAsLong();
                         break;
-                    case ERROR_FIELD_NAME: throw new ClientException("TODO handle errors");
+                    case ERROR_FIELD_NAME:
+                        ObjectMapper mapper = new ObjectMapper();
+                        errorInfo = mapper.readValue(parser, ErrorInfoWire.class);
+                        break;
                 }
             }
-            return new StreamEvent(eventType, cursor, txn_ts, data, stats);
+            return new StreamEvent(eventType, cursor, txn_ts, data, stats, errorInfo);
         } else {
             throw new ClientException("Invalid event starting with: " + parser.currentToken());
         }
+    }
+
+    public StreamEvent.EventType getType() {
+        return type;
     }
 
     public Optional<E> getData() {
@@ -107,6 +119,10 @@ public class StreamEvent<E> {
 
     public QueryStats getStats() {
         return stats;
+    }
+
+    public ErrorInfo getError() {
+        return new ErrorInfo(this.error.getCode(), this.error.getMessage());
     }
 
 

@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
+import com.fauna.response.ErrorInfo;
 import com.fauna.response.StreamEvent;
 import com.fauna.response.wire.MultiByteBufferInputStream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.Flow.Processor;
 import java.util.concurrent.Flow.Subscriber;
@@ -58,6 +60,12 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                 try {
                     JsonParser parser = mapper.getFactory().createParser(buffer);
                     StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
+                    if (event.getType() == StreamEvent.EventType.ERROR) {
+                        ErrorInfo error = event.getError();
+                        this.onComplete();
+                        this.close();
+                        throw new ClientException(MessageFormat.format("Stream stopped due to error {0} {1}", error.getCode(), error.getMessage()));
+                    }
                     this.submit(event);
                     this.buffer = null;
                 } catch (ClientException e) {
@@ -68,7 +76,7 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                 }
             }
         } catch (Exception e) {
-            System.out.println(e);
+            throw new ClientException("Unable to decode stream", e);
         } finally {
             this.subscription.request(1);
         }
@@ -77,14 +85,11 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
     @Override
     public void onError(Throwable throwable) {
         this.subscription.cancel();
-        System.err.println("FaunaStream onError: " + throwable.getMessage());
-
+        this.close();
     }
 
     @Override
     public void onComplete() {
         this.subscription.cancel();
-        System.out.println("FaunaStream onComplete.");
-
     }
 }
