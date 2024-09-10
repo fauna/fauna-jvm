@@ -247,7 +247,7 @@ class Person {
 
 You can use the `com.fauna.annotation` package to modify encoding and decoding of
 specific fields in classes used as arguments and results of queries.
-* `@FaunaId`: Should only be used once per class and be associated with a field named `id` that represents the Fauna document ID. It's not encoded unless the `isClientGenerated` flag is`true`.
+* `@FaunaId`: Should only be used once per class and be associated with a field named `id` that represents the Fauna document ID. It's not encoded unless the `isClientGenerated` flag is `true`.
 * `@FaunaTs`: Should only be used once per class and be associated with a field named `ts` that represents the timestamp of a document. It's not encoded.
 * `@FaunaColl`: Typically goes unmodeled. Should only be used once per class and be associated with a field named `coll` that represents the collection field of a document. It will never be encoded.
 * `@FaunaField`: Can be associated with any field to override its name in Fauna.
@@ -463,7 +463,7 @@ FaunaStream<Product> stream = client.stream(request, Product.class);
 CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(request, Product.class);
 ```
 
-Alternatively, you can pass an FQL that returns a stream token to `stream()` or
+Alternatively, you can pass an FQL query that returns a stream token to `stream()` or
 `asyncStream()`:
 
 ```java
