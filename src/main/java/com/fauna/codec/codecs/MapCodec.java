@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
@@ -29,7 +29,7 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
 
                 while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_OBJECT) {
                     if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                        throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                        throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
                     }
 
                     String fieldName = parser.getValueAsString();
@@ -42,7 +42,7 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
                 L typed = (L) map;
                 return typed;
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 

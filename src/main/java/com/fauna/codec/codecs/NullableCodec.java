@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -46,7 +46,7 @@ public class NullableCodec<E,L extends Nullable<E>> extends BaseCodec<L> {
             NonNull<E> nn = (NonNull<E>) obj;
             valueCodec.encode(gen, nn.get());
         } else {
-            throw new ClientException(unsupportedTypeMessage(obj.getClass()));
+            throw new CodecException(unsupportedTypeMessage(obj.getClass()));
         }
     }
 

@@ -2,9 +2,9 @@ package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 import com.fauna.types.*;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
             case START_REF:
                 return (BaseRef) decodeInternal(parser);
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -30,7 +30,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
 
         while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
             }
 
             String fieldName = parser.getValueAsString();

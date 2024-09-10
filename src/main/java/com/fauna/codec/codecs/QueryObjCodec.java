@@ -5,7 +5,7 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.query.builder.QueryFragment;
 import com.fauna.query.builder.QueryObj;
 
@@ -22,7 +22,7 @@ public class QueryObjCodec extends BaseCodec<QueryObj> {
 
     @Override
     public QueryObj decode(UTF8FaunaParser parser) throws IOException {
-        throw new ClientException("Decoding into a QueryFragment is not supported");
+        throw new CodecException("Decoding into a QueryFragment is not supported");
     }
 
     @Override

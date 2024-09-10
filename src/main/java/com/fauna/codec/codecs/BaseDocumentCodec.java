@@ -3,9 +3,9 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.CodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 import com.fauna.types.BaseDocument;
 import com.fauna.types.Document;
 import com.fauna.types.NamedDocument;
@@ -28,11 +28,11 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
             case START_REF:
                 var o = BaseRefCodec.SINGLETON.decode(parser);
                 // if we didn't throw a null ref, we can't deal with it
-                throw new ClientException(unexpectedTypeWhileDecoding(o.getClass()));
+                throw new CodecException(unexpectedTypeWhileDecoding(o.getClass()));
             case START_DOCUMENT:
                 return (BaseDocument) decodeInternal(parser);
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -42,7 +42,7 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
 
         while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_DOCUMENT) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
             }
 
             String fieldName = parser.getValueAsString();

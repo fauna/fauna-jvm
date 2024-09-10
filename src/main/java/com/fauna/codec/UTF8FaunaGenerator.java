@@ -4,11 +4,9 @@ package com.fauna.codec;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fauna.types.Module;
-import com.fauna.exception.ClientException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -319,12 +317,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeDateValue(LocalDate value) throws IOException {
-        try {
-            String str = value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            writeTaggedValue("@date", str);
-        } catch (DateTimeException e) {
-            throw new ClientException("Error writing date value", e);
-        }
+        String str = value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        writeTaggedValue("@date", str);
     }
 
     /**
@@ -334,13 +328,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public void writeTimeValue(Instant value) throws IOException {
-        try {
-            Instant instant = value.atZone(ZoneOffset.UTC).toInstant();
-            String formattedTime = instant.toString();
-            writeTaggedValue("@time", formattedTime);
-        } catch (DateTimeException e) {
-            throw new ClientException("Error writing time value", e);
-        }
+        Instant instant = value.atZone(ZoneOffset.UTC).toInstant();
+        String formattedTime = instant.toString();
+        writeTaggedValue("@time", formattedTime);
     }
 
     /**

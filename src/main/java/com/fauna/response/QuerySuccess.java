@@ -2,6 +2,7 @@ package com.fauna.response;
 
 import com.fauna.codec.Codec;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.ClientResponseException;
 import com.fauna.response.wire.QueryResponseWire;
 
 import java.io.IOException;

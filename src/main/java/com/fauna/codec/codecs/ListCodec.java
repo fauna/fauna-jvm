@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
@@ -35,7 +35,7 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
                 var typed = (L) list;
                 return typed;
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 

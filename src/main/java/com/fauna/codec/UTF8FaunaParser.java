@@ -3,8 +3,8 @@ package com.fauna.codec;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fauna.exception.WireParseException;
 import com.fauna.types.Module;
-import com.fauna.exception.ClientException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,7 +152,7 @@ public class UTF8FaunaParser {
                     currentFaunaTokenType = FaunaTokenType.NULL;
                     break;
                 default:
-                    throw new ClientException(
+                    throw new WireParseException(
                         "Unhandled JSON token type " + currentToken + ".");
             }
         } else {
@@ -225,7 +225,7 @@ public class UTF8FaunaParser {
                 currentFaunaTokenType = FaunaTokenType.START_OBJECT;
                 break;
             default:
-                throw new ClientException(
+                throw new WireParseException(
                     "Unexpected token following StartObject: " + jsonParser.currentToken());
         }
     }
@@ -247,7 +247,7 @@ public class UTF8FaunaParser {
         } else if (startToken.equals(FaunaTokenType.START_OBJECT)) {
             currentFaunaTokenType = END_OBJECT;
         } else {
-            throw new ClientException(
+            throw new WireParseException(
                 "Unexpected token " + startToken + ". This might be a bug.");
         }
     }
@@ -261,7 +261,7 @@ public class UTF8FaunaParser {
 
     private void advanceTrue() {
         if (!advance()) {
-            throw new ClientException("Unexpected end of underlying JSON reader.");
+            throw new WireParseException("Unexpected end of underlying JSON reader.");
         }
     }
 
@@ -269,13 +269,12 @@ public class UTF8FaunaParser {
         try {
             return Objects.nonNull(jsonParser.nextToken());
         } catch (IOException e) {
-            throw new ClientException("Failed to advance underlying JSON reader.", e);
+            throw new WireParseException("Failed to advance underlying JSON reader.", e);
         }
     }
 
     private void validateTaggedType(FaunaTokenType type) {
-        if (currentFaunaTokenType != type || taggedTokenValue == null
-            || !(taggedTokenValue instanceof String)) {
+        if (currentFaunaTokenType != type || taggedTokenValue == null) {
             throw new IllegalStateException(
                 "CurrentTokenType is a " + currentFaunaTokenType.toString() +
                     ", not a " + type.toString() + ".");
@@ -291,14 +290,14 @@ public class UTF8FaunaParser {
 
     public Character getValueAsCharacter() {
         validateTaggedType(INT);
-        return Character.valueOf((char) Integer.parseInt(taggedTokenValue));
+        return (char) Integer.parseInt(taggedTokenValue);
     }
 
     public String getValueAsString() {
         try {
             return jsonParser.getValueAsString();
         } catch (IOException e) {
-            throw new ClientException("Error getting the current token as String", e);
+            throw new WireParseException("Error getting the current token as String", e);
         }
     }
 
@@ -316,7 +315,7 @@ public class UTF8FaunaParser {
         try {
             return Byte.parseByte(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new ClientException("Error getting the current token as Byte", e);
+            throw new WireParseException("Error getting the current token as Byte", e);
         }
 
     }
@@ -325,7 +324,7 @@ public class UTF8FaunaParser {
         try {
             return Short.parseShort(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new ClientException("Error getting the current token as Short", e);
+            throw new WireParseException("Error getting the current token as Short", e);
         }
 
     }
@@ -335,7 +334,7 @@ public class UTF8FaunaParser {
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new ClientException("Error getting the current token as Integer", e);
+            throw new WireParseException("Error getting the current token as Integer", e);
         }
     }
 
@@ -343,7 +342,7 @@ public class UTF8FaunaParser {
         try {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
-            throw new ClientException("Error getting the current token as Boolean", e);
+            throw new WireParseException("Error getting the current token as Boolean", e);
         }
     }
 
@@ -352,7 +351,7 @@ public class UTF8FaunaParser {
         try {
             return LocalDate.parse(taggedTokenValue);
         } catch (DateTimeParseException e) {
-            throw new ClientException("Error getting the current token as LocalDate", e);
+            throw new WireParseException("Error getting the current token as LocalDate", e);
         }
     }
 
@@ -361,7 +360,7 @@ public class UTF8FaunaParser {
         try {
             return Instant.parse(taggedTokenValue);
         } catch (DateTimeParseException e) {
-            throw new ClientException("Error getting the current token as LocalDateTime", e);
+            throw new WireParseException("Error getting the current token as LocalDateTime", e);
         }
     }
 
@@ -370,7 +369,7 @@ public class UTF8FaunaParser {
         try {
             return Float.parseFloat(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new ClientException("Error getting the current token as Float", e);
+            throw new WireParseException("Error getting the current token as Float", e);
         }
     }
 
@@ -379,7 +378,7 @@ public class UTF8FaunaParser {
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new ClientException("Error getting the current token as Double", e);
+            throw new WireParseException("Error getting the current token as Double", e);
         }
     }
 
@@ -388,7 +387,7 @@ public class UTF8FaunaParser {
         try {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new ClientException("Error getting the current token as Long", e);
+            throw new WireParseException("Error getting the current token as Long", e);
         }
     }
 
@@ -396,7 +395,7 @@ public class UTF8FaunaParser {
         try {
             return new Module(taggedTokenValue);
         } catch (Exception e) {
-            throw new ClientException("Error getting the current token as Module", e);
+            throw new WireParseException("Error getting the current token as Module", e);
         }
     }
 }

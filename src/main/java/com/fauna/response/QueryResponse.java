@@ -2,6 +2,7 @@ package com.fauna.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
+import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ProtocolException;

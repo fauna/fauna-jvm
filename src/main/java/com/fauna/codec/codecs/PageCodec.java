@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.Page;
@@ -51,7 +51,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
                 // In the event the user requests a Page<T> but the query just returns T
                 return wrapInPage(parser);
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
@@ -60,7 +60,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         if (obj == null) {
             gen.writeNullValue();
         } else {
-            throw new ClientException(this.unsupportedTypeMessage(obj.getClass()));
+            throw new CodecException(this.unsupportedTypeMessage(obj.getClass()));
         }
     }
 
@@ -89,7 +89,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         }
 
         if (data == null) {
-            throw new ClientException("No page data found while deserializing into Page<>");
+            throw new CodecException("No page data found while deserializing into Page<>");
         }
 
         @SuppressWarnings("unchecked")

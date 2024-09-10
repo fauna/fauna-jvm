@@ -1,7 +1,7 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
@@ -20,7 +20,7 @@ public class IntCodec extends BaseCodec<Integer> {
             case LONG:
                 return parser.getValueAsInt();
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
