@@ -1,9 +1,12 @@
 package com.fauna.client;
 
+import com.fauna.codec.*;
 import com.fauna.query.QueryOptions;
+import com.fauna.stream.StreamRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.io.IOException;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.time.Duration;
@@ -26,15 +29,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RequestBuilderTest {
 
     private final FaunaConfig faunaConfig = FaunaConfig.builder()
-                .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
-                .secret("secret").build();;
+            .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
+            .secret("secret").build();;
 
     private final RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
+
+    private final CodecRegistry codecRegistry = new DefaultCodecRegistry();
+    private final CodecProvider codecProvider = new DefaultCodecProvider(codecRegistry);
 
 
     @Test
     void buildRequest_shouldConstructCorrectHttpRequest() {
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null);
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample fql query"), null, codecProvider);
 
         assertEquals("http://localhost:8443/query/1", httpRequest.uri().toString());
         assertEquals("POST", httpRequest.method());
@@ -51,7 +57,7 @@ class RequestBuilderTest {
         QueryOptions options = QueryOptions.builder().timeout(Duration.ofSeconds(15))
                 .linearized(true).typeCheck(true).traceParent("traceParent").build();
 
-        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options);
+        HttpRequest httpRequest = requestBuilder.buildRequest(fql("Sample FQL Query"), options, codecProvider);
         HttpHeaders headers = httpRequest.headers();
 
         assertEquals("true", headers.firstValue(LINEARIZED).orElseThrow());
@@ -61,11 +67,42 @@ class RequestBuilderTest {
     }
 
     @Test
+    void buildStreamRequestBody_shouldOnlyIncludeToken() throws IOException {
+        // Given
+        StreamRequest request = new StreamRequest("tkn");
+        // When
+        String body = requestBuilder.buildStreamRequestBody(request);
+        // Then
+        assertEquals("{\"token\":\"tkn\"}", body);
+    }
+
+    @Test
+    void buildStreamRequestBody_shouldIncludeCursor() throws IOException {
+        // Given
+        StreamRequest request = new StreamRequest("tkn", "cur");
+        // When
+        String body = requestBuilder.buildStreamRequestBody(request);
+        // Then
+        assertEquals("{\"token\":\"tkn\",\"cursor\":\"cur\"}", body);
+    }
+
+    @Test
+    void buildStreamRequestBody_shouldIncludeTimestamp() throws IOException {
+        // Given
+        Long timestamp = Long.MAX_VALUE / 2;
+        StreamRequest request = new StreamRequest("tkn", Long.MAX_VALUE / 2);
+        // When
+        String body = requestBuilder.buildStreamRequestBody(request);
+        // Then
+        assertEquals("{\"token\":\"tkn\",\"start_ts\":4611686018427387903}", body);
+    }
+
+    @Test
     @Timeout(value=1000, unit = TimeUnit.MILLISECONDS)
     void buildRequest_shouldBeFast() {
         // This was faster, but now I think it's taking time to do things like create the FaunaRequest object.
         // Being able to build 10k requests per second still seems like reasonable performance.
         IntStream.range(0, 10000).forEach(i -> requestBuilder.buildRequest(
-                fql("Sample FQL Query ${i}", Map.of("i", i)), null));
+                fql("Sample FQL Query ${i}", Map.of("i", i)), null, codecProvider));
     }
 }

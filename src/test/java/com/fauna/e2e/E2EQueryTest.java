@@ -3,23 +3,34 @@ package com.fauna.e2e;
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.e2e.beans.Author;
+import com.fauna.exception.AbortException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
+import com.fauna.response.QuerySuccess;
+import com.fauna.types.NonNullDocument;
+import com.fauna.types.NullDocument;
+import com.fauna.types.NullableDocument;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import static com.fauna.codec.Generic.nullableDocumentOf;
 import static com.fauna.query.builder.Query.fql;
-import static org.junit.jupiter.api.Assertions.*;
-import static com.fauna.serialization.generic.Parameterized.listOf;
-import static com.fauna.serialization.generic.Parameterized.mapOf;
-import static com.fauna.serialization.generic.Parameterized.pageOf;
-import static com.fauna.serialization.generic.Parameterized.optionalOf;
+import static com.fauna.codec.Generic.listOf;
+import static com.fauna.codec.Generic.mapOf;
+import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.codec.Generic.optionalOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class E2EQueryTest {
     public static final FaunaClient c = Fauna.local();
@@ -111,7 +122,7 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_arrayOfPerson() {
+    public void query_arrayOfPersonIncoming() {
         var q = fql("Author.all().toArray()");
 
         var res = c.query(q, listOf(Author.class));
@@ -121,6 +132,17 @@ public class E2EQueryTest {
         var elem = res.getData().get(0);
         assertEquals("Alice", elem.getFirstName());
     }
+
+    @Test
+    public void query_arrayOfPersonOutgoing() {
+        var q = fql("${var}", Map.of("var", List.of(new Author("alice","smith","w", 42))));
+
+        var res = c.query(q);
+
+        List<Map<String, Object>> elem = (List<Map<String, Object>>) res.getData();
+        assertEquals("alice", elem.get(0).get("firstName"));
+    }
+
 
     @Test
     public void query_mapOfPerson() {
@@ -141,7 +163,7 @@ public class E2EQueryTest {
         var q = fql("Author.all()");
 
         var qs = c.query(q, pageOf(Author.class));
-        var actual = qs.getData().data();
+        var actual = qs.getData().getData();
 
         assertEquals(2, actual.size());
         assertEquals("Alice", actual.get(0).getFirstName());
@@ -172,5 +194,45 @@ public class E2EQueryTest {
 
         assertTrue(actual.isPresent());
         assertEquals(42, actual.get());
+    }
+
+    @Test
+    public void query_nullableOf() {
+        var q = fql("Author.byId('9090090')");
+
+        var qs = c.query(q, nullableDocumentOf(Author.class));
+        NullableDocument<Author> actual = qs.getData();
+        assertInstanceOf(NullDocument.class, actual);
+        assertEquals("not found", ((NullDocument<Author>)actual).getCause());
+    }
+
+    @Test
+    public void query_nullableOfNotNull() {
+        var q = fql("Author.all().first()");
+        var qs = c.query(q, nullableDocumentOf(Author.class));
+        NullableDocument<Author> actual = qs.getData();
+        assertInstanceOf(NonNullDocument.class, actual);
+        assertEquals("Alice", ((NonNullDocument<Author>)actual).getValue().getFirstName());
+    }
+
+    @Test
+    public void query_abortEmpty() throws IOException {
+        var q = fql("abort(null)");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertNull(e.getAbort());
+    }
+
+    @Test
+    public void query_abortDynamic() throws IOException {
+        var q = fql("abort(8)");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertEquals(8, e.getAbort());
+    }
+
+    @Test
+    public void query_abortClass() throws IOException {
+        var q = fql("abort({firstName:\"alice\"})");
+        var e = assertThrows(AbortException.class, () -> c.query(q));
+        assertEquals("alice", e.getAbort(Author.class).getFirstName());
     }
 }

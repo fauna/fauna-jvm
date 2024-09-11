@@ -1,6 +1,8 @@
 package com.fauna.codec;
 
+import java.lang.reflect.Type;
+
 public interface CodecProvider {
-    <T> Codec<T> get(CodecRegistry registry, Class<T> clazz);
-    <T,K> Codec<T> get(CodecRegistry registry, Class<T> clazz, Class<K> subClazz);
+    <T> Codec<T> get(Class<T> clazz);
+    <T> Codec<T> get(Class<T> clazz, Type[] typeArgs);
 }

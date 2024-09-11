@@ -1,6 +1,7 @@
 package com.fauna.query.builder;
 
-import com.fauna.serialization.Serializer;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.UTF8FaunaGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -18,11 +19,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QueryTest {
 
+
+
+    private String encode(Query q) throws IOException {
+        var gen = new UTF8FaunaGenerator();
+        DefaultCodecProvider.SINGLETON.get(Query.class).encode(gen, q);
+        return gen.serialize();
+    }
+
     @Test
     public void testQueryBuilderStrings() {
         Query actual = fql("let x = 11", Collections.emptyMap());
-        Fragment[] expected = new Fragment[]{new LiteralFragment("let x = 11")};
-        assertArrayEquals(expected, actual.getFql());
+        QueryFragment[] expected = new QueryFragment[]{new QueryLiteral("let x = 11")};
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -31,7 +40,7 @@ class QueryTest {
         args.put("n", null);
 
         Query actual = fql("let x = ${n}", args);
-        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new ValueFragment(null)}, actual.getFql());
+        assertArrayEquals(new QueryFragment[] {new QueryLiteral("let x = "), new QueryVal(null)}, actual.get());
     }
 
     @Test
@@ -41,7 +50,7 @@ class QueryTest {
 
         // Bug BT-5003, this would get into an infinite loop.
         Query actual = fql("let x = $n", args);
-        assertArrayEquals(new Fragment[] {new LiteralFragment("let x = "), new LiteralFragment("n")}, actual.getFql());
+        assertArrayEquals(new QueryFragment[] {new QueryLiteral("let x = "), new QueryLiteral("n")}, actual.get());
     }
 
     @Test
@@ -49,11 +58,11 @@ class QueryTest {
         Map<String, Object> variables = new HashMap<>();
         variables.put("n1", 5);
         Query actual = fql("let age = ${n1}\n\"Alice is #{age} years old.\"", variables);
-        Fragment[] expected = new Fragment[] {
-                new LiteralFragment("let age = "),
-                new ValueFragment(5),
-                new LiteralFragment("\n\"Alice is #{age} years old.\"")};
-        assertArrayEquals(expected, actual.getFql());
+        QueryFragment[] expected = new QueryFragment[] {
+                new QueryLiteral("let age = "),
+                new QueryVal(5),
+                new QueryLiteral("\n\"Alice is #{age} years old.\"")};
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -63,12 +72,12 @@ class QueryTest {
                 "age", 0,
                 "birthdate", LocalDate.of(2023, 2, 24));
         Query actual = fql("let x = ${my_var}", Map.of("my_var", user));
-        Fragment[] expected = new Fragment[]{new LiteralFragment("let x = "), new ValueFragment(user)};
-        assertArrayEquals(expected, actual.getFql());
+        QueryFragment[] expected = new QueryFragment[]{new QueryLiteral("let x = "), new QueryVal(user)};
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
-    public void testQueryBuilderSubQueries() {
+    public void testQueryBuilderSubQueries() throws IOException {
         Map<String, Object> user = Map.of(
                 "name", "Dino",
                 "age", 0,
@@ -76,8 +85,8 @@ class QueryTest {
 
         Query inner = fql("let x = ${my_var}", Map.of("my_var", user));
         Query actual = fql("${inner}\nx { name }", Map.of("inner", inner));
-        Fragment[] expected = new Fragment[]{new ValueFragment(inner), new LiteralFragment("\nx { name }")};
-        assertArrayEquals(expected, actual.getFql());
+        QueryFragment[] expected = new QueryFragment[]{inner, new QueryLiteral("\nx { name }")};
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -86,8 +95,8 @@ class QueryTest {
         Query explicit_vars = fql("let age = 5\n\"Alice is #{age} years old.\"", Map.of());
         Query implicit_vars = fql("let age = 5\n\"Alice is #{age} years old.\"", null);
         Query no_vars = fql("let age = 5\n\"Alice is #{age} years old.\"");
-        assertArrayEquals(explicit_vars.getFql(), implicit_vars.getFql());
-        assertArrayEquals(no_vars.getFql(), implicit_vars.getFql());
+        assertArrayEquals(explicit_vars.get(), implicit_vars.get());
+        assertArrayEquals(no_vars.get(), implicit_vars.get());
     }
 
     @Test
@@ -105,14 +114,14 @@ class QueryTest {
         Query q1 = fql(MessageFormat.format("Users.firstWhere(.email == {0})", email));
         Query q2 = fql(String.format("Users.firstWhere(.email == %s)", email));
         Query q3 = fql(new StringBuilder().append("Users.firstWhere(.email == ").append(email).append(")").toString());
-        assertArrayEquals(q1.getFql(), q2.getFql());
-        assertArrayEquals(q1.getFql(), q3.getFql());
+        assertArrayEquals(q1.get(), q2.get());
+        assertArrayEquals(q1.get(), q3.get());
     }
 
     @Test
     public void testQuerySerialization() throws IOException {
         Query q1 = fql("let one = ${a}", Map.of("a", 0xf));
         assertEquals("{\"fql\":[\"let one = \",{\"value\":{\"@int\":\"15\"}}]}",
-                Serializer.serialize(q1));
+                encode(q1));
     }
 }

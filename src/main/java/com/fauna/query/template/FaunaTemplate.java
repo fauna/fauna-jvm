@@ -1,8 +1,6 @@
 package com.fauna.query.template;
 
-import com.fauna.query.builder.Fragment;
-import com.fauna.query.builder.LiteralFragment;
-import com.fauna.query.builder.ValueFragment;
+import com.fauna.query.builder.*;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -167,7 +165,7 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
             return type;
         }
 
-        public Fragment toFragment(Map<String, Object> args) {
+        public QueryFragment toFragment(Map<String, Object> args) {
             if (this.getType().equals(TemplatePartType.VARIABLE)) {
                 if (Objects.isNull(args)) {
                     throw new IllegalArgumentException(
@@ -175,13 +173,18 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
                 }
                 if (args.containsKey(this.getPart())) {
                     // null values are valid, so can't use computeIfPresent / computeIfAbsent here.
-                    return new ValueFragment(args.get(this.getPart()));
+                    var arg = args.get(this.getPart());
+                    if (arg instanceof QueryFragment) {
+                        return (QueryFragment) arg;
+                    } else {
+                        return new QueryVal<>(arg);
+                    }
                 } else {
                     throw new IllegalArgumentException(
                             String.format("Template variable %s not found in provided args.", this.getPart()));
                 }
             } else {
-                return new LiteralFragment(this.getPart());
+                return new QueryLiteral(this.getPart());
             }
         }
     }

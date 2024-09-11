@@ -1,17 +1,13 @@
 package com.fauna.codec;
 
-import com.fauna.mapping.MappingContext;
-import com.fauna.serialization.UTF8FaunaGenerator;
-import com.fauna.serialization.UTF8FaunaParser;
-
-import java.io.IOException;
+import com.fauna.exception.CodecException;
 
 
 public interface Codec<T> {
 
-    T decode(UTF8FaunaParser parser) throws IOException;
+    T decode(UTF8FaunaParser parser) throws CodecException;
+    void encode(UTF8FaunaGenerator gen, T obj) throws CodecException;
+    Class<?> getCodecClass();
 
-    void encode(UTF8FaunaGenerator gen, T obj, MappingContext context) throws IOException;
-
-    Class<T> getCodecClass();
+    FaunaType[] getSupportedTypes();
 }

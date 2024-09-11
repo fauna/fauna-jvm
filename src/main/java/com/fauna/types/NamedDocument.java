@@ -2,6 +2,7 @@ package com.fauna.types;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a document that has a "name" instead of an "id". For example, a Role document is
@@ -47,5 +48,26 @@ public final class NamedDocument extends BaseDocument {
      */
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null) return false;
+
+        if (getClass() != o.getClass()) return false;
+
+        NamedDocument c = (NamedDocument) o;
+
+        return name.equals(c.name)
+                && getTs().equals(c.getTs())
+                && getCollection().equals(c.getCollection())
+                && data.equals(c.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, getTs(), getCollection(), data);
     }
 }

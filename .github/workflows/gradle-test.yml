@@ -24,7 +24,7 @@ jobs:
         distribution: corretto
 
     - name: Run Gradle test
-      run: ./gradlew test
+      run: ./gradlew test -i
 
     - name: Run Gradle javadoc
       run: ./gradlew javadoc

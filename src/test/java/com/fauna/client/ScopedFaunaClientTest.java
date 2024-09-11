@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import static com.fauna.client.FaunaRole.SERVER_READ_ONLY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
@@ -53,7 +54,7 @@ public class ScopedFaunaClientTest {
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QuerySuccess<Document> response = scopedClient.query(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
         assertEquals("success", response.getSummary());
-        assertEquals(0, response.getLastSeenTxn());
+        assertNull(response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
     }
 
@@ -66,7 +67,7 @@ public class ScopedFaunaClientTest {
         CompletableFuture<QuerySuccess<Document>> future = scopedClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
         QueryResponse response = future.get();
         assertEquals("success", response.getSummary());
-        assertEquals(0, response.getLastSeenTxn());
+        assertNull(response.getLastSeenTxn());
         verify(resp, atLeastOnce()).statusCode();
     }
 
