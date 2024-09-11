@@ -5,6 +5,7 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientRequestException;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
@@ -46,6 +47,8 @@ public abstract class FaunaClient {
     }
 
     private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
+        // There are other options for BodyHandlers here like ofInputStream, and ofByteArray. UTF8FaunaParser
+        // can be initialized with an InputStream, so we could remove the extra string conversion.
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, codec));
     }
 

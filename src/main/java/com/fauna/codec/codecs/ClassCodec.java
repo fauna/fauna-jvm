@@ -11,7 +11,7 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.mapping.FieldInfo;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
@@ -100,7 +100,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public T decode(UTF8FaunaParser parser) {
+    public T decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -119,12 +119,12 @@ public class ClassCodec<T> extends BaseCodec<T> {
                     throw new RuntimeException(e);
                 }
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, T obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, T obj) throws CodecException {
         if (shouldEscapeObject) {
             gen.writeStartEscapedObject();
         } else {
@@ -155,7 +155,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
                     Codec<T> codec = fi.getCodec();
                     codec.encode(gen, value);
                 } catch (IllegalAccessException e) {
-                    throw new ClientException("Error accessing field: " + fi.getName(),
+                    throw new CodecException("Error accessing field: " + fi.getName(),
                             e);
                 }
             }
@@ -190,7 +190,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
 
         while (parser.read() && parser.getCurrentTokenType() != endToken) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new ClientException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
             }
 
             String fieldName = parser.getValueAsString();

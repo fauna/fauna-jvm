@@ -6,6 +6,7 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientRequestException;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
@@ -98,8 +99,7 @@ public class RequestBuilder {
             addOptionalHeaders(builder, options);
         }
         // TODO: set last-txn-ts and max-contention-retries.
-        try {
-            UTF8FaunaGenerator gen = new UTF8FaunaGenerator();
+        try (UTF8FaunaGenerator gen = UTF8FaunaGenerator.create()) {
             gen.writeStartObject();
             gen.writeFieldName(FieldNames.QUERY);
             Codec<Query> codec = provider.get(Query.class);
@@ -107,8 +107,6 @@ public class RequestBuilder {
             gen.writeEndObject();
             String body = gen.serialize();
             return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
-        } catch (IOException e) {
-            throw new ClientException("Unable to build Fauna Query request.", e);
         }
     }
 

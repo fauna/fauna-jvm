@@ -2,6 +2,9 @@ package com.fauna.response;
 
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientResponseException;
+import com.fauna.exception.CodecException;
 import com.fauna.response.wire.ConstraintFailureWire;
 import com.fauna.response.wire.QueryResponseWire;
 
@@ -28,7 +31,7 @@ public final class QueryFailure extends QueryResponse {
      * @param statusCode The HTTP status code.
      * @param response   The parsed response.
      */
-    public QueryFailure(int statusCode, QueryResponseWire response) throws IOException {
+    public QueryFailure(int statusCode, QueryResponseWire response) {
         super(response);
 
         this.statusCode = statusCode;
@@ -42,9 +45,13 @@ public final class QueryFailure extends QueryResponse {
                 var cf = new ArrayList<ConstraintFailure>();
                 var codec = DefaultCodecProvider.SINGLETON.get(Object.class);
                 for (ConstraintFailureWire cfw : err.getConstraintFailures().get()) {
-                    var parser = new UTF8FaunaParser(cfw.getPaths());
-                    var paths = codec.decode(parser);
-                    cf.add(new ConstraintFailure(cfw.getMessage(), cfw.getName(), (List<List<Object>>) paths));
+                    try {
+                        var parser = UTF8FaunaParser.fromString(cfw.getPaths());
+                        var paths = codec.decode(parser);
+                        cf.add(new ConstraintFailure(cfw.getMessage(), cfw.getName(), (List<List<Object>>) paths));
+                    } catch (CodecException exc) {
+                        throw new ClientResponseException("Failed to parse constraint failure.", exc);
+                    }
                 }
                 constraintFailures = cf;
             }

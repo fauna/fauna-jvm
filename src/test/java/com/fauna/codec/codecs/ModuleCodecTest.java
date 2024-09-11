@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Module;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -37,6 +37,6 @@ public class ModuleCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void module_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `ModuleCodec<Module>`. Supported types for codec are [Module, Null].", type);
-        runCase(TestType.Decode, MODULE_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, MODULE_CODEC, wire, null, new CodecException(exMsg));
     }
 }

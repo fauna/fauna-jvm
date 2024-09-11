@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.BaseRef;
 import com.fauna.types.DocumentRef;
@@ -56,6 +56,6 @@ public class BaseRefCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void baseRef_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `BaseRefCodec<BaseRef>`. Supported types for codec are [Null, Ref].", type);
-        runCase(TestType.Decode, BASE_REF_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, BASE_REF_CODEC, wire, null, new CodecException(exMsg));
     }
 }

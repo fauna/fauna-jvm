@@ -27,7 +27,7 @@ public class AbortException extends ServiceException {
         var abStr = this.getResponse().getAbortString();
         if (abStr.isPresent()) {
             var codec = provider.get(clazz);
-            var parser = new UTF8FaunaParser(abStr.get());
+            var parser = UTF8FaunaParser.fromString(abStr.get());
             abort = codec.decode(parser);
             return (T) abort;
         } else {

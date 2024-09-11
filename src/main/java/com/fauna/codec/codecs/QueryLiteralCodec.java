@@ -3,20 +3,18 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.query.builder.QueryLiteral;
-
-import java.io.IOException;
 
 public class QueryLiteralCodec extends BaseCodec<QueryLiteral> {
 
     @Override
-    public QueryLiteral decode(UTF8FaunaParser parser) throws IOException {
-        throw new ClientException("Decoding into a QueryFragment is not supported");
+    public QueryLiteral decode(UTF8FaunaParser parser) throws CodecException {
+        throw new CodecException("Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryLiteral obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, QueryLiteral obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

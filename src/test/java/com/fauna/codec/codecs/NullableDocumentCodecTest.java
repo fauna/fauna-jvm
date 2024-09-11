@@ -4,7 +4,7 @@ import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.types.*;
 import com.fauna.types.Module;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,6 +78,6 @@ public class NullableDocumentCodecTest extends TestBase {
     public void nullable_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         // This codec will pass through the supported types of the underlying codec
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `BaseDocumentCodec<BaseDocument>`. Supported types for codec are [Document, Null, Ref].", type);
-        runCase(TestType.Decode, NULLABLE_DOC_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, NULLABLE_DOC_CODEC, wire, null, new CodecException(exMsg));
     }
 }

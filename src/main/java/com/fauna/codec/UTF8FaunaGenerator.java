@@ -3,12 +3,11 @@ package com.fauna.codec;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Module;
-import com.fauna.exception.ClientException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -33,16 +32,28 @@ public class UTF8FaunaGenerator implements AutoCloseable {
         this.jsonGenerator = factory.createGenerator(this.output);
     }
 
+    public static UTF8FaunaGenerator create() throws CodecException {
+        try {
+            return new UTF8FaunaGenerator();
+        } catch (IOException exc) {
+            throw CodecException.encodingIOException(exc);
+        }
+    }
+
     /**
      * Flushes the written data to the underlying buffer or stream.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void flush() throws IOException {
-        jsonGenerator.flush();
+    public void flush() throws CodecException {
+        try {
+            jsonGenerator.flush();
+        } catch (IOException exc) {
+            throw CodecException.encodingIOException(exc);
+        }
     }
 
-    public String serialize() throws IOException {
+    public String serialize() throws CodecException {
         this.flush();
         return this.output.toString(UTF_8);
 
@@ -53,27 +64,35 @@ public class UTF8FaunaGenerator implements AutoCloseable {
     /**
      * Writes the beginning of an object.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeStartObject() throws IOException {
-        jsonGenerator.writeStartObject();
+    public void writeStartObject() throws CodecException {
+        try {
+            jsonGenerator.writeStartObject();
+        } catch (IOException exc) {
+            CodecException.encodingIOException(exc);
+        }
     }
 
     /**
      * Writes the end of an object.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeEndObject() throws IOException {
-        jsonGenerator.writeEndObject();
+    public void writeEndObject() throws CodecException {
+        try {
+            jsonGenerator.writeEndObject();
+        } catch (IOException exc) {
+            CodecException.encodingIOException(exc);
+        }
     }
 
     /**
      * Writes the beginning of a specially tagged object.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeStartEscapedObject() throws IOException {
+    public void writeStartEscapedObject() throws CodecException {
         writeStartObject();
         writeFieldName("@object");
         writeStartObject();
@@ -82,9 +101,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
     /**
      * Writes the end of a specially tagged object.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeEndEscapedObject() throws IOException {
+    public void writeEndEscapedObject() throws CodecException {
         writeEndObject();
         writeEndObject();
     }
@@ -92,27 +111,35 @@ public class UTF8FaunaGenerator implements AutoCloseable {
     /**
      * Writes the beginning of an array.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeStartArray() throws IOException {
-        jsonGenerator.writeStartArray();
+    public void writeStartArray() throws CodecException {
+        try {
+            jsonGenerator.writeStartArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Writes the end of an array.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeEndArray() throws IOException {
-        jsonGenerator.writeEndArray();
+    public void writeEndArray() throws CodecException {
+        try {
+            jsonGenerator.writeEndArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Writes the beginning of a reference object.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeStartRef() throws IOException {
+    public void writeStartRef() throws CodecException {
         writeStartObject();
         writeFieldName("@ref");
         writeStartObject();
@@ -121,9 +148,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
     /**
      * Writes the end of a reference object.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an error occurs.
      */
-    public void writeEndRef() throws IOException {
+    public void writeEndRef() throws CodecException {
         writeEndObject();
         writeEndObject();
     }
@@ -133,9 +160,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The double value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeDouble(String fieldName, double value) throws IOException {
+    public void writeDouble(String fieldName, double value) throws CodecException {
         writeFieldName(fieldName);
         writeDoubleValue(value);
     }
@@ -145,9 +172,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The integer value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeInt(String fieldName, int value) throws IOException {
+    public void writeInt(String fieldName, int value) throws CodecException {
         writeFieldName(fieldName);
         writeIntValue(value);
     }
@@ -157,9 +184,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The long integer value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeLong(String fieldName, long value) throws IOException {
+    public void writeLong(String fieldName, long value) throws CodecException {
         writeFieldName(fieldName);
         writeLongValue(value);
     }
@@ -169,9 +196,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The string value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeString(String fieldName, String value) throws IOException {
+    public void writeString(String fieldName, String value) throws CodecException {
         writeFieldName(fieldName);
         writeStringValue(value);
     }
@@ -181,9 +208,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The LocalDateTime value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeDate(String fieldName, LocalDate value) throws IOException {
+    public void writeDate(String fieldName, LocalDate value) throws CodecException {
         writeFieldName(fieldName);
         writeDateValue(value);
     }
@@ -193,9 +220,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The LocalDateTime value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeTime(String fieldName, Instant value) throws IOException {
+    public void writeTime(String fieldName, Instant value) throws CodecException {
         writeFieldName(fieldName);
         writeTimeValue(value);
     }
@@ -205,9 +232,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The boolean value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeBoolean(String fieldName, boolean value) throws IOException {
+    public void writeBoolean(String fieldName, boolean value) throws CodecException {
         writeFieldName(fieldName);
         writeBooleanValue(value);
     }
@@ -216,9 +243,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes a null value with a specific field name.
      *
      * @param fieldName The name of the field.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeNull(String fieldName) throws IOException {
+    public void writeNull(String fieldName) throws CodecException {
         writeFieldName(fieldName);
         writeNullValue();
     }
@@ -228,9 +255,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param fieldName The name of the field.
      * @param value     The Module value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeModule(String fieldName, Module value) throws IOException {
+    public void writeModule(String fieldName, Module value) throws CodecException {
         writeFieldName(fieldName);
         writeModuleValue(value);
     }
@@ -239,10 +266,14 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes a field name for the next value.
      *
      * @param value The name of the field.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeFieldName(String value) throws IOException {
-        jsonGenerator.writeFieldName(value);
+    public void writeFieldName(String value) throws CodecException {
+        try {
+            jsonGenerator.writeFieldName(value);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -250,24 +281,24 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      *
      * @param tag   The tag to use for the value.
      * @param value The value associated with the tag.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeTaggedValue(String tag, String value) throws IOException {
+    public void writeTaggedValue(String tag, String value) throws CodecException {
         writeStartObject();
         writeString(tag, value);
         writeEndObject();
     }
 
-    public void writeByteArray(byte[] bytes) throws IOException {
+    public void writeByteArray(byte[] bytes) throws CodecException {
         writeTaggedValue("@bytes", Base64.getEncoder().encodeToString(bytes));
     }
     /**
      * Writes a double value as a tagged element.
      *
      * @param value The double value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeDoubleValue(double value) throws IOException {
+    public void writeDoubleValue(double value) throws CodecException {
         writeTaggedValue("@double", Double.toString(value));
     }
 
@@ -275,9 +306,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes a float value as a tagged element (@double).
      *
      * @param value The float value to write as a double.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeDoubleValue(float value) throws IOException {
+    public void writeDoubleValue(float value) throws CodecException {
         writeTaggedValue("@double", Float.toString(value));
     }
 
@@ -286,9 +317,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes an integer value as a tagged element.
      *
      * @param value The integer value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeIntValue(int value) throws IOException {
+    public void writeIntValue(int value) throws CodecException {
         writeTaggedValue("@int", Integer.toString(value));
     }
 
@@ -296,9 +327,9 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes a long integer value as a tagged element.
      *
      * @param value The long integer value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeLongValue(long value) throws IOException {
+    public void writeLongValue(long value) throws CodecException {
         writeTaggedValue("@long", Long.toString(value));
     }
 
@@ -306,73 +337,77 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes a string value as a tagged element.
      *
      * @param value The string value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeStringValue(String value) throws IOException {
-        jsonGenerator.writeString(value);
+    public void writeStringValue(String value) throws CodecException {
+        try {
+            jsonGenerator.writeString(value);
+        } catch (IOException exc) {
+            throw CodecException.encodingIOException(exc);
+        }
     }
 
     /**
      * Writes a date value as a tagged element.
      *
      * @param value The date value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeDateValue(LocalDate value) throws IOException {
-        try {
-            String str = value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            writeTaggedValue("@date", str);
-        } catch (DateTimeException e) {
-            throw new ClientException("Error writing date value", e);
-        }
+    public void writeDateValue(LocalDate value) throws CodecException {
+        String str = value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        writeTaggedValue("@date", str);
     }
 
     /**
      * Writes a time value as a tagged element.
      *
      * @param value The time value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeTimeValue(Instant value) throws IOException {
-        try {
-            Instant instant = value.atZone(ZoneOffset.UTC).toInstant();
-            String formattedTime = instant.toString();
-            writeTaggedValue("@time", formattedTime);
-        } catch (DateTimeException e) {
-            throw new ClientException("Error writing time value", e);
-        }
+    public void writeTimeValue(Instant value) throws CodecException {
+        Instant instant = value.atZone(ZoneOffset.UTC).toInstant();
+        String formattedTime = instant.toString();
+        writeTaggedValue("@time", formattedTime);
     }
 
     /**
      * Writes a boolean value to the stream.
      *
      * @param value The boolean value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeBooleanValue(boolean value) throws IOException {
-        jsonGenerator.writeBoolean(value);
+    public void writeBooleanValue(boolean value) throws CodecException {
+        try {
+            jsonGenerator.writeBoolean(value);
+        } catch (IOException exc) {
+            throw CodecException.encodingIOException(exc);
+        }
     }
 
-    public void writeCharValue(Character value) throws IOException {
+    public void writeCharValue(Character value) throws CodecException {
         writeIntValue(value);
     }
 
     /**
      * Writes a null value to the stream.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeNullValue() throws IOException {
-        jsonGenerator.writeNull();
+    public void writeNullValue() throws CodecException {
+        try {
+            jsonGenerator.writeNull();
+        } catch (IOException exc) {
+            throw CodecException.encodingIOException(exc);
+        }
     }
 
     /**
      * Writes a module value as a tagged element.
      *
      * @param value The module value to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeModuleValue(Module value) throws IOException {
+    public void writeModuleValue(Module value) throws CodecException {
         writeTaggedValue("@mod", value.getName());
     }
 
@@ -380,15 +415,24 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * Writes a byte array encoded as a base64 string as a tagged element.
      *
      * @param value The byte array to write.
-     * @throws IOException If an I/O error occurs.
+     * @throws CodecException If an I/O error occurs.
      */
-    public void writeBytesValue(byte[] value) throws IOException {
+    public void writeBytesValue(byte[] value) throws CodecException {
         writeTaggedValue("@bytes", Base64.getEncoder().encodeToString(value));
     }
 
     @Override
-    public void close() throws IOException {
-        jsonGenerator.close();
-        output.close();
+    public void close() throws CodecException {
+        try {
+            jsonGenerator.close();
+        } catch (IOException exc) {
+            throw CodecException.encodingIOException(exc);
+        } finally {
+            try {
+                output.close();
+            } catch (IOException e) {
+                throw CodecException.encodingIOException(e);
+            }
+        }
     }
 }

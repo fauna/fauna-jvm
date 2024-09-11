@@ -4,11 +4,12 @@ import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.exception.NullDocumentException;
-import com.fauna.types.*;
+import com.fauna.types.BaseDocument;
+import com.fauna.types.Document;
 import com.fauna.types.Module;
-import org.junit.jupiter.api.Test;
+import com.fauna.types.NamedDocument;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -56,7 +57,7 @@ public class BaseDocumentCodecTest extends TestBase {
                 Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_WIRE, DOCUMENT, null),
                 Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, NAMED_DOCUMENT_WIRE, NAMED_DOCUMENT, null),
                 Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
-                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, null, new ClientException("Unexpected type `class com.fauna.types.DocumentRef` decoding with `BaseDocumentCodec<BaseDocument>`")),
+                Arguments.of(TestType.Decode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, null, new CodecException("Unexpected type `class com.fauna.types.DocumentRef` decoding with `BaseDocumentCodec<BaseDocument>`")),
                 Arguments.of(TestType.Encode, BASE_DOCUMENT_CODEC, DOCUMENT_REF_WIRE, DOCUMENT, null),
                 Arguments.of(TestType.Encode, BASE_DOCUMENT_CODEC, NAMED_DOCUMENT_REF_WIRE, NAMED_DOCUMENT, null)
         );
@@ -76,6 +77,6 @@ public class BaseDocumentCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void baseDoc_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `BaseDocumentCodec<BaseDocument>`. Supported types for codec are [Document, Null, Ref].", type);
-        runCase(TestType.Decode, BASE_DOCUMENT_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, BASE_DOCUMENT_CODEC, wire, null, new CodecException(exMsg));
     }
 }

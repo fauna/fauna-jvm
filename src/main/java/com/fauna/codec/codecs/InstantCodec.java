@@ -1,11 +1,10 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
 import java.time.Instant;
 
 public class InstantCodec extends BaseCodec<Instant> {
@@ -13,19 +12,19 @@ public class InstantCodec extends BaseCodec<Instant> {
     public static final InstantCodec SINGLETON = new InstantCodec();
 
     @Override
-    public Instant decode(UTF8FaunaParser parser) throws IOException {
+    public Instant decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
             case TIME:
                 return parser.getValueAsTime();
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Instant obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Instant obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

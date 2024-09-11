@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -39,6 +39,6 @@ public class LongCodecTest extends TestBase {
     @MethodSource("unsupportedTypeCases")
     public void long_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
         var exMsg = MessageFormat.format("Unable to decode `{0}` with `LongCodec<Long>`. Supported types for codec are [Int, Long, Null].", type);
-        runCase(TestType.Decode, LONG_CODEC, wire, null, new ClientException(exMsg));
+        runCase(TestType.Decode, LONG_CODEC, wire, null, new CodecException(exMsg));
     }
 }

@@ -1,31 +1,29 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.Module;
-
-import java.io.IOException;
 
 public class ModuleCodec extends BaseCodec<Module> {
 
     public static final ModuleCodec SINGLETON = new ModuleCodec();
 
     @Override
-    public Module decode(UTF8FaunaParser parser) throws IOException {
+    public Module decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
             case MODULE:
                 return parser.getValueAsModule();
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Module obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Module obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

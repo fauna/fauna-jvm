@@ -6,6 +6,7 @@ import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
+import com.fauna.response.QuerySuccess;
 import com.fauna.types.NonNullDocument;
 import com.fauna.types.NullDocument;
 import com.fauna.types.NullableDocument;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static com.fauna.codec.Generic.nullableDocumentOf;
+import static com.fauna.codec.Generic.nullableOf;
 import static com.fauna.query.builder.Query.fql;
 import static com.fauna.codec.Generic.listOf;
 import static com.fauna.codec.Generic.mapOf;
@@ -196,22 +197,22 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_nullableDocumentOf() {
+    public void query_nullableOf() {
         var q = fql("Author.byId('9090090')");
 
-        var qs = c.query(q, nullableDocumentOf(Author.class));
-        NullableDocument<Author> actual = qs.getData();
-        assertInstanceOf(NullDocument.class, actual);
-        assertEquals("not found", ((NullDocument<Author>)actual).getCause());
+        var qs = c.query(q, nullableOf(Author.class));
+        Nullable<Author> actual = qs.getData();
+        assertInstanceOf(NullDoc.class, actual);
+        assertEquals("not found", ((NullDoc<Author>)actual).getCause());
     }
 
     @Test
-    public void query_nullableDocumentOfNotNull() {
+    public void query_nullableOfNotNull() {
         var q = fql("Author.all().first()");
-        var qs = c.query(q, nullableDocumentOf(Author.class));
-        NullableDocument<Author> actual = qs.getData();
-        assertInstanceOf(NonNullDocument.class, actual);
-        assertEquals("Alice", ((NonNullDocument<Author>)actual).getValue().getFirstName());
+        var qs = c.query(q, nullableOf(Author.class));
+        Nullable<Author> actual = qs.getData();
+        assertInstanceOf(NonNull.class, actual);
+        assertEquals("Alice", ((NonNull<Author>)actual).getValue().getFirstName());
     }
 
     @Test

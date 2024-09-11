@@ -5,11 +5,10 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.query.StreamTokenResponse;
 import com.fauna.types.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +24,7 @@ public class DynamicCodec extends BaseCodec<Object> {
     }
 
     @Override
-    public Object decode(UTF8FaunaParser parser) throws IOException {
+    public Object decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -62,12 +61,12 @@ public class DynamicCodec extends BaseCodec<Object> {
                 return parser.getValueAsBoolean();
         }
 
-        throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+        throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void encode(UTF8FaunaGenerator gen, Object obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Object obj) throws CodecException {
 
         // TODO: deal with Object.class loop
         @SuppressWarnings("rawtypes")
