@@ -1,10 +1,11 @@
 package com.fauna.e2e;
 
-import com.fauna.beans.ClassWithNestedQuery;
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.query.builder.Query;
+import com.fauna.query.builder.QueryFragment;
 import com.fauna.query.builder.QueryObj;
+import com.fauna.query.builder.QueryVal;
 import com.fauna.response.QuerySuccess;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ public class E2EQueryObjTest {
     @Test
     public void query_mapWithEmbeddedQuery() {
         Query subq = fql("4 + 2");
-        Map<String,Query> obj = Map.of("k", subq);
+        Map<String, QueryFragment> obj = Map.of("k", subq);
 
         Query q = fql("${obj}", Map.of("obj", QueryObj.of(obj)));
         QuerySuccess<Map<String,Integer>> res = c.query(q, mapOf(Integer.class));
@@ -29,14 +30,14 @@ public class E2EQueryObjTest {
     }
 
     @Test
-    public void query_classWithEmbeddedQuery() {
+    public void query_mapMixedWithEmbeddedQuery() {
         Query subq = fql("4 + 2");
-        var obj = new ClassWithNestedQuery(subq);
+        Map<String, QueryFragment> obj = Map.of("k", subq, "k2", new QueryVal<>(42));
 
         Query q = fql("${obj}", Map.of("obj", QueryObj.of(obj)));
         QuerySuccess<Map<String,Integer>> res = c.query(q, mapOf(Integer.class));
 
-        assertEquals(Map.of("result", 6), res.getData());
+        assertEquals(Map.of("k", 6, "k2", 42), res.getData());
     }
 
     @Test
