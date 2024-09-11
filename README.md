@@ -1,7 +1,7 @@
-# The Official JVM Driver for [Fauna](https://fauna.com) (alpha)
+# The Official JVM Driver for [Fauna](https://fauna.com) (beta)
 
 > [!CAUTION]
-> This driver is currently in alpha and should not be used in production.
+> This driver is currently in beta and should not be used in production.
 
 The Fauna JVM driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
@@ -95,7 +95,7 @@ public class App {
 
         public String description;
 
-        public double price;
+        public Integer price;
     }
 
     public static void main(String[] args) {
