@@ -30,6 +30,6 @@ public final class ResponseFields {
     public static final String ERROR_ABORT_FIELD_NAME = "abort";
 
     // Stream-related fields
-    public static final String STREAM_EVENT_TYPE_FIELD_NAME = "type";
+    public static final String STREAM_TYPE_FIELD_NAME = "type";
     public static final String STREAM_CURSOR_FIELD_NAME = "cursor";
 }

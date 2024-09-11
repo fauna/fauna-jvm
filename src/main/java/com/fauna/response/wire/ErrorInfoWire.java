@@ -3,10 +3,13 @@ package com.fauna.response.wire;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fauna.codec.json.PassThroughDeserializer;
-import com.fauna.response.ConstraintFailure;
 
 import java.util.Optional;
 
+/**
+ * This class will be removed and replaced by the ErrorInfo class.
+ */
+@Deprecated
 public class ErrorInfoWire {
 
     @JsonProperty("code")

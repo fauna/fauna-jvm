@@ -9,6 +9,7 @@ import com.fauna.query.builder.Query;
 import com.fauna.types.NonNull;
 import com.fauna.types.NullDoc;
 import com.fauna.types.Nullable;
+import com.fauna.response.QuerySuccess;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +60,7 @@ public class E2EQueryTest {
     @Test
     public void query_syncWithParameterized() {
         var q = fql("[42]");
-        var res = c.query(q, listOf(int.class));
+        QuerySuccess<List<Integer>> res = c.query(q, listOf(int.class));
         var exp = List.of(42);
         assertEquals(exp, res.getData());
     }
