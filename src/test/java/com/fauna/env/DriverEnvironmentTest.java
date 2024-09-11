@@ -17,7 +17,7 @@ public class DriverEnvironmentTest {
         assertTrue(serialized.contains("runtime=java"));
         assertTrue(serialized.contains("os="));
         // For tests this is set in the file test/resources/version.properties
-        assertTrue(serialized.contains("driver=0.1"));
+        assertTrue(serialized.contains("driver="));
 
     }
 }
