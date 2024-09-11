@@ -95,7 +95,7 @@ public class App {
 
         public String description;
 
-        public double price;
+        public Integer price;
     }
 
     public static void main(String[] args) {
