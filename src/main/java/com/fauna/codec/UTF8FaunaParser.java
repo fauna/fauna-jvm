@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fauna.exception.CodecException;
-import com.fauna.exception.CodecException;
 import com.fauna.types.Module;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
