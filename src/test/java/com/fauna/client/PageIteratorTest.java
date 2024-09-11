@@ -3,13 +3,14 @@ package com.fauna.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.InvalidRequestException;
 import com.fauna.response.QueryFailure;
+import com.fauna.response.wire.QueryResponseWire;
 import com.fauna.response.QuerySuccess;
-import com.fauna.serialization.Deserializer;
-import com.fauna.serialization.PageDeserializer;
-import com.fauna.serialization.generic.PageOf;
-import com.fauna.serialization.generic.ParameterizedOf;
+import com.fauna.codec.PageOf;
+import com.fauna.codec.ParameterizedOf;
+import com.fauna.types.Document;
 import com.fauna.types.Page;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +39,7 @@ public class PageIteratorTest {
     @Mock
     private FaunaClient client;
 
-    private CompletableFuture<QuerySuccess<PageOf<String>>> successFuture(boolean after, int num) throws IOException {
+    private CompletableFuture<QuerySuccess<PageOf<Object>>> successFuture(boolean after, int num) throws IOException {
         ObjectNode root = MAPPER.createObjectNode();
         ObjectNode page = root.putObject("data");
         if (after) {
@@ -47,16 +49,17 @@ public class PageIteratorTest {
         arr.add(num + "-a");
         arr.add(num + "-b");
 
-        QuerySuccess<PageOf<String>> success = new QuerySuccess(new PageDeserializer<>(Deserializer.DYNAMIC), root, null);
+        var res = MAPPER.readValue(root.toString(), QueryResponseWire.class);
+        QuerySuccess<PageOf<Object>> success = new QuerySuccess(DefaultCodecProvider.SINGLETON.get(Page.class, new Type[]{String.class}), res);
         return CompletableFuture.supplyAsync(() -> success);
     }
 
-    private CompletableFuture<QuerySuccess<PageOf<String>>> failureFuture() throws IOException {
+    private CompletableFuture<QuerySuccess<Object>> failureFuture() throws IOException {
         ObjectNode root = MAPPER.createObjectNode();
-        ObjectNode stats = root.putObject("stats");
         ObjectNode error = root.putObject("error");
         error.put("code", "invalid_query");
-        return CompletableFuture.failedFuture(new InvalidRequestException(new QueryFailure(400, root, null)));
+        var res = MAPPER.readValue(root.toString(), QueryResponseWire.class);
+        return CompletableFuture.failedFuture(new InvalidRequestException(new QueryFailure(400, res)));
     }
 
 
@@ -65,7 +68,7 @@ public class PageIteratorTest {
         when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(successFuture(false, 0));
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         assertTrue(pageIterator.hasNext());
-        assertEquals(pageIterator.next().data(), List.of("0-a", "0-b"));
+        assertEquals(pageIterator.next().getData(), List.of("0-a", "0-b"));
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
     }
@@ -75,7 +78,7 @@ public class PageIteratorTest {
         when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(successFuture(false, 0));
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         // No call to hasNext here.
-        assertEquals(pageIterator.next().data(), List.of("0-a", "0-b"));
+        assertEquals(pageIterator.next().getData(), List.of("0-a", "0-b"));
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
     }
@@ -86,10 +89,10 @@ public class PageIteratorTest {
                 successFuture(true, 0), successFuture(false, 1));
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("0-a", "0-b"), pageIterator.next().data());
+        assertEquals(List.of("0-a", "0-b"), pageIterator.next().getData());
 
         assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("1-a", "1-b"), pageIterator.next().data());
+        assertEquals(List.of("1-a", "1-b"), pageIterator.next().getData());
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
     }
@@ -125,13 +128,10 @@ public class PageIteratorTest {
         assertEquals(page, pageIterator.next());
 
         assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("0-a", "0-b"), pageIterator.next().data());
+        assertEquals(List.of("0-a", "0-b"), pageIterator.next().getData());
 
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
 
     }
-
-
-
 }

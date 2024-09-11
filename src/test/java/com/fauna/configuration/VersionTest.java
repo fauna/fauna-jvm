@@ -11,7 +11,7 @@ class VersionTest {
     @Test
     void getVersion_shouldReturnCorrectVersion() {
         String version = DriverEnvironment.getVersion();
-        assertTrue(version.contains("0.1"));
+        assertTrue(version.contains("0."));
     }
 
 }

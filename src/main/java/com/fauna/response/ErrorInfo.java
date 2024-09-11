@@ -1,27 +1,16 @@
 package com.fauna.response;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Optional;
-
+/**
+ * This class will encapsulate all the information Fauna returns about errors including constraint failures, and
+ * abort data, for now it just has the code and message.
+ */
 public class ErrorInfo {
-
     private final String code;
     private final String message;
-    private final ConstraintFailure[] constraintFailures;
-    private final Object abort;
 
-    @JsonCreator
-    public ErrorInfo(
-        @JsonProperty("code") String code,
-        @JsonProperty("message") String message,
-        @JsonProperty("constraint_failures") ConstraintFailure[] constraintFailures,
-        @JsonProperty("abort") Object abort) {
+    public ErrorInfo(String code, String message) {
         this.code = code;
         this.message = message;
-        this.constraintFailures = constraintFailures;
-        this.abort = abort;
     }
 
     public String getCode() {
@@ -31,13 +20,4 @@ public class ErrorInfo {
     public String getMessage() {
         return message;
     }
-
-    public ConstraintFailure[] getConstraintFailures() {
-        return constraintFailures;
-    }
-
-    public Optional<Object> getAbort() {
-        return Optional.ofNullable(this.abort);
-    }
-
 }

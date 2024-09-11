@@ -13,6 +13,4 @@ import java.lang.annotation.Target;
 public @interface FaunaField {
 
     String name() default "";
-
-    boolean nullable() default false;
 }
