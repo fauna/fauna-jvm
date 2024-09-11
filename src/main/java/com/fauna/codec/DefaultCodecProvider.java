@@ -6,7 +6,7 @@ import com.fauna.codec.codecs.DynamicCodec;
 import com.fauna.codec.codecs.EnumCodec;
 import com.fauna.codec.codecs.ListCodec;
 import com.fauna.codec.codecs.MapCodec;
-import com.fauna.codec.codecs.NullableCodec;
+import com.fauna.codec.codecs.NullableDocumentCodec;
 import com.fauna.codec.codecs.OptionalCodec;
 import com.fauna.codec.codecs.PageCodec;
 import com.fauna.codec.codecs.QueryArrCodec;
@@ -24,7 +24,7 @@ import com.fauna.query.builder.QueryVal;
 import com.fauna.types.BaseDocument;
 import com.fauna.types.Document;
 import com.fauna.types.NamedDocument;
-import com.fauna.types.Nullable;
+import com.fauna.types.NullableDocument;
 import com.fauna.types.Page;
 
 import java.lang.reflect.Type;
@@ -101,9 +101,9 @@ public class DefaultCodecProvider implements CodecProvider {
             return (Codec<T>) new PageCodec<E,Page<E>>((Codec<E>) valueCodec);
         }
 
-        if (clazz == Nullable.class) {
+        if (clazz == NullableDocument.class) {
             Codec<?> valueCodec = this.get((Class<?>) ta, null);
-            return (Codec<T>) new NullableCodec<E,Nullable<E>>((Codec<E>) valueCodec);
+            return (Codec<T>) new NullableDocumentCodec<E, NullableDocument<E>>((Codec<E>) valueCodec);
         }
 
         if (clazz.isEnum()) {
