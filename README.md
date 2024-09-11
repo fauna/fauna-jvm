@@ -259,7 +259,7 @@ of a query is a generic, including:
 * `ListOf<T>` where `T` is the element type.
 * `MapOf<T>` where `T` is the value type.
 * `OptionalOf<T>` where `T` is the value type.
-* `NullableOf<T>` where `T` is the value type. This is specifically for cases when you return a Fauna document that may be null and want to receive a concrete `NullDoc<T>` or `NonNullDoc<T>` instead of catching a `NullDocumentException`.
+* `NullableDocumentOf<T>` where `T` is the value type. This is specifically for cases when you return a Fauna document that may be null and want to receive a concrete `NullDocument<T>` or `NonNullDocument<T>` instead of catching a `NullDocumentException`.
 
 ### Variable interpolation
 

@@ -1,9 +1,9 @@
 package com.fauna.types;
 
-public abstract class Nullable<T> {
+public abstract class NullableDocument<T> {
     final T val;
 
-    public Nullable(T val) {
+    public NullableDocument(T val) {
         this.val = val;
     }
 

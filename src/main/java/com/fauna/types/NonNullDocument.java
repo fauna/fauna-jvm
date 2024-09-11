@@ -2,9 +2,9 @@ package com.fauna.types;
 
 import java.util.Objects;
 
-public final class NonNull<T> extends Nullable<T> {
+public final class NonNullDocument<T> extends NullableDocument<T> {
 
-    public NonNull(T val) {
+    public NonNullDocument(T val) {
         super(val);
     }
 
@@ -36,9 +36,9 @@ public final class NonNull<T> extends Nullable<T> {
 
         if (getClass() != o.getClass()) return false;
 
-        if (val.getClass() != ((NonNull<?>) o).get().getClass()) return false;
+        if (val.getClass() != ((NonNullDocument<?>) o).get().getClass()) return false;
 
-        return val.equals(((NonNull<?>) o).get());
+        return val.equals(((NonNullDocument<?>) o).get());
     }
 
     @Override

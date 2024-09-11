@@ -7,17 +7,17 @@ import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.types.NonNull;
-import com.fauna.types.NullDoc;
-import com.fauna.types.Nullable;
+import com.fauna.types.NonNullDocument;
+import com.fauna.types.NullDocument;
+import com.fauna.types.NullableDocument;
 
 import java.io.IOException;
 
-public class NullableCodec<E,L extends Nullable<E>> extends BaseCodec<L> {
+public class NullableDocumentCodec<E,L extends NullableDocument<E>> extends BaseCodec<L> {
 
     private final Codec<E> valueCodec;
 
-    public NullableCodec(Codec<E> valueCodec) {
+    public NullableDocumentCodec(Codec<E> valueCodec) {
         this.valueCodec = valueCodec;
     }
 
@@ -31,19 +31,19 @@ public class NullableCodec<E,L extends Nullable<E>> extends BaseCodec<L> {
         try {
             E decoded = valueCodec.decode(parser);
 
-            if (decoded instanceof NullDoc) return (L) decoded;
+            if (decoded instanceof NullDocument) return (L) decoded;
 
-            return (L) new NonNull<>(decoded);
+            return (L) new NonNullDocument<>(decoded);
         } catch (NullDocumentException e) {
-            return (L) new NullDoc<>(e.getId(), e.getCollection(), e.getNullCause());
+            return (L) new NullDocument<>(e.getId(), e.getCollection(), e.getNullCause());
         }
     }
 
     @Override
     public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
-        if (obj instanceof NonNull) {
+        if (obj instanceof NonNullDocument) {
             @SuppressWarnings("unchecked")
-            NonNull<E> nn = (NonNull<E>) obj;
+            NonNullDocument<E> nn = (NonNullDocument<E>) obj;
             valueCodec.encode(gen, nn.get());
         } else {
             throw new ClientException(unsupportedTypeMessage(obj.getClass()));

@@ -4,13 +4,13 @@ import com.fauna.exception.NullDocumentException;
 
 import java.util.Objects;
 
-public final class NullDoc<T> extends Nullable<T> {
+public final class NullDocument<T> extends NullableDocument<T> {
 
     private final String id;
     private final Module coll;
     private final String cause;
 
-    public NullDoc(String id, Module coll, String cause) {
+    public NullDocument(String id, Module coll, String cause) {
         super(null);
         this.id = id;
         this.coll = coll;
@@ -55,7 +55,7 @@ public final class NullDoc<T> extends Nullable<T> {
 
         if (getClass() != o.getClass()) return false;
 
-        var c = (NullDoc<?>) o;
+        var c = (NullDocument<?>) o;
         return id.equals(c.getId())
                 && coll.equals(c.getCollection())
                 && cause.equals(c.getCause());

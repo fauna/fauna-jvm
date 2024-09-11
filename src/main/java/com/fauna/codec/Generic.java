@@ -21,7 +21,7 @@ public class Generic {
         return new OptionalOf<>(valueClass);
     }
 
-    public static <E> NullableOf<E> nullableOf(Class<E> valueClass) {
-        return new NullableOf<>(valueClass);
+    public static <E> NullableDocumentOf<E> nullableDocumentOf(Class<E> valueClass) {
+        return new NullableDocumentOf<>(valueClass);
     }
 }
