@@ -11,7 +11,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.*;
 import com.fauna.constants.ResponseFields;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientResponseException;
+import com.fauna.exception.CodecException;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
@@ -83,17 +84,15 @@ class QueryResponseTest {
         when(resp.statusCode()).thenReturn(400);
         when(resp.body()).thenReturn(body);
 
-        ProtocolException exc = assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp, codecProvider.get(Object.class)));
-        assertEquals("ProtocolException HTTP 400 with body: " + body, exc.getMessage());
-        assertEquals(400, exc.getStatusCode());
-        assertEquals(body, exc.getBody());
+        ClientResponseException exc = assertThrows(ClientResponseException.class, () -> QueryResponse.handleResponse(resp, codecProvider.get(Object.class)));
+        assertEquals("ClientResponseException HTTP 400: Failed to handle error response.", exc.getMessage());
     }
 
     @Test
     public void handleResponseWithMissingStatsThrowsProtocolException() {
         HttpResponse resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn("{\"not valid json\"");
-        assertThrows(ProtocolException.class, () -> QueryResponse.handleResponse(resp,  codecProvider.get(Object.class)));
+        assertThrows(ClientResponseException.class, () -> QueryResponse.handleResponse(resp,  codecProvider.get(Object.class)));
     }
 
     @Test
@@ -101,8 +100,8 @@ class QueryResponseTest {
         String body = "Invalid JSON";
 
         // TODO call FaunaClient.handleResponse here.
-        ClientException exception = assertThrows(ClientException.class, () -> {
-            throw new ClientException("Error occurred while parsing the response body");
+        CodecException exception = assertThrows(CodecException.class, () -> {
+            throw new CodecException("Error occurred while parsing the response body");
         });
 
         assertEquals("Error occurred while parsing the response body", exception.getMessage());

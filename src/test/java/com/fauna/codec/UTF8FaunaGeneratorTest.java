@@ -77,7 +77,7 @@ public class UTF8FaunaGeneratorTest {
 
     @Test
 
-    public void writeObject() throws IOException {
+    public void writeObject() {
         writer.writeStartObject();
         writer.writeInt("anInt", 42);
         writer.writeLong("aLong", 42L);
@@ -175,7 +175,7 @@ public class UTF8FaunaGeneratorTest {
         assertWriter("{\"@time\":\"2024-01-23T20:33:10.300001Z\"}");
     }
 
-    private void assertWriter(String expected) throws IOException {
+    private void assertWriter(String expected) {
         writer.flush();
         String actual = writer.serialize();
         assertEquals(expected, actual);

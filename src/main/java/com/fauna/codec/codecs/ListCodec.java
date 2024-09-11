@@ -3,11 +3,10 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +19,7 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws IOException {
+    public L decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -35,12 +34,12 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
                 var typed = (L) list;
                 return typed;
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
             return;

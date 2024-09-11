@@ -1,18 +1,16 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-
-import java.io.IOException;
 
 public class IntCodec extends BaseCodec<Integer> {
 
     public static final IntCodec singleton = new IntCodec();
 
     @Override
-    public Integer decode(UTF8FaunaParser parser) throws IOException {
+    public Integer decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -20,12 +18,12 @@ public class IntCodec extends BaseCodec<Integer> {
             case LONG:
                 return parser.getValueAsInt();
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Integer obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, Integer obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

@@ -3,7 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.Page;
@@ -22,7 +22,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws IOException {
+    public L decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -51,16 +51,16 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
                 // In the event the user requests a Page<T> but the query just returns T
                 return wrapInPage(parser);
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
-            throw new ClientException(this.unsupportedTypeMessage(obj.getClass()));
+            throw new CodecException(this.unsupportedTypeMessage(obj.getClass()));
         }
     }
 
@@ -70,7 +70,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
 
-    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws IOException {
+    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws CodecException {
         List<E> data = null;
         String after = null;
 
@@ -89,7 +89,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         }
 
         if (data == null) {
-            throw new ClientException("No page data found while deserializing into Page<>");
+            throw new CodecException("No page data found while deserializing into Page<>");
         }
 
         @SuppressWarnings("unchecked")
@@ -97,7 +97,7 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         return res;
     }
 
-    private L wrapInPage(UTF8FaunaParser parser) throws IOException {
+    private L wrapInPage(UTF8FaunaParser parser) throws CodecException {
         E elem = this.elementCodec.decode(parser);
         @SuppressWarnings("unchecked")
         L res = (L) new Page<>(List.of(elem), null);

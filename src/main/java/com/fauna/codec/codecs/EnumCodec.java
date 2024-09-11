@@ -3,9 +3,7 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
-
-import java.io.IOException;
+import com.fauna.exception.CodecException;
 
 public class EnumCodec<T> extends BaseCodec<T> {
     private final Class<T> enumType;
@@ -15,7 +13,7 @@ public class EnumCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public T decode(UTF8FaunaParser parser) throws IOException {
+    public T decode(UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -23,12 +21,12 @@ public class EnumCodec<T> extends BaseCodec<T> {
                 //noinspection unchecked
                 return (T) Enum.valueOf((Class<Enum>) enumType, parser.getValueAsString());
             default:
-                throw new ClientException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, T obj) throws IOException {
+    public void encode(UTF8FaunaGenerator gen, T obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
