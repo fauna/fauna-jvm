@@ -1,10 +1,5 @@
 package com.fauna.query.builder;
 
-import com.fauna.codec.Codec;
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.UTF8FaunaGenerator;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,19 +7,19 @@ import java.util.Objects;
  * Represents a value fragment of a Fauna query.
  * This class encapsulates a value that can be a variable in the query.
  */
-public class QueryArr<E,T> extends QueryFragment<T> {
-    public static <E,T> QueryArr<E,T> of(T val) {
-        return new QueryArr<>(val);
+public class QueryArr<E extends QueryFragment> extends QueryFragment<List<E>> {
+    public static <E extends QueryFragment> QueryArr of(List<E> val) {
+        return new QueryArr(val);
     }
 
-    private final T value;
+    private final List<E> value;
 
     /**
      * Constructs a ValueFragment with the specified value.
      *
-     * @param value the value to encapsulate, which can be any object.
+     * @param value the value to encapsulate.
      */
-    public QueryArr(T value) {
+    public QueryArr(List<E> value) {
         this.value = value;
     }
 
@@ -34,7 +29,7 @@ public class QueryArr<E,T> extends QueryFragment<T> {
      * @return the encapsulated object.
      */
     @Override
-    public T get() {
+    public List<E> get() {
         return value;
     }
 
@@ -43,7 +38,7 @@ public class QueryArr<E,T> extends QueryFragment<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        QueryArr<E,T> that = (QueryArr<E,T>) o;
+        QueryArr that = (QueryArr) o;
 
         return Objects.equals(value, that.value);
     }

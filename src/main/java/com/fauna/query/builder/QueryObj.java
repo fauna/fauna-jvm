@@ -1,30 +1,26 @@
 package com.fauna.query.builder;
 
-import com.fauna.codec.Codec;
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.UTF8FaunaGenerator;
-
-import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 /**
  * Represents an object fragment of a Fauna query. Object fragments allow for the evaluation of FQL statements
  * stored on the object. This class encapsulates an object that can be a variable in the query.
  */
-public class QueryObj<T> extends QueryFragment<T> {
+public class QueryObj<E extends QueryFragment> extends QueryFragment<Map<String,E>> {
 
-    public static <T> QueryObj<T> of(T val) {
-        return new QueryObj<>(val);
+    public static <E extends QueryFragment> QueryObj of(Map<String, E> val) {
+        return new QueryObj(val);
     }
 
-    private final T value;
+    private final Map<String, E> value;
 
     /**
      * Constructs a QueryObj with the specified value.
      *
-     * @param value the value to encapsulate, which can be any object.
+     * @param value the value to encapsulate.
      */
-    public QueryObj(T value) {
+    public QueryObj(Map<String,E> value) {
         this.value = value;
     }
 
@@ -34,7 +30,7 @@ public class QueryObj<T> extends QueryFragment<T> {
      * @return the encapsulated object.
      */
     @Override
-    public T get() {
+    public Map<String,E> get() {
         return value;
     }
 
@@ -43,7 +39,7 @@ public class QueryObj<T> extends QueryFragment<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        QueryObj<T> that = (QueryObj<T>) o;
+        QueryObj that = (QueryObj) o;
 
         return Objects.equals(value, that.value);
     }
