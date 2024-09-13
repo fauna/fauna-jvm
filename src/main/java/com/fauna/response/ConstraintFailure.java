@@ -4,12 +4,15 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ConstraintFailure {
     private final String message;
@@ -53,6 +56,10 @@ public class ConstraintFailure {
             this.iVal = iVal;
         }
 
+        public boolean isString() {
+            return sVal != null;
+        }
+
         /**
          * Note that this parser does not advance the parser.
          * @param parser
@@ -64,6 +71,16 @@ public class ConstraintFailure {
                 return new PathElement(parser.getValueAsInt());
             } else {
                 return new PathElement(parser.getText());
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof PathElement) {
+                PathElement other = (PathElement) o;
+                return other.isString() == this.isString() && other.toString().equals(this.toString());
+            } else {
+                return false;
             }
         }
 
@@ -104,11 +121,8 @@ public class ConstraintFailure {
     }
 
     public static ConstraintFailure parse(JsonParser parser) throws IOException {
-        JsonToken firstToken = parser.nextToken();
-        if (firstToken == JsonToken.VALUE_NULL) {
-            return null;
-        } else if (firstToken != JsonToken.START_OBJECT) {
-            throw new ClientException("Constraint failure should be a JSON object or null, got" + firstToken);
+        if (parser.currentToken() != JsonToken.START_OBJECT && parser.nextToken() != JsonToken.START_OBJECT) {
+            throw new ClientResponseException("Constraint failure should be a JSON object.");
         }
         Builder builder = ConstraintFailure.builder();
         while (parser.nextToken() == JsonToken.FIELD_NAME) {
@@ -119,23 +133,23 @@ public class ConstraintFailure {
                     break;
                 case ResponseFields.ERROR_NAME_FIELD_NAME:
                     builder.name(parser.nextTextValue());
+                    break;
                 case ResponseFields.ERROR_PATHS_FIELD_NAME:
                     List<PathElement[]> paths = new ArrayList<>();
                     JsonToken firstPathToken = parser.nextToken();
-                    if (firstPathToken != JsonToken.START_ARRAY || firstPathToken != JsonToken.VALUE_NULL) {
-                        throw new ClientException("Constraint failure should be array or null, got: " + firstPathToken.toString());
-                    }
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        List<PathElement> path = new ArrayList<>();
-                        if (parser.nextToken() == JsonToken.START_ARRAY) {
-                            JsonToken pathToken = parser.nextToken();
-                            while (pathToken != JsonToken.END_ARRAY) {
+                    if (firstPathToken == JsonToken.START_ARRAY) {
+                        while (parser.nextToken() == JsonToken.START_ARRAY) {
+                            List<PathElement> path = new ArrayList<>();
+                            while (parser.nextToken() != JsonToken.END_ARRAY) {
                                 path.add(PathElement.parse(parser));
                             }
+                            paths.add(path.toArray(new PathElement[path.size()]));
                         }
-                        paths.add(path.toArray(new PathElement[path.size()]));
+                        builder.paths(paths.toArray(new PathElement[paths.size()][]));
+                    } else if (firstPathToken != JsonToken.VALUE_NULL) {
+                        throw new ClientException("Constraint failure path should be array or null, got: " + firstPathToken.toString());
                     }
-                    builder.paths(paths.toArray(new PathElement[paths.size()][]));
+                    break;
             }
         }
         return builder.build();
@@ -150,8 +164,18 @@ public class ConstraintFailure {
         return Optional.ofNullable(this.name);
     }
 
-    public PathElement[][] getPaths() {
-        return paths;
+    public Optional<PathElement[][]> getPaths() {
+        return Optional.ofNullable(paths);
+    }
+
+    public Optional<List<String>> getPathStrings() {
+        if (paths == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(Arrays.stream(paths).map(
+                    pathElements -> Arrays.stream(pathElements).map(PathElement::toString).collect(
+                            Collectors.joining("."))).collect(Collectors.toList()));
+        }
     }
 
 }

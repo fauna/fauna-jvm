@@ -34,7 +34,7 @@ public class E2EConstraintTest {
         ConstraintFailure actual = exc.getConstraintFailures().get(0);
         assertEquals("Document failed check constraint `posQuantity`", actual.getMessage());
         assertTrue(actual.getName().isEmpty());
-        assertEquals(0, actual.getPaths().length);
+        assertEquals(0, actual.getPaths().get().length);
     }
 
     @Test
@@ -48,8 +48,8 @@ public class E2EConstraintTest {
         assertEquals("Failed unique constraint", actual.getMessage());
         assertTrue(actual.getName().isEmpty());
 
-        var paths = actual.getPaths();
+        ConstraintFailure.PathElement[][] paths = actual.getPaths().get();
         assertEquals(1, paths.length);
-        assertEquals(new ConstraintFailure.PathElement[]{new ConstraintFailure.PathElement("foo")}, paths[0]);
+        assertEquals(List.of("name"), actual.getPathStrings().orElseThrow());
     }
 }
