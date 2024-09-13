@@ -542,6 +542,7 @@ public class App {
             // Handle each event...
             int count = eventCount.incrementAndGet();
             System.out.println("Received event " + count + ":");
+            System.out.println("  Type: " + event.getType());
             System.out.println("  Cursor: " + event.getCursor());
             System.out.println("  Timestamp: " + event.getTimestamp());
             System.out.println("  Data: " + event.getData().orElse(null));
