@@ -49,14 +49,14 @@ public final class QueryFailure extends QueryResponse {
         ErrorInfoWire errorInfoWire = response.getError();
         ObjectMapper mapper = new ObjectMapper();
         AtomicReference<TreeNode> abortTree = new AtomicReference<>(mapper.createObjectNode());
-        errorInfoWire.getAbort().ifPresent(abort -> {
-            try {
-                abortTree.set(new ObjectMapper().readTree(abort));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
         if (errorInfoWire != null) {
+            errorInfoWire.getAbort().ifPresent(abort -> {
+                try {
+                    abortTree.set(new ObjectMapper().readTree(abort));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            });
             this.errorInfo = new ErrorInfo(errorCode, errorInfoWire.getMessage(), errorInfoWire.getConstraintFailureArray().orElse(null), abortTree.get());
         } else {
             this.errorInfo = new ErrorInfo(errorCode, null, null, null);
