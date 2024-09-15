@@ -38,9 +38,12 @@ public final class QueryFailure extends QueryResponse {
      * Initializes a new instance of the {@link QueryFailure} class, parsing the provided raw
      * response to extract error information.
      *
+     * @deprecated This method will be removed when QueryResponseWire is removed.
+     *
      * @param statusCode The HTTP status code.
      * @param response   The parsed response.
      */
+    @Deprecated
     public QueryFailure(int statusCode, QueryResponseWire response) {
         super(response.getTxnTs(), response.getSummary(), response.getSchemaVersion(), response.getQueryTags(), response.getStats());
         ErrorInfoWire errorInfoWire = response.getError();
