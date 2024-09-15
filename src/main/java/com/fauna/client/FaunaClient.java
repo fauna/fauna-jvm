@@ -46,10 +46,14 @@ public abstract class FaunaClient {
         return this.faunaSecret;
     }
 
-    private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
+    private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeOldAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
         // There are other options for BodyHandlers here like ofInputStream, and ofByteArray. UTF8FaunaParser
         // can be initialized with an InputStream, so we could remove the extra string conversion.
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply(body -> QueryResponse.handleResponse(body, codec));
+    }
+
+    private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec));
     }
 
     //region Asynchronous API

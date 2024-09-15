@@ -6,7 +6,6 @@ import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.CodecException;
 import com.fauna.response.wire.QueryResponseWire;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public final class QuerySuccess<T> extends QueryResponse {
@@ -14,6 +13,12 @@ public final class QuerySuccess<T> extends QueryResponse {
     private final T data;
     private final String staticType;
 
+    public QuerySuccess(Builder<T> builder) {
+        super(builder);
+        this.data = builder.data;
+        // TODO: check this
+        this.staticType = builder.codec.getCodecClass().getSimpleName();
+    }
     /**
      * Initializes a new instance of the {@link QuerySuccess} class, decoding the query
      * response into the specified type.

@@ -11,6 +11,8 @@ import com.fauna.response.wire.ConstraintFailureWire;
 import com.fauna.response.wire.ErrorInfoWire;
 import com.fauna.response.wire.QueryResponseWire;
 
+import java.io.InputStream;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,12 @@ public final class QueryFailure extends QueryResponse {
         super(null, null, schemaVersion, queryTags, stats);
         this.statusCode = statusCode;
         this.errorInfo = errorInfo;
+    }
+
+    public QueryFailure(HttpResponse<InputStream> response, Builder builder) {
+        super(builder);
+        this.statusCode = response.statusCode();
+        this.errorInfo = builder.error;
     }
 
     /**
