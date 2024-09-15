@@ -1,20 +1,21 @@
 package com.fauna.response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.CodecException;
 import com.fauna.response.wire.ConstraintFailureWire;
 import com.fauna.response.wire.ErrorInfoWire;
 import com.fauna.response.wire.QueryResponseWire;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class QueryFailure extends QueryResponse {
 
@@ -43,8 +44,17 @@ public final class QueryFailure extends QueryResponse {
     public QueryFailure(int statusCode, QueryResponseWire response) {
         super(response.getTxnTs(), response.getSummary(), response.getSchemaVersion(), response.getQueryTags(), response.getStats());
         ErrorInfoWire errorInfoWire = response.getError();
+        ObjectMapper mapper = new ObjectMapper();
+        AtomicReference<TreeNode> abortTree = new AtomicReference<>(mapper.createObjectNode());
+        errorInfoWire.getAbort().ifPresent(abort -> {
+            try {
+                abortTree.set(new ObjectMapper().readTree(abort));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
         if (errorInfoWire != null) {
-            this.errorInfo = new ErrorInfo(errorCode, errorInfoWire.getMessage(), errorInfoWire.getConstraintFailureArray().orElse(null), errorInfoWire.getAbort().orElse(null));
+            this.errorInfo = new ErrorInfo(errorCode, errorInfoWire.getMessage(), errorInfoWire.getConstraintFailureArray().orElse(null), abortTree.get());
         } else {
             this.errorInfo = new ErrorInfo(errorCode, null, null, null);
         }

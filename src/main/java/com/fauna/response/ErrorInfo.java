@@ -2,6 +2,11 @@ package com.fauna.response;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fauna.codec.Codec;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.ClientResponseException;
 
@@ -10,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.fauna.constants.ResponseFields.ERROR_ABORT_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.ERROR_CODE_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.ERROR_CONSTRAINT_FAILURES_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.ERROR_MESSAGE_FIELD_NAME;
@@ -22,9 +28,9 @@ public class ErrorInfo {
     private final String code;
     private final String message;
     private final ConstraintFailure[] constraintFailures;
-    private final String abort;
+    private final TreeNode abort;
 
-    public ErrorInfo(String code, String message, ConstraintFailure[] constraintFailures, String abort) {
+    public ErrorInfo(String code, String message, ConstraintFailure[] constraintFailures, TreeNode abort) {
         this.code = code;
         this.message = message;
         this.constraintFailures = constraintFailures;
@@ -42,15 +48,27 @@ public class ErrorInfo {
     public Optional<ConstraintFailure[]> getConstraintFailures() {
         return Optional.ofNullable(this.constraintFailures);
     }
-    public String getAbort() {
-        return this.abort;
+
+    public Optional<TreeNode> getAbortJson() {
+        return Optional.ofNullable(this.abort);
     }
+
+    public <T> Optional<T> getAbort(Class<T> abortDataClass) {
+        return this.getAbortJson().map(tree -> {
+            UTF8FaunaParser parser = new UTF8FaunaParser(tree.traverse());
+            Codec<T> codec = DefaultCodecProvider.SINGLETON.get(abortDataClass);
+            parser.read();
+            return codec.decode(parser);
+        });
+    }
+
+
 
     public static class Builder {
         String code = null;
         String message = null;
         ConstraintFailure[] constraintFailures = null;
-        String abort = null;
+        TreeNode abort = null;
 
         public Builder code(String code) {
             this.code = code;
@@ -62,8 +80,8 @@ public class ErrorInfo {
             return this;
         }
 
-        public Builder abort(Object abort) {
-            this.abort = abort.toString();
+        public Builder abort(TreeNode abort) {
+            this.abort = abort;
             return this;
         }
 
@@ -73,7 +91,7 @@ public class ErrorInfo {
         }
 
         public ErrorInfo build() {
-            return new ErrorInfo(this.code, this.message, this.constraintFailures, "abort parsing not implemented");
+            return new ErrorInfo(this.code, this.message, this.constraintFailures, this.abort);
         }
     }
 
@@ -95,6 +113,10 @@ public class ErrorInfo {
                     break;
                 case ERROR_MESSAGE_FIELD_NAME:
                     builder.message(parser.nextTextValue());
+                    break;
+                case ERROR_ABORT_FIELD_NAME:
+                    JsonToken firstAbortToken = parser.nextToken();
+                    builder.abort(new ObjectMapper().readTree(parser));
                     break;
                 case ERROR_CONSTRAINT_FAILURES_FIELD_NAME:
                     List<ConstraintFailure> failures = new ArrayList<>();
