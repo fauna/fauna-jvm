@@ -18,10 +18,13 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -311,7 +314,8 @@ class FaunaClientTest {
         when(firstPageResp.body()).thenReturn(String.format(bodyBase, String.format(productBase, "product-0"), "\"after_token\""));
         when(firstPageResp.statusCode()).thenReturn(200);
         HttpResponse secondPageResp = mock(HttpResponse.class);
-        when(secondPageResp.body()).thenReturn(String.format(bodyBase, String.format(productBase, "product-1"), "null"));
+        InputStream str = new ByteArrayInputStream(String.format(bodyBase, String.format(productBase, "product-1"), "null").getBytes(StandardCharsets.UTF_8));
+        when(secondPageResp.body()).thenReturn(str);
         when(secondPageResp.statusCode()).thenReturn(200);
 
         ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("X-Query-Timeout-Ms", "42"));
