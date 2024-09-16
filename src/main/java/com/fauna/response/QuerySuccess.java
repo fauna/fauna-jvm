@@ -16,8 +16,7 @@ public final class QuerySuccess<T> extends QueryResponse {
     public QuerySuccess(Builder<T> builder) {
         super(builder);
         this.data = builder.data;
-        // TODO: check this
-        this.staticType = builder.codec.getCodecClass().getSimpleName();
+        this.staticType = builder.staticType;
     }
     /**
      * Initializes a new instance of the {@link QuerySuccess} class, decoding the query

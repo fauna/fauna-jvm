@@ -2,17 +2,22 @@ package com.fauna.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
+import com.fauna.response.QueryResponse;
 import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class TestAbortException {
     ObjectMapper mapper = new ObjectMapper();
@@ -36,10 +41,10 @@ public class TestAbortException {
         // Then
         HashMap<String, Integer>  expected = new HashMap<>();
         expected.put("num", 42);
-        assertEquals(expected, exc.getAbort());
+        assertEquals(expected, exc.getAbort().orElseThrow());
 
         // Assert caching
-        assertSame(exc.getAbort(), exc.getAbort());
+        assertSame(exc.getAbort().orElseThrow(), exc.getAbort().orElseThrow());
     }
 
     @Test
@@ -56,22 +61,20 @@ public class TestAbortException {
         AbortException exc = new AbortException(failure);
 
         // Then
-        assertEquals("some reason", exc.getAbort());
+        assertEquals("some reason", exc.getAbort().orElseThrow());
     }
 
     @Test
     public void testAbortDataMissing() throws IOException {
         // Given
-        ObjectNode root = mapper.createObjectNode();
-        ObjectNode error = root.putObject("error");
-        error.put("code", "abort");
-        var res = mapper.readValue(root.toString(), QueryResponseWire.class);
-        QueryFailure failure = new QueryFailure(500, res);
+        QueryResponse.Builder builder = QueryResponse.builder(null);
+        builder.error(new ErrorInfo("abort", "some message", null, null));
+        QueryFailure failure = new QueryFailure(200, builder);
 
         // When
         AbortException exc = new AbortException(failure);
 
         // Then
-        assertNull(exc.getAbort());
+        assertTrue(exc.getAbort().isEmpty());
     }
 }

@@ -74,7 +74,7 @@ public class ConstraintFailureTest {
         String body = getQueryResponseWire(expected);
         QueryResponseWire res = mapper.readValue(body, QueryResponseWire.class);
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> handleErrorResponse(400, res, ""));
-        assertEquals(expected, exc.getConstraintFailures().get(0).getPaths());
+        assertEquals(expected, exc.getConstraintFailures()[0].getPaths());
     }
 
     @Test
@@ -83,6 +83,6 @@ public class ConstraintFailureTest {
         String body = getQueryResponseWire(expected);
         QueryResponseWire res = mapper.readValue(body, QueryResponseWire.class);
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> handleErrorResponse(400, res, ""));
-        assertEquals(expected, exc.getConstraintFailures().get(0).getPaths());
+        assertEquals(expected, exc.getConstraintFailures()[0].getPaths());
     }
 }

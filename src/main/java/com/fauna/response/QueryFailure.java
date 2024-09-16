@@ -11,8 +11,6 @@ import com.fauna.response.wire.ConstraintFailureWire;
 import com.fauna.response.wire.ErrorInfoWire;
 import com.fauna.response.wire.QueryResponseWire;
 
-import java.io.InputStream;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,6 @@ public final class QueryFailure extends QueryResponse {
     private final int statusCode;
     private final ErrorInfo errorInfo;
 
-    private List<ConstraintFailure> constraintFailures;
     private String abortString;
 
 
@@ -34,9 +31,9 @@ public final class QueryFailure extends QueryResponse {
         this.errorInfo = errorInfo;
     }
 
-    public QueryFailure(HttpResponse<InputStream> response, Builder builder) {
+    public QueryFailure(int httpStatus, Builder builder) {
         super(builder);
-        this.statusCode = response.statusCode();
+        this.statusCode = httpStatus;
         this.errorInfo = builder.error;
     }
 
@@ -85,7 +82,7 @@ public final class QueryFailure extends QueryResponse {
                         throw new ClientResponseException("Failed to parse constraint failure.", exc);
                     }
                 }
-                constraintFailures = cf;
+                // constraintFailures = cf;
             }
 
             if (err.getAbort().isPresent()) {
@@ -119,8 +116,8 @@ public final class QueryFailure extends QueryResponse {
 
     }
 
-    public Optional<List<ConstraintFailure>> getConstraintFailures() {
-        return Optional.ofNullable(constraintFailures);
+    public Optional<ConstraintFailure[]> getConstraintFailures() {
+        return this.errorInfo.getConstraintFailures();
     }
 
     public Optional<String> getAbortString() {

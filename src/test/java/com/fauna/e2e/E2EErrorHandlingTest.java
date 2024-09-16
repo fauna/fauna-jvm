@@ -34,7 +34,7 @@ public class E2EErrorHandlingTest {
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,
                 () -> client.query(fql("Product.create({name: ${name}, quantity: -1})", Map.of("name", now().toString()))));
 
-        ConstraintFailure actual = exc.getConstraintFailures().get(0);
+        ConstraintFailure actual = exc.getConstraintFailures()[0];
         assertEquals("Document failed check constraint `posQuantity`", actual.getMessage());
         assertTrue(actual.getName().isEmpty());
         assertEquals(0, actual.getPaths().get().length);
@@ -47,7 +47,7 @@ public class E2EErrorHandlingTest {
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,
                 () -> client.query(fql("Product.create({name: 'cheese', quantity: 2})")));
 
-        ConstraintFailure actual = exc.getConstraintFailures().get(0);
+        ConstraintFailure actual = exc.getConstraintFailures()[0];
         assertEquals("Failed unique constraint", actual.getMessage());
         assertTrue(actual.getName().isEmpty());
 

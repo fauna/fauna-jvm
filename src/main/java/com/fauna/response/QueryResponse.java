@@ -22,6 +22,7 @@ import static com.fauna.constants.ResponseFields.ERROR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.QUERY_TAGS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.SCHEMA_VERSION_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.STATIC_TYPE_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.SUMMARY_FIELD_NAME;
 
@@ -61,13 +62,14 @@ public abstract class QueryResponse {
         this.queryTags = builder.queryTags;
     }
 
-    static class Builder<T> {
+    public static class Builder<T> {
         final Codec<T> codec;
         Long lastSeenTxn;
         String summary;
         Long schemaVersion;
         QueryStats stats;
         QueryTags queryTags;
+        String staticType;
         ErrorInfo error;
         T data;
 
@@ -102,6 +104,11 @@ public abstract class QueryResponse {
             return this;
         }
 
+        public Builder<T> staticType(String staticType) {
+            this.staticType = staticType;
+            return this;
+        }
+
         public Builder<T> summary(String summary) {
             this.summary = summary;
             return this;
@@ -115,25 +122,6 @@ public abstract class QueryResponse {
 
     public static <T> Builder builder(Codec<T> codec) {
         return new Builder<>(codec);
-    }
-
-    /**
-     * Handle a HTTPResponse and return a QuerySuccess, or throw a FaunaException.
-     * @param response          The HTTPResponse object.
-     * @return                  A successful response from Fauna.
-     * @throws FaunaException
-     */
-    public static <T>  QuerySuccess<T> handleResponse(HttpResponse<String> response, Codec<T> codec) throws FaunaException {
-        String body = response.body();
-        try {
-            var responseInternal = mapper.readValue(body, QueryResponseWire.class);
-            if (response.statusCode() >= 400) {
-                ErrorHandler.handleErrorResponse(response.statusCode(), responseInternal, body);
-            }
-            return new QuerySuccess<>(codec, responseInternal);
-        } catch (JsonProcessingException exc) { // Jackson JsonProcessingException subclasses IOException
-            throw new ClientResponseException("Failed to handle error response.", exc, response.statusCode());
-        }
     }
 
     public static <T>  QuerySuccess<T> parseResponse(HttpResponse<InputStream> response, Codec<T> codec) throws FaunaException {
@@ -165,6 +153,9 @@ public abstract class QueryResponse {
                         case SCHEMA_VERSION_FIELD_NAME:
                             builder.schemaVersion(parser.nextLongValue(0));
                             break;
+                        case STATIC_TYPE_FIELD_NAME:
+                            builder.staticType(parser.nextTextValue());
+                            break;
                         case SUMMARY_FIELD_NAME:
                             builder.summary(parser.nextTextValue());
                             break;
@@ -173,9 +164,9 @@ public abstract class QueryResponse {
                     }
 
                 }
-
-            if (response.statusCode() >= 400) {
-                QueryFailure failure = new QueryFailure(response, builder);
+            int httpStatus = response.statusCode();
+            if (httpStatus >= 400) {
+                QueryFailure failure = new QueryFailure(httpStatus, builder);
                 ErrorHandler.handleQueryFailure(response.statusCode(), failure);
             }
             return builder.buildSuccess();

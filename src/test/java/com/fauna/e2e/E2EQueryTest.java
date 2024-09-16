@@ -219,20 +219,20 @@ public class E2EQueryTest {
     public void query_abortEmpty() throws IOException {
         var q = fql("abort(null)");
         var e = assertThrows(AbortException.class, () -> c.query(q));
-        assertNull(e.getAbort());
+        assertTrue(e.getAbort(Object.class).isEmpty());
     }
 
     @Test
     public void query_abortDynamic() throws IOException {
         var q = fql("abort(8)");
         var e = assertThrows(AbortException.class, () -> c.query(q));
-        assertEquals(8, e.getAbort());
+        assertEquals(8, e.getAbort().orElseThrow());
     }
 
     @Test
     public void query_abortClass() throws IOException {
         var q = fql("abort({firstName:\"alice\"})");
         var e = assertThrows(AbortException.class, () -> c.query(q));
-        assertEquals("alice", e.getAbort(Author.class).getFirstName());
+        assertEquals("alice", e.getAbort(Author.class).get().getFirstName());
     }
 }
