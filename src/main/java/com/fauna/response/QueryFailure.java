@@ -23,8 +23,6 @@ public final class QueryFailure extends QueryResponse {
 
     private final int statusCode;
     private final ErrorInfo errorInfo;
-    private String errorCode = "";
-    private String message = "";
 
     private List<ConstraintFailure> constraintFailures;
     private String abortString;
@@ -65,17 +63,15 @@ public final class QueryFailure extends QueryResponse {
                     throw new RuntimeException(e);
                 }
             });
-            this.errorInfo = new ErrorInfo(errorCode, errorInfoWire.getMessage(), errorInfoWire.getConstraintFailureArray().orElse(null), abortTree.get());
+            this.errorInfo = new ErrorInfo(errorInfoWire.getCode(), errorInfoWire.getMessage(), errorInfoWire.getConstraintFailureArray().orElse(null), abortTree.get());
         } else {
-            this.errorInfo = new ErrorInfo(errorCode, null, null, null);
+            this.errorInfo = new ErrorInfo(null, null, null, null);
         }
 
         this.statusCode = statusCode;
 
         var err = response.getError();
         if (err != null) {
-            errorCode = err.getCode();
-            message = err.getMessage();
 
             if (err.getConstraintFailures().isPresent()) {
                 var cf = new ArrayList<ConstraintFailure>();
@@ -104,11 +100,16 @@ public final class QueryFailure extends QueryResponse {
     }
 
     public String getErrorCode() {
-        return errorCode;
+        return errorInfo.getCode();
     }
 
     public String getMessage() {
-        return message;
+        return errorInfo.getMessage();
+    }
+
+    public <T> Optional<T> getAbort(Class<T> clazz) {
+        return errorInfo.getAbort(clazz);
+
     }
 
     public String getFullMessage() {

@@ -23,6 +23,7 @@ import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.QUERY_TAGS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.SCHEMA_VERSION_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.SUMMARY_FIELD_NAME;
 
 public abstract class QueryResponse {
 
@@ -85,7 +86,9 @@ public abstract class QueryResponse {
         }
 
         public Builder<T> data(JsonParser parser) {
-            this.data = this.codec.decode(new UTF8FaunaParser(parser));
+            UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
+            faunaParser.read();
+            this.data = this.codec.decode(faunaParser);
             return this;
         }
 
@@ -96,6 +99,11 @@ public abstract class QueryResponse {
 
         public Builder<T> error(ErrorInfo info) {
             this.error = info;
+            return this;
+        }
+
+        public Builder<T> summary(String summary) {
+            this.summary = summary;
             return this;
         }
 
@@ -157,6 +165,11 @@ public abstract class QueryResponse {
                         case SCHEMA_VERSION_FIELD_NAME:
                             builder.schemaVersion(parser.nextLongValue(0));
                             break;
+                        case SUMMARY_FIELD_NAME:
+                            builder.summary(parser.nextTextValue());
+                            break;
+                        default:
+                            throw new ClientResponseException("Unexpected field '" + fieldName + "'.");
                     }
 
                 }

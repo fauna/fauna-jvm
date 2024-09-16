@@ -11,10 +11,13 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -44,11 +47,15 @@ public class ScopedFaunaClientTest {
         scopedClient = Fauna.scoped(baseClient, "myDB", SERVER_READ_ONLY);
     }
 
+    static HttpResponse<InputStream> mockResponse(String body) {
+        HttpResponse<InputStream> resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
+        return resp;
+    }
 
     @Test
     void query_shouldHaveScopedAuthHeader() throws IOException, InterruptedException {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        HttpResponse resp = mockResponse("{\"summary\":\"success\",\"stats\":{}}");
         ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret:myDB:server-readonly"));
 
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
@@ -60,8 +67,7 @@ public class ScopedFaunaClientTest {
 
     @Test
     void asyncQuery_shouldHaveScopedAuthHeader() throws InterruptedException, ExecutionException {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        HttpResponse resp = mockResponse("{\"summary\":\"success\",\"stats\":{}}");
         ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret:myDB:server-readonly"));
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QuerySuccess<Document>> future = scopedClient.asyncQuery(Query.fql("Collection.create({ name: 'Dogs' })"), Document.class);
@@ -75,8 +81,7 @@ public class ScopedFaunaClientTest {
     void recursiveScopedClient_shouldhaveCorrectHeader() {
         // Default role is "server"
         FaunaClient recursive = Fauna.scoped(scopedClient, "myOtherDB");
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        HttpResponse resp = mockResponse("{\"summary\":\"success\",\"stats\":{}}");
         ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret:myOtherDB:server"));
 
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
