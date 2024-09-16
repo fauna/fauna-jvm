@@ -21,6 +21,8 @@ public class ConstraintFailure {
 
     private final PathElement[][] paths;
 
+    // This constructor is called by the QueryFailure constructor, which is getting deprecated.
+    @Deprecated
     public ConstraintFailure(String message, String name, List<List<Object>> pathLists) {
         this.message = message;
         this.name = name;
