@@ -33,10 +33,10 @@ public class StreamEvent<E> {
     private final Long txn_ts;
     private final E data;
     private final QueryStats stats;
-    private final ErrorInfoWire error;
+    private final ErrorInfo error;
 
 
-    public StreamEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats, ErrorInfoWire error) {
+    public StreamEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats, ErrorInfo error) {
         this.type = type;
         this.cursor = cursor;
         this.txn_ts = txn_ts;
@@ -65,7 +65,7 @@ public class StreamEvent<E> {
             QueryStats stats = null;
             E data = null;
             Long txn_ts = null;
-            ErrorInfoWire errorInfo = null;
+            ErrorInfo errorInfo = null;
             while (parser.nextToken() == FIELD_NAME) {
                 String fieldName = parser.getValueAsString();
                 switch (fieldName) {
@@ -80,18 +80,19 @@ public class StreamEvent<E> {
                         }
                         data = dataCodec.decode(faunaParser);
                         break;
-                    case STREAM_TYPE_FIELD_NAME: eventType = parseEventType(parser);
-                    break;
+                    case STREAM_TYPE_FIELD_NAME:
+                        eventType = parseEventType(parser);
+                        break;
                     case STATS_FIELD_NAME:
                         stats = QueryStats.parseStats(parser);
                         break;
                     case LAST_SEEN_TXN_FIELD_NAME:
-                        parser.nextToken();
-                        txn_ts = parser.getValueAsLong();
+                        txn_ts = parser.nextLongValue(0L);
                         break;
                     case ERROR_FIELD_NAME:
-                        ObjectMapper mapper = new ObjectMapper();
-                        errorInfo = mapper.readValue(parser, ErrorInfoWire.class);
+                        errorInfo = ErrorInfo.parse(parser);
+                        // Fauna does not always return a valid event type (e.g. if you pass an invalid cursor).
+                        eventType = EventType.ERROR;
                         break;
                 }
             }
@@ -122,7 +123,7 @@ public class StreamEvent<E> {
     }
 
     public ErrorInfo getError() {
-        return new ErrorInfo(this.error.getCode(), this.error.getMessage());
+        return this.error;
     }
 
 

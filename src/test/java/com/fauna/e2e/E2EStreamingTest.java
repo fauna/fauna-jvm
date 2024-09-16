@@ -4,8 +4,11 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaStream;
 import com.fauna.e2e.beans.Product;
+import com.fauna.query.StreamTokenResponse;
 import com.fauna.query.builder.Query;
+import com.fauna.response.QuerySuccess;
 import com.fauna.response.StreamEvent;
+import com.fauna.stream.StreamRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,8 @@ import java.util.stream.Stream;
 
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class E2EStreamingTest {
     public static final FaunaClient client = Fauna.local();
@@ -106,6 +111,7 @@ public class E2EStreamingTest {
         FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
+        assertFalse(stream.isClosed());
         List<Product> products = new ArrayList<>();
         products.add(client.query(fql("Product.create({name: 'cheese', quantity: 1})"), Product.class).getData());
         products.add(client.query(fql("Product.create({name: 'bread', quantity: 2})"), Product.class).getData());
@@ -124,6 +130,22 @@ public class E2EStreamingTest {
         System.out.println(inventory.status());
         Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
         assertEquals(total, inventory.countInventory());
+        assertFalse(stream.isClosed());
+        stream.close();
+        assertTrue(stream.isClosed());
+    }
+
+    @Test
+    public void handleStreamError() throws InterruptedException {
+        // It would be nice to have another test that generates a stream with normal events, and then an error
+        // event, but this at least tests some of the functionality.
+        QuerySuccess<StreamTokenResponse> queryResp = client.query(fql("Product.all().toStream()"), StreamTokenResponse.class);
+        StreamRequest request = new StreamRequest(queryResp.getData().getToken(), "invalid_cursor");
+        FaunaStream stream = client.stream(request, Product.class);
+        InventorySubscriber inventory = new InventorySubscriber();
+        stream.subscribe(inventory);
+        Thread.sleep(1000);
+        assertTrue(stream.isClosed());
     }
 
     @Disabled("Will fix this for GA, I think the other drivers have this bug too.")
@@ -187,7 +209,7 @@ public class E2EStreamingTest {
         //"; line: 1, column: 26] (through reference chain: com.fauna.response.wire.StreamEventWire["error"])
         Stream.generate(E2EStreamingTest::createProduct).limit(10_000).forEach(
                 fql -> productFutures.add(client.asyncQuery(fql, Product.class).thenApply(success -> success.getData())));
-        Thread.sleep(10_000);
+        Thread.sleep(60_000);
 
         int totalInventory = productFutures.stream().map(p -> p.join().getQuantity()).reduce(0, Integer::sum);
         assertEquals(totalInventory, inventory.countInventory());

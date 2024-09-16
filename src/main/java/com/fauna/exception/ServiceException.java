@@ -1,6 +1,7 @@
 package com.fauna.exception;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
@@ -76,12 +77,12 @@ public class ServiceException extends FaunaException {
     }
 
     /**
-     * Returns the faled query's last transaction timestamp.
+     * Returns the failed query's last transaction timestamp.
      *
      * @return the transaction timestamp as a long value
      */
-    public long getTxnTs() {
-        return this.response.getLastSeenTxn();
+    public Optional<Long> getTxnTs() {
+        return Optional.ofNullable(this.response.getLastSeenTxn());
     }
 
     /**
