@@ -2,7 +2,9 @@ package com.fauna.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fauna.exception.ThrottlingException;
+import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
+import com.fauna.response.QueryResponse;
 import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +43,10 @@ public class TestRetryHandler {
             if (responseCount > failCount) {
                 return CompletableFuture.supplyAsync(TestRetryHandler::timestamp);
             } else {
-                return CompletableFuture.failedFuture(new ThrottlingException(new QueryFailure(500, new QueryResponseWire())));
+                return CompletableFuture.failedFuture(
+                        new ThrottlingException(
+                                new QueryFailure(500,
+                                        QueryResponse.builder(null).error(ErrorInfo.builder().build()))));
             }
         }
     }

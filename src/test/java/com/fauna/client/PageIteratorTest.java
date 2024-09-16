@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.InvalidRequestException;
+import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
+import com.fauna.response.QueryResponse;
 import com.fauna.response.wire.QueryResponseWire;
 import com.fauna.response.QuerySuccess;
 import com.fauna.codec.PageOf;
 import com.fauna.codec.ParameterizedOf;
-import com.fauna.types.Document;
 import com.fauna.types.Page;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,8 +59,9 @@ public class PageIteratorTest {
         ObjectNode root = MAPPER.createObjectNode();
         ObjectNode error = root.putObject("error");
         error.put("code", "invalid_query");
-        var res = MAPPER.readValue(root.toString(), QueryResponseWire.class);
-        return CompletableFuture.failedFuture(new InvalidRequestException(new QueryFailure(400, res)));
+
+        QueryFailure failure = new QueryFailure(400, QueryResponse.builder(null).error(ErrorInfo.builder().code("invalid_query").build()));
+        return CompletableFuture.failedFuture(new InvalidRequestException(failure));
     }
 
 

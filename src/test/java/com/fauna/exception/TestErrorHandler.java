@@ -8,10 +8,16 @@ import com.fauna.response.QueryStats;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.fauna.response.QueryResponse.parseResponse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestErrorHandler {
 
@@ -56,19 +62,11 @@ public class TestErrorHandler {
     public void testHandleBadRequest(TestArgs args) throws JsonProcessingException {
         ObjectNode root = mapper.createObjectNode();
         ObjectNode error = root.putObject("error");
-        ObjectNode stats = root.putObject("stats");
         error.put("code", args.code);
-        String body = mapper.writeValueAsString(root);
-        var res = mapper.readValue(body, QueryResponseWire.class);
-        assertThrows(args.exception, () -> ErrorHandler.handleErrorResponse(args.httpStatus, res, body));
+        HttpResponse<InputStream> resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn(new ByteArrayInputStream(root.toString().getBytes()));
+        when(resp.statusCode()).thenReturn(args.httpStatus);
+        assertThrows(args.exception, () -> parseResponse(resp, null));
     }
 
-//    public void testMissingStats() throws JsonProcessingException {
-//        ObjectNode root = mapper.createObjectNode();
-//        ObjectNode error = root.putObject("error");
-//        error.put("code", "invalid_query");
-//        String body = mapper.writeValueAsString(root);
-//        assertThrows(ProtocolException.class,
-//                () -> ErrorHandler.handleErrorResponse(400, body, mapper));
-//    }
 }

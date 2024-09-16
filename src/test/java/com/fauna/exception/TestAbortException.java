@@ -2,6 +2,7 @@ package com.fauna.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
@@ -25,15 +26,11 @@ public class TestAbortException {
     @Test
     public void testAbortDataObject() throws IOException {
         // Given
-        ObjectNode root = mapper.createObjectNode();
-        ObjectNode error = root.putObject("error");
-        error.put("code", "abort");
-        ObjectNode abort = error.putObject("abort");
+        ObjectNode abort = mapper.createObjectNode();
         ObjectNode num = abort.putObject("num");
         num.put("@int", "42");
-        var res = mapper.readValue(root.toString(), QueryResponseWire.class);
 
-        QueryFailure failure = new QueryFailure(500, res);
+        QueryFailure failure = new QueryFailure(500, QueryResponse.builder(null).error(ErrorInfo.builder().code("abort").abort(abort).build()));
 
         // When
         AbortException exc = new AbortException(failure);
@@ -50,12 +47,10 @@ public class TestAbortException {
     @Test
     public void testAbortDataString() throws IOException {
         // Given
-        ObjectNode root = mapper.createObjectNode();
-        ObjectNode error = root.putObject("error");
-        error.put("code", "abort");
-        error.put("abort", "some reason");
-        var res = mapper.readValue(root.toString(), QueryResponseWire.class);
-        QueryFailure failure = new QueryFailure(500, res);
+        QueryFailure failure = new QueryFailure(500,
+                QueryResponse.builder(null).error(
+                        ErrorInfo.builder().code("abort").abort(
+                                TextNode.valueOf("some reason")).build()));
 
         // When
         AbortException exc = new AbortException(failure);
@@ -67,9 +62,9 @@ public class TestAbortException {
     @Test
     public void testAbortDataMissing() throws IOException {
         // Given
-        QueryResponse.Builder builder = QueryResponse.builder(null);
-        builder.error(new ErrorInfo("abort", "some message", null, null));
-        QueryFailure failure = new QueryFailure(200, builder);
+        QueryFailure failure = new QueryFailure(200,
+                QueryResponse.builder(null).error(
+                        ErrorInfo.builder().code("abort").message("some message").build()));
 
         // When
         AbortException exc = new AbortException(failure);

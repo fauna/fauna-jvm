@@ -1,13 +1,11 @@
 package com.fauna.response;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientException;
-import com.fauna.response.wire.ErrorInfoWire;
 
 import java.io.IOException;
 import java.util.Optional;

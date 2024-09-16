@@ -65,28 +65,6 @@ class QueryResponseTest {
     }
 
     @Test
-    public void getFromResponseBody_Failure() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-
-        ObjectNode errorData = mapper.createObjectNode();
-        errorData.put(ResponseFields.ERROR_CODE_FIELD_NAME, "ErrorCode");
-        errorData.put(ResponseFields.ERROR_MESSAGE_FIELD_NAME, "ErrorMessage");
-        // ObjectNode cf = errorData.putObject(ResponseFields.ERROR_CONSTRAINT_FAILURES_FIELD_NAME);
-        errorData.put(ResponseFields.ERROR_ABORT_FIELD_NAME, "AbortData");
-        ObjectNode failureNode = mapper.createObjectNode();
-        failureNode.put(ResponseFields.ERROR_FIELD_NAME, errorData);
-
-        var res = mapper.readValue(failureNode.toString(), QueryResponseWire.class);
-        QueryFailure response = new QueryFailure(400, res);
-
-        assertEquals(400, response.getStatusCode());
-        assertEquals("ErrorCode", response.getErrorCode());
-        assertEquals("ErrorMessage", response.getMessage());
-        assertTrue(response.getConstraintFailures().isEmpty());
-        assertEquals(Optional.of("\"AbortData\""), response.getAbortString());
-    }
-
-    @Test
     public void handleResponseWithInvalidJsonThrowsProtocolException() {
         HttpResponse resp = mockResponse("{\"not valid json\"");
         when(resp.statusCode()).thenReturn(400);

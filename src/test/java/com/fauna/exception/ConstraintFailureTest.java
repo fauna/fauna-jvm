@@ -7,16 +7,20 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.response.ConstraintFailure;
 import com.fauna.response.ConstraintFailure.PathElement;
-import com.fauna.response.QueryStats;
-import com.fauna.response.wire.QueryResponseWire;
+import com.fauna.response.QueryResponse;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Optional;
 
-import static com.fauna.exception.ErrorHandler.handleErrorResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ConstraintFailureTest {
     ObjectMapper mapper = new ObjectMapper();
@@ -42,11 +46,11 @@ public class ConstraintFailureTest {
         return failure;
     }
 
-    private String getQueryResponseWire(List<List<Object>> paths) {
+    private String getConstraintFailureBody(List<List<Object>> paths) throws JsonProcessingException {
         ObjectNode body = mapper.createObjectNode();
-        QueryStats stats = new QueryStats(0, 0, 0, 0, 0, 0, 0, 0, List.of());
-        // body.put("stats", mapper.writeValueAsString(stats));
-        body.putPOJO("stats", stats);
+        ObjectNode stats = body.putObject("stats");
+        stats.put("compute_ops", 100);
+        // body.putPOJO("stats", stats);
         body.put("summary", "error: failed to...");
         body.put("txn_ts", 1723490275035000L);
         body.put("schema_version", 1723490246890000L);
@@ -71,18 +75,23 @@ public class ConstraintFailureTest {
     public void TestConstraintFailureFromBodyWithPath() throws JsonProcessingException {
         List<List<Object>> expected = List.of(List.of("name"));
 
-        String body = getQueryResponseWire(expected);
-        QueryResponseWire res = mapper.readValue(body, QueryResponseWire.class);
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> handleErrorResponse(400, res, ""));
-        assertEquals(expected, exc.getConstraintFailures()[0].getPaths());
+        String body = getConstraintFailureBody(expected);
+        HttpResponse<InputStream> resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn(new ByteArrayInputStream(body.getBytes()));
+        when(resp.statusCode()).thenReturn(400);
+        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null));
+        assertEquals(Optional.of(List.of("name")), exc.getConstraintFailures()[0].getPathStrings());
     }
 
     @Test
     public void TestConstraintFailureFromBodyWithIntegerInPath() throws JsonProcessingException {
         List<List<Object>> expected = List.of(List.of("name"), List.of("name2", 1, 2, "name3"));
-        String body = getQueryResponseWire(expected);
-        QueryResponseWire res = mapper.readValue(body, QueryResponseWire.class);
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> handleErrorResponse(400, res, ""));
-        assertEquals(expected, exc.getConstraintFailures()[0].getPaths());
+
+        String body = getConstraintFailureBody(expected);
+        HttpResponse<InputStream> resp = mock(HttpResponse.class);
+        when(resp.body()).thenReturn(new ByteArrayInputStream(body.getBytes()));
+        when(resp.statusCode()).thenReturn(400);
+        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null));
+        assertEquals(Optional.of(List.of("name", "name2.1.2.name3")), exc.getConstraintFailures()[0].getPathStrings());
     }
 }

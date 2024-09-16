@@ -10,6 +10,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
+import com.fauna.exception.ProtocolException;
 import com.fauna.response.wire.QueryResponseWire;
 
 import java.io.IOException;
@@ -114,6 +115,11 @@ public abstract class QueryResponse {
             return this;
         }
 
+        public Builder<T> stats(QueryStats stats) {
+            this.stats = stats;
+            return this;
+        }
+
         public QuerySuccess<T> buildSuccess() {
             return new QuerySuccess(this);
         }
@@ -142,7 +148,7 @@ public abstract class QueryResponse {
                             builder.data(parser);
                             break;
                         case STATS_FIELD_NAME:
-                            QueryStats.parseStats(parser);
+                            builder.stats(QueryStats.parseStats(parser));
                             break;
                         case QUERY_TAGS_FIELD_NAME:
                             builder.queryTags(QueryTags.parse(parser));
@@ -168,6 +174,8 @@ public abstract class QueryResponse {
             if (httpStatus >= 400) {
                 QueryFailure failure = new QueryFailure(httpStatus, builder);
                 ErrorHandler.handleQueryFailure(response.statusCode(), failure);
+                // Fall back on ProtocolException.
+                throw new ProtocolException(response.statusCode(), failure);
             }
             return builder.buildSuccess();
         } catch (IOException exc) {
