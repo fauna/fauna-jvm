@@ -2,12 +2,15 @@ package com.fauna.e2e;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
+import com.fauna.exception.AbortException;
 import com.fauna.exception.ConstraintFailureException;
 import com.fauna.response.ConstraintFailure;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class E2EConstraintTest {
+public class E2EErrorHandlingTest {
     public static final FaunaClient client = Fauna.local();
 
     @BeforeAll
@@ -51,5 +54,23 @@ public class E2EConstraintTest {
         ConstraintFailure.PathElement[][] paths = actual.getPaths().get();
         assertEquals(1, paths.length);
         assertEquals(List.of("name"), actual.getPathStrings().orElseThrow());
+    }
+
+    @Test
+    @Disabled
+    public void constraintFailureWithInteger() throws IOException {
+        // TODO: This throws an error while parsing, will fix in next PR.
+        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> client.query(
+                fql("Collection.create({name: \"Foo\", constraints: [{unique: [\"$$$\"] }]})")));
+        assertEquals(exc.getConstraintFailures().size(), 2);
+    }
+
+    @Test
+    public void testAbortAPI() throws IOException {
+        Instant bigBang = Instant.parse("2019-12-31T23:59:59.999Z");
+        AbortException exc = assertThrows(AbortException.class, () -> client.query(fql("abort(${bigBang})", Map.of("bigBang", bigBang))));
+        assertEquals(999000000, exc.getAbort(Instant.class).getNano());
+        assertEquals(Instant.class, exc.getAbort().getClass());
+        assertEquals(999000000, ((Instant) exc.getAbort()).getNano());
     }
 }
