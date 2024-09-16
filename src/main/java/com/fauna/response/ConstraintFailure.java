@@ -149,7 +149,7 @@ public class ConstraintFailure {
                         }
                         builder.paths(paths.toArray(new PathElement[paths.size()][]));
                     } else if (firstPathToken != JsonToken.VALUE_NULL) {
-                        throw new ClientException("Constraint failure path should be array or null, got: " + firstPathToken.toString());
+                        throw new ClientResponseException("Constraint failure path should be array or null, got: " + firstPathToken.toString());
                     }
                     break;
             }

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
 import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;
@@ -101,7 +100,7 @@ public class ErrorInfo {
 
     public static ErrorInfo parse(JsonParser parser) throws IOException {
         if (parser.nextToken() != JsonToken.START_OBJECT) {
-            throw new ClientException("Error parsing error info, got token" + parser.currentToken());
+            throw new ClientResponseException("Error parsing error info, got token" + parser.currentToken());
         }
         Builder builder = ErrorInfo.builder();
 
@@ -132,7 +131,7 @@ public class ErrorInfo {
                         builder.constraintFailures(failures);
                         break;
                     } else {
-                        throw new ClientException("Unexpected for constraint failures: " + token);
+                        throw new ClientResponseException("Unexpected token in constraint failures: " + token);
                     }
                 default: throw new ClientResponseException("Unexpected token in error info: " + parser.currentToken());
             }
