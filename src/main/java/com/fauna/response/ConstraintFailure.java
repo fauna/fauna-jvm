@@ -3,11 +3,9 @@ package com.fauna.response;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fauna.constants.ResponseFields;
-import com.fauna.exception.ClientException;
 import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
