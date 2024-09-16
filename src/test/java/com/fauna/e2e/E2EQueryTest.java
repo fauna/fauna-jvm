@@ -6,7 +6,6 @@ import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
-import com.fauna.response.QuerySuccess;
 import com.fauna.types.NonNullDocument;
 import com.fauna.types.NullDocument;
 import com.fauna.types.NullableDocument;
@@ -216,23 +215,24 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_abortEmpty() throws IOException {
+    public void query_abortNull() throws IOException {
         var q = fql("abort(null)");
         var e = assertThrows(AbortException.class, () -> c.query(q));
-        assertTrue(e.getAbort(Object.class).isEmpty());
+        assertNull(e.getAbort());
+        assertNull(e.getAbort(Author.class));
     }
 
     @Test
     public void query_abortDynamic() throws IOException {
         var q = fql("abort(8)");
         var e = assertThrows(AbortException.class, () -> c.query(q));
-        assertEquals(8, e.getAbort().orElseThrow());
+        assertEquals(8, e.getAbort());
     }
 
     @Test
     public void query_abortClass() throws IOException {
         var q = fql("abort({firstName:\"alice\"})");
         var e = assertThrows(AbortException.class, () -> c.query(q));
-        assertEquals("alice", e.getAbort(Author.class).get().getFirstName());
+        assertEquals("alice", e.getAbort(Author.class).getFirstName());
     }
 }

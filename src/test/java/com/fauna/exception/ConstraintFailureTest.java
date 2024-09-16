@@ -66,9 +66,7 @@ public class ConstraintFailureTest {
     public void TestConstraintFailureFromBodyUsingParser() throws IOException {
         String failureWire = constraintFailure(List.of(List.of("pathElement"))).toString();
         ConstraintFailure failure = ConstraintFailure.parse(JSON_FACTORY.createParser(failureWire));
-        ConstraintFailure.PathElement[][] actualFailures = failure.getPaths().get();
-        assertEquals(new PathElement[]{new PathElement("hello")}, actualFailures);
-
+        assertEquals(Optional.of(List.of("pathElement")), failure.getPathStrings());
     }
 
     @Test

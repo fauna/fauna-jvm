@@ -6,19 +6,14 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
-import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 public class TestAbortException {
     ObjectMapper mapper = new ObjectMapper();
@@ -38,10 +33,10 @@ public class TestAbortException {
         // Then
         HashMap<String, Integer>  expected = new HashMap<>();
         expected.put("num", 42);
-        assertEquals(expected, exc.getAbort().orElseThrow());
+        assertEquals(expected, exc.getAbort());
 
         // Assert caching
-        assertSame(exc.getAbort().orElseThrow(), exc.getAbort().orElseThrow());
+        assertSame(exc.getAbort(), exc.getAbort());
     }
 
     @Test
@@ -56,7 +51,7 @@ public class TestAbortException {
         AbortException exc = new AbortException(failure);
 
         // Then
-        assertEquals("some reason", exc.getAbort().orElseThrow());
+        assertEquals("some reason", exc.getAbort());
     }
 
     @Test
@@ -70,6 +65,6 @@ public class TestAbortException {
         AbortException exc = new AbortException(failure);
 
         // Then
-        assertTrue(exc.getAbort().isEmpty());
+        assertNull(exc.getAbort());
     }
 }

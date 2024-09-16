@@ -27,30 +27,6 @@ public class ErrorHandler {
 
 
     /**
-     * Handles errors based on the HTTP status code and response body.
-     *
-     * @param statusCode        The HTTP status code.
-     * @param response          The decoded response.
-     * @throws AbortException
-     * @throws AuthenticationException
-     * @throws AuthorizationException
-     * @throws ConstraintFailureException
-     * @throws ContendedTransactionException
-     * @throws InvalidRequestException
-     * @throws ProtocolException
-     * @throws QueryCheckException
-     * @throws QueryRuntimeException
-     * @throws QueryTimeoutException
-     * @throws ThrottlingException
-     *
-     */
-    public static void handleErrorResponse(int statusCode, QueryResponseWire response, String body) {
-        QueryFailure failure = new QueryFailure(statusCode, response);
-        handleQueryFailure(statusCode, failure);
-        throw new ProtocolException(statusCode, body);
-    }
-
-    /**
      * Handles errors based on the HTTP status code and error code.
      *
      * @param statusCode    The HTTP status code.

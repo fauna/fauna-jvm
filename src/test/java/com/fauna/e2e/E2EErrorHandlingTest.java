@@ -62,7 +62,7 @@ public class E2EErrorHandlingTest {
         // TODO: This throws an error while parsing, will fix in next PR.
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> client.query(
                 fql("Collection.create({name: \"Foo\", constraints: [{unique: [\"$$$\"] }]})")));
-        assertEquals(exc.getConstraintFailures().size(), 2);
+        assertEquals(exc.getConstraintFailures().length, 2);
     }
 
     @Test
