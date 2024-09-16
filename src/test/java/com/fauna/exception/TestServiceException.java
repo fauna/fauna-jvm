@@ -1,14 +1,11 @@
 package com.fauna.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QueryStats;
 import com.fauna.response.QueryTags;
-import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

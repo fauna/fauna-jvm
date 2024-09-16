@@ -9,6 +9,7 @@ import com.fauna.constants.ResponseFields;
 
 import java.util.Map;
 
+@Deprecated
 public class QueryResponseWire {
 
     @JsonProperty(ResponseFields.DATA_FIELD_NAME)

@@ -2,16 +2,16 @@ package com.fauna.response;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.beans.ClassWithAttributes;
-import com.fauna.codec.*;
-import com.fauna.constants.ResponseFields;
+import com.fauna.codec.Codec;
+import com.fauna.codec.CodecProvider;
+import com.fauna.codec.CodecRegistry;
+import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.CodecException;
 
@@ -20,11 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
-import com.fauna.exception.ProtocolException;
 import com.fauna.codec.UTF8FaunaGenerator;
-import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
 class QueryResponseTest {

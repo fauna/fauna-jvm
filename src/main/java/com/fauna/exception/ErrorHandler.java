@@ -1,10 +1,7 @@
 package com.fauna.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fauna.response.wire.QueryResponseWire;
 import com.fauna.response.QueryFailure;
 
-import java.io.IOException;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_CONFLICT;
