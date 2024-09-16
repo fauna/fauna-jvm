@@ -16,7 +16,9 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,6 +64,25 @@ public class ConstraintFailureTest {
     }
 
     @Test
+    public void testPathElementEquality() {
+        ConstraintFailure.PathElement one = new ConstraintFailure.PathElement("1");
+        ConstraintFailure.PathElement two = new ConstraintFailure.PathElement("1");
+        ConstraintFailure.PathElement three = new ConstraintFailure.PathElement("3");
+        assertEquals(one, two);
+        assertNotEquals(one, three);
+    }
+
+    @Test
+    public void testConstraintFailureEquality() {
+        ConstraintFailure one = ConstraintFailure.builder().message("hell").path(ConstraintFailure.createPath("one", 2)).build();
+        ConstraintFailure two = ConstraintFailure.builder().message("hell").path(ConstraintFailure.createPath("one", 2)).build();
+        assertEquals(one.getMessage(), two.getMessage());
+        assertEquals(one.getName(), two.getName());
+        assertArrayEquals(one.getPaths().orElseThrow(), two.getPaths().orElseThrow());
+        assertEquals(one, two);
+    }
+
+    @Test
     public void TestConstraintFailureFromBodyUsingParser() throws IOException {
         String failureWire = constraintFailure(List.of(List.of("pathElement"))).toString();
         ConstraintFailure failure = ConstraintFailure.parse(JSON_FACTORY.createParser(failureWire));
@@ -91,4 +112,5 @@ public class ConstraintFailureTest {
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null));
         assertEquals(Optional.of(List.of("name", "name2.1.2.name3")), exc.getConstraintFailures()[0].getPathStrings());
     }
+
 }
