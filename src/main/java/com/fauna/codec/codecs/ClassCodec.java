@@ -243,7 +243,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
         }
     }
 
-    private void trySetField(String fieldName, Object instance, UTF8FaunaParser parser) throws IOException, IllegalAccessException {
+    private void trySetField(String fieldName, Object instance, UTF8FaunaParser parser) throws IllegalAccessException {
         FieldInfo field = fieldsByName.get(fieldName);
         if (field == null) {
             parser.skip();

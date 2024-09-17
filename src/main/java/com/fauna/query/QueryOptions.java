@@ -1,7 +1,6 @@
 package com.fauna.query;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
 
 public class QueryOptions {

@@ -8,13 +8,6 @@ public final class QueryFailure extends QueryResponse {
     private final int statusCode;
     private final ErrorInfo errorInfo;
 
-
-    public QueryFailure(int statusCode, ErrorInfo errorInfo, Long schemaVersion, Map<String, String> queryTags, QueryStats stats) {
-        super(null, null, schemaVersion, queryTags, stats);
-        this.statusCode = statusCode;
-        this.errorInfo = errorInfo;
-    }
-
     public QueryFailure(int httpStatus, Builder builder) {
         super(builder);
         this.statusCode = httpStatus;

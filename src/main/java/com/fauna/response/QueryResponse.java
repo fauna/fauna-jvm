@@ -37,14 +37,6 @@ public abstract class QueryResponse {
     private final Map<String, String> queryTags;
     private final QueryStats stats;
 
-    QueryResponse(Long lastSeenTxn, String summary, Long schemaVersion,
-                  Map<String, String> queryTags, QueryStats stats) {
-        this.lastSeenTxn = lastSeenTxn;
-        this.summary = summary;
-        this.schemaVersion = schemaVersion;
-        this.stats = stats;
-        this.queryTags = queryTags;
-    }
     QueryResponse(Builder builder) {
         this.lastSeenTxn = builder.lastSeenTxn;
         this.summary = builder.summary;

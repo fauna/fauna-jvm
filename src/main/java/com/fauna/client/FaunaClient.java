@@ -144,6 +144,7 @@ public abstract class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
+        @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
                 getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider), codec));

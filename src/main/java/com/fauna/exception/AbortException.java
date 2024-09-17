@@ -33,6 +33,7 @@ public class AbortException extends ServiceException {
             Object abortData = getResponse().getAbort(clazz).orElse(null);
             decoded.put(clazz, abortData);
         }
+        //noinspection unchecked
         return (T) decoded.get(clazz);
     }
 }
