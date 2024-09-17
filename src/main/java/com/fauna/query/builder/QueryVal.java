@@ -34,6 +34,7 @@ public class QueryVal<T> extends QueryFragment<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
+        @SuppressWarnings("unchecked")
         QueryVal<T> that = (QueryVal<T>) o;
 
         return Objects.equals(value, that.value);

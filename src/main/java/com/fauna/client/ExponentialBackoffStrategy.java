@@ -49,7 +49,7 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
 
     /**
      * Get the % to jitter the backoff, will be a value between 0 and jitterFactor.
-     * @return
+     * @return  A randomly generated value between 0 and jitterFactor.
      */
     private double getJitterPercent() {
         return Math.random() * jitterFactor;

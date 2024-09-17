@@ -28,6 +28,7 @@ public class QueryCodec extends BaseCodec<Query> {
         gen.writeStartArray();
         for (QueryFragment f : obj.get()) {
             Codec codec = provider.get(f.getClass());
+            //noinspection unchecked
             codec.encode(gen, f);
         }
         gen.writeEndArray();

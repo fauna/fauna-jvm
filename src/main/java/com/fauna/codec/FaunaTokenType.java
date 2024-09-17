@@ -2,8 +2,6 @@ package com.fauna.codec;
 
 import com.fauna.exception.ClientResponseException;
 
-import java.io.IOException;
-
 /**
  * Enumeration representing token types for Fauna serialization.
  */

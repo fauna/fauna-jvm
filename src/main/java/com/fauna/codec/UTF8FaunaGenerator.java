@@ -289,9 +289,6 @@ public class UTF8FaunaGenerator implements AutoCloseable {
         writeEndObject();
     }
 
-    public void writeByteArray(byte[] bytes) throws CodecException {
-        writeTaggedValue("@bytes", Base64.getEncoder().encodeToString(bytes));
-    }
     /**
      * Writes a double value as a tagged element.
      *
@@ -431,6 +428,7 @@ public class UTF8FaunaGenerator implements AutoCloseable {
             try {
                 output.close();
             } catch (IOException e) {
+                //noinspection ThrowFromFinallyBlock
                 throw CodecException.encodingIOException(e);
             }
         }

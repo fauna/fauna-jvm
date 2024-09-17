@@ -7,7 +7,6 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
-import com.fauna.query.QueryTags;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
@@ -17,8 +16,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.

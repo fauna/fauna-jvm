@@ -94,7 +94,7 @@ public class StreamEvent<E> {
                         break;
                 }
             }
-            return new StreamEvent(eventType, cursor, txn_ts, data, stats, errorInfo);
+            return new StreamEvent<>(eventType, cursor, txn_ts, data, stats, errorInfo);
         } else {
             throw new ClientException("Invalid event starting with: " + parser.currentToken());
         }

@@ -1,5 +1,6 @@
 package com.fauna.annotation;
 
+@SuppressWarnings("ClassExplicitlyAnnotation")
 public class FaunaFieldImpl implements FaunaField {
 
     private final FaunaField annotation;

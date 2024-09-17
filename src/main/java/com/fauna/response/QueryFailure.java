@@ -1,6 +1,5 @@
 package com.fauna.response;
 
-import java.util.Map;
 import java.util.Optional;
 
 public final class QueryFailure extends QueryResponse {

@@ -37,6 +37,7 @@ public abstract class QueryResponse {
     private final Map<String, String> queryTags;
     private final QueryStats stats;
 
+    @SuppressWarnings("rawtypes")
     QueryResponse(Builder builder) {
         this.lastSeenTxn = builder.lastSeenTxn;
         this.summary = builder.summary;
@@ -103,7 +104,7 @@ public abstract class QueryResponse {
         }
 
         public QuerySuccess<T> buildSuccess() {
-            return new QuerySuccess(this);
+            return new QuerySuccess<>(this);
         }
 
     }
@@ -116,7 +117,7 @@ public abstract class QueryResponse {
         try {
                 JsonParser parser = JSON_FACTORY.createParser(response.body());
                 JsonToken firstToken = parser.nextToken();
-                Builder<T> builder = builder(codec);
+                Builder builder = QueryResponse.builder(codec);
                 if (firstToken != JsonToken.START_OBJECT) {
                     throw new ClientResponseException("Response must be JSON object.");
                 }

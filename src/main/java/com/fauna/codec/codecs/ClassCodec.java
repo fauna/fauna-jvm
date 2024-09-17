@@ -18,7 +18,6 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.mapping.FieldName;
 import com.fauna.mapping.FieldType;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -115,7 +114,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
                     T typed = (T) instance;
                     return typed;
                 } catch (IllegalAccessException | ClassNotFoundException | InvocationTargetException | InstantiationException |
-                         NoSuchMethodException | IOException e) {
+                         NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
             default:
@@ -184,7 +183,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     private void setFields(Object instance, UTF8FaunaParser parser,
-                           FaunaTokenType endToken) throws IOException, IllegalAccessException {
+                           FaunaTokenType endToken) throws IllegalAccessException {
 
         InternalDocument.Builder builder = new InternalDocument.Builder();
 
