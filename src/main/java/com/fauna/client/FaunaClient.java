@@ -5,7 +5,6 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
-import com.fauna.exception.ClientRequestException;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
@@ -18,12 +17,9 @@ import com.fauna.codec.ParameterizedOf;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Flow;
 import java.util.function.Supplier;
 
 public abstract class FaunaClient {
@@ -110,6 +106,7 @@ public abstract class FaunaClient {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
+        @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
                 getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider), codec));
@@ -305,15 +302,14 @@ public abstract class FaunaClient {
      */
     public <E> CompletableFuture<FaunaStream<E>> asyncStream(StreamRequest streamRequest, Class<E> elementClass) {
         HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest);
-        CompletableFuture<FaunaStream<E>> resp = getHttpClient().sendAsync(streamReq,
+        return getHttpClient().sendAsync(streamReq,
                 HttpResponse.BodyHandlers.ofPublisher()).thenCompose(response -> {
                     CompletableFuture<FaunaStream<E>> publisher = new CompletableFuture<>();
-                    FaunaStream fstream = new FaunaStream<E>(elementClass);
+                    FaunaStream<E> fstream = new FaunaStream<>(elementClass);
                     response.body().subscribe(fstream);
                     publisher.complete(fstream);
                     return publisher;
                 });
-        return resp;
     }
 
     /**

@@ -37,9 +37,7 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
      */
     public BaseDocument(Module coll, Instant ts, Map<String, Object> data) {
         this(coll, ts);
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            this.data.put(entry.getKey(), entry.getValue());
-        }
+        this.data.putAll(data);
     }
 
     /**

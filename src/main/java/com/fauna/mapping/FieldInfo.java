@@ -37,6 +37,7 @@ public final class FieldInfo {
         return fieldType;
     }
 
+    @SuppressWarnings("rawtypes")
     public Codec getCodec() {
         if (codec != null) return codec;
 

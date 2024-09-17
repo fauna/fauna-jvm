@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.constants.ResponseFields;
-import com.fauna.exception.ClientException;
 import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;

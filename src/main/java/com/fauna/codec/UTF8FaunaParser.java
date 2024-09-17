@@ -84,7 +84,7 @@ public class UTF8FaunaParser {
         END_ARRAY
     ));
 
-    public void skip() throws IOException {
+    public void skip() {
         switch (getCurrentTokenType()) {
             case START_OBJECT:
             case START_ARRAY:
@@ -96,7 +96,7 @@ public class UTF8FaunaParser {
         }
     }
 
-    private void skipInternal() throws IOException {
+    private void skipInternal() {
         int startCount = tokenStack.size();
         while (read()) {
             if (tokenStack.size() < startCount) {

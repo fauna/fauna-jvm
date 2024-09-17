@@ -18,7 +18,7 @@ public class EnumCodec<T> extends BaseCodec<T> {
             case NULL:
                 return null;
             case STRING:
-                //noinspection unchecked
+                //noinspection unchecked,rawtypes
                 return (T) Enum.valueOf((Class<Enum>) enumType, parser.getValueAsString());
             default:
                 throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
@@ -30,7 +30,7 @@ public class EnumCodec<T> extends BaseCodec<T> {
         if (obj == null) {
             gen.writeNullValue();
         } else {
-            gen.writeStringValue(((Enum) obj).name());
+            gen.writeStringValue(((Enum<?>) obj).name());
         }
     }
 

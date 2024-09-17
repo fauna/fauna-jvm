@@ -85,7 +85,7 @@ public class ErrorInfo {
         }
 
         public Builder constraintFailures(List<ConstraintFailure> constraintFailures) {
-            this.constraintFailures = constraintFailures.toArray(new ConstraintFailure[constraintFailures.size()]);
+            this.constraintFailures = constraintFailures.toArray(new ConstraintFailure[0]);
             return this;
         }
 
@@ -114,7 +114,7 @@ public class ErrorInfo {
                     builder.message(parser.nextTextValue());
                     break;
                 case ERROR_ABORT_FIELD_NAME:
-                    JsonToken firstAbortToken = parser.nextToken();
+                    parser.nextToken();
                     builder.abort(new ObjectMapper().readTree(parser));
                     break;
                 case ERROR_CONSTRAINT_FAILURES_FIELD_NAME:

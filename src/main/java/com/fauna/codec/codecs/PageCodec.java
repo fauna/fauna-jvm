@@ -8,7 +8,6 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.types.Page;
 
-import java.io.IOException;
 import java.util.List;
 
 public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {

@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AbortException extends ServiceException {
-    Map<Class, Object> decoded = new HashMap<>();
+    @SuppressWarnings("rawtypes")
+    private final Map<Class, Object> decoded = new HashMap<>();
 
     public AbortException(QueryFailure response) {
         super(response);

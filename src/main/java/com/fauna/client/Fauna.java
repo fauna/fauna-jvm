@@ -27,7 +27,7 @@ public class Fauna {
     /**
      * Create a Fauna client with the given FaunaConfig, HTTP client, and RetryStrategy.
      * @param config        Fauna configuration object.
-     * @param httpClient    A HTTP client (from java.net.http in Java 11+).
+     * @param httpClient    An HTTP client (from java.net.http in Java 11+).
      * @param retryStrategy An implementation of RetryStrategy.
      * @return              A FaunaClient (or subclass of it).
      */

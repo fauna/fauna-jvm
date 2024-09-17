@@ -2,7 +2,6 @@ package com.fauna.client;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
@@ -21,7 +20,7 @@ import java.util.concurrent.SubmissionPublisher;
 
 
 public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implements Processor<List<ByteBuffer>, StreamEvent<E>> {
-    JsonFactory factory = new JsonFactory();
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
     private final Codec<E> dataCodec;
     private Subscription subscription;
     private Subscriber<? super StreamEvent<E>> eventSubscriber;
@@ -59,7 +58,7 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                     this.buffer.add(buffers);
                 }
                 try {
-                    JsonParser parser = factory.createParser(buffer);
+                    JsonParser parser = JSON_FACTORY.createParser(buffer);
                     StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
                     if (event.getType() == StreamEvent.EventType.ERROR) {
                         ErrorInfo error = event.getError();

@@ -10,7 +10,7 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
 
     /**
      * Construct an Exponential backoff strategy.
-     *  The basic formula for exponential backoff is b^(a-1) where b is the backoff factor, and a is the retry
+     *  The basic formula for exponential backoff is `b^(a-1)` where `b` is the backoff factor, and `a` is the retry
      *  attempt number. So for a backoff factor of 2, you get:
      *  2^0=1, 2^1=2, 2^3=4, 2^4=8 ...
      *

@@ -1,6 +1,5 @@
 package com.fauna.codec.json;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -9,13 +8,12 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class QueryTagsDeserializer extends JsonDeserializer<Map<String, String>> {
     @Override
-    public Map<String,String> deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException, JacksonException {
+    public Map<String,String> deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException {
         // We can improve performance by building this from tokens instead.
         switch (jp.currentToken()) {
             case VALUE_NULL:

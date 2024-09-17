@@ -1,10 +1,5 @@
 package com.fauna.query.builder;
 
-import com.fauna.codec.Codec;
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.UTF8FaunaGenerator;
-
-import java.io.IOException;
 import java.util.Objects;
 
 /**

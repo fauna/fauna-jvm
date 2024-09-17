@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class PassThroughDeserializer extends JsonDeserializer<String> {
     @Override
-    public String deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException, JacksonException {
+    public String deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException {
         // We can improve performance by building this from tokens instead.
         return jp.readValueAsTree().toString();
     }

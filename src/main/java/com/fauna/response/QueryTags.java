@@ -5,10 +5,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class QueryTags extends HashMap<String, String> {
 

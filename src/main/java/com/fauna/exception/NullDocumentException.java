@@ -4,9 +4,9 @@ import com.fauna.types.Module;
 
 public class NullDocumentException extends FaunaException {
 
-    private String id;
-    private Module coll;
-    private String nullCause;
+    private final String id;
+    private final Module coll;
+    private final String nullCause;
 
     public String getId() {
         return id;
