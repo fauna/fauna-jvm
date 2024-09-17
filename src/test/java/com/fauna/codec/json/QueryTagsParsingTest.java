@@ -1,17 +1,11 @@
 package com.fauna.codec.json;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fauna.codec.Codec;
-import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.response.QueryTags;
-import com.fauna.response.wire.QueryResponseWire;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
