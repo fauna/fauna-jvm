@@ -1,11 +1,9 @@
 package com.fauna.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fauna.exception.ThrottlingException;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
-import com.fauna.response.wire.QueryResponseWire;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

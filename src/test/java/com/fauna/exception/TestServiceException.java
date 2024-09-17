@@ -29,7 +29,7 @@ public class TestServiceException {
         QueryFailure failure = new QueryFailure(500,
                 QueryResponse.builder(null).summary("summarized").schemaVersion(10L)
                         .stats(new QueryStats(100, 0, 0, 0, 0, 0, 0, 0, null))
-                        .queryTags(QueryTags.of("foo", "bar")).lastSeenTxn(Long.MAX_VALUE / 4).error(
+                        .queryTags(QueryTags.of("foo=bar")).lastSeenTxn(Long.MAX_VALUE / 4).error(
                                 ErrorInfo.builder().code("bad_thing").message("message in a bottle").build()));
 
         // When

@@ -8,7 +8,6 @@ import com.fauna.exception.InvalidRequestException;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
-import com.fauna.response.wire.QueryResponseWire;
 import com.fauna.response.QuerySuccess;
 import com.fauna.codec.PageOf;
 import com.fauna.codec.ParameterizedOf;
@@ -30,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -41,8 +41,7 @@ public class PageIteratorTest {
     private FaunaClient client;
 
     private CompletableFuture<QuerySuccess<PageOf<Object>>> successFuture(boolean after, int num) throws IOException {
-        ObjectNode root = MAPPER.createObjectNode();
-        ObjectNode page = root.putObject("data");
+        ObjectNode page = MAPPER.createObjectNode();
         if (after) {
             page.put("after", "afterToken");
         }
@@ -50,9 +49,8 @@ public class PageIteratorTest {
         arr.add(num + "-a");
         arr.add(num + "-b");
 
-        var res = MAPPER.readValue(root.toString(), QueryResponseWire.class);
-        QuerySuccess<PageOf<Object>> success = new QuerySuccess(DefaultCodecProvider.SINGLETON.get(Page.class, new Type[]{String.class}), res);
-        return CompletableFuture.supplyAsync(() -> success);
+        QueryResponse.Builder builder = QueryResponse.builder(DefaultCodecProvider.SINGLETON.get(Page.class, new Type[]{String.class})).data(MAPPER.createParser(page.toString()));
+        return CompletableFuture.supplyAsync(() -> new QuerySuccess<>(builder));
     }
 
     private CompletableFuture<QuerySuccess<Object>> failureFuture() throws IOException {
