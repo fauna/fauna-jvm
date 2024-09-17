@@ -11,6 +11,6 @@ public class ConstraintFailureException extends ServiceException {
     }
 
     public ConstraintFailure[] getConstraintFailures() {
-        return getResponse().getConstraintFailures().orElseThrow();
+        return getResponse().getConstraintFailures().orElse(null);
     }
 }
