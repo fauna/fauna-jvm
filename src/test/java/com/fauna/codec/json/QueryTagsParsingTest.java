@@ -2,7 +2,7 @@ package com.fauna.codec.json;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fauna.response.QueryTags;
+import com.fauna.query.QueryTags;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

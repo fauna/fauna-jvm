@@ -10,6 +10,7 @@ import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ProtocolException;
+import com.fauna.query.QueryTags;
 
 import java.io.IOException;
 import java.io.InputStream;

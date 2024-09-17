@@ -7,6 +7,7 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
 import com.fauna.query.QueryOptions;
+import com.fauna.query.QueryTags;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
@@ -152,18 +153,7 @@ public class RequestBuilder {
         options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
         options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
         options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
-        options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, QueryTags.encode(val)));
+        options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, val.encode()));
     }
 
-    public static class QueryTags {
-        private static final String EQUALS = "=";
-        private static final String COMMA = ",";
-
-        public static String encode(Map<String, String> tags) {
-            return tags.entrySet().stream()
-                    .map(entry -> String.join(EQUALS, entry.getKey(), entry.getValue()))
-                    .collect(Collectors.joining(COMMA));
-        }
-
-    }
 }
