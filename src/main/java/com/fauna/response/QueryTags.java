@@ -19,7 +19,6 @@ public class QueryTags extends HashMap<String, String> {
      */
     public static QueryTags of(String... tags) {
         QueryTags queryTags = new QueryTags();
-        new QueryTags();
         for (String tagString : tags) {
             String[] tag = tagString.split("=");
             if (tag.length == 2) {
