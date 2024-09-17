@@ -20,12 +20,6 @@ public class FaunaConfig {
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
             FaunaEndpoint.LOCAL).secret("secret").build();
 
-
-//    private Integer maxContentionRetries;
-//    private int maxAttempts;
-//    private int maxBackoff;
-
-
     /**
      * Private constructor for FaunaConfig.
      *

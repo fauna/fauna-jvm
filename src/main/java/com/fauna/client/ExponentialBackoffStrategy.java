@@ -96,8 +96,28 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
         private float jitterFactor = 0.5f;
 
 
-        public Builder setMaxAttempts(int maxAttempts) {
+        public Builder maxAttempts(int maxAttempts) {
             this.maxAttempts = maxAttempts;
+            return this;
+        }
+
+        public Builder backoffFactor(float backoffFactor) {
+            this.backoffFactor = backoffFactor;
+            return this;
+        }
+
+        public Builder initialIntervalMillis(int initialIntervalMillis) {
+            this.initialIntervalMillis = initialIntervalMillis;
+            return this;
+        }
+
+        public Builder maxBackoffMillis(int maxBackoffMillis) {
+            this.maxBackoffMillis = maxBackoffMillis;
+            return this;
+        }
+
+        public Builder jitterFactor(float jitterFactor) {
+            this.jitterFactor = jitterFactor;
             return this;
         }
 
