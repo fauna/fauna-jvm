@@ -115,7 +115,7 @@ public final class QueryStats {
         } else if (parser.nextToken() == VALUE_NULL) {
             return null;
         } else {
-            throw new ClientException("Query stats should be an object or null, not " + parser.getCurrentToken());
+            throw new ClientResponseException("Query stats should be an object or null, not " + parser.getCurrentToken());
         }
     }
 
