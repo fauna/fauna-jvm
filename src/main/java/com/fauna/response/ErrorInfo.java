@@ -98,6 +98,35 @@ public class ErrorInfo {
         return new Builder();
     }
 
+    private static Builder handleField(Builder builder, JsonParser parser) throws IOException {
+        String fieldName = parser.getCurrentName();
+        switch (fieldName) {
+            case ERROR_CODE_FIELD_NAME:
+                return builder.code(parser.nextTextValue());
+            case ERROR_MESSAGE_FIELD_NAME:
+                return builder.message(parser.nextTextValue());
+            case ERROR_ABORT_FIELD_NAME:
+                parser.nextToken();
+                return builder.abort(new ObjectMapper().readTree(parser));
+            case ERROR_CONSTRAINT_FAILURES_FIELD_NAME:
+                List<ConstraintFailure> failures = new ArrayList<>();
+                JsonToken token = parser.nextToken();
+                if (token == JsonToken.VALUE_NULL) {
+                    return builder;
+                } else if (token == JsonToken.START_ARRAY) {
+                    JsonToken nextToken = parser.nextToken();
+                    while (nextToken == JsonToken.START_OBJECT) {
+                        failures.add(ConstraintFailure.parse(parser));
+                        nextToken = parser.nextToken();
+                    }
+                    return builder.constraintFailures(failures);
+                } else {
+                    throw new ClientResponseException("Unexpected token in constraint failures: " + token);
+                }
+            default: throw new ClientResponseException("Unexpected token in error info: " + parser.currentToken());
+        }
+    }
+
     public static ErrorInfo parse(JsonParser parser) throws IOException {
         if (parser.nextToken() != JsonToken.START_OBJECT) {
             throw new ClientResponseException("Error parsing error info, got token" + parser.currentToken());
@@ -105,36 +134,7 @@ public class ErrorInfo {
         Builder builder = ErrorInfo.builder();
 
         while (parser.nextToken() == JsonToken.FIELD_NAME) {
-            String fieldName = parser.getCurrentName();
-            switch (fieldName) {
-                case ERROR_CODE_FIELD_NAME:
-                    builder.code(parser.nextTextValue());
-                    break;
-                case ERROR_MESSAGE_FIELD_NAME:
-                    builder.message(parser.nextTextValue());
-                    break;
-                case ERROR_ABORT_FIELD_NAME:
-                    parser.nextToken();
-                    builder.abort(new ObjectMapper().readTree(parser));
-                    break;
-                case ERROR_CONSTRAINT_FAILURES_FIELD_NAME:
-                    List<ConstraintFailure> failures = new ArrayList<>();
-                    JsonToken token = parser.nextToken();
-                    if (token == JsonToken.VALUE_NULL) {
-                        break;
-                    } else if (token == JsonToken.START_ARRAY) {
-                        JsonToken nextToken = parser.nextToken();
-                        while (nextToken == JsonToken.START_OBJECT) {
-                            failures.add(ConstraintFailure.parse(parser));
-                            nextToken = parser.nextToken();
-                        }
-                        builder.constraintFailures(failures);
-                        break;
-                    } else {
-                        throw new ClientResponseException("Unexpected token in constraint failures: " + token);
-                    }
-                default: throw new ClientResponseException("Unexpected token in error info: " + parser.currentToken());
-            }
+            builder = handleField(builder, parser);
         }
         return builder.build();
     }
