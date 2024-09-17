@@ -237,9 +237,9 @@ class FaunaClientTest {
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql("Collection.create({ name: 'Dogs' })"), Document.class);
         ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
-        //QueryCheckException cause = (QueryCheckException) exc.getCause();
-        //assertEquals("invalid_query", cause.getResponse().getErrorCode());
-        //assertEquals(400, cause.getResponse().getStatusCode());
+        QueryCheckException cause = (QueryCheckException) exc.getCause();
+        assertEquals("invalid_query", cause.getResponse().getErrorCode());
+        assertEquals(400, cause.getResponse().getStatusCode());
 
     }
 

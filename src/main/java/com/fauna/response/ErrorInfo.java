@@ -115,7 +115,6 @@ public class ErrorInfo {
                     break;
                 case ERROR_ABORT_FIELD_NAME:
                     JsonToken firstAbortToken = parser.nextToken();
-                    parser.getEmbeddedObject();
                     builder.abort(new ObjectMapper().readTree(parser));
                     break;
                 case ERROR_CONSTRAINT_FAILURES_FIELD_NAME:
