@@ -6,6 +6,7 @@ import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
+import com.fauna.response.QuerySuccess;
 import com.fauna.types.NonNullDocument;
 import com.fauna.types.NullDocument;
 import com.fauna.types.NullableDocument;
@@ -234,5 +235,14 @@ public class E2EQueryTest {
         var q = fql("abort({firstName:\"alice\"})");
         var e = assertThrows(AbortException.class, () -> c.query(q));
         assertEquals("alice", e.getAbort(Author.class).getFirstName());
+    }
+
+    @Test
+    public void query_withTags() {
+        QuerySuccess<NullableDocument<Author>> success = c.query(
+                fql("Author.byId('9090090')"),
+                nullableDocumentOf(Author.class), QueryOptions.builder().queryTags(Map.of("first", "1")).build());
+        assertEquals("1", success.getQueryTags().get("first"));
+        assertEquals("2", success.getQueryTags().get("second"));
     }
 }
