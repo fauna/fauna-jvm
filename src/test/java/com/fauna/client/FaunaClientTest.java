@@ -18,10 +18,13 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,6 +64,12 @@ class FaunaClientTest {
     @BeforeEach
     void setUp() {
         client = Fauna.client(FaunaConfig.LOCAL, mockHttpClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
+    }
+
+    static HttpResponse<InputStream> mockResponse(String body) {
+        HttpResponse resp = mock(HttpResponse.class);
+        doAnswer(invocationOnMock -> new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8))).when(resp).body();
+        return resp;
     }
 
     @Test
@@ -143,8 +154,7 @@ class FaunaClientTest {
 
     @Test
     void query_WithValidFQL_ShouldCall() throws IOException, InterruptedException {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        HttpResponse resp = mockResponse("{\"summary\":\"success\",\"stats\":{}}");
         ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("Authorization", "Bearer secret"));
         when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QuerySuccess<Document> response = client.query(fql("Collection.create({ name: 'Dogs' })"), Document.class);
@@ -155,7 +165,6 @@ class FaunaClientTest {
 
     @Test
     void query_WithTypedResponse() throws IOException, InterruptedException {
-        HttpResponse resp = mock(HttpResponse.class);
         String baz = "{" +
                 "\"firstName\": \"Baz2\"," +
                 "\"lastName\": \"Luhrmann2\"," +
@@ -164,7 +173,7 @@ class FaunaClientTest {
                 "}";
         ;
         String body = "{\"summary\":\"success\",\"stats\":{},\"data\":" + baz + "}";
-        when(resp.body()).thenReturn(body);
+        HttpResponse resp = mockResponse(body);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         Query fql = fql("Collection.create({ name: 'Dogs' })");
         QuerySuccess<Person> response = client.query(fql, Person.class);
@@ -176,7 +185,6 @@ class FaunaClientTest {
     @Test
     void asyncQuery_WithTypedResponse() throws IOException, InterruptedException, ExecutionException {
         // Given
-        HttpResponse resp = mock(HttpResponse.class);
         String baz = "{" +
                 "\"firstName\": \"Baz\"," +
                 "\"lastName\": \"Luhrmann2\"," +
@@ -185,7 +193,7 @@ class FaunaClientTest {
                 "}";
         ;
         String body = "{\"summary\":\"success\",\"stats\":{},\"data\":" + baz + "}";
-        when(resp.body()).thenReturn(body);
+        HttpResponse resp = mockResponse(body);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         Query fql = fql("Collection.create({ name: 'Dogs' })");
         // When
@@ -201,8 +209,7 @@ class FaunaClientTest {
 
     @Test
     void asyncQuery_WithValidFQL_ShouldCall() throws ExecutionException, InterruptedException {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"summary\":\"success\",\"stats\":{}}");
+        HttpResponse resp = mockResponse("{\"summary\":\"success\",\"stats\":{}}");
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql("Collection.create({ name: 'Dogs' })"), Document.class);
         QueryResponse response = future.get();
@@ -213,8 +220,7 @@ class FaunaClientTest {
 
     @Test
     void query_withFailure_ShouldThrow() {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
+        HttpResponse resp = mockResponse("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
         when(resp.statusCode()).thenReturn(400);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         QueryCheckException exc = assertThrows(QueryCheckException.class,
@@ -226,8 +232,7 @@ class FaunaClientTest {
 
     @Test
     void asyncQuery_withFailure_ShouldThrow() {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
+        HttpResponse resp = mockResponse("{\"stats\":{},\"error\":{\"code\":\"invalid_query\"}}");
         when(resp.statusCode()).thenReturn(400);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         CompletableFuture<QuerySuccess<Document>> future = client.asyncQuery(fql("Collection.create({ name: 'Dogs' })"), Document.class);
@@ -240,14 +245,13 @@ class FaunaClientTest {
 
     @Test
     void asyncQuery_withNoRetries_ShouldNotRetry() {
-        HttpResponse resp = mock(HttpResponse.class);
-        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
+        HttpResponse resp = mockResponse("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         when(resp.statusCode()).thenReturn(429);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         FaunaClient noRetryClient = Fauna.client(FaunaConfig.DEFAULT, mockHttpClient, FaunaClient.NO_RETRY_STRATEGY);
         CompletableFuture<QuerySuccess<Document>> future = noRetryClient.asyncQuery(
                 fql("Collection.create({ name: 'Dogs' })"), Document.class);
-        ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
+        ExecutionException exc = assertThrows(ExecutionException.class, future::get);
         ThrottlingException cause = (ThrottlingException) exc.getCause();
         assertEquals("limit_exceeded", cause.getResponse().getErrorCode());
         assertEquals(429, cause.getResponse().getStatusCode());
@@ -257,9 +261,8 @@ class FaunaClientTest {
     @Test
     void asyncQuery_withRetryableException_ShouldRetry() {
         // GIVEN
-        HttpResponse resp = mock(HttpResponse.class);
+        HttpResponse resp = mockResponse("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         int retryAttempts = 10;
-        when(resp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         when(resp.statusCode()).thenReturn(429);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         // WHEN
@@ -269,7 +272,7 @@ class FaunaClientTest {
         CompletableFuture<QuerySuccess<Document>> future = fastClient.asyncQuery(
                 fql("Collection.create({ name: 'Dogs' })"), Document.class);
         // THEN
-        ExecutionException exc = assertThrows(ExecutionException.class, () -> future.get());
+        ExecutionException exc = assertThrows(ExecutionException.class, future::get);
         ThrottlingException cause = (ThrottlingException) exc.getCause();
         assertEquals("limit_exceeded", cause.getResponse().getErrorCode());
         assertEquals(429, cause.getResponse().getStatusCode());
@@ -279,12 +282,10 @@ class FaunaClientTest {
     @Test
     void asyncQuery_shouldSucceedOnRetry() throws ExecutionException, InterruptedException {
         // GIVEN
-        HttpResponse retryableResp = mock(HttpResponse.class);
-        when(retryableResp.body()).thenReturn("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
+        HttpResponse retryableResp = mockResponse("{\"stats\":{},\"error\":{\"code\":\"limit_exceeded\"}}");
         when(retryableResp.statusCode()).thenReturn(429);
 
-        HttpResponse successResp = mock(HttpResponse.class);
-        when(successResp.body()).thenReturn("{\"stats\": {}}");
+        HttpResponse successResp = mockResponse("{\"stats\": {}}");
         when(successResp.statusCode()).thenReturn(200);
         when(mockHttpClient.sendAsync(any(), any())).thenReturn(
                 CompletableFuture.supplyAsync(() -> retryableResp), CompletableFuture.supplyAsync(() -> successResp));
@@ -307,11 +308,9 @@ class FaunaClientTest {
                 "\"txn_ts\":1723844145837000,\"stats\":{},\"schema_version\":1723844028490000}";
         QueryOptions options = QueryOptions.builder().timeout(Duration.ofMillis(42)).build();
 
-        HttpResponse firstPageResp = mock(HttpResponse.class);
-        when(firstPageResp.body()).thenReturn(String.format(bodyBase, String.format(productBase, "product-0"), "\"after_token\""));
+        HttpResponse firstPageResp = mockResponse(String.format(bodyBase, String.format(productBase, "product-0"), "\"after_token\""));
         when(firstPageResp.statusCode()).thenReturn(200);
-        HttpResponse secondPageResp = mock(HttpResponse.class);
-        when(secondPageResp.body()).thenReturn(String.format(bodyBase, String.format(productBase, "product-1"), "null"));
+        HttpResponse secondPageResp = mockResponse(String.format(bodyBase, String.format(productBase, "product-1"), "null"));
         when(secondPageResp.statusCode()).thenReturn(200);
 
         ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("X-Query-Timeout-Ms", "42"));

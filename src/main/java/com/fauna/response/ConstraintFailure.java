@@ -19,25 +19,6 @@ public class ConstraintFailure {
 
     private final PathElement[][] paths;
 
-    // This constructor is called by the QueryFailure constructor, which is getting deprecated.
-    @Deprecated
-    public ConstraintFailure(String message, String name, List<List<Object>> pathLists) {
-        this.message = message;
-        this.name = name;
-        this.paths = new PathElement[pathLists.size()][];
-        for (int i = 0; i < pathLists.size(); i++) {
-            this.paths[i] = new PathElement[pathLists.get(i).size()];
-            for (int j = 0; j < this.paths[i].length; j++) {
-                Object element = pathLists.get(i).get(j);
-                if (element instanceof String) {
-                    paths[i][j] = new PathElement((String) element);
-                } else if (element instanceof Integer) {
-                    paths[i][j] = new PathElement((Integer) element);
-                }
-            }
-        }
-    }
-
     public ConstraintFailure(String message, String name, PathElement[][] paths) {
         this.message = message;
         this.name = name;
@@ -61,10 +42,10 @@ public class ConstraintFailure {
         }
 
         /**
-         * Note that this parser does not advance the parser.
-         * @param parser
-         * @return
-         * @throws IOException
+         * Note that this parse method does not advance the parser.
+         * @param parser        A JsonParser instance.
+         * @return              A new PathElement.
+         * @throws IOException  Can be thrown if e.g. stream ends.
          */
         public static PathElement parse(JsonParser parser) throws IOException {
             if (parser.currentToken().isNumeric()) {
@@ -89,11 +70,25 @@ public class ConstraintFailure {
         }
     }
 
+    public static PathElement[] createPath(Object... elements) {
+        List<PathElement> path = new ArrayList<>();
+        for (Object element : elements) {
+            if (element instanceof String) {
+                path.add(new PathElement((String) element));
+            } else if (element instanceof Integer) {
+                path.add(new PathElement((Integer) element));
+            } else {
+                throw new IllegalArgumentException("Only strings and integers supported");
+            }
+        }
+        return path.toArray(new PathElement[0]);
+    }
+
 
     public static class Builder {
         String message = null;
         String name = null;
-        PathElement[][] paths;
+        List<PathElement[]> paths = new ArrayList<>();
 
         public Builder message(String message) {
             this.message = message;
@@ -105,13 +100,14 @@ public class ConstraintFailure {
             return this;
         }
 
-        public Builder paths(PathElement[][] paths) {
-            this.paths = paths;
+        public Builder path(PathElement[] path) {
+            this.paths.add(path);
             return this;
         }
 
         public ConstraintFailure build() {
-            return new ConstraintFailure(this.message, this.name, this.paths);
+            PathElement[][] paths = this.paths.toArray(new PathElement[this.paths.size()][]);
+            return new ConstraintFailure(this.message, this.name, this.paths.isEmpty() ? null : paths);
         }
 
     }
@@ -143,12 +139,12 @@ public class ConstraintFailure {
                             while (parser.nextToken() != JsonToken.END_ARRAY) {
                                 path.add(PathElement.parse(parser));
                             }
-                            paths.add(path.toArray(new PathElement[path.size()]));
+                            paths.add(path.toArray(new PathElement[0]));
                         }
-                        builder.paths(paths.toArray(new PathElement[paths.size()][]));
                     } else if (firstPathToken != JsonToken.VALUE_NULL) {
                         throw new ClientResponseException("Constraint failure path should be array or null, got: " + firstPathToken.toString());
                     }
+                    paths.forEach(builder::path);
                     break;
             }
         }
@@ -175,6 +171,23 @@ public class ConstraintFailure {
             return Optional.of(Arrays.stream(paths).map(
                     pathElements -> Arrays.stream(pathElements).map(PathElement::toString).collect(
                             Collectors.joining("."))).collect(Collectors.toList()));
+        }
+    }
+
+    public boolean pathsAreEqual(ConstraintFailure otherFailure) {
+        PathElement[][] thisArray = this.getPaths().orElse(new PathElement[0][]);
+        PathElement[][] otherArray = otherFailure.getPaths().orElse(new PathElement[0][]);
+        return Arrays.deepEquals(thisArray, otherArray);
+    }
+
+    public boolean equals(Object other) {
+        if (other instanceof ConstraintFailure) {
+            ConstraintFailure otherFailure = (ConstraintFailure) other;
+            return this.getMessage().equals(otherFailure.getMessage())
+                    && this.getName().equals(otherFailure.getName())
+                    && pathsAreEqual(otherFailure);
+        } else {
+            return false;
         }
     }
 

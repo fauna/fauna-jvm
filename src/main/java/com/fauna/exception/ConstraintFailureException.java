@@ -10,8 +10,7 @@ public class ConstraintFailureException extends ServiceException {
         super(failure);
     }
 
-    public List<ConstraintFailure> getConstraintFailures() {
-        var cf = this.getResponse().getConstraintFailures();
-        return cf.orElseGet(List::of);
+    public ConstraintFailure[] getConstraintFailures() {
+        return getResponse().getConstraintFailures().orElse(null);
     }
 }

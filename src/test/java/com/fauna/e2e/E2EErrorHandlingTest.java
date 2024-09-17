@@ -6,7 +6,6 @@ import com.fauna.exception.AbortException;
 import com.fauna.exception.ConstraintFailureException;
 import com.fauna.response.ConstraintFailure;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,7 +15,6 @@ import java.util.Map;
 
 import static com.fauna.query.builder.Query.fql;
 import static java.time.LocalTime.now;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,10 +32,10 @@ public class E2EErrorHandlingTest {
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,
                 () -> client.query(fql("Product.create({name: ${name}, quantity: -1})", Map.of("name", now().toString()))));
 
-        ConstraintFailure actual = exc.getConstraintFailures().get(0);
+        ConstraintFailure actual = exc.getConstraintFailures()[0];
         assertEquals("Document failed check constraint `posQuantity`", actual.getMessage());
         assertTrue(actual.getName().isEmpty());
-        assertEquals(0, actual.getPaths().get().length);
+        assertTrue(actual.getPaths().isEmpty());
     }
 
     @Test
@@ -47,7 +45,7 @@ public class E2EErrorHandlingTest {
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,
                 () -> client.query(fql("Product.create({name: 'cheese', quantity: 2})")));
 
-        ConstraintFailure actual = exc.getConstraintFailures().get(0);
+        ConstraintFailure actual = exc.getConstraintFailures()[0];
         assertEquals("Failed unique constraint", actual.getMessage());
         assertTrue(actual.getName().isEmpty());
 
@@ -57,12 +55,18 @@ public class E2EErrorHandlingTest {
     }
 
     @Test
-    @Disabled
-    public void constraintFailureWithInteger() throws IOException {
-        // TODO: This throws an error while parsing, will fix in next PR.
+    public void constraintFailureWithInteger() {
         ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> client.query(
                 fql("Collection.create({name: \"Foo\", constraints: [{unique: [\"$$$\"] }]})")));
-        assertEquals(exc.getConstraintFailures().size(), 2);
+
+        ConstraintFailure actual = exc.getConstraintFailures()[0];
+        ConstraintFailure expected = ConstraintFailure.builder()
+                .message("Value `$` is not a valid FQL path expression.")
+                .path(ConstraintFailure.createPath("constraints", 0, "unique"))
+                .build();
+        assertEquals(expected.getMessage(), actual.getMessage());
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected, actual);
     }
 
     @Test

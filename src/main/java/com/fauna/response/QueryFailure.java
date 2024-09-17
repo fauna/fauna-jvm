@@ -1,31 +1,12 @@
 package com.fauna.response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fauna.codec.DefaultCodecProvider;
-import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientResponseException;
-import com.fauna.exception.CodecException;
-import com.fauna.response.wire.ConstraintFailureWire;
-import com.fauna.response.wire.ErrorInfoWire;
-import com.fauna.response.wire.QueryResponseWire;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class QueryFailure extends QueryResponse {
 
     private final int statusCode;
     private final ErrorInfo errorInfo;
-    private String errorCode = "";
-    private String message = "";
-
-    private List<ConstraintFailure> constraintFailures;
-    private String abortString;
 
 
     public QueryFailure(int statusCode, ErrorInfo errorInfo, Long schemaVersion, Map<String, String> queryTags, QueryStats stats) {
@@ -34,61 +15,10 @@ public final class QueryFailure extends QueryResponse {
         this.errorInfo = errorInfo;
     }
 
-    /**
-     * Initializes a new instance of the {@link QueryFailure} class, parsing the provided raw
-     * response to extract error information.
-     *
-     * @deprecated This method will be removed when QueryResponseWire is removed.
-     *
-     * @param statusCode The HTTP status code.
-     * @param response   The parsed response.
-     */
-    @Deprecated
-    public QueryFailure(int statusCode, QueryResponseWire response) {
-        super(response.getTxnTs(), response.getSummary(), response.getSchemaVersion(), response.getQueryTags(), response.getStats());
-        ErrorInfoWire errorInfoWire = response.getError();
-        ObjectMapper mapper = new ObjectMapper();
-        AtomicReference<TreeNode> abortTree = new AtomicReference<>(mapper.createObjectNode());
-        if (errorInfoWire != null) {
-            errorInfoWire.getAbort().ifPresent(abort -> {
-                try {
-                    abortTree.set(new ObjectMapper().readTree(abort));
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            this.errorInfo = new ErrorInfo(errorCode, errorInfoWire.getMessage(), errorInfoWire.getConstraintFailureArray().orElse(null), abortTree.get());
-        } else {
-            this.errorInfo = new ErrorInfo(errorCode, null, null, null);
-        }
-
-        this.statusCode = statusCode;
-
-        var err = response.getError();
-        if (err != null) {
-            errorCode = err.getCode();
-            message = err.getMessage();
-
-            if (err.getConstraintFailures().isPresent()) {
-                var cf = new ArrayList<ConstraintFailure>();
-                var codec = DefaultCodecProvider.SINGLETON.get(Object.class);
-                for (ConstraintFailureWire cfw : err.getConstraintFailures().get()) {
-                    try {
-                        var parser = UTF8FaunaParser.fromString(cfw.getPaths());
-                        var paths = codec.decode(parser);
-                        cf.add(new ConstraintFailure(cfw.getMessage(), cfw.getName(), (List<List<Object>>) paths));
-                    } catch (CodecException exc) {
-                        throw new ClientResponseException("Failed to parse constraint failure.", exc);
-                    }
-                }
-                constraintFailures = cf;
-            }
-
-            if (err.getAbort().isPresent()) {
-                abortString = err.getAbort().get();
-            }
-        }
-
+    public QueryFailure(int httpStatus, Builder builder) {
+        super(builder);
+        this.statusCode = httpStatus;
+        this.errorInfo = builder.error;
     }
 
     public int getStatusCode() {
@@ -96,11 +26,16 @@ public final class QueryFailure extends QueryResponse {
     }
 
     public String getErrorCode() {
-        return errorCode;
+        return errorInfo.getCode();
     }
 
     public String getMessage() {
-        return message;
+        return errorInfo.getMessage();
+    }
+
+    public <T> Optional<T> getAbort(Class<T> clazz) {
+        return errorInfo.getAbort(clazz);
+
     }
 
     public String getFullMessage() {
@@ -110,11 +45,7 @@ public final class QueryFailure extends QueryResponse {
 
     }
 
-    public Optional<List<ConstraintFailure>> getConstraintFailures() {
-        return Optional.ofNullable(constraintFailures);
-    }
-
-    public Optional<String> getAbortString() {
-        return Optional.ofNullable(this.abortString);
+    public Optional<ConstraintFailure[]> getConstraintFailures() {
+        return this.errorInfo.getConstraintFailures();
     }
 }

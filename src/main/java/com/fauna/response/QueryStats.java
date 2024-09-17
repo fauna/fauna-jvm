@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.constants.ResponseFields;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,29 +75,29 @@ public final class QueryStats {
                 String fieldName = parser.getValueAsString();
                 switch (fieldName) {
                     case ResponseFields.STATS_COMPUTE_OPS_FIELD_NAME:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        computeOps = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_READ_OPS:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        readOps = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_WRITE_OPS:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        writeOps = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_QUERY_TIME_MS:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        queryTimeMs = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_PROCESSING_TIME_MS:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        processingTimeMs = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_CONTENTION_RETRIES:
-                        parser.nextToken();
-                        parser.getValueAsString();
+                        contentionRetries = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_STORAGE_BYTES_READ:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        storageBytesRead = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_STORAGE_BYTES_WRITE:
-                        parser.nextToken();
-                        parser.getValueAsInt();
+                        storageBytesWrite = parser.nextIntValue(0);
+                        break;
                     case ResponseFields.STATS_RATE_LIMITS_HIT:
                         List<String> limits = new ArrayList<>();
                         if (parser.nextToken() == START_ARRAY) {
@@ -104,13 +105,17 @@ public final class QueryStats {
                                 limits.add(parser.getValueAsString());
                             }
                         }
+                        rateLimitsHit = limits;
+                        break;
+                    default:
+                        throw new ClientResponseException("Unknown field " + fieldName);
                 }
             }
             return new QueryStats(computeOps, readOps, writeOps, queryTimeMs, processingTimeMs, contentionRetries, storageBytesRead, storageBytesWrite, rateLimitsHit);
         } else if (parser.nextToken() == VALUE_NULL) {
             return null;
         } else {
-            throw new ClientException("Query stats should be an object or null");
+            throw new ClientResponseException("Query stats should be an object or null, not " + parser.getCurrentToken());
         }
     }
 

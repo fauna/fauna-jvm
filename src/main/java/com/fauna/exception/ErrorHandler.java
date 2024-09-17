@@ -1,10 +1,7 @@
 package com.fauna.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fauna.response.wire.QueryResponseWire;
 import com.fauna.response.QueryFailure;
 
-import java.io.IOException;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_CONFLICT;
@@ -25,30 +22,6 @@ public class ErrorHandler {
     private static final String TIME_OUT = "time_out";
     private static final String INTERNAL_ERROR = "internal_error";
 
-
-    /**
-     * Handles errors based on the HTTP status code and response body.
-     *
-     * @param statusCode        The HTTP status code.
-     * @param response          The decoded response.
-     * @throws AbortException
-     * @throws AuthenticationException
-     * @throws AuthorizationException
-     * @throws ConstraintFailureException
-     * @throws ContendedTransactionException
-     * @throws InvalidRequestException
-     * @throws ProtocolException
-     * @throws QueryCheckException
-     * @throws QueryRuntimeException
-     * @throws QueryTimeoutException
-     * @throws ThrottlingException
-     *
-     */
-    public static void handleErrorResponse(int statusCode, QueryResponseWire response, String body) {
-        QueryFailure failure = new QueryFailure(statusCode, response);
-        handleQueryFailure(statusCode, failure);
-        throw new ProtocolException(statusCode, body);
-    }
 
     /**
      * Handles errors based on the HTTP status code and error code.

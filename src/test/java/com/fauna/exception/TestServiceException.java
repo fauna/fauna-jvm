@@ -1,10 +1,11 @@
 package com.fauna.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
-import com.fauna.response.wire.QueryResponseWire;
+import com.fauna.response.QueryResponse;
+import com.fauna.response.QueryStats;
+import com.fauna.response.QueryTags;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -25,21 +26,11 @@ public class TestServiceException {
     @Test
     public void testGetters() throws IOException {
         // Given
-        ObjectNode root = mapper.createObjectNode();
-        root.put("summary", "summarized");
-        root.put("schema_version", 10);
-        root.put("query_tags", "foo=bar");
-        root.put("txn_ts", Long.MAX_VALUE / 4); // MAX_VALUE would cause overflow
-
-        ObjectNode error = root.putObject("error");
-        error.put("code", "bad_thing");
-        error.put("message", "message in a bottle");
-
-        ObjectNode stats = root.putObject("stats");
-        stats.put("compute_ops", 100);
-
-        QueryResponseWire res = mapper.readValue(root.toString(), QueryResponseWire.class);
-        QueryFailure failure = new QueryFailure(500, res);
+        QueryFailure failure = new QueryFailure(500,
+                QueryResponse.builder(null).summary("summarized").schemaVersion(10L)
+                        .stats(new QueryStats(100, 0, 0, 0, 0, 0, 0, 0, null))
+                        .queryTags(QueryTags.of("foo=bar")).lastSeenTxn(Long.MAX_VALUE / 4).error(
+                                ErrorInfo.builder().code("bad_thing").message("message in a bottle").build()));
 
         // When
         ServiceException exc = new ServiceException(failure);

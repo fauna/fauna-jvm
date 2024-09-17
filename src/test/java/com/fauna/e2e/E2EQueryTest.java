@@ -216,10 +216,11 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_abortEmpty() throws IOException {
+    public void query_abortNull() throws IOException {
         var q = fql("abort(null)");
         var e = assertThrows(AbortException.class, () -> c.query(q));
         assertNull(e.getAbort());
+        assertNull(e.getAbort(Author.class));
     }
 
     @Test
@@ -234,5 +235,15 @@ public class E2EQueryTest {
         var q = fql("abort({firstName:\"alice\"})");
         var e = assertThrows(AbortException.class, () -> c.query(q));
         assertEquals("alice", e.getAbort(Author.class).getFirstName());
+    }
+
+    @Test
+    public void query_withTags() {
+        QuerySuccess<NullableDocument<Author>> success = c.query(
+                fql("Author.byId('9090090')"),
+                nullableDocumentOf(Author.class), QueryOptions.builder().queryTags(
+                        Map.of("first", "1", "second", "2")).build());
+        assertEquals("1", success.getQueryTags().get("first"));
+        assertEquals("2", success.getQueryTags().get("second"));
     }
 }

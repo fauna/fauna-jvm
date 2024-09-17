@@ -1,37 +1,37 @@
 package com.fauna.exception;
 
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.DefaultCodecProvider;
-import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.response.QueryFailure;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AbortException extends ServiceException {
-
-    private Object abort = null;
-    private final CodecProvider provider = DefaultCodecProvider.SINGLETON;
+    Map<Class, Object> decoded = new HashMap<>();
 
     public AbortException(QueryFailure response) {
         super(response);
     }
 
-    public Object getAbort() throws IOException {
+    /**
+     * Return the abort data as a top-level Object, mostly useful for debugging and other cases where you might
+     * not know what to expect back.
+     * @return
+     */
+    public Object getAbort() {
         return getAbort(Object.class);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getAbort(Class<T> clazz) throws IOException {
-        if (abort != null) return (T) abort;
-
-        var abStr = this.getResponse().getAbortString();
-        if (abStr.isPresent()) {
-            var codec = provider.get(clazz);
-            var parser = UTF8FaunaParser.fromString(abStr.get());
-            abort = codec.decode(parser);
-            return (T) abort;
-        } else {
-            return null;
+    /**
+     * Return the abort data, decoded into the given class, or null if there was no abort data.
+     * @param clazz The class to decode the abort data into.
+     * @return      The abort data, or null.
+     * @param <T>   The type of the abort data.
+     */
+    public <T> T getAbort(Class<T> clazz) {
+        if (!decoded.containsKey(clazz)) {
+            Object abortData = getResponse().getAbort(clazz).orElse(null);
+            decoded.put(clazz, abortData);
         }
+        return (T) decoded.get(clazz);
     }
 }
