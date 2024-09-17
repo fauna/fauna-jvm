@@ -106,7 +106,7 @@ public class ConstraintFailure {
         }
 
         public ConstraintFailure build() {
-            PathElement[][] paths = this.paths.toArray(new PathElement[this.paths.size()][])
+            PathElement[][] paths = this.paths.toArray(new PathElement[this.paths.size()][]);
             return new ConstraintFailure(this.message, this.name, this.paths.isEmpty() ? null : paths);
         }
 
