@@ -126,59 +126,46 @@ public final class QueryStats {
         return new Builder();
     }
 
+    static Builder parseField(Builder builder, JsonParser parser) throws IOException {
+        String fieldName = parser.getValueAsString();
+        switch (fieldName) {
+            case ResponseFields.STATS_COMPUTE_OPS_FIELD_NAME:
+                return builder.computeOps(parser.nextIntValue(0));
+            case ResponseFields.STATS_READ_OPS:
+                return builder.readOps(parser.nextIntValue(0));
+            case ResponseFields.STATS_WRITE_OPS:
+                return builder.writeOps(parser.nextIntValue(0));
+            case ResponseFields.STATS_QUERY_TIME_MS:
+                return builder.queryTimeMs(parser.nextIntValue(0));
+            case ResponseFields.STATS_PROCESSING_TIME_MS:
+                return builder.processingTimeMs(parser.nextIntValue(0));
+            case ResponseFields.STATS_CONTENTION_RETRIES:
+                return builder.contentionRetries(parser.nextIntValue(0));
+            case ResponseFields.STATS_STORAGE_BYTES_READ:
+                return builder.storageBytesRead(parser.nextIntValue(0));
+            case ResponseFields.STATS_STORAGE_BYTES_WRITE:
+                return builder.storageBytesWrite(parser.nextIntValue(0));
+            case ResponseFields.STATS_RATE_LIMITS_HIT:
+                List<String> limits = new ArrayList<>();
+                if (parser.nextToken() == START_ARRAY) {
+                    while (parser.nextToken() == VALUE_STRING) {
+                        limits.add(parser.getValueAsString());
+                    }
+                }
+                return builder.rateLimitsHit(limits);
+            default:
+                throw new ClientResponseException("Unknown field " + fieldName);
+        }
+    }
+
 
     public static QueryStats parseStats(JsonParser parser) throws IOException {
         if (parser.nextToken() == START_OBJECT) {
-            int computeOps = 0;
-            int readOps = 0;
-            int writeOps = 0;
-            int queryTimeMs = 0;
-            int processingTimeMs = 0;
-            int contentionRetries = 0;
-            int storageBytesRead = 0;
-            int storageBytesWrite = 0;
-            List<String> rateLimitsHit = null;
+            Builder builder = builder();
             while (parser.nextToken() == FIELD_NAME) {
-                String fieldName = parser.getValueAsString();
-                switch (fieldName) {
-                    case ResponseFields.STATS_COMPUTE_OPS_FIELD_NAME:
-                        computeOps = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_READ_OPS:
-                        readOps = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_WRITE_OPS:
-                        writeOps = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_QUERY_TIME_MS:
-                        queryTimeMs = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_PROCESSING_TIME_MS:
-                        processingTimeMs = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_CONTENTION_RETRIES:
-                        contentionRetries = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_STORAGE_BYTES_READ:
-                        storageBytesRead = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_STORAGE_BYTES_WRITE:
-                        storageBytesWrite = parser.nextIntValue(0);
-                        break;
-                    case ResponseFields.STATS_RATE_LIMITS_HIT:
-                        List<String> limits = new ArrayList<>();
-                        if (parser.nextToken() == START_ARRAY) {
-                            while (parser.nextToken() == VALUE_STRING) {
-                                limits.add(parser.getValueAsString());
-                            }
-                        }
-                        rateLimitsHit = limits;
-                        break;
-                    default:
-                        throw new ClientResponseException("Unknown field " + fieldName);
-                }
+                builder = parseField(builder, parser);
             }
-            return new QueryStats(computeOps, readOps, writeOps, queryTimeMs, processingTimeMs, contentionRetries, storageBytesRead, storageBytesWrite, rateLimitsHit);
+            return builder.build();
         } else if (parser.nextToken() == VALUE_NULL) {
             return null;
         } else {
