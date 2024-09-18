@@ -36,6 +36,8 @@ public final class QueryStats {
 
     public final List<String> rateLimitsHit;
 
+    private String stringValue = null;
+
     @JsonCreator
     public QueryStats(
             @JsonProperty(ResponseFields.STATS_COMPUTE_OPS_FIELD_NAME) int computeOps,
@@ -51,11 +53,77 @@ public final class QueryStats {
         this.readOps = readOps;
         this.writeOps = writeOps;
         this.queryTimeMs = queryTimeMs;
-        this.processingTimeMs = queryTimeMs;
         this.contentionRetries = contentionRetries;
         this.storageBytesRead = storageBytesRead;
         this.storageBytesWrite = storageBytesWrite;
+        this.processingTimeMs = processingTimeMs;
         this.rateLimitsHit = rateLimitsHit != null ? rateLimitsHit : List.of();
+    }
+
+    static class Builder {
+        int computeOps;
+        int readOps;
+        int writeOps;
+        int queryTimeMs;
+        int contentionRetries;
+        int storageBytesRead;
+        int storageBytesWrite;
+        int processingTimeMs;
+        List<String> rateLimitsHit;
+
+        Builder computeOps(int computeOps) {
+            this.computeOps = computeOps;
+            return this;
+        }
+
+        Builder readOps(int readOps) {
+            this.readOps = readOps;
+            return this;
+        }
+
+        Builder writeOps(int writeOps) {
+            this.writeOps = writeOps;
+            return this;
+        }
+
+        Builder queryTimeMs(int queryTimeMs) {
+            this.queryTimeMs = queryTimeMs;
+            return this;
+        }
+
+        Builder contentionRetries(int contentionRetries) {
+            this.contentionRetries = contentionRetries;
+            return this;
+        }
+
+        Builder storageBytesRead(int storageBytesRead) {
+            this.storageBytesRead = storageBytesRead;
+            return this;
+        }
+
+        Builder storageBytesWrite(int storageBytesWrite) {
+            this.storageBytesWrite = storageBytesWrite;
+            return this;
+        }
+
+        Builder processingTimeMs(int processingTimeMs) {
+            this.processingTimeMs = processingTimeMs;
+            return this;
+        }
+
+        Builder rateLimitsHit(List<String> rateLimitsHit) {
+            this.rateLimitsHit = rateLimitsHit;
+            return this;
+        }
+
+        QueryStats build() {
+            return new QueryStats(computeOps, readOps, writeOps, queryTimeMs, contentionRetries, storageBytesRead, storageBytesWrite, processingTimeMs, rateLimitsHit);
+        }
+
+    }
+
+    static Builder builder() {
+        return new Builder();
     }
 
 
@@ -118,11 +186,25 @@ public final class QueryStats {
         }
     }
 
+    private static String statString(String name, Object value) {
+        return String.join(": ", name, String.valueOf(value));
+
+    }
+
     @Override
     public String toString() {
-        return "compute: " + computeOps + ", read: " + readOps + ", write: " + writeOps + ", " +
-            "queryTime: " + queryTimeMs + ", retries: " + contentionRetries + ", " +
-            "storageRead: " + storageBytesRead + ", storageWrite: " + storageBytesWrite + ", " +
-            "limits: " + rateLimitsHit.toString();
+        if (this.stringValue == null) {
+            this.stringValue = String.join(", ",
+                    statString("compute", computeOps),
+                    statString("read", readOps),
+                    statString("write", writeOps),
+                    statString("queryTime", queryTimeMs),
+                    statString("retries", contentionRetries),
+                    statString("storageRead", storageBytesRead),
+                    statString("storageWrite", storageBytesWrite),
+                    statString("limits", rateLimitsHit)
+            );
+        }
+        return this.stringValue;
     }
 }
