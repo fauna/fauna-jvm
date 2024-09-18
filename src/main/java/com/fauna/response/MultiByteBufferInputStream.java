@@ -1,4 +1,4 @@
-package com.fauna.response.wire;
+package com.fauna.response;
 
 import java.io.EOFException;
 import java.io.IOException;

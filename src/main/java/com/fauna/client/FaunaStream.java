@@ -7,7 +7,7 @@ import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.StreamEvent;
-import com.fauna.response.wire.MultiByteBufferInputStream;
+import com.fauna.response.MultiByteBufferInputStream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
