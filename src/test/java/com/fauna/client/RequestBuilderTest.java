@@ -22,6 +22,7 @@ import java.util.stream.IntStream;
 import static com.fauna.client.RequestBuilder.Headers.AUTHORIZATION;
 import static com.fauna.client.RequestBuilder.Headers.DRIVER_ENV;
 import static com.fauna.client.RequestBuilder.Headers.LINEARIZED;
+import static com.fauna.client.RequestBuilder.Headers.MAX_CONTENTION_RETRIES;
 import static com.fauna.client.RequestBuilder.Headers.QUERY_TAGS;
 import static com.fauna.client.RequestBuilder.Headers.TRACE_PARENT;
 import static com.fauna.client.RequestBuilder.Headers.TYPE_CHECK;
@@ -54,6 +55,7 @@ class RequestBuilderTest {
         assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("driver="));
         assertNotNull(headers.firstValue(AUTHORIZATION));
         assertEquals("Bearer secret", headers.firstValue(AUTHORIZATION).orElseThrow());
+        assertEquals("3", headers.firstValue(MAX_CONTENTION_RETRIES).orElseThrow());
     }
 
     @Test

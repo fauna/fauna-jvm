@@ -51,7 +51,7 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(URI uri, String token) {
+    public RequestBuilder(URI uri, String token, int max_contention_retries) {
         // DriverEnvironment is not needed outside the constructor for now.
         DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
@@ -60,6 +60,7 @@ public class RequestBuilder {
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
                 RequestBuilder.Headers.DRIVER, "Java",
                 RequestBuilder.Headers.DRIVER_ENV, env.toString(),
+                RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(max_contention_retries),
                 Headers.AUTHORIZATION, buildAuthHeader(token)
         );
     }
@@ -69,11 +70,11 @@ public class RequestBuilder {
     }
 
     public static RequestBuilder queryRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret());
+        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries());
     }
 
     public static RequestBuilder streamRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret());
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries());
     }
 
     public RequestBuilder scopedRequestBuilder(String token) {
