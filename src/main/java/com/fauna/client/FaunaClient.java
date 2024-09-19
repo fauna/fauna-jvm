@@ -20,6 +20,7 @@ import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 public abstract class FaunaClient {
@@ -28,6 +29,7 @@ public abstract class FaunaClient {
     public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
     private final String faunaSecret;
     private final CodecProvider codecProvider = new DefaultCodecProvider(new DefaultCodecRegistry());
+    private AtomicLong lastTransactionTs = new AtomicLong(-1);
 
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
@@ -64,7 +66,7 @@ public abstract class FaunaClient {
         }
         Codec<Object> codec = codecProvider.get(Object.class, null);
         return new RetryHandler<QuerySuccess<Object>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec));
     }
 
     /**
@@ -86,7 +88,7 @@ public abstract class FaunaClient {
         }
         Codec<T> codec = codecProvider.get(resultClass, null);
         return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec));
     }
 
     /**
@@ -109,7 +111,7 @@ public abstract class FaunaClient {
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec));
     }
 
     /**
@@ -147,7 +149,7 @@ public abstract class FaunaClient {
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec));
     }
     //endregion
 

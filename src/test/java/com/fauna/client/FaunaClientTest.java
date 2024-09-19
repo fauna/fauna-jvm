@@ -80,7 +80,7 @@ class FaunaClientTest {
         assertTrue(client.getHttpClient().connectTimeout().isEmpty());
         assertEquals(URI.create("https://db.fauna.com/query/1"),
                 client.getRequestBuilder().buildRequest(
-                        fql("hello"), QueryOptions.builder().build(), DefaultCodecProvider.SINGLETON).uri());
+                        fql("hello"), QueryOptions.builder().build(), DefaultCodecProvider.SINGLETON, 1L).uri());
     }
 
     @Test
