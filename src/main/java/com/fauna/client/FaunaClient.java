@@ -6,6 +6,7 @@ import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
+import com.fauna.exception.ServiceException;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.StreamTokenResponse;
@@ -54,13 +55,29 @@ public abstract class FaunaClient {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec));
     }
 
-    public <T> QuerySuccess<T> updateTxnTs(QuerySuccess<T> success) {
-        // TODO: handleQueryFailure.
-        Long newTs = success.getLastSeenTxn();
+    private static Optional<ServiceException> extractServiceException(Throwable throwable) {
+        if (throwable.getCause() instanceof FaunaException) {
+            return Optional.of((ServiceException) throwable.getCause());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private void updateTs(QueryResponse resp) {
+        Long newTs = resp.getLastSeenTxn();
         if (newTs != null) {
             this.lastTransactionTs.updateAndGet(oldTs -> newTs > oldTs ? newTs : oldTs );
         }
-        return success;
+    }
+
+    private <T> QuerySuccess<T> completeRequest(QuerySuccess<T> success, Throwable throwable) {
+        if (success != null) {
+            updateTs(success);
+            return success;
+        } else if (throwable != null) {
+            extractServiceException(throwable).ifPresent(exc -> updateTs(exc.getResponse()));
+        }
+        return null;
     }
 
     //region Asynchronous API
@@ -81,7 +98,7 @@ public abstract class FaunaClient {
         }
         Codec<Object> codec = codecProvider.get(Object.class, null);
         return new RetryHandler<QuerySuccess<Object>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec)).whenComplete(this::completeRequest);
     }
 
     /**
@@ -103,7 +120,7 @@ public abstract class FaunaClient {
         }
         Codec<T> codec = codecProvider.get(resultClass, null);
         return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec)).whenComplete(this::completeRequest);
     }
 
     /**
@@ -126,7 +143,7 @@ public abstract class FaunaClient {
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec)).whenComplete(this::completeRequest);
     }
 
     /**
@@ -164,7 +181,7 @@ public abstract class FaunaClient {
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec)).whenComplete(this::completeRequest);
     }
     //endregion
 
