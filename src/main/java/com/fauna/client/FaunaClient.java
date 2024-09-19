@@ -18,6 +18,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,7 +30,7 @@ public abstract class FaunaClient {
     public static final RetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
     private final String faunaSecret;
     private final CodecProvider codecProvider = new DefaultCodecProvider(new DefaultCodecRegistry());
-    private AtomicLong lastTransactionTs = new AtomicLong(-1);
+    private final AtomicLong lastTransactionTs = new AtomicLong(-1);
 
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
@@ -44,8 +45,22 @@ public abstract class FaunaClient {
         return this.faunaSecret;
     }
 
+    public Optional<Long> getLastTransactionTs() {
+        Long ts = lastTransactionTs.get();
+        return ts > 0 ? Optional.of(ts) : Optional.empty();
+    }
+
     private static <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec));
+    }
+
+    public <T> QuerySuccess<T> updateTxnTs(QuerySuccess<T> success) {
+        // TODO: handleQueryFailure.
+        Long newTs = success.getLastSeenTxn();
+        if (newTs != null) {
+            this.lastTransactionTs.updateAndGet(oldTs -> newTs > oldTs ? newTs : oldTs );
+        }
+        return success;
     }
 
     //region Asynchronous API
@@ -66,7 +81,7 @@ public abstract class FaunaClient {
         }
         Codec<Object> codec = codecProvider.get(Object.class, null);
         return new RetryHandler<QuerySuccess<Object>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
     }
 
     /**
@@ -88,7 +103,7 @@ public abstract class FaunaClient {
         }
         Codec<T> codec = codecProvider.get(resultClass, null);
         return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
     }
 
     /**
@@ -111,7 +126,7 @@ public abstract class FaunaClient {
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
     }
 
     /**
@@ -149,7 +164,7 @@ public abstract class FaunaClient {
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
         return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(FaunaClient.makeAsyncRequest(
-                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec));
+                getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec)).thenApply(this::updateTxnTs);
     }
     //endregion
 

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,15 @@ public class E2EQueryTest {
         var res = c.query(q);
         var exp = 42;
         assertEquals(exp, res.getData());
+    }
+
+    @Test
+    public void clientTransactionTs() {
+        FaunaClient client = Fauna.local();
+        assertTrue(client.getLastTransactionTs().isEmpty());
+        client.query(fql("42"));
+        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() * 1_000_000;
+        assertTrue(client.getLastTransactionTs().orElseThrow() > y2k);
     }
 
     @Test
