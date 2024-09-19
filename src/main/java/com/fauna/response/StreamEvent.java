@@ -5,7 +5,7 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.ClientException;
+import com.fauna.exception.ClientResponseException;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -43,60 +43,109 @@ public class StreamEvent<E> {
         this.error = error;
     }
 
+    static class Builder<E> {
+        private final Codec<E> dataCodec;
+        String cursor = null;
+        StreamEvent.EventType eventType = null;
+        QueryStats stats = null;
+        E data = null;
+        Long txn_ts = null;
+        ErrorInfo errorInfo = null;
+
+        public Builder(Codec<E> dataCodec) {
+            this.dataCodec = dataCodec;
+        }
+
+        public Builder<E> cursor(String cursor) {
+            this.cursor = cursor;
+            return this;
+        }
+
+        public Builder<E> eventType(StreamEvent.EventType eventType) {
+            this.eventType = eventType;
+            return this;
+        }
+
+        public Builder<E> stats(QueryStats stats) {
+            this.stats = stats;
+            return this;
+        }
+
+        public Builder<E> parseData(JsonParser parser) {
+            UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
+            if (faunaParser.getCurrentTokenType() == FaunaTokenType.NONE) {
+                faunaParser.read();
+            }
+            this.data = dataCodec.decode(faunaParser);
+            return this;
+        }
+
+        public Builder<E> txn_ts(Long txn_ts) {
+            this.txn_ts = txn_ts;
+            return this;
+        }
+
+        public Builder<E> error(ErrorInfo error) {
+            this.errorInfo = error;
+            // Fauna does not always return an event type, for example, if you pass an invalid cursor to the
+            // stream API.
+            this.eventType = EventType.ERROR;
+            return this;
+        }
+
+        public StreamEvent<E> build() {
+            return new StreamEvent<>(eventType, cursor, txn_ts, data, stats, errorInfo);
+        }
+
+    }
+
+    static <E> Builder<E> builder(Codec<E> dataCodec) {
+        return new Builder<>(dataCodec);
+    }
+
+    static <E> Builder<E> parseField(Builder<E> builder, JsonParser parser) throws IOException {
+        String fieldName = parser.getValueAsString();
+        switch (fieldName) {
+            case STREAM_CURSOR_FIELD_NAME:
+                return builder.cursor(parser.nextTextValue());
+            case DATA_FIELD_NAME:
+                return builder.parseData(parser);
+            case STREAM_TYPE_FIELD_NAME:
+                return builder.eventType(parseEventType(parser));
+            case STATS_FIELD_NAME:
+                return builder.stats(QueryStats.parseStats(parser));
+            case LAST_SEEN_TXN_FIELD_NAME:
+                return builder.txn_ts(parser.nextLongValue(0L));
+            case ERROR_FIELD_NAME:
+                return builder.error(ErrorInfo.parse(parser));
+            default:
+                throw new ClientResponseException("Unknown StreamEvent field: " + fieldName);
+        }
+
+    }
+
     private static StreamEvent.EventType parseEventType(JsonParser parser) throws IOException {
         if (parser.nextToken() == VALUE_STRING) {
             String typeString = parser.getText().toUpperCase();
             try {
                 return StreamEvent.EventType.valueOf(typeString);
             } catch (IllegalArgumentException e) {
-                throw new ClientException("Invalid event type: " + typeString, e);
+                throw new ClientResponseException("Invalid event type: " + typeString, e);
             }
         } else {
-            throw new ClientException("Event type should be a string, but got a " + parser.currentToken().asString());
+            throw new ClientResponseException("Event type should be a string, but got a " + parser.currentToken().asString());
         }
     }
 
     public static <E> StreamEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
         if (parser.nextToken() == START_OBJECT) {
-            String cursor = null;
-            StreamEvent.EventType eventType = null;
-            QueryStats stats = null;
-            E data = null;
-            Long txn_ts = null;
-            ErrorInfo errorInfo = null;
+            Builder<E> builder = StreamEvent.builder(dataCodec);
             while (parser.nextToken() == FIELD_NAME) {
-                String fieldName = parser.getValueAsString();
-                switch (fieldName) {
-                    case STREAM_CURSOR_FIELD_NAME:
-                        parser.nextToken();
-                        cursor = parser.getText();
-                        break;
-                    case DATA_FIELD_NAME:
-                        UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
-                        if (faunaParser.getCurrentTokenType() == FaunaTokenType.NONE) {
-                            faunaParser.read();
-                        }
-                        data = dataCodec.decode(faunaParser);
-                        break;
-                    case STREAM_TYPE_FIELD_NAME:
-                        eventType = parseEventType(parser);
-                        break;
-                    case STATS_FIELD_NAME:
-                        stats = QueryStats.parseStats(parser);
-                        break;
-                    case LAST_SEEN_TXN_FIELD_NAME:
-                        txn_ts = parser.nextLongValue(0L);
-                        break;
-                    case ERROR_FIELD_NAME:
-                        errorInfo = ErrorInfo.parse(parser);
-                        // Fauna does not always return a valid event type (e.g. if you pass an invalid cursor).
-                        eventType = EventType.ERROR;
-                        break;
-                }
+                builder = parseField(builder, parser);
             }
-            return new StreamEvent(eventType, cursor, txn_ts, data, stats, errorInfo);
+            return builder.build();
         } else {
-            throw new ClientException("Invalid event starting with: " + parser.currentToken());
+            throw new ClientResponseException("Invalid event starting with: " + parser.currentToken());
         }
     }
 

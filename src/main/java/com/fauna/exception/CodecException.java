@@ -1,7 +1,6 @@
 package com.fauna.exception;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
 public class CodecException extends FaunaException {
 

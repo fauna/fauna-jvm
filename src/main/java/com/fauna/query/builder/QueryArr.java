@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 public class QueryArr<E extends QueryFragment> extends QueryFragment<List<E>> {
     public static <E extends QueryFragment> QueryArr of(List<E> val) {
-        return new QueryArr(val);
+        return new QueryArr<>(val);
     }
 
     private final List<E> value;

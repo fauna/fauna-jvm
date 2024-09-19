@@ -1,7 +1,5 @@
 package com.fauna.client;
 
-import java.util.Optional;
-
 public class FaunaScope {
     private static final String DELIMITER = ":";
     private final String database;
@@ -18,19 +16,19 @@ public class FaunaScope {
 
     public static class Builder {
         public final String database;
-        public Optional<FaunaRole> role = Optional.empty();
+        public FaunaRole role = null;
 
         public Builder(String database) {
             this.database = database;
         }
 
         public Builder withRole(FaunaRole role) {
-            this.role = Optional.ofNullable(role);
+            this.role = role;
             return this;
         }
 
         public FaunaScope build() {
-            return new FaunaScope(this.database, this.role.orElse(FaunaRole.SERVER));
+            return new FaunaScope(this.database, this.role != null ? this.role : FaunaRole.SERVER);
 
         }
     }

@@ -144,7 +144,10 @@ public class E2EStreamingTest {
         FaunaStream stream = client.stream(request, Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
-        Thread.sleep(1000);
+        long start = System.currentTimeMillis();
+        while (!stream.isClosed() && System.currentTimeMillis() < (start + 5_000)) {
+            Thread.sleep(100);
+        }
         assertTrue(stream.isClosed());
     }
 

@@ -86,9 +86,9 @@ public class ConstraintFailure {
 
 
     public static class Builder {
-        String message = null;
-        String name = null;
-        List<PathElement[]> paths = new ArrayList<>();
+        private String message = null;
+        private String name = null;
+        private final List<PathElement[]> paths = new ArrayList<>();
 
         public Builder message(String message) {
             this.message = message;

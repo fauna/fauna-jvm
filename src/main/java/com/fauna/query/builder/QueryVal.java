@@ -1,10 +1,5 @@
 package com.fauna.query.builder;
 
-import com.fauna.codec.Codec;
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.UTF8FaunaGenerator;
-
-import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -39,6 +34,7 @@ public class QueryVal<T> extends QueryFragment<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
+        @SuppressWarnings("unchecked")
         QueryVal<T> that = (QueryVal<T>) o;
 
         return Objects.equals(value, that.value);

@@ -31,6 +31,7 @@ public class QueryValCodec extends BaseCodec<QueryVal> {
             gen.writeFieldName("value");
             Object unwrapped = obj.get();
             Codec codec = provider.get(unwrapped.getClass());
+            //noinspection unchecked
             codec.encode(gen, unwrapped);
             gen.writeEndObject();
         }

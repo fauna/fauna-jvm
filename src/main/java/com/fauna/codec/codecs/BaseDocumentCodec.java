@@ -10,8 +10,6 @@ import com.fauna.types.BaseDocument;
 import com.fauna.types.Document;
 import com.fauna.types.NamedDocument;
 
-import java.io.IOException;
-
 public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
 
     private final CodecProvider provider;

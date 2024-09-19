@@ -31,12 +31,14 @@ public class Page<T>{
 
         if (o == null) return false;
 
-        if (getClass() != o.getClass()) return false;
-
-        Page c = (Page) o;
-
-        return Objects.equals(after,c.after)
-                && data.equals(c.data);
+        if (o instanceof Page) {
+            @SuppressWarnings("rawtypes")
+            Page c = (Page) o;
+            return Objects.equals(after,c.after)
+                    && data.equals(c.data);
+        } else {
+            return false;
+        }
     }
 
     @Override

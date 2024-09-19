@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AbortException extends ServiceException {
-    Map<Class, Object> decoded = new HashMap<>();
+    @SuppressWarnings("rawtypes")
+    private final Map<Class, Object> decoded = new HashMap<>();
 
     public AbortException(QueryFailure response) {
         super(response);
@@ -15,7 +16,7 @@ public class AbortException extends ServiceException {
     /**
      * Return the abort data as a top-level Object, mostly useful for debugging and other cases where you might
      * not know what to expect back.
-     * @return
+     * @return  An Object with the abort data.
      */
     public Object getAbort() {
         return getAbort(Object.class);
@@ -32,6 +33,7 @@ public class AbortException extends ServiceException {
             Object abortData = getResponse().getAbort(clazz).orElse(null);
             decoded.put(clazz, abortData);
         }
+        //noinspection unchecked
         return (T) decoded.get(clazz);
     }
 }

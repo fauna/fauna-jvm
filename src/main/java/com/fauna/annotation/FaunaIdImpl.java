@@ -1,5 +1,6 @@
 package com.fauna.annotation;
 
+@SuppressWarnings("ClassExplicitlyAnnotation")
 public class FaunaIdImpl implements FaunaId {
 
     private final FaunaId annotation;

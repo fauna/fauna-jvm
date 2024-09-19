@@ -10,7 +10,7 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
 
     /**
      * Construct an Exponential backoff strategy.
-     *  The basic formula for exponential backoff is b^(a-1) where b is the backoff factor, and a is the retry
+     *  The basic formula for exponential backoff is `b^(a-1)` where `b` is the backoff factor, and `a` is the retry
      *  attempt number. So for a backoff factor of 2, you get:
      *  2^0=1, 2^1=2, 2^3=4, 2^4=8 ...
      *
@@ -49,7 +49,7 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
 
     /**
      * Get the % to jitter the backoff, will be a value between 0 and jitterFactor.
-     * @return
+     * @return  A randomly generated value between 0 and jitterFactor.
      */
     private double getJitterPercent() {
         return Math.random() * jitterFactor;
@@ -96,8 +96,28 @@ public class ExponentialBackoffStrategy implements RetryStrategy {
         private float jitterFactor = 0.5f;
 
 
-        public Builder setMaxAttempts(int maxAttempts) {
+        public Builder maxAttempts(int maxAttempts) {
             this.maxAttempts = maxAttempts;
+            return this;
+        }
+
+        public Builder backoffFactor(float backoffFactor) {
+            this.backoffFactor = backoffFactor;
+            return this;
+        }
+
+        public Builder initialIntervalMillis(int initialIntervalMillis) {
+            this.initialIntervalMillis = initialIntervalMillis;
+            return this;
+        }
+
+        public Builder maxBackoffMillis(int maxBackoffMillis) {
+            this.maxBackoffMillis = maxBackoffMillis;
+            return this;
+        }
+
+        public Builder jitterFactor(float jitterFactor) {
+            this.jitterFactor = jitterFactor;
             return this;
         }
 

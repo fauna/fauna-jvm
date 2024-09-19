@@ -1,9 +1,23 @@
 package com.fauna.codec;
 
-import com.fauna.codec.codecs.*;
-import com.fauna.query.builder.QueryVal;
-import com.fauna.types.*;
+import com.fauna.codec.codecs.BaseRefCodec;
+import com.fauna.codec.codecs.BoolCodec;
+import com.fauna.codec.codecs.ByteArrayCodec;
+import com.fauna.codec.codecs.ByteCodec;
+import com.fauna.codec.codecs.CharCodec;
+import com.fauna.codec.codecs.DoubleCodec;
+import com.fauna.codec.codecs.FloatCodec;
+import com.fauna.codec.codecs.InstantCodec;
+import com.fauna.codec.codecs.IntCodec;
+import com.fauna.codec.codecs.LocalDateCodec;
+import com.fauna.codec.codecs.LongCodec;
+import com.fauna.codec.codecs.ModuleCodec;
+import com.fauna.codec.codecs.ShortCodec;
+import com.fauna.codec.codecs.StringCodec;
+import com.fauna.types.BaseRef;
+import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
+import com.fauna.types.NamedDocumentRef;
 
 import java.time.Instant;
 import java.time.LocalDate;

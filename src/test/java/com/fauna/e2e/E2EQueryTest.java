@@ -241,8 +241,9 @@ public class E2EQueryTest {
     public void query_withTags() {
         QuerySuccess<NullableDocument<Author>> success = c.query(
                 fql("Author.byId('9090090')"),
-                nullableDocumentOf(Author.class), QueryOptions.builder().queryTags(
-                        Map.of("first", "1", "second", "2")).build());
+                nullableDocumentOf(Author.class), QueryOptions.builder()
+                        .queryTag("first", "1")
+                        .queryTag("second", "2").build());
         assertEquals("1", success.getQueryTags().get("first"));
         assertEquals("2", success.getQueryTags().get("second"));
     }

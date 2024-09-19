@@ -50,9 +50,9 @@ public class ClassCodecTest extends TestBase {
 
     // Class with FaunaIgnore attributes
     public static final Codec<ClassWithFaunaIgnore> CLASS_WITH_FAUNA_IGNORE_CODEC = DefaultCodecProvider.SINGLETON.get(ClassWithFaunaIgnore.class);
-    public static String CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
+    public static final String CLASS_WITH_FAUNA_IGNORE_WITH_AGE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\",\"age\":{\"@int\":\"42\"}}";
     public static final ClassWithFaunaIgnore CLASS_WITH_FAUNA_IGNORE_WITH_AGE = new ClassWithFaunaIgnore("foo", "bar", 42);
-    public static String CLASS_WITH_FAUNA_IGNORE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\"}";
+    public static final String CLASS_WITH_FAUNA_IGNORE_WIRE = "{\"first_name\":\"foo\",\"last_name\":\"bar\"}";
     public static final ClassWithFaunaIgnore CLASS_WITH_FAUNA_IGNORE = new ClassWithFaunaIgnore("foo", "bar", null);
 
     // Class with Id, Coll, Ts annotations

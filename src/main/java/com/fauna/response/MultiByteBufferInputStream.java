@@ -1,4 +1,4 @@
-package com.fauna.response.wire;
+package com.fauna.response;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Joins a list of byte buffers to make them appear as a single input stream.
- *
+ * <p>
  * The reset method is supported, and always resets to restart the stream at the beginning of the first buffer,
  * although markSupported() returns false for this class.
  */

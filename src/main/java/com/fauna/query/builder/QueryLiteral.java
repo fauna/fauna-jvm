@@ -1,10 +1,6 @@
 package com.fauna.query.builder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.UTF8FaunaGenerator;
-
-import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -50,7 +46,7 @@ public class QueryLiteral extends QueryFragment {
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        return value.hashCode();
     }
 
     @JsonValue

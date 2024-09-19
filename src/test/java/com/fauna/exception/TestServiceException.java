@@ -5,7 +5,7 @@ import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QueryStats;
-import com.fauna.response.QueryTags;
+import com.fauna.query.QueryTags;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

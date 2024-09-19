@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Helpers {
 
-    public static <T> T decode(Codec<T> codec, String val) throws IOException {
+    public static <T> T decode(Codec<T> codec, String val) {
         var parser = UTF8FaunaParser.fromString(val);
         return codec.decode(parser);
     }

@@ -3,7 +3,6 @@ package com.fauna.client;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.RetryableException;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -25,7 +24,7 @@ public class RetryHandler<T> {
 
     public CompletableFuture<T> delayRequest(Supplier<CompletableFuture<T>> action, int delayMillis) {
         return CompletableFuture.supplyAsync(
-                () -> action.get(), CompletableFuture.delayedExecutor(delayMillis, TimeUnit.MILLISECONDS)).join();
+                action, CompletableFuture.delayedExecutor(delayMillis, TimeUnit.MILLISECONDS)).join();
     }
 
     public static boolean isRetryable(Throwable exc) {

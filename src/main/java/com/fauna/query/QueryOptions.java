@@ -1,14 +1,13 @@
 package com.fauna.query;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
 
 public class QueryOptions {
     private final Boolean linearized;
     private final Boolean typeCheck;
     private final Duration timeout;
-    private final Map<String, String> queryTags;
+    private final QueryTags queryTags;
     private final String traceParent;
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
@@ -34,7 +33,7 @@ public class QueryOptions {
         return Optional.ofNullable(this.timeout).map(Duration::toMillis);
     }
 
-    public Optional<Map<String, String>> getQueryTags() {
+    public Optional<QueryTags> getQueryTags() {
         return Optional.ofNullable(this.queryTags);
     }
 
@@ -46,7 +45,7 @@ public class QueryOptions {
         public Boolean linearized = null;
         public Boolean typeCheck = null;
         public Duration timeout = DEFAULT_TIMEOUT;
-        public Map<String, String> queryTags = null;
+        public QueryTags queryTags = null;
         public String traceParent = null;
 
         public Builder linearized(boolean linearized) {
@@ -64,8 +63,20 @@ public class QueryOptions {
             return this;
         }
 
-        public Builder queryTags(Map<String, String> tags) {
-            this.queryTags = tags;
+        public Builder queryTags(QueryTags queryTags) {
+            if (this.queryTags != null) {
+                this.queryTags.putAll(queryTags);
+            } else {
+                this.queryTags = queryTags;
+            }
+            return this;
+        }
+
+        public Builder queryTag(String key, String value) {
+            if (this.queryTags == null) {
+                this.queryTags = new QueryTags();
+            }
+            this.queryTags.put(key, value);
             return this;
         }
 

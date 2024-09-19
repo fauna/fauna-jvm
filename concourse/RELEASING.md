@@ -3,7 +3,7 @@
 We publish the JVM driver on maven central. Our pipeline is driven by the
 repository itself. The runbook below describes the release process.
 
-1. When issuing a latest mainline release, create branch off of `main`.
+1. When issuing the latest mainline release, create branch off of `main`.
 2. Update [`gradle.properties`](../gradle.properties) to refer to the proper
    version number, and commit with a message "Release $RELEASE_VERSION". Note
    this commit SHA.

@@ -21,7 +21,6 @@ class InternalDocument {
         private String cause = null;
         private Instant ts = null;
         private final Map<String, Object> data = new HashMap<>();
-        private boolean throwIfNotExists = true;
 
         InternalDocument.Builder withDataField(String key, Object value) {
             data.put(key, value);
@@ -85,7 +84,7 @@ class InternalDocument {
         }
 
         Object build() {
-            if (exists != null && !exists && throwIfNotExists) {
+            if (exists != null && !exists) {
                 throw new NullDocumentException(id != null ? id : name, coll, cause);
             }
 

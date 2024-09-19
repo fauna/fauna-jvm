@@ -3,13 +3,13 @@ package com.fauna.response;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fauna.codec.Codec;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ProtocolException;
+import com.fauna.query.QueryTags;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,6 @@ import static com.fauna.constants.ResponseFields.SUMMARY_FIELD_NAME;
 public abstract class QueryResponse {
 
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final Long lastSeenTxn;
     private final Long schemaVersion;
@@ -36,14 +35,7 @@ public abstract class QueryResponse {
     private final Map<String, String> queryTags;
     private final QueryStats stats;
 
-    QueryResponse(Long lastSeenTxn, String summary, Long schemaVersion,
-                  Map<String, String> queryTags, QueryStats stats) {
-        this.lastSeenTxn = lastSeenTxn;
-        this.summary = summary;
-        this.schemaVersion = schemaVersion;
-        this.stats = stats;
-        this.queryTags = queryTags;
-    }
+    @SuppressWarnings("rawtypes")
     QueryResponse(Builder builder) {
         this.lastSeenTxn = builder.lastSeenTxn;
         this.summary = builder.summary;
@@ -110,54 +102,49 @@ public abstract class QueryResponse {
         }
 
         public QuerySuccess<T> buildSuccess() {
-            return new QuerySuccess(this);
+            return new QuerySuccess<>(this);
         }
 
     }
 
-    public static <T> Builder builder(Codec<T> codec) {
+    public static <T> Builder<T> builder(Codec<T> codec) {
         return new Builder<>(codec);
+    }
+
+    private static <T> Builder<T> handleField(Builder<T> builder, JsonParser parser) throws IOException {
+        String fieldName = parser.getCurrentName();
+        switch (fieldName) {
+            case ERROR_FIELD_NAME:
+                return builder.error(ErrorInfo.parse(parser));
+            case DATA_FIELD_NAME:
+                return builder.data(parser);
+            case STATS_FIELD_NAME:
+                return builder.stats(QueryStats.parseStats(parser));
+            case QUERY_TAGS_FIELD_NAME:
+                return builder.queryTags(QueryTags.parse(parser));
+            case LAST_SEEN_TXN_FIELD_NAME:
+                return builder.lastSeenTxn(parser.nextLongValue(0));
+            case SCHEMA_VERSION_FIELD_NAME:
+                return builder.schemaVersion(parser.nextLongValue(0));
+            case STATIC_TYPE_FIELD_NAME:
+                return builder.staticType(parser.nextTextValue());
+            case SUMMARY_FIELD_NAME:
+                return builder.summary(parser.nextTextValue());
+            default:
+                throw new ClientResponseException("Unexpected field '" + fieldName + "'.");
+        }
     }
 
     public static <T>  QuerySuccess<T> parseResponse(HttpResponse<InputStream> response, Codec<T> codec) throws FaunaException {
         try {
                 JsonParser parser = JSON_FACTORY.createParser(response.body());
                 JsonToken firstToken = parser.nextToken();
-                Builder<T> builder = builder(codec);
+                Builder<T> builder = QueryResponse.builder(codec);
                 if (firstToken != JsonToken.START_OBJECT) {
                     throw new ClientResponseException("Response must be JSON object.");
                 }
                 while (parser.nextToken() == JsonToken.FIELD_NAME) {
-                    String fieldName = parser.getCurrentName();
-                    switch (fieldName) {
-                        case ERROR_FIELD_NAME:
-                            builder.error(ErrorInfo.parse(parser));
-                            break;
-                        case DATA_FIELD_NAME:
-                            builder.data(parser);
-                            break;
-                        case STATS_FIELD_NAME:
-                            builder.stats(QueryStats.parseStats(parser));
-                            break;
-                        case QUERY_TAGS_FIELD_NAME:
-                            builder.queryTags(QueryTags.parse(parser));
-                            break;
-                        case LAST_SEEN_TXN_FIELD_NAME:
-                            builder.lastSeenTxn(parser.nextLongValue(0));
-                            break;
-                        case SCHEMA_VERSION_FIELD_NAME:
-                            builder.schemaVersion(parser.nextLongValue(0));
-                            break;
-                        case STATIC_TYPE_FIELD_NAME:
-                            builder.staticType(parser.nextTextValue());
-                            break;
-                        case SUMMARY_FIELD_NAME:
-                            builder.summary(parser.nextTextValue());
-                            break;
-                        default:
-                            throw new ClientResponseException("Unexpected field '" + fieldName + "'.");
-                    }
-
+                    builder = handleField(builder, parser);
                 }
             int httpStatus = response.statusCode();
             if (httpStatus >= 400) {

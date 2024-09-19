@@ -165,6 +165,7 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
             return type;
         }
 
+        @SuppressWarnings("rawtypes")
         public QueryFragment toFragment(Map<String, Object> args) {
             if (this.getType().equals(TemplatePartType.VARIABLE)) {
                 if (Objects.isNull(args)) {

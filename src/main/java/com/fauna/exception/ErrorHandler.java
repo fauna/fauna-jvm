@@ -26,18 +26,19 @@ public class ErrorHandler {
     /**
      * Handles errors based on the HTTP status code and error code.
      *
-     * @param statusCode    The HTTP status code.
-     * @param failure       The decoded QueryFailure body.
-     * @throws AbortException
-     * @throws AuthenticationException
-     * @throws AuthorizationException
-     * @throws ConstraintFailureException
-     * @throws ContendedTransactionException
-     * @throws InvalidRequestException
-     * @throws QueryCheckException
-     * @throws QueryRuntimeException
-     * @throws QueryTimeoutException
-     * @throws ThrottlingException
+     * @param statusCode                    The HTTP status code.
+     * @param failure                       The decoded QueryFailure body.
+     * @throws AbortException               The transaction was aborted.
+     * @throws AuthenticationException      Invalid or missing authentication token.
+     * @throws AuthorizationException       Invalid or missing authentication token.
+     * @throws ConstraintFailureException   The transaction failed a check constraint.
+     * @throws ContendedTransactionException Too much contention occurred on a document while executing a query.
+     * @throws InvalidRequestException      The request body does not conform to the API specification.
+     * @throws QueryCheckException          The query failed one or more validation checks.
+     * @throws QueryRuntimeException        The query failed due to a runtime error.
+     * @throws QueryTimeoutException        The client specified timeout was exceeded.
+     * @throws ServiceInternalException     An unexpected server error occured.
+     * @throws ThrottlingException          The query exceeded some capacity limit.
      *
      */
     public static void handleQueryFailure(int statusCode, QueryFailure failure) {

@@ -10,8 +10,8 @@ import java.util.Optional;
 public class FaunaConfig {
 
     public static class FaunaEndpoint {
-        public static String DEFAULT = "https://db.fauna.com";
-        public static String LOCAL = "http://localhost:8443";
+        public static final String DEFAULT = "https://db.fauna.com";
+        public static final String LOCAL = "http://localhost:8443";
     }
 
     private final String endpoint;
@@ -20,20 +20,14 @@ public class FaunaConfig {
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
             FaunaEndpoint.LOCAL).secret("secret").build();
 
-
-//    private Integer maxContentionRetries;
-//    private int maxAttempts;
-//    private int maxBackoff;
-
-
     /**
      * Private constructor for FaunaConfig.
      *
      * @param builder The builder used to create the FaunaConfig instance.
      */
     private FaunaConfig(Builder builder) {
-        this.endpoint = builder.endpoint.orElseGet(() -> FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT));
-        this.secret = builder.secret.orElseGet(() -> FaunaEnvironment.faunaSecret().orElse(""));
+        this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
+        this.secret = builder.secret != null ? builder.secret : "";
     }
 
     /**
@@ -68,8 +62,8 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private Optional<String> endpoint = Optional.empty();
-        private Optional<String> secret = Optional.empty();
+        private String endpoint = null;
+        private String secret = null;
 
         /**
          * Sets the endpoint URL.
@@ -78,7 +72,7 @@ public class FaunaConfig {
          * @return The current Builder instance.
          */
         public Builder endpoint(String endpoint) {
-            this.endpoint = Optional.ofNullable(endpoint);
+            this.endpoint = endpoint;
             return this;
         }
 
@@ -89,7 +83,7 @@ public class FaunaConfig {
          * @return The current Builder instance.
          */
         public Builder secret(String secret) {
-            this.secret = Optional.ofNullable(secret);
+            this.secret = secret;
             return this;
         }
 

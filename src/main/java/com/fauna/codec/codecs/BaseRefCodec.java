@@ -7,8 +7,6 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 import com.fauna.types.*;
 
-import java.io.IOException;
-
 public class BaseRefCodec extends BaseCodec<BaseRef> {
 
     public static final BaseRefCodec SINGLETON = new BaseRefCodec();

@@ -10,6 +10,7 @@ import java.util.Objects;
 public class QueryObj<E extends QueryFragment> extends QueryFragment<Map<String,E>> {
 
     public static <E extends QueryFragment> QueryObj of(Map<String, E> val) {
+        //noinspection unchecked
         return new QueryObj(val);
     }
 

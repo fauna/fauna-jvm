@@ -56,7 +56,7 @@ public class TestExponentialBackoffStrategy {
 
     @Test
     public void testMaxBackoffBehaviour() {
-        ExponentialBackoffStrategy strategy = ExponentialBackoffStrategy.builder().setMaxAttempts(7).build();
+        ExponentialBackoffStrategy strategy = ExponentialBackoffStrategy.builder().maxAttempts(7).build();
         assertTrue(strategy.canRetry(0));
         assertEquals(0, strategy.getDelayMillis(0), 0);
 
@@ -78,7 +78,13 @@ public class TestExponentialBackoffStrategy {
 
     @Test
     public void testCustomStrategy() {
-        RetryStrategy strategy = new ExponentialBackoffStrategy(4, 4, 100, 2000, 0.1f);
+        RetryStrategy strategy = ExponentialBackoffStrategy.builder()
+                .backoffFactor(4)
+                .maxAttempts(4)
+                .initialIntervalMillis(100)
+                .maxBackoffMillis(2000)
+                .jitterFactor(0.1f)
+                .build();
 
         assertTrue(strategy.canRetry(1));
         assertTrue(strategy.getDelayMillis(1) >= 90);

@@ -31,6 +31,7 @@ public class QueryObjCodec extends BaseCodec<QueryObj> {
             gen.writeFieldName("object");
             Object unwrapped = obj.get();
             Codec codec = provider.get(unwrapped.getClass());
+            //noinspection unchecked
             codec.encode(gen, unwrapped);
             gen.writeEndObject();
         }

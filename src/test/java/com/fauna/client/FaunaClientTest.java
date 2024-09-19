@@ -1,6 +1,7 @@
 package com.fauna.client;
 
 import com.fauna.beans.Person;
+import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.e2e.beans.Product;
 import com.fauna.exception.QueryCheckException;
 import com.fauna.exception.ThrottlingException;
@@ -21,6 +22,7 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -70,6 +72,15 @@ class FaunaClientTest {
         HttpResponse resp = mock(HttpResponse.class);
         doAnswer(invocationOnMock -> new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8))).when(resp).body();
         return resp;
+    }
+
+    @Test
+    void defaultClient() {
+        FaunaClient client = Fauna.client();
+        assertTrue(client.getHttpClient().connectTimeout().isEmpty());
+        assertEquals(URI.create("https://db.fauna.com/query/1"),
+                client.getRequestBuilder().buildRequest(
+                        fql("hello"), QueryOptions.builder().build(), DefaultCodecProvider.SINGLETON).uri());
     }
 
     @Test
