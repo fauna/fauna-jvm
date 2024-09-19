@@ -90,11 +90,7 @@ public class RequestBuilder {
      * @return An HttpRequest object configured for the Fauna query.
      */
     public HttpRequest buildRequest(Query fql, QueryOptions options, CodecProvider provider) {
-        // TODO: I think we can avoid doing this copy if no new headers need to be set.
-        HttpRequest.Builder builder = baseRequestBuilder.copy();
-        if (options != null) {
-            addOptionalHeaders(builder, options);
-        }
+        HttpRequest.Builder builder = getBuilder(options);
         // TODO: set last-txn-ts and max-contention-retries.
         try (UTF8FaunaGenerator gen = UTF8FaunaGenerator.create()) {
             gen.writeStartObject();
@@ -141,16 +137,21 @@ public class RequestBuilder {
     }
 
     /**
-     * Adds optional headers to the HttpRequest.Builder from the given QueryOptions.
-     * @param builder A HttpRequest.Builder that will have headers added to it.
+     * Get either the base request builder (if options is null) or a copy with the options applied.
      * @param options The QueryOptions (must not be null).
      */
-    private static void addOptionalHeaders(HttpRequest.Builder builder, QueryOptions options) {
-        options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
-        options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
-        options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
-        options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
-        options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, val.encode()));
+    private HttpRequest.Builder getBuilder(QueryOptions options) {
+        if (options == null) {
+            return baseRequestBuilder;
+        } else{
+            HttpRequest.Builder builder = baseRequestBuilder.copy();
+            options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
+            options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
+            options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
+            options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
+            options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, val.encode()));
+            return builder;
+        }
     }
 
 }
