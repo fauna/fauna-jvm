@@ -1,6 +1,8 @@
 package com.fauna.query.template;
 
-import com.fauna.query.builder.*;
+import com.fauna.query.builder.QueryFragment;
+import com.fauna.query.builder.QueryLiteral;
+import com.fauna.query.builder.QueryVal;
 
 import java.util.Iterator;
 import java.util.Map;

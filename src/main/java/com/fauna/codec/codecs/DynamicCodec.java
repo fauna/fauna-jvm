@@ -7,7 +7,9 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 import com.fauna.query.StreamTokenResponse;
-import com.fauna.types.*;
+import com.fauna.types.Document;
+import com.fauna.types.DocumentRef;
+import com.fauna.types.Page;
 
 import java.util.List;
 import java.util.Map;
