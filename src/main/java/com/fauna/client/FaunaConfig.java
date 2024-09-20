@@ -16,6 +16,7 @@ public class FaunaConfig {
 
     private final String endpoint;
     private final String secret;
+    private final int maxContentionRetries;
     public static final FaunaConfig DEFAULT = FaunaConfig.builder().build();
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
             FaunaEndpoint.LOCAL).secret("secret").build();
@@ -28,6 +29,7 @@ public class FaunaConfig {
     private FaunaConfig(Builder builder) {
         this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
         this.secret = builder.secret != null ? builder.secret : "";
+        this.maxContentionRetries = builder.maxContentionRetries;
     }
 
     /**
@@ -50,6 +52,15 @@ public class FaunaConfig {
     }
 
     /**
+     * Gets the number of contention retries that the Fauna server will attempt.
+     * @return  An integer value.
+     */
+    public int getMaxContentionRetries() {
+        return maxContentionRetries;
+    }
+
+
+    /**
      * Creates a new builder for FaunaConfig.
      *
      * @return A new instance of Builder.
@@ -64,6 +75,7 @@ public class FaunaConfig {
     public static class Builder {
         private String endpoint = null;
         private String secret = null;
+        private int maxContentionRetries = 3;
 
         /**
          * Sets the endpoint URL.
@@ -84,6 +96,11 @@ public class FaunaConfig {
          */
         public Builder secret(String secret) {
             this.secret = secret;
+            return this;
+        }
+
+        public Builder maxContentionRetries(int maxContentionRetries) {
+            this.maxContentionRetries = maxContentionRetries;
             return this;
         }
 

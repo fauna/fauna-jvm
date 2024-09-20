@@ -51,7 +51,7 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(URI uri, String token) {
+    public RequestBuilder(URI uri, String token, int maxContentionRetries) {
         // DriverEnvironment is not needed outside the constructor for now.
         DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
@@ -60,6 +60,7 @@ public class RequestBuilder {
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
                 RequestBuilder.Headers.DRIVER, "Java",
                 RequestBuilder.Headers.DRIVER_ENV, env.toString(),
+                RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(maxContentionRetries),
                 Headers.AUTHORIZATION, buildAuthHeader(token)
         );
     }
@@ -69,11 +70,11 @@ public class RequestBuilder {
     }
 
     public static RequestBuilder queryRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret());
+        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries());
     }
 
     public static RequestBuilder streamRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret());
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries());
     }
 
     public RequestBuilder scopedRequestBuilder(String token) {
@@ -89,13 +90,8 @@ public class RequestBuilder {
      * @param fql The Fauna query string.
      * @return An HttpRequest object configured for the Fauna query.
      */
-    public HttpRequest buildRequest(Query fql, QueryOptions options, CodecProvider provider) {
-        // TODO: I think we can avoid doing this copy if no new headers need to be set.
-        HttpRequest.Builder builder = baseRequestBuilder.copy();
-        if (options != null) {
-            addOptionalHeaders(builder, options);
-        }
-        // TODO: set last-txn-ts and max-contention-retries.
+    public HttpRequest buildRequest(Query fql, QueryOptions options, CodecProvider provider, Long last_txn_ts) {
+        HttpRequest.Builder builder = getBuilder(options, last_txn_ts);
         try (UTF8FaunaGenerator gen = UTF8FaunaGenerator.create()) {
             gen.writeStartObject();
             gen.writeFieldName(FieldNames.QUERY);
@@ -141,16 +137,25 @@ public class RequestBuilder {
     }
 
     /**
-     * Adds optional headers to the HttpRequest.Builder from the given QueryOptions.
-     * @param builder A HttpRequest.Builder that will have headers added to it.
+     * Get either the base request builder (if options is null) or a copy with the options applied.
      * @param options The QueryOptions (must not be null).
      */
-    private static void addOptionalHeaders(HttpRequest.Builder builder, QueryOptions options) {
-        options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
-        options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
-        options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
-        options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
-        options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, val.encode()));
+    private HttpRequest.Builder getBuilder(QueryOptions options, Long lastTxnTs) {
+        if (options == null && (lastTxnTs == null || lastTxnTs <= 0) ) {
+            return baseRequestBuilder;
+        }
+        HttpRequest.Builder builder = baseRequestBuilder.copy();
+        if (lastTxnTs != null) {
+            builder.setHeader(Headers.LAST_TXN_TS, String.valueOf(lastTxnTs));
+        }
+        if (options != null) {
+            options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
+            options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
+            options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
+            options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
+            options.getQueryTags().ifPresent(val -> builder.headers(Headers.QUERY_TAGS, val.encode()));
+        }
+        return builder;
     }
 
 }

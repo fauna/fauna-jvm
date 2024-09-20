@@ -137,15 +137,16 @@ public abstract class QueryResponse {
 
     public static <T>  QuerySuccess<T> parseResponse(HttpResponse<InputStream> response, Codec<T> codec) throws FaunaException {
         try {
-                JsonParser parser = JSON_FACTORY.createParser(response.body());
-                JsonToken firstToken = parser.nextToken();
-                Builder<T> builder = QueryResponse.builder(codec);
-                if (firstToken != JsonToken.START_OBJECT) {
-                    throw new ClientResponseException("Response must be JSON object.");
-                }
-                while (parser.nextToken() == JsonToken.FIELD_NAME) {
-                    builder = handleField(builder, parser);
-                }
+            JsonParser parser = JSON_FACTORY.createParser(response.body());
+
+            JsonToken firstToken = parser.nextToken();
+            Builder<T> builder = QueryResponse.builder(codec);
+            if (firstToken != JsonToken.START_OBJECT) {
+                throw new ClientResponseException("Response must be JSON object.");
+            }
+            while (parser.nextToken() == JsonToken.FIELD_NAME) {
+                builder = handleField(builder, parser);
+            }
             int httpStatus = response.statusCode();
             if (httpStatus >= 400) {
                 QueryFailure failure = new QueryFailure(httpStatus, builder);
