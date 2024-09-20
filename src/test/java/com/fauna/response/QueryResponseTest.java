@@ -1,7 +1,9 @@
 package com.fauna.response;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,7 +64,7 @@ class QueryResponseTest {
     }
 
     @Test
-    public void handleResponseWithInvalidJsonThrowsProtocolException() {
+    public void handleResponseWithInvalidJsonThrowsClientResponseException() {
         HttpResponse resp = mockResponse("{\"not valid json\"");
         when(resp.statusCode()).thenReturn(400);
 
@@ -71,23 +73,15 @@ class QueryResponseTest {
     }
 
     @Test
-    public void handleResponseWithMissingStatsThrowsProtocolException() {
-        HttpResponse resp = mockResponse("{\"not valid json\"");
-        assertThrows(ClientResponseException.class, () -> QueryResponse.parseResponse(resp,  codecProvider.get(Object.class)));
+    public void handleResponseWithEmptyFieldsDoesNotThrow() {
+        HttpResponse resp = mockResponse("{}");
+        QuerySuccess<Object> response = QueryResponse.parseResponse(resp,  codecProvider.get(Object.class));
+        assertEquals(QuerySuccess.class, response.getClass());
+        assertNull(response.getSchemaVersion());
+        assertNull(response.getSummary());
+        assertNull(response.getLastSeenTxn());
+        assertNull(response.getQueryTags());
+        assertNull(response.getData());
+        assertNull(response.getStats());
     }
-
-    @Test
-    void getFromResponseBody_Exception() {
-        String body = "Invalid JSON";
-
-        // TODO call FaunaClient.handleResponse here.
-        CodecException exception = assertThrows(CodecException.class, () -> {
-            throw new CodecException("Error occurred while parsing the response body");
-        });
-
-        assertEquals("Error occurred while parsing the response body", exception.getMessage());
-        // assertTrue(exception.getCause().getMessage().contains(
-        // "Unrecognized token 'Invalid': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"));
-    }
-
 }

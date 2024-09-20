@@ -19,7 +19,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import static com.fauna.codec.FaunaTokenType.*;
+import static com.fauna.codec.FaunaTokenType.BYTES;
+import static com.fauna.codec.FaunaTokenType.DATE;
+import static com.fauna.codec.FaunaTokenType.DOUBLE;
+import static com.fauna.codec.FaunaTokenType.END_ARRAY;
+import static com.fauna.codec.FaunaTokenType.END_DOCUMENT;
+import static com.fauna.codec.FaunaTokenType.END_OBJECT;
+import static com.fauna.codec.FaunaTokenType.END_PAGE;
+import static com.fauna.codec.FaunaTokenType.END_REF;
+import static com.fauna.codec.FaunaTokenType.INT;
+import static com.fauna.codec.FaunaTokenType.LONG;
+import static com.fauna.codec.FaunaTokenType.NONE;
+import static com.fauna.codec.FaunaTokenType.TIME;
 
 /**
  * Represents a reader that provides fast, non-cached, forward-only access to serialized data.

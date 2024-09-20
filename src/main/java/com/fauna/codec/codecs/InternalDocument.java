@@ -1,10 +1,13 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaTokenType;
-import com.fauna.exception.NullDocumentException;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.types.*;
+import com.fauna.exception.NullDocumentException;
+import com.fauna.types.Document;
+import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
+import com.fauna.types.NamedDocument;
+import com.fauna.types.NamedDocumentRef;
 
 import java.time.Instant;
 import java.util.HashMap;

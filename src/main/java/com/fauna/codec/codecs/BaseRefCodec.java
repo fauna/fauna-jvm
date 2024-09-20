@@ -5,7 +5,9 @@ import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
-import com.fauna.types.*;
+import com.fauna.types.BaseRef;
+import com.fauna.types.DocumentRef;
+import com.fauna.types.NamedDocumentRef;
 
 public class BaseRefCodec extends BaseCodec<BaseRef> {
 
