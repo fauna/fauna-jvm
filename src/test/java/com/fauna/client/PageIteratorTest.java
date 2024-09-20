@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
@@ -94,6 +95,22 @@ public class PageIteratorTest {
         assertEquals(List.of("1-a", "1-b"), pageIterator.next().getData());
         assertFalse(pageIterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> pageIterator.next());
+    }
+
+    @Test
+    public void test_multiple_pages_async() throws Exception {
+        when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(
+                successFuture(true, 0), successFuture(false, 1));
+        PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
+
+        boolean hasNext = pageIterator.hasNext();
+        List<String> products = new ArrayList<>();
+        while (hasNext) {
+            hasNext = pageIterator.nextAsync().thenApply(page -> {
+                products.addAll(page.getData());
+                return pageIterator.hasNext(); }).get();
+        }
+        assertEquals(4, products.size());
     }
 
     @Test
