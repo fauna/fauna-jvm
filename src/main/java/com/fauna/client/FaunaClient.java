@@ -56,7 +56,7 @@ public abstract class FaunaClient {
     }
 
     private static Optional<ServiceException> extractServiceException(Throwable throwable) {
-        if (throwable.getCause() instanceof FaunaException) {
+        if (throwable.getCause() instanceof ServiceException) {
             return Optional.of((ServiceException) throwable.getCause());
         } else {
             return Optional.empty();
