@@ -60,7 +60,7 @@ public class RequestBuilder {
                 RequestBuilder.Headers.CONTENT_TYPE, "application/json;charset=utf-8",
                 RequestBuilder.Headers.DRIVER, "Java",
                 RequestBuilder.Headers.DRIVER_ENV, env.toString(),
-                RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(max_contention_retries),
+                RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(maxContentionRetries),
                 Headers.AUTHORIZATION, buildAuthHeader(token)
         );
     }
@@ -141,12 +141,12 @@ public class RequestBuilder {
      * @param options The QueryOptions (must not be null).
      */
     private HttpRequest.Builder getBuilder(QueryOptions options, Long lastTxnTs) {
-        if (options == null && (last_txn_ts == null || last_txn_ts <= 0) ) {
+        if (options == null && (lastTxnTs == null || lastTxnTs <= 0) ) {
             return baseRequestBuilder;
         }
         HttpRequest.Builder builder = baseRequestBuilder.copy();
-        if (last_txn_ts != null) {
-            builder.setHeader(Headers.LAST_TXN_TS, String.valueOf(last_txn_ts));
+        if (lastTxnTs != null) {
+            builder.setHeader(Headers.LAST_TXN_TS, String.valueOf(lastTxnTs));
         }
         if (options != null) {
             options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
