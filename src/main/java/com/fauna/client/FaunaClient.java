@@ -51,10 +51,6 @@ public abstract class FaunaClient {
         return ts > 0 ? Optional.of(ts) : Optional.empty();
     }
 
-    private <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
-        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec)).whenComplete(this::completeRequest);
-    }
-
     private static Optional<ServiceException> extractServiceException(Throwable throwable) {
         if (throwable.getCause() instanceof ServiceException) {
             return Optional.of((ServiceException) throwable.getCause());
@@ -77,6 +73,11 @@ public abstract class FaunaClient {
             extractServiceException(throwable).ifPresent(exc -> updateTs(exc.getResponse()));
         }
     }
+
+    private <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec)).whenComplete(this::completeRequest);
+    }
+
 
     //region Asynchronous API
     /**
