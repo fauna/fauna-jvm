@@ -47,7 +47,7 @@ public abstract class FaunaClient {
     }
 
     public Optional<Long> getLastTransactionTs() {
-        Long ts = lastTransactionTs.get();
+        long ts = lastTransactionTs.get();
         return ts > 0 ? Optional.of(ts) : Optional.empty();
     }
 
@@ -70,14 +70,12 @@ public abstract class FaunaClient {
         }
     }
 
-    private <T> QuerySuccess<T> completeRequest(QuerySuccess<T> success, Throwable throwable) {
+    private <T> void completeRequest(QuerySuccess<T> success, Throwable throwable) {
         if (success != null) {
             updateTs(success);
-            return success;
         } else if (throwable != null) {
             extractServiceException(throwable).ifPresent(exc -> updateTs(exc.getResponse()));
         }
-        return null;
     }
 
     //region Asynchronous API

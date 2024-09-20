@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,7 +31,6 @@ import static com.fauna.client.RequestBuilder.Headers.TYPE_CHECK;
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RequestBuilderTest {
