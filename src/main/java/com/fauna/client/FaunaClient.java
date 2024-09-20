@@ -322,7 +322,7 @@ public abstract class FaunaClient {
      * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
     public PageIterator<Object> paginate(Query fql) {
-        return new PageIterator<>(this, fql, Object.class, null);
+        return paginate(fql, Object.class, null);
     }
 
     /**
@@ -333,7 +333,7 @@ public abstract class FaunaClient {
      * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
     public PageIterator<Object> paginate(Query fql, QueryOptions options) {
-        return new PageIterator<>(this, fql, Object.class, options);
+        return paginate(fql, Object.class, options);
     }
 
     /**
