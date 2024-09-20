@@ -140,7 +140,7 @@ public class RequestBuilder {
      * Get either the base request builder (if options is null) or a copy with the options applied.
      * @param options The QueryOptions (must not be null).
      */
-    private HttpRequest.Builder getBuilder(QueryOptions options, Long last_txn_ts) {
+    private HttpRequest.Builder getBuilder(QueryOptions options, Long lastTxnTs) {
         if (options == null && (last_txn_ts == null || last_txn_ts <= 0) ) {
             return baseRequestBuilder;
         }
