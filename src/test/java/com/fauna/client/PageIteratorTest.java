@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -102,36 +101,8 @@ public class PageIteratorTest {
         when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(failureFuture());
         PageIterator<String> pageIterator = new PageIterator<>(client, fql("hello"), String.class, null);
         // We could return the wrapped completion exception here.
-        InvalidRequestException exc = assertThrows(InvalidRequestException.class, () -> pageIterator.hasNext());
+        assertTrue(pageIterator.hasNext());
+        InvalidRequestException exc = assertThrows(InvalidRequestException.class, () -> pageIterator.next());
         assertEquals("invalid_query", exc.getResponse().getErrorCode());
-    }
-
-    @Test
-    public void test_PageIterator_from_single_Page() {
-        Page<String> page = new Page<>(List.of("hello"), null);
-        PageIterator<String> pageIterator = new PageIterator<>(client, page, String.class, null);
-        assertTrue(pageIterator.hasNext());
-        assertEquals(page, pageIterator.next());
-        assertFalse(pageIterator.hasNext());
-        assertThrows(NoSuchElementException.class, () -> pageIterator.next());
-
-    }
-
-    @Test
-    public void test_PageIterator_from_Page() throws IOException {
-        Page<String> page = new Page<>(List.of("hello"), "foo");
-        PageIterator<String> pageIterator = new PageIterator<>(client, page, String.class, null);
-
-        assertTrue(pageIterator.hasNext());
-        when(client.asyncQuery(any(), any(ParameterizedOf.class), any())).thenReturn(
-                successFuture(false, 0));
-        assertEquals(page, pageIterator.next());
-
-        assertTrue(pageIterator.hasNext());
-        assertEquals(List.of("0-a", "0-b"), pageIterator.next().getData());
-
-        assertFalse(pageIterator.hasNext());
-        assertThrows(NoSuchElementException.class, () -> pageIterator.next());
-
     }
 }

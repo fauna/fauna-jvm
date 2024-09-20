@@ -2,6 +2,7 @@ package com.fauna.types;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a page in a dataset for pagination.
@@ -21,8 +22,8 @@ public class Page<T>{
         return data;
     }
 
-    public String getAfter() {
-        return after;
+    public Optional<String> getAfter() {
+        return Optional.ofNullable(after);
     }
 
     @Override

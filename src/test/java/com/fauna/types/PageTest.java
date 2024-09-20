@@ -11,10 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class PageTest extends TypeTestBase {
 
     @Test
-    public void page_playsNiceWithJackson() throws JsonProcessingException {
+    public void page_doesNotPlayNiceWithJackson() throws JsonProcessingException {
+        // Page no longer plays nice with Jackson, but we use our Codec/parser instead.
         var page = new Page<>(List.of(1), "next");
         var result = mapper.writeValueAsString(page);
-        assertEquals("{\"data\":[1],\"after\":\"next\"}", result);
+        assertEquals("{\"data\":[1],\"after\":{\"empty\":false,\"present\":true}}", result);
     }
 
     @Test
