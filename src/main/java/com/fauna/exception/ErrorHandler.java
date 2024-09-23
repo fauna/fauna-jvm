@@ -3,6 +3,8 @@ package com.fauna.exception;
 import com.fauna.response.QueryFailure;
 
 
+import java.util.concurrent.ExecutionException;
+
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_CONFLICT;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
