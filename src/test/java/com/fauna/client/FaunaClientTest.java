@@ -46,7 +46,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -62,6 +61,10 @@ class FaunaClientTest {
     @Mock
     public HttpClient mockHttpClient;
 
+    String productBase = "{\"@doc\":{\"id\":\"406412545672348160\",\"coll\":{\"@mod\":\"Product\"}," +
+            "\"ts\":{\"@time\":\"2024-08-16T21:34:16.700Z\"},\"name\":\"%s\",\"quantity\":{\"@int\":\"0\"}}}";
+    String bodyBase = "{\"data\":{\"@set\":{\"data\":[%s],\"after\":%s}},\"summary\":\"\"," +
+            "\"txn_ts\":1723844145837000,\"stats\":{},\"schema_version\":1723844028490000}";
 
     @BeforeEach
     void setUp() {
@@ -313,10 +316,6 @@ class FaunaClientTest {
 
     @Test
     void paginateWithQueryOptions() throws IOException {
-        String productBase = "{\"@doc\":{\"id\":\"406412545672348160\",\"coll\":{\"@mod\":\"Product\"}," +
-                "\"ts\":{\"@time\":\"2024-08-16T21:34:16.700Z\"},\"name\":\"%s\",\"quantity\":{\"@int\":\"0\"}}}";
-        String bodyBase = "{\"data\":{\"@set\":{\"data\":[%s],\"after\":%s}},\"summary\":\"\"," +
-                "\"txn_ts\":1723844145837000,\"stats\":{},\"schema_version\":1723844028490000}";
         QueryOptions options = QueryOptions.builder().timeout(Duration.ofMillis(42)).build();
 
         HttpResponse firstPageResp = mockResponse(String.format(bodyBase, String.format(productBase, "product-0"), "\"after_token\""));
@@ -337,7 +336,30 @@ class FaunaClientTest {
         Page<Product> secondPage = iter.next();
         assertEquals("product-1", secondPage.getData().get(0).getName());
         assertFalse(iter.hasNext());
+    }
 
+    @Test
+    void paginateWithQueryOptionsAndNoElementType() {
+        QueryOptions options = QueryOptions.builder().timeout(Duration.ofMillis(42)).build();
+
+        HttpResponse firstPageResp = mockResponse(String.format(bodyBase, String.format(productBase, "product-0"), "\"after_token\""));
+        when(firstPageResp.statusCode()).thenReturn(200);
+        HttpResponse secondPageResp = mockResponse(String.format(bodyBase, String.format(productBase, "product-1"), "null"));
+        when(secondPageResp.statusCode()).thenReturn(200);
+
+        ArgumentMatcher<HttpRequest> matcher = new HttpRequestMatcher(Map.of("X-Query-Timeout-Ms", "42"));
+        when(mockHttpClient.sendAsync(argThat(matcher), any())).thenReturn(
+                CompletableFuture.supplyAsync(() -> firstPageResp),
+                CompletableFuture.supplyAsync(() -> secondPageResp));
+
+        PageIterator<Object> iter = client.paginate(fql("Document.all()"), options);
+        assertTrue(iter.hasNext());
+        Page<Object> firstPage = iter.next();
+        assertEquals("product-0", ((Document) firstPage.getData().get(0)).get("name"));
+        assertTrue(iter.hasNext());
+        Page<Object> secondPage = iter.next();
+        assertEquals("product-1", ((Document) secondPage.getData().get(0)).get("name"));
+        assertFalse(iter.hasNext());
     }
 
 }

@@ -302,17 +302,7 @@ public abstract class FaunaClient {
     }
     //endregion
 
-    /**
-     * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
-     * @param fql               The FQL query to be executed.
-     * @param elementClass      The expected class of the query result.
-     * @return QuerySuccess     The successful query result.
-     * @throws FaunaException If the query does not succeed, an exception will be thrown.
-     */
-    public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass) {
-        return new PageIterator<>(this, fql, elementClass, null);
-    }
-
+    //region Paginated API
     /**
      * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
      * @param fql               The FQL query to be executed.
@@ -325,6 +315,41 @@ public abstract class FaunaClient {
         return new PageIterator<>(this, fql, elementClass, options);
     }
 
+    /**
+     * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
+     * @param fql               The FQL query to be executed.
+     * @return                  The successful query result.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
+     */
+    public PageIterator<Object> paginate(Query fql) {
+        return paginate(fql, Object.class, null);
+    }
+
+    /**
+     * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
+     * @param fql               The FQL query to be executed.
+     * @param options           A (nullable) set of options to pass to the query.
+     * @return                  The successful query result.
+     * @throws FaunaException   If the query does not succeed, an exception will be thrown.
+     */
+    public PageIterator<Object> paginate(Query fql, QueryOptions options) {
+        return paginate(fql, Object.class, options);
+    }
+
+    /**
+     * Send a Fauna Query Language (FQL) query to Fauna and return a paginated result.
+     * @param fql               The FQL query to be executed.
+     * @param elementClass      The expected class of the query result.
+     * @return QuerySuccess     The successful query result.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     */
+    public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass) {
+        return paginate(fql, elementClass, null);
+    }
+    //endregion
+
+
+    //region Streaming API
     /**
      * Send a request to the Fauna stream endpoint, and return a CompletableFuture that completes with the FaunaStream
      * publisher.
@@ -400,4 +425,5 @@ public abstract class FaunaClient {
         }
 
     }
+    //endregion
 }

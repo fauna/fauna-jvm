@@ -6,6 +6,7 @@ import com.fauna.client.PageIterator;
 import com.fauna.e2e.beans.Product;
 import com.fauna.response.QuerySuccess;
 import com.fauna.codec.PageOf;
+import com.fauna.types.Document;
 import com.fauna.types.Page;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,22 @@ public class E2EPaginationTest {
         assertTrue(iter.hasNext());
         Page<Product> page = iter.next();
         assertEquals(1, page.getData().size());
-        assertNull(page.getAfter());
+        assertTrue(page.getAfter().isEmpty());
+        assertFalse(iter.hasNext());
+        assertThrows(NoSuchElementException.class, iter::next);
+    }
+
+    @Test
+    public void query_single_object_gets_wrapped_in_page() {
+        PageIterator<Object> iter = client.paginate(fql("Product.firstWhere(.name == 'product-1')"));
+        assertTrue(iter.hasNext());
+        // We didn't pass in a type, so the client returns Page<Object>
+        Page<Object> page = iter.next();
+        assertEquals(1, page.getData().size());
+        // In this case the "Object" is actually a Document, so we can cast it.
+        Document document = (Document) page.getData().get(0);
+        assertEquals("product-1", document.get("name"));
+        assertTrue(page.getAfter().isEmpty());
         assertFalse(iter.hasNext());
         assertThrows(NoSuchElementException.class, iter::next);
     }
@@ -51,7 +67,7 @@ public class E2EPaginationTest {
         assertTrue(iter.hasNext());
         Page<Product> page = iter.next();
         assertEquals(8, page.getData().size());
-        assertNull(page.getAfter());
+        assertTrue(page.getAfter().isEmpty());
         assertFalse(iter.hasNext());
         assertThrows(NoSuchElementException.class, iter::next);
     }
@@ -65,7 +81,7 @@ public class E2EPaginationTest {
         List<List<Product>> pages = new ArrayList<>();
 
         pages.add(latest.getData());
-        while (latest.getAfter() != null) {
+        while (latest.getAfter().isPresent()) {
             QuerySuccess<Page<Product>> paged = client.query(fql("Set.paginate(${after})", Map.of("after", latest.getAfter())), pageOf);
             latest = paged.getData();
             pages.add(latest.getData());

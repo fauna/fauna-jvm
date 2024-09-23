@@ -21,12 +21,12 @@ import static com.fauna.query.builder.Query.fql;
  * @param <E>
  */
 public class PageIterator<E> implements Iterator<Page<E>> {
-    private static final String PAGINATE_QUERY = "Set.paginate(${after})";
+    private static final String TOKEN_NAME = "token";
+    private static final String PAGINATE_QUERY = "Set.paginate(${" + TOKEN_NAME + "})";
     private final FaunaClient client;
     private final QueryOptions options;
     private final PageOf<E> pageClass;
     private CompletableFuture<QuerySuccess<Page<E>>> queryFuture;
-    private Page<E> latestResult;
 
     /**
      * Construct a new PageIterator.
@@ -41,57 +41,53 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         this.options = options;
         // Initial query;
         this.queryFuture = client.asyncQuery(fql, this.pageClass, options);
-        this.latestResult = null;
-    }
-
-    public PageIterator(FaunaClient client, Page<E> page, Class<E> resultClass, QueryOptions options) {
-        this.client = client;
-        this.pageClass = new PageOf<>(resultClass);
-        this.options = options;
-        this.queryFuture = null;
-        this.latestResult = page;
-    }
-
-    private void completeFuture() {
-        if (this.queryFuture != null && this.latestResult == null) {
-            try {
-                this.latestResult = queryFuture.join().getData();
-            } catch (CompletionException e) {
-                if (e.getCause() != null && e.getCause() instanceof FaunaException) {
-                    throw (FaunaException) e.getCause();
-                } else {
-                    throw e;
-                }
-            }
-            this.queryFuture = null;
-        }
     }
 
     @Override
     public boolean hasNext() {
-        completeFuture();
-        return this.latestResult != null;
+        return this.queryFuture != null;
     }
 
+    private void doPaginatedQuery(String afterToken) {
+        this.queryFuture = client.asyncQuery(fql(PAGINATE_QUERY, Map.of(TOKEN_NAME, afterToken)), pageClass, options);
+    }
+
+    private void endPagination() {
+        this.queryFuture = null;
+    }
+
+    /**
+     * Returns a CompletableFuture that will complete with the next page (or throw a FaunaException).
+     * @return  A c
+     */
+    public CompletableFuture<Page<E>> nextAsync() {
+        if (this.queryFuture != null) {
+            return this.queryFuture.thenApply(qs -> {
+                Page<E> page = qs.getData();
+                page.getAfter().ifPresentOrElse(this::doPaginatedQuery, this::endPagination);
+                return page;
+            });
+        } else {
+            throw new NoSuchElementException();
+        }
+    }
 
 
     /**
      * Get the next Page.
-     * @return  The next Page of elements E.
+     * @return                  The next Page of elements E.
+     * @throws  FaunaException  If there is an error getting the next page.
      */
     @Override
     public Page<E> next() {
-        completeFuture();
-        if (this.latestResult != null) {
-            Page<E> page = this.latestResult;
-            this.latestResult = null;
-            if (page.getAfter() != null) {
-                Map<String, Object> args = Map.of("after", page.getAfter());
-                this.queryFuture = client.asyncQuery(fql(PAGINATE_QUERY, args), pageClass, options);
+        try {
+            return nextAsync().join();
+        } catch (CompletionException ce) {
+            if (ce.getCause() != null && ce.getCause() instanceof FaunaException) {
+                throw (FaunaException) ce.getCause();
+            } else {
+                throw ce;
             }
-            return page;
-        } else {
-            throw new NoSuchElementException();
         }
     }
 
