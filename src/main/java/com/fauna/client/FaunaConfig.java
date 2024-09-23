@@ -1,6 +1,15 @@
 package com.fauna.client;
 
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
+import static com.fauna.client.FaunaConfig.FaunaDebug.DEBUG;
+import static com.fauna.client.FaunaConfig.FaunaDebug.ERROR;
+import static com.fauna.client.FaunaConfig.FaunaDebug.INFO;
+import static com.fauna.client.FaunaConfig.FaunaDebug.TRACE;
+import static com.fauna.client.FaunaConfig.FaunaDebug.WARNING;
 
 
 /**
@@ -14,9 +23,18 @@ public class FaunaConfig {
         public static final String LOCAL = "http://localhost:8443";
     }
 
+    public static class FaunaDebug {
+        public static final String ERROR = "ERROR";
+        public static final String WARNING = "WARNING";
+        public static final String INFO = "INFO";
+        public static final String DEBUG = "DEBUG";
+        public static final String TRACE = "TRACE";
+    }
+
     private final String endpoint;
     private final String secret;
     private final int maxContentionRetries;
+    private final Handler logHandler;
     public static final FaunaConfig DEFAULT = FaunaConfig.builder().build();
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
             FaunaEndpoint.LOCAL).secret("secret").build();
@@ -30,6 +48,7 @@ public class FaunaConfig {
         this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
         this.secret = builder.secret != null ? builder.secret : "";
         this.maxContentionRetries = builder.maxContentionRetries;
+        this.logHandler = builder.logHandler;
     }
 
     /**
@@ -59,6 +78,14 @@ public class FaunaConfig {
         return maxContentionRetries;
     }
 
+    /**
+     * Gets the log handler that the client will use.
+     * @return  A log handler instance.
+     */
+    public Handler getLogHandler() {
+        return logHandler;
+    }
+
 
     /**
      * Creates a new builder for FaunaConfig.
@@ -73,9 +100,31 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private String endpoint = null;
-        private String secret = null;
+        private String endpoint = FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT);
+        private String secret = FaunaEnvironment.faunaSecret().orElse("");
         private int maxContentionRetries = 3;
+        private Handler logHandler = defaultLogHandler();
+
+        private static Level getLogLevel(String level) {
+            // Map more commonly used log-level names to Java log levels:
+            // https://logging.apache.org/log4j/2.x/manual/customloglevels.html
+            // https://docs.python.org/3/library/logging.html#logging-levels
+            // https://developer.mozilla.org/en-US/docs/Web/API/console/debug_static
+            switch (level.toUpperCase()) {
+                case ERROR: return Level.SEVERE;
+                case INFO: return Level.INFO;
+                case DEBUG: return Level.FINE;
+                case TRACE: return Level.FINEST;
+                case WARNING:
+                default: return Level.WARNING;
+            }
+        }
+
+        private static Handler defaultLogHandler() {
+            Handler logHandler = new ConsoleHandler();
+            logHandler.setLevel(getLogLevel(FaunaEnvironment.faunaDebug().orElse("")));
+            return logHandler;
+        }
 
         /**
          * Sets the endpoint URL.
@@ -99,12 +148,27 @@ public class FaunaConfig {
             return this;
         }
 
+        /**
+         * Set the Fauna max-contention-retries setting.
+         * @param maxContentionRetries  A positive integer value.
+         * @return                      The current Builder instance.
+         */
         public Builder maxContentionRetries(int maxContentionRetries) {
             this.maxContentionRetries = maxContentionRetries;
             return this;
         }
 
         /**
+         * Override the default log handler with the given log handler.
+         * @param handler   A log handler instance.
+         * @return          The current Builder instance.
+         */
+        public Builder logHandler(Handler handler) {
+            this.logHandler = handler;
+            return this;
+        }
+
+                                  /**
          * Builds and returns a new FaunaConfig instance.
          *
          * @return A new instance of FaunaConfig.
@@ -120,6 +184,7 @@ public class FaunaConfig {
     public static class FaunaEnvironment {
         private static final String FAUNA_SECRET = "FAUNA_SECRET";
         private static final String FAUNA_ENDPOINT = "FAUNA_ENDPOINT";
+        private static final String FAUNA_DEBUG = "FAUNA_DEBUG";
 
         private static Optional<String> environmentVariable(String name) {
             Optional<String> var = Optional.ofNullable(System.getenv(name));
@@ -138,6 +203,13 @@ public class FaunaConfig {
          */
         public static Optional<String> faunaEndpoint() {
             return environmentVariable(FAUNA_ENDPOINT);
+        }
+
+        /**
+         * @return The (non-empty, non-blank) value of the FAUNA_DEBUG environment variable, or Optional.empty().
+         */
+        public static Optional<String> faunaDebug() {
+            return environmentVariable(FAUNA_DEBUG);
         }
     }
 }

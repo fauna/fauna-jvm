@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -36,7 +37,7 @@ public class TestRetryHandler {
             this.failCount = failCount;
         }
 
-        public CompletableFuture<String> getResponse() throws IOException {
+        public CompletableFuture<String> getResponse() {
             responseCount += 1;
             if (responseCount > failCount) {
                 return CompletableFuture.supplyAsync(TestRetryHandler::timestamp);
@@ -61,14 +62,14 @@ public class TestRetryHandler {
 
     @Test
     public void testExecute() {
-        RetryHandler<String> handler = new RetryHandler<>(ExponentialBackoffStrategy.builder().build());
+        RetryHandler<String> handler = new RetryHandler<>(ExponentialBackoffStrategy.builder().build(), Logger.getGlobal());
         handler.execute(() -> CompletableFuture.supplyAsync(TestRetryHandler::timestamp));
 
     }
 
     @Test
     public void testFailWithNoRetries() {
-        RetryHandler<String> handler  = new RetryHandler<>(FaunaClient.NO_RETRY_STRATEGY);
+        RetryHandler<String> handler  = new RetryHandler<>(FaunaClient.NO_RETRY_STRATEGY, Logger.getGlobal());
         FakeResponder responder = new FakeResponder(1);
         CompletableFuture<String> future = handler.execute(respond(responder));
         ExecutionException exc = assertThrows(ExecutionException.class, future::get);
@@ -78,7 +79,7 @@ public class TestRetryHandler {
     @Test
     public void testFailWithRetries() {
         RetryHandler<String> handler  = new RetryHandler<>(new ExponentialBackoffStrategy(
-                3, 2f, 10, 20_000, 0.5f));
+                3, 2f, 10, 20_000, 0.5f), Logger.getGlobal());
         FakeResponder responder = new FakeResponder(4);
         CompletableFuture<String> future = handler.execute(respond(responder));
         ExecutionException exc = assertThrows(ExecutionException.class, future::get);
@@ -88,7 +89,8 @@ public class TestRetryHandler {
     @Test
     public void testSucceedWithRetries() throws ExecutionException, InterruptedException {
         RetryHandler<String> handler  = new RetryHandler<>(new ExponentialBackoffStrategy(
-                3, 2f, 10, 20_000, 0.5f));
+                3, 2f, 10, 20_000, 0.5f),
+                Logger.getGlobal());
         FakeResponder responder = new FakeResponder(1);
         String output = handler.execute(respond(responder)).get();
         assertTrue(output.length() > 10);

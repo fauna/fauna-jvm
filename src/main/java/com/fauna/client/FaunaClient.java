@@ -17,23 +17,25 @@ import com.fauna.response.QuerySuccess;
 import com.fauna.codec.ParameterizedOf;
 import com.fauna.types.Page;
 
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
-import static com.fauna.client.PageIterator.PAGINATE_QUERY;
-import static com.fauna.client.PageIterator.TOKEN_NAME;
+import static com.fauna.client.Logging.logHeaders;
 import static com.fauna.codec.Generic.pageOf;
 import static com.fauna.constants.ErrorMessages.QUERY_EXECUTION;
 import static com.fauna.constants.ErrorMessages.QUERY_PAGE;
 import static com.fauna.constants.ErrorMessages.STREAM_SUBSCRIPTION;
-import static com.fauna.query.builder.Query.fql;
 
 public abstract class FaunaClient {
 
@@ -42,18 +44,31 @@ public abstract class FaunaClient {
     private final String faunaSecret;
     private final CodecProvider codecProvider = new DefaultCodecProvider(new DefaultCodecRegistry());
     private final AtomicLong lastTransactionTs = new AtomicLong(-1);
+    private final Logger logger;
 
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
     abstract RequestBuilder getStreamRequestBuilder();
 
-    public FaunaClient(String secret) {
+    public FaunaClient(String secret, Logger logger) {
         this.faunaSecret = secret;
+        this.logger = logger;
+    }
+
+    public FaunaClient(String secret, Handler logHandler) {
+        this.faunaSecret = secret;
+        this.logger = Logger.getLogger(this.getClass().getCanonicalName());
+        this.logger.addHandler(logHandler);
+        this.logger.setLevel(logHandler.getLevel());
     }
 
     protected String getFaunaSecret() {
         return this.faunaSecret;
+    }
+
+    public Logger getLogger() {
+        return this.logger;
     }
 
     public Optional<Long> getLastTransactionTs() {
@@ -86,17 +101,28 @@ public abstract class FaunaClient {
         }
     }
 
+    private void logResponse(HttpResponse<InputStream> response) {
+        logger.fine(MessageFormat.format("Fauna HTTP Response {0} from {1}, headers: {2}",
+                response.statusCode(), response.uri(), logHeaders(response.headers())));
+        // We could implement a LoggingInputStream or something to log the response here.
+    }
+
     private <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
-        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec)).whenComplete(this::completeRequest);
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(
+                response -> {
+                    logResponse(response);
+                    return QueryResponse.parseResponse(response, codec);
+                }).whenComplete(this::completeRequest);
     }
 
     private <R> R completeAsync(CompletableFuture<R> future, String executionMessage) {
         try {
             return future.get();
-        } catch(ExecutionException | InterruptedException exc) {
+        } catch (ExecutionException | InterruptedException exc) {
             if (exc.getCause() != null && exc.getCause() instanceof FaunaException) {
                 throw (FaunaException) exc.getCause();
             } else {
+                logger.warning("Execution|InterruptedException: " + exc.getMessage());
                 throw new ClientException(executionMessage, exc);
             }
         }
@@ -120,7 +146,7 @@ public abstract class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         Codec<Object> codec = codecProvider.get(Object.class, null);
-        return new RetryHandler<QuerySuccess<Object>>(getRetryStrategy()).execute(makeAsyncRequest(
+        return new RetryHandler<QuerySuccess<Object>>(getRetryStrategy(), logger).execute(makeAsyncRequest(
                 getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec));
     }
 
@@ -142,7 +168,7 @@ public abstract class FaunaClient {
             throw new IllegalArgumentException("The provided FQL query is null.");
         }
         Codec<T> codec = codecProvider.get(resultClass, null);
-        return new RetryHandler<QuerySuccess<T>>(getRetryStrategy()).execute(makeAsyncRequest(
+        return new RetryHandler<QuerySuccess<T>>(getRetryStrategy(), logger).execute(makeAsyncRequest(
                 getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec));
     }
 
@@ -165,7 +191,7 @@ public abstract class FaunaClient {
         }
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
-        return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(makeAsyncRequest(
+        return new RetryHandler<QuerySuccess<E>>(getRetryStrategy(), logger).execute(makeAsyncRequest(
                 getHttpClient(), getRequestBuilder().buildRequest(fql, options, codecProvider, lastTransactionTs.get()), codec));
     }
 
@@ -203,7 +229,7 @@ public abstract class FaunaClient {
         }
         @SuppressWarnings("unchecked")
         Codec<E> codec = codecProvider.get((Class<E>) parameterizedType.getRawType(), parameterizedType.getActualTypeArguments());
-        return new RetryHandler<QuerySuccess<E>>(getRetryStrategy()).execute(makeAsyncRequest(
+        return new RetryHandler<QuerySuccess<E>>(getRetryStrategy(), logger).execute(makeAsyncRequest(
                 getHttpClient(), getRequestBuilder().buildRequest(fql, null, codecProvider, lastTransactionTs.get()), codec));
     }
     //endregion
