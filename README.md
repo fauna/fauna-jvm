@@ -430,9 +430,9 @@ QueryOptions options = QueryOptions.builder()
 QuerySuccess result = client.query(query, String.class, options);
 ```
 
-## Event streaming
+## Event Streaming
 
-The driver supports [event streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+The driver supports [Event Streaming](https://docs.fauna.com/fauna/current/learn/streaming).
 
 To get a stream token, append
 [`toStream()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/tostream)
@@ -442,7 +442,8 @@ to a set from a [supported
 source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
 
 To start and subscribe to the stream, use a stream token to create a
-`StreamRequest` and pass the `StreamRequest` to  `stream()` or `asyncStream()`:
+[`StreamRequest`](https://fauna.github.io/fauna-jvm/latest/com/fauna/stream/StreamRequest.html)
+and pass it to  `stream()` or `asyncStream()`:
 
 ```java
 // Get a stream token.
@@ -477,9 +478,10 @@ CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(query,
 
 ### Create a subscriber class
 
-The methods return a `FaunaStream` publisher that lets you handle events as they
-arrive. Create a class with the `Flow.Subscriber` interface to process
-events:
+The methods return a
+[`FaunaStream`](https://fauna.github.io/fauna-jvm/latest/com/fauna/client/FaunaStream.html)
+publisher that lets you handle events as they arrive. Create a class with the
+`Flow.Subscriber` interface to process events:
 
 ```java
 package org.example;
