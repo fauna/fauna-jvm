@@ -7,6 +7,7 @@ import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
+import com.fauna.query.AfterToken;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.StreamTokenResponse;
@@ -14,6 +15,7 @@ import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
 import com.fauna.codec.ParameterizedOf;
+import com.fauna.types.Page;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -24,6 +26,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+
+import static com.fauna.client.PageIterator.PAGINATE_QUERY;
+import static com.fauna.client.PageIterator.TOKEN_NAME;
+import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.constants.ErrorMessages.QUERY_EXECUTION;
+import static com.fauna.constants.ErrorMessages.QUERY_PAGE;
+import static com.fauna.constants.ErrorMessages.STREAM_SUBSCRIPTION;
+import static com.fauna.query.builder.Query.fql;
 
 public abstract class FaunaClient {
 
@@ -52,7 +62,9 @@ public abstract class FaunaClient {
     }
 
     private static Optional<ServiceException> extractServiceException(Throwable throwable) {
-        if (throwable.getCause() instanceof ServiceException) {
+        if (throwable instanceof ServiceException) {
+            return Optional.of((ServiceException) throwable);
+        } else if (throwable.getCause() instanceof ServiceException) {
             return Optional.of((ServiceException) throwable.getCause());
         } else {
             return Optional.empty();
@@ -76,6 +88,18 @@ public abstract class FaunaClient {
 
     private <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(HttpClient client, HttpRequest request, Codec<T> codec) {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(body -> QueryResponse.parseResponse(body, codec)).whenComplete(this::completeRequest);
+    }
+
+    private <R> R completeAsync(CompletableFuture<R> future, String executionMessage) {
+        try {
+            return future.get();
+        } catch(ExecutionException | InterruptedException exc) {
+            if (exc.getCause() != null && exc.getCause() instanceof FaunaException) {
+                throw (FaunaException) exc.getCause();
+            } else {
+                throw new ClientException(executionMessage, exc);
+            }
+        }
     }
 
 
@@ -196,15 +220,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public QuerySuccess<Object> query(Query fql) throws FaunaException {
-        try {
-            return this.asyncQuery(fql, Object.class, null).get();
-        } catch (InterruptedException | ExecutionException e) {
-            if (e.getCause() instanceof FaunaException) {
-                throw (FaunaException) e.getCause();
-            } else {
-                throw new ClientException("Unhandled exception.", e);
-            }
-        }
+        return completeAsync(asyncQuery(fql, Object.class, null), "Unable to execute query.");
     }
 
     /**
@@ -219,15 +235,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <T> QuerySuccess<T> query(Query fql, Class<T> resultClass) throws FaunaException {
-        try {
-            return this.asyncQuery(fql, resultClass, null).get();
-        } catch (InterruptedException | ExecutionException e) {
-            if (e.getCause() instanceof FaunaException) {
-                throw (FaunaException) e.getCause();
-            } else {
-                throw new ClientException("Unhandled exception.", e);
-            }
-        }
+        return completeAsync(asyncQuery(fql, resultClass, null), QUERY_EXECUTION);
     }
 
     /**
@@ -242,15 +250,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <E> QuerySuccess<E> query(Query fql, ParameterizedOf<E> parameterizedType) throws FaunaException {
-        try {
-            return this.asyncQuery(fql, parameterizedType, null).get();
-        } catch (InterruptedException | ExecutionException e) {
-            if (e.getCause() instanceof FaunaException) {
-                throw (FaunaException) e.getCause();
-            } else {
-                throw new ClientException("Unhandled exception.", e);
-            }
-        }
+        return completeAsync(asyncQuery(fql, parameterizedType), QUERY_EXECUTION);
     }
 
     /**
@@ -266,15 +266,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <T> QuerySuccess<T> query(Query fql, Class<T> resultClass, QueryOptions options) throws FaunaException {
-        try {
-            return this.asyncQuery(fql, resultClass, options).get();
-        } catch (InterruptedException | ExecutionException e) {
-            if (e.getCause() instanceof FaunaException) {
-                throw (FaunaException) e.getCause();
-            } else {
-                throw new ClientException("Unhandled exception.", e);
-            }
-        }
+        return completeAsync(asyncQuery(fql, resultClass, options), QUERY_EXECUTION);
     }
 
     /**
@@ -290,15 +282,38 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <E> QuerySuccess<E> query(Query fql, ParameterizedOf<E> parameterizedType, QueryOptions options) throws FaunaException {
-        try {
-            return this.asyncQuery(fql, parameterizedType, options).get();
-        } catch (InterruptedException | ExecutionException e) {
-            if (e.getCause() instanceof FaunaException) {
-                throw (FaunaException) e.getCause();
-            } else {
-                throw new ClientException("Unhandled exception.", e);
-            }
-        }
+        return completeAsync(asyncQuery(fql, parameterizedType, options), QUERY_EXECUTION);
+    }
+    //endregion
+
+    //region Query Page API
+
+    /**
+     * Sends a query to Fauna that retrieves the Page<E> for the given page token.
+     * @param after         The page token (result of a previous paginated request).
+     * @param elementClass  The expected class of the query result.
+     * @param options       A (nullable) set of options to pass to the query.
+     * @return              A CompletableFuture that returns a QuerySuccess with data of type Page<E>.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E>           The type of the elements of the page.
+     */
+    public <E> CompletableFuture<QuerySuccess<Page<E>>> asyncQueryPage(
+            AfterToken after, Class<E> elementClass, QueryOptions options) {
+        return this.asyncQuery(PageIterator.buildPageQuery(after), pageOf(elementClass), options);
+    }
+
+    /**
+     * Sends a query to Fauna that retrieves the Page<E> for the given page token.
+     * @param after         The page token (result of a previous paginated request).
+     * @param elementClass  The expected class of the query result.
+     * @param options       A (nullable) set of options to pass to the query.
+     * @return              A QuerySuccess with data of type Page<E>.
+     * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E>           The type of the elements of the page.
+     */
+    public <E> QuerySuccess<Page<E>> queryPage(
+            AfterToken after, Class<E> elementClass, QueryOptions options) {
+        return completeAsync(asyncQueryPage(after, elementClass, options), QUERY_PAGE);
     }
     //endregion
 
@@ -310,6 +325,7 @@ public abstract class FaunaClient {
      * @param options           A (nullable) set of options to pass to the query.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E>           The type of the elements of the page.
      */
     public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass, QueryOptions options) {
         return new PageIterator<>(this, fql, elementClass, options);
@@ -379,12 +395,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> elementClass) {
-        try {
-            return this.asyncStream(streamRequest, elementClass).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new ClientException("Unable to subscribe to stream.", e);
-        }
-
+        return completeAsync(asyncStream(streamRequest, elementClass), STREAM_SUBSCRIPTION);
     }
 
     /**
@@ -418,12 +429,7 @@ public abstract class FaunaClient {
      * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
     public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
-        try {
-            return this.asyncStream(fql, elementClass).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new ClientException("Unable to subscribe to stream.", e);
-        }
-
+        return completeAsync(asyncStream(fql, elementClass), STREAM_SUBSCRIPTION);
     }
     //endregion
 }

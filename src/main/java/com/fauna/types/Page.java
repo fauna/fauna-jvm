@@ -1,5 +1,7 @@
 package com.fauna.types;
 
+import com.fauna.query.AfterToken;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,8 +24,8 @@ public class Page<T>{
         return data;
     }
 
-    public Optional<String> getAfter() {
-        return Optional.ofNullable(after);
+    public Optional<AfterToken> getAfter() {
+        return AfterToken.fromString(after);
     }
 
     @Override

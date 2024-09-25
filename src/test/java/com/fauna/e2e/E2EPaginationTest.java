@@ -15,14 +15,12 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,17 +72,19 @@ public class E2EPaginationTest {
 
     @Test
     public void query_all_with_manual_pagination() {
-        // Demonstrate how a user could paginate without the paginate API.
+        // Demonstrate how a user could paginate without PageIterator.
         PageOf<Product> pageOf = new PageOf<>(Product.class);
         QuerySuccess<Page<Product>> first = client.query(fql("Product.all()"), pageOf);
         Page<Product> latest = first.getData();
         List<List<Product>> pages = new ArrayList<>();
 
         pages.add(latest.getData());
-        while (latest.getAfter().isPresent()) {
-            QuerySuccess<Page<Product>> paged = client.query(fql("Set.paginate(${after})", Map.of("after", latest.getAfter())), pageOf);
-            latest = paged.getData();
-            pages.add(latest.getData());
+        while (latest != null) {
+            latest = latest.getAfter().map(after -> {
+                Page<Product> page = client.queryPage(after, Product.class, null).getData();
+                pages.add(page.getData());
+                return page;
+            }).orElse(null);
         }
         assertEquals(4, pages.size());
         assertEquals(2, pages.get(3).size());

@@ -2,6 +2,7 @@ package com.fauna.client;
 
 
 import com.fauna.exception.FaunaException;
+import com.fauna.query.AfterToken;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
@@ -21,8 +22,8 @@ import static com.fauna.query.builder.Query.fql;
  * @param <E>
  */
 public class PageIterator<E> implements Iterator<Page<E>> {
-    private static final String TOKEN_NAME = "token";
-    private static final String PAGINATE_QUERY = "Set.paginate(${" + TOKEN_NAME + "})";
+    static final String TOKEN_NAME = "token";
+    static final String PAGINATE_QUERY = "Set.paginate(${" + TOKEN_NAME + "})";
     private final FaunaClient client;
     private final QueryOptions options;
     private final PageOf<E> pageClass;
@@ -48,8 +49,11 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         return this.queryFuture != null;
     }
 
-    private void doPaginatedQuery(String afterToken) {
-        this.queryFuture = client.asyncQuery(fql(PAGINATE_QUERY, Map.of(TOKEN_NAME, afterToken)), pageClass, options);
+    public static Query buildPageQuery(AfterToken afterToken) {
+        return fql(PAGINATE_QUERY, Map.of(TOKEN_NAME, afterToken.getToken()));
+    }
+    private void doPaginatedQuery(AfterToken afterToken) {
+        this.queryFuture = client.asyncQuery(PageIterator.buildPageQuery(afterToken), pageClass, options);
     }
 
     private void endPagination() {
