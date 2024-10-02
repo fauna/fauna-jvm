@@ -580,3 +580,28 @@ public class App {
     }
 }
 ```
+
+## Debugging / Tracing
+
+If you would like to see the requests and responses the client is making and receiving, you can set the environment
+variable `FAUNA_DEBUG=DEBUG`, to see the request bodies you can set `FAUNA_DEBUG=TRACE`. You can also pass in your own
+log handler when constructing the client.
+
+```java
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
+
+import com.fauna.client.Fauna;
+import com.fauna.client.FaunaClient;
+
+class App {
+    public static void main(String[] args) {
+        Handler handler = new ConsoleHandler();
+        handler.setLevel(Level.FINEST);
+        handler.setFormatter(new SimpleFormatter());
+        FaunaClient client = Fauna.client(FaunaConfig.builder().logHandler(handler).build());
+    }
+}
+```
