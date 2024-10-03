@@ -582,10 +582,10 @@ public class App {
 ```
 
 ## Debugging / Tracing
-
 If you would like to see the requests and responses the client is making and receiving, you can set the environment
-variable `FAUNA_DEBUG=DEBUG`, to see the request bodies you can set `FAUNA_DEBUG=TRACE`. You can also pass in your own
-log handler when constructing the client.
+variable `FAUNA_DEBUG=1`. Fauna log the request and response (including headers) to `stderr`. You can also pass in your
+own log handler. Setting `Level.WARNING` is equivalent to `FAUNA_DEBUG=0`, while `Level.FINE` is equivalent to
+`FAUNA_DEBUG=1`. The client will log the request body at `Level.FINEST`.
 
 ```java
 import java.util.logging.ConsoleHandler;

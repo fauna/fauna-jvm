@@ -5,13 +5,6 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static com.fauna.client.FaunaConfig.FaunaDebug.DEBUG;
-import static com.fauna.client.FaunaConfig.FaunaDebug.ERROR;
-import static com.fauna.client.FaunaConfig.FaunaDebug.INFO;
-import static com.fauna.client.FaunaConfig.FaunaDebug.TRACE;
-import static com.fauna.client.FaunaConfig.FaunaDebug.WARNING;
-
-
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
  * It encapsulates various settings such as the endpoint URL, secret key, query timeout, and others.
@@ -21,14 +14,6 @@ public class FaunaConfig {
     public static class FaunaEndpoint {
         public static final String DEFAULT = "https://db.fauna.com";
         public static final String LOCAL = "http://localhost:8443";
-    }
-
-    public static class FaunaDebug {
-        public static final String ERROR = "ERROR";
-        public static final String WARNING = "WARNING";
-        public static final String INFO = "INFO";
-        public static final String DEBUG = "DEBUG";
-        public static final String TRACE = "TRACE";
     }
 
     private final String endpoint;
@@ -105,24 +90,22 @@ public class FaunaConfig {
         private int maxContentionRetries = 3;
         private Handler logHandler = defaultLogHandler();
 
-        private static Level getLogLevel(String level) {
-            // Map more commonly used log-level names to Java log levels:
-            // https://logging.apache.org/log4j/2.x/manual/customloglevels.html
-            // https://docs.python.org/3/library/logging.html#logging-levels
-            // https://developer.mozilla.org/en-US/docs/Web/API/console/debug_static
-            switch (level.toUpperCase()) {
-                case ERROR: return Level.SEVERE;
-                case INFO: return Level.INFO;
-                case DEBUG: return Level.FINE;
-                case TRACE: return Level.FINEST;
-                case WARNING:
-                default: return Level.WARNING;
+        static Level getLogLevel(String debug) {
+            if (debug == null || debug.isBlank()) {
+                return Level.WARNING;
+            } else {
+                try {
+                    int debugInt = Integer.parseInt(debug);
+                    return debugInt > 0 ? Level.FINE : Level.WARNING;
+                } catch (NumberFormatException e) {
+                    return Level.FINE;
+                }
             }
         }
 
         private static Handler defaultLogHandler() {
             Handler logHandler = new ConsoleHandler();
-            logHandler.setLevel(getLogLevel(FaunaEnvironment.faunaDebug().orElse("")));
+            logHandler.setLevel(getLogLevel(FaunaEnvironment.faunaDebug().orElse(null)));
             return logHandler;
         }
 

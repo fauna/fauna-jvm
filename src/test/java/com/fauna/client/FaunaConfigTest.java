@@ -1,6 +1,8 @@
 package com.fauna.client;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -35,5 +37,17 @@ public class FaunaConfigTest {
         assertEquals(Level.ALL, config.getLogHandler().getLevel());
         assertEquals("foo", config.getSecret());
         assertEquals(1, config.getMaxContentionRetries());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1", "DEBUG", "2", "foo", "0.0", " 1", " 1000 "})
+    public void testDebugLogVals(String val) {
+        assertEquals(Level.FINE, FaunaConfig.Builder.getLogLevel(val));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", " ", "-1", "", "\n", " \r \n \t"})
+    public void testWarningLogVals(String val) {
+        assertEquals(Level.WARNING, FaunaConfig.Builder.getLogLevel(val));
     }
 }
