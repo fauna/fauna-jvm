@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
 
-import static com.fauna.client.Logging.logHeaders;
+import static com.fauna.client.Logging.headersAsString;
 
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
@@ -93,7 +93,7 @@ public class RequestBuilder {
 
     private void logRequest(String body, HttpRequest req) {
         logger.fine(MessageFormat.format("Fauna HTTP {0} Request to {1} (timeout {2}), headers: {3}",
-                req.method(), req.uri(), req.timeout(), logHeaders(req.headers())));
+                req.method(), req.uri(), req.timeout(), headersAsString(req.headers())));
         logger.finest("Request body: " + body);
     }
 

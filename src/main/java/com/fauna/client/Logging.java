@@ -4,7 +4,7 @@ import java.net.http.HttpHeaders;
 import java.util.stream.Collectors;
 
 public class Logging {
-    static String logHeaders(HttpHeaders headers) {
+    public static String headersAsString(HttpHeaders headers) {
         String hdrs = "NONE";
         if (headers != null) {
             hdrs = headers.map().entrySet().stream().map(

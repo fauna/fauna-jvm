@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import static com.fauna.client.Logging.logHeaders;
+import static com.fauna.client.Logging.headersAsString;
 import static com.fauna.codec.Generic.pageOf;
 import static com.fauna.constants.ErrorMessages.QUERY_EXECUTION;
 import static com.fauna.constants.ErrorMessages.QUERY_PAGE;
@@ -103,7 +103,7 @@ public abstract class FaunaClient {
 
     private void logResponse(HttpResponse<InputStream> response) {
         logger.fine(MessageFormat.format("Fauna HTTP Response {0} from {1}, headers: {2}",
-                response.statusCode(), response.uri(), logHeaders(response.headers())));
+                response.statusCode(), response.uri(), headersAsString(response.headers())));
         // We could implement a LoggingInputStream or something to log the response here.
     }
 
