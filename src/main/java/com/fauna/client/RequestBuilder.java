@@ -16,6 +16,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
+
+import static com.fauna.client.Logging.headersAsString;
 
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
@@ -27,6 +31,7 @@ public class RequestBuilder {
     private static final String STREAM_PATH = "/stream/1";
 
     private final HttpRequest.Builder baseRequestBuilder;
+    private final Logger logger;
 
     static class FieldNames {
         static final String QUERY = "query";
@@ -51,7 +56,7 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(URI uri, String token, int maxContentionRetries) {
+    public RequestBuilder(URI uri, String token, int maxContentionRetries, Logger logger) {
         // DriverEnvironment is not needed outside the constructor for now.
         DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
@@ -63,25 +68,33 @@ public class RequestBuilder {
                 RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(maxContentionRetries),
                 Headers.AUTHORIZATION, buildAuthHeader(token)
         );
+        this.logger = logger;
     }
 
-    public RequestBuilder(HttpRequest.Builder builder) {
+    public RequestBuilder(HttpRequest.Builder builder, Logger logger) {
         this.baseRequestBuilder = builder;
+        this.logger = logger;
     }
 
-    public static RequestBuilder queryRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries());
+    public static RequestBuilder queryRequestBuilder(FaunaConfig config, Logger logger) {
+        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries(), logger);
     }
 
-    public static RequestBuilder streamRequestBuilder(FaunaConfig config) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries());
+    public static RequestBuilder streamRequestBuilder(FaunaConfig config, Logger logger) {
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), logger);
     }
 
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
         newBuilder.setHeader(Headers.AUTHORIZATION, buildAuthHeader(token));
-        return new RequestBuilder(newBuilder);
+        return new RequestBuilder(newBuilder, logger);
+    }
+
+    private void logRequest(String body, HttpRequest req) {
+        logger.fine(MessageFormat.format("Fauna HTTP {0} Request to {1} (timeout {2}), headers: {3}",
+                req.method(), req.uri(), req.timeout(), headersAsString(req.headers())));
+        logger.finest("Request body: " + body);
     }
 
     /**
@@ -99,7 +112,9 @@ public class RequestBuilder {
             codec.encode(gen, fql);
             gen.writeEndObject();
             String body = gen.serialize();
-            return builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            logRequest(body, req);
+            return req;
         }
     }
 
@@ -125,11 +140,13 @@ public class RequestBuilder {
     public HttpRequest buildStreamRequest(StreamRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         try {
-            return builder.POST(HttpRequest.BodyPublishers.ofString(buildStreamRequestBody(request))).build();
+            String body = buildStreamRequestBody(request);
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            logRequest(body, req);
+            return req;
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Stream request.", e);
         }
-
     }
 
     private static String buildAuthHeader(String token) {

@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -39,7 +40,7 @@ class RequestBuilderTest {
             .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
             .secret("secret").build();
 
-    private final RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
+    private final RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig, Logger.getGlobal());
 
     private final CodecRegistry codecRegistry = new DefaultCodecRegistry();
     private final CodecProvider codecProvider = new DefaultCodecProvider(codecRegistry);

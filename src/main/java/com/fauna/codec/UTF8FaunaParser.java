@@ -79,6 +79,11 @@ public class UTF8FaunaParser {
         }
     }
 
+    /**
+     * This method is only used for testing.
+     * @param str
+     * @return
+     */
     public static UTF8FaunaParser fromString(String str) {
         return UTF8FaunaParser.fromInputStream(new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
     }

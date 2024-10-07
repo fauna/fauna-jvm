@@ -1,7 +1,9 @@
 package com.fauna.client;
 
 import java.util.Optional;
-
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
@@ -17,6 +19,7 @@ public class FaunaConfig {
     private final String endpoint;
     private final String secret;
     private final int maxContentionRetries;
+    private final Handler logHandler;
     public static final FaunaConfig DEFAULT = FaunaConfig.builder().build();
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
             FaunaEndpoint.LOCAL).secret("secret").build();
@@ -30,6 +33,7 @@ public class FaunaConfig {
         this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
         this.secret = builder.secret != null ? builder.secret : "";
         this.maxContentionRetries = builder.maxContentionRetries;
+        this.logHandler = builder.logHandler;
     }
 
     /**
@@ -59,6 +63,14 @@ public class FaunaConfig {
         return maxContentionRetries;
     }
 
+    /**
+     * Gets the log handler that the client will use.
+     * @return  A log handler instance.
+     */
+    public Handler getLogHandler() {
+        return logHandler;
+    }
+
 
     /**
      * Creates a new builder for FaunaConfig.
@@ -73,9 +85,29 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private String endpoint = null;
-        private String secret = null;
+        private String endpoint = FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT);
+        private String secret = FaunaEnvironment.faunaSecret().orElse("");
         private int maxContentionRetries = 3;
+        private Handler logHandler = defaultLogHandler();
+
+        static Level getLogLevel(String debug) {
+            if (debug == null || debug.isBlank()) {
+                return Level.WARNING;
+            } else {
+                try {
+                    int debugInt = Integer.parseInt(debug);
+                    return debugInt > 0 ? Level.FINE : Level.WARNING;
+                } catch (NumberFormatException e) {
+                    return Level.FINE;
+                }
+            }
+        }
+
+        private static Handler defaultLogHandler() {
+            Handler logHandler = new ConsoleHandler();
+            logHandler.setLevel(getLogLevel(FaunaEnvironment.faunaDebug().orElse(null)));
+            return logHandler;
+        }
 
         /**
          * Sets the endpoint URL.
@@ -99,12 +131,27 @@ public class FaunaConfig {
             return this;
         }
 
+        /**
+         * Set the Fauna max-contention-retries setting.
+         * @param maxContentionRetries  A positive integer value.
+         * @return                      The current Builder instance.
+         */
         public Builder maxContentionRetries(int maxContentionRetries) {
             this.maxContentionRetries = maxContentionRetries;
             return this;
         }
 
         /**
+         * Override the default log handler with the given log handler.
+         * @param handler   A log handler instance.
+         * @return          The current Builder instance.
+         */
+        public Builder logHandler(Handler handler) {
+            this.logHandler = handler;
+            return this;
+        }
+
+                                  /**
          * Builds and returns a new FaunaConfig instance.
          *
          * @return A new instance of FaunaConfig.
@@ -120,6 +167,7 @@ public class FaunaConfig {
     public static class FaunaEnvironment {
         private static final String FAUNA_SECRET = "FAUNA_SECRET";
         private static final String FAUNA_ENDPOINT = "FAUNA_ENDPOINT";
+        private static final String FAUNA_DEBUG = "FAUNA_DEBUG";
 
         private static Optional<String> environmentVariable(String name) {
             Optional<String> var = Optional.ofNullable(System.getenv(name));
@@ -138,6 +186,13 @@ public class FaunaConfig {
          */
         public static Optional<String> faunaEndpoint() {
             return environmentVariable(FAUNA_ENDPOINT);
+        }
+
+        /**
+         * @return The (non-empty, non-blank) value of the FAUNA_DEBUG environment variable, or Optional.empty().
+         */
+        public static Optional<String> faunaDebug() {
+            return environmentVariable(FAUNA_DEBUG);
         }
     }
 }
