@@ -81,7 +81,7 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldOnlyIncludeToken() throws IOException {
         // Given
-        StreamRequest request = new StreamRequest("tkn");
+        StreamRequest request = StreamRequest.builder("tkn").build();
         // When
         String body = requestBuilder.buildStreamRequestBody(request);
         // Then
@@ -91,7 +91,7 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldIncludeCursor() throws IOException {
         // Given
-        StreamRequest request = new StreamRequest("tkn", "cur");
+        StreamRequest request = StreamRequest.builder("tkn").cursor("cur").build();
         // When
         String body = requestBuilder.buildStreamRequestBody(request);
         // Then
@@ -101,7 +101,7 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldIncludeTimestamp() throws IOException {
         // Given
-        StreamRequest request = new StreamRequest("tkn", Long.MAX_VALUE / 2);
+        StreamRequest request = StreamRequest.builder("tkn").startTs(Long.MAX_VALUE / 2).build();
         // When
         String body = requestBuilder.buildStreamRequestBody(request);
         // Then
