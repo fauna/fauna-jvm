@@ -1,4 +1,4 @@
-# The Official JVM Driver for [Fauna](https://fauna.com) (beta)
+# Official JVM Driver for [Fauna v10](https://fauna.com) (current - beta)
 
 > [!CAUTION]
 > This driver is currently in beta and should not be used in production.
