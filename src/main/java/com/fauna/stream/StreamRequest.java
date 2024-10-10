@@ -76,8 +76,11 @@ public class StreamRequest {
         /**
          * Return the current builder instance with the given timeout.
          * This timeout is the HTTP client timeout that is passed to java.net.http.HttpRequest.Builder.
-         * By testing, it seems that the client waits for the first byte, not the last byte of the response.
-         * Therefore, it's a timeout on the stream being opened, but the stream can stay open indefinitely.
+         * The Java documentation says that if "the response is not received within the specified timeout then an
+         * HttpTimeoutException is thrown". For streaming this means that the exception is thrown if the first
+         * headers/bytes are not recieved within the timeout.
+         *
+         * The default value is null if the user does not set this timeout.
          * @param timeout   A Duration representing the timeout.
          * @return          The current Builder instance.
          */
@@ -105,14 +108,29 @@ public class StreamRequest {
         return token;
     }
 
+    /**
+     * Cursor for a previous event. If provided, the stream replays any events that occurred after
+     * the cursor (exclusive).
+     * @return  The cursor, or Optional.empty() if not provided.
+     */
     public Optional<String> getCursor() {
         return Optional.ofNullable(cursor);
     }
 
+    /**
+     * Stream start time in microseconds since the Unix epoch. This is typically a previous event's txn_ts
+     * (transaction timestamp).
+     * @return The stream start time, as a Long, or Optional.empty() if not provided.
+     */
     public Optional<Long> getStartTs() {
         return Optional.ofNullable(startTs);
     }
 
+    /**
+     * Stream HTTP request timeout. This timeout is passed to java.net.http.HttpRequest.Builder. The default
+     * is null/empty.
+     * @return  The timeout Duration, or Optional.empty() if not set.
+     */
     public Optional<Duration> getTimeout() {
         return Optional.ofNullable(timeout);
     }
