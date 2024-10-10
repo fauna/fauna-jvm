@@ -4,7 +4,9 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
+import com.fauna.exception.ClientException;
 import com.fauna.exception.QueryRuntimeException;
+import com.fauna.exception.QueryTimeoutException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +69,14 @@ public class E2EQueryTest {
         assertThrows(QueryRuntimeException.class, () -> client.query(fql("NonExistantCollection.all()")));
         long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() * 1_000_000;
         assertTrue(client.getLastTransactionTs().orElseThrow() > y2k);
+    }
+
+    @Test
+    public void queryTimeout() {
+        QueryOptions opts = QueryOptions.builder().timeout(Duration.ofMillis(1)).build();
+        QueryTimeoutException exc = assertThrows(QueryTimeoutException.class,
+                () -> c.query(fql("Author.byId('9090090')"), listOf(Author.class), opts));
+        assertTrue(exc.getMessage().contains("Client set aggressive deadline"));
     }
 
     @Test

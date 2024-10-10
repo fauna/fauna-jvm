@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.logging.Logger;
 
 import static com.fauna.client.Logging.headersAsString;
@@ -29,6 +30,8 @@ public class RequestBuilder {
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
     private static final String STREAM_PATH = "/stream/1";
+
+    private static final int TIMEOUT_BUFFER_MS = 1000;
 
     private final HttpRequest.Builder baseRequestBuilder;
     private final Logger logger;
@@ -92,8 +95,10 @@ public class RequestBuilder {
     }
 
     private void logRequest(String body, HttpRequest req) {
-        logger.fine(MessageFormat.format("Fauna HTTP {0} Request to {1} (timeout {2}), headers: {3}",
-                req.method(), req.uri(), req.timeout(), headersAsString(req.headers())));
+        String timeout = req.timeout().map(
+                val -> MessageFormat.format(" (timeout: {0})", val)).orElse("");
+        logger.fine(MessageFormat.format("Fauna HTTP {0} Request to {1}{2}, headers: {3}",
+                req.method(), req.uri(), timeout, headersAsString(req.headers())));
         logger.finest("Request body: " + body);
     }
 
@@ -139,6 +144,7 @@ public class RequestBuilder {
 
     public HttpRequest buildStreamRequest(StreamRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
+        request.getTimeout().ifPresent(builder::timeout);
         try {
             String body = buildStreamRequestBody(request);
             HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
@@ -166,7 +172,10 @@ public class RequestBuilder {
             builder.setHeader(Headers.LAST_TXN_TS, String.valueOf(lastTxnTs));
         }
         if (options != null) {
-            options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
+            options.getTimeoutMillis().ifPresent(val -> {
+                    builder.timeout(Duration.ofMillis(val + TIMEOUT_BUFFER_MS));
+                    builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val));
+            });
             options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
             options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
             options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
