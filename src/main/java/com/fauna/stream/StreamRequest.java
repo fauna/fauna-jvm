@@ -104,6 +104,10 @@ public class StreamRequest {
         return new Builder(token);
     }
 
+    /**
+     * Stream token for the event stream to subscribe to.
+     * @return  A String representing the Stream token.
+     */
     public String getToken() {
         return token;
     }
