@@ -4,7 +4,6 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
-import com.fauna.exception.ClientException;
 import com.fauna.exception.QueryRuntimeException;
 import com.fauna.exception.QueryTimeoutException;
 import com.fauna.query.QueryOptions;
