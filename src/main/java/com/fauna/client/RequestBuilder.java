@@ -31,9 +31,9 @@ public class RequestBuilder {
     private static final String QUERY_PATH = "/query/1";
     private static final String STREAM_PATH = "/stream/1";
 
-    private static final int TIMEOUT_BUFFER_MS = 1000;
 
     private final HttpRequest.Builder baseRequestBuilder;
+    private final Duration clientTimeoutBuffer;
     private final Logger logger;
 
     static class FieldNames {
@@ -59,7 +59,7 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(URI uri, String token, int maxContentionRetries, Logger logger) {
+    public RequestBuilder(URI uri, String token, int maxContentionRetries, Duration clientTimeoutBuffer, Logger logger) {
         // DriverEnvironment is not needed outside the constructor for now.
         DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
@@ -71,27 +71,29 @@ public class RequestBuilder {
                 RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(maxContentionRetries),
                 Headers.AUTHORIZATION, buildAuthHeader(token)
         );
+        this.clientTimeoutBuffer = clientTimeoutBuffer;
         this.logger = logger;
     }
 
-    public RequestBuilder(HttpRequest.Builder builder, Logger logger) {
+    public RequestBuilder(HttpRequest.Builder builder, Duration clientTimeoutBuffer, Logger logger) {
         this.baseRequestBuilder = builder;
+        this.clientTimeoutBuffer = clientTimeoutBuffer;
         this.logger = logger;
     }
 
     public static RequestBuilder queryRequestBuilder(FaunaConfig config, Logger logger) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries(), logger);
+        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
     }
 
     public static RequestBuilder streamRequestBuilder(FaunaConfig config, Logger logger) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), logger);
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
     }
 
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
         newBuilder.setHeader(Headers.AUTHORIZATION, buildAuthHeader(token));
-        return new RequestBuilder(newBuilder, logger);
+        return new RequestBuilder(newBuilder, clientTimeoutBuffer, logger);
     }
 
     private void logRequest(String body, HttpRequest req) {
@@ -172,8 +174,9 @@ public class RequestBuilder {
             builder.setHeader(Headers.LAST_TXN_TS, String.valueOf(lastTxnTs));
         }
         if (options != null) {
+
             options.getTimeoutMillis().ifPresent(val -> {
-                    builder.timeout(Duration.ofMillis(val + TIMEOUT_BUFFER_MS));
+                    builder.timeout(Duration.ofMillis(val).plus(clientTimeoutBuffer));
                     builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val));
             });
             options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
