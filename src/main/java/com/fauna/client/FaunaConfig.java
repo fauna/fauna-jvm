@@ -1,5 +1,6 @@
 package com.fauna.client;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -19,6 +20,7 @@ public class FaunaConfig {
     private final String endpoint;
     private final String secret;
     private final int maxContentionRetries;
+    private final Duration clientTimeoutBuffer;
     private final Handler logHandler;
     public static final FaunaConfig DEFAULT = FaunaConfig.builder().build();
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
@@ -33,6 +35,7 @@ public class FaunaConfig {
         this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
         this.secret = builder.secret != null ? builder.secret : "";
         this.maxContentionRetries = builder.maxContentionRetries;
+        this.clientTimeoutBuffer = builder.clientTimeoutBuffer;
         this.logHandler = builder.logHandler;
     }
 
@@ -64,6 +67,14 @@ public class FaunaConfig {
     }
 
     /**
+     *
+     */
+
+    public Duration getClientTimeoutBuffer() {
+        return clientTimeoutBuffer;
+    }
+
+    /**
      * Gets the log handler that the client will use.
      * @return  A log handler instance.
      */
@@ -88,6 +99,7 @@ public class FaunaConfig {
         private String endpoint = FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT);
         private String secret = FaunaEnvironment.faunaSecret().orElse("");
         private int maxContentionRetries = 3;
+        private Duration clientTimeoutBuffer = Duration.ofSeconds(5);
         private Handler logHandler = defaultLogHandler();
 
         static Level getLogLevel(String debug) {
@@ -138,6 +150,14 @@ public class FaunaConfig {
          */
         public Builder maxContentionRetries(int maxContentionRetries) {
             this.maxContentionRetries = maxContentionRetries;
+            return this;
+        }
+
+        /**
+         * Set the client timeout buffer.
+         */
+        public Builder clientTimeoutBuffer(Duration duration) {
+            this.clientTimeoutBuffer = duration;
             return this;
         }
 

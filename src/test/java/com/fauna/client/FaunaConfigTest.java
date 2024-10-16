@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.time.Duration;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
@@ -32,7 +33,9 @@ public class FaunaConfigTest {
                 .secret("foo")
                 .endpoint("endpoint")
                 .logHandler(handler)
-                .maxContentionRetries(1).build();
+                .maxContentionRetries(1)
+                .clientTimeoutBuffer(Duration.ofSeconds(1))
+                .build();
         assertEquals("endpoint", config.getEndpoint());
         assertEquals(Level.ALL, config.getLogHandler().getLevel());
         assertEquals("foo", config.getSecret());

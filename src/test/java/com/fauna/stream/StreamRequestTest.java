@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StreamRequestTest {
@@ -16,7 +17,7 @@ public class StreamRequestTest {
 
     @Test
     public void testTokenOnlyRequest() {
-        StreamRequest req = new StreamRequest("abc");
+        StreamRequest req = StreamRequest.builder("abc").build();
         assertEquals("abc", req.getToken());
         assertTrue(req.getCursor().isEmpty());
         assertTrue(req.getStartTs().isEmpty());
@@ -24,7 +25,7 @@ public class StreamRequestTest {
 
     @Test
     public void testCursorRequest() {
-        StreamRequest req = new StreamRequest("abc", "def");
+        StreamRequest req = StreamRequest.builder("abc").cursor("def").build();
         assertEquals("abc", req.getToken());
         assertEquals("def", req.getCursor().get());
         assertTrue(req.getStartTs().isEmpty());
@@ -32,10 +33,16 @@ public class StreamRequestTest {
 
     @Test
     public void testTsRequest() {
-        StreamRequest req = new StreamRequest("abc", 1234L);
+        StreamRequest req = StreamRequest.builder("abc").startTs(1234L).build();
         assertEquals("abc", req.getToken());
         assertTrue(req.getCursor().isEmpty());
         assertEquals(1234L, req.getStartTs().get());
+    }
+
+    @Test
+    public void testCursorAndTsRequest() {
+        assertThrows(IllegalArgumentException.class, () -> StreamRequest.builder("tkn").startTs(10L).cursor("hello"));
+        assertThrows(IllegalArgumentException.class, () -> StreamRequest.builder("tkn").cursor("hello").startTs(10L));
     }
 
 }

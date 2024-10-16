@@ -4,6 +4,7 @@ import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaStream;
 import com.fauna.e2e.beans.Product;
+import com.fauna.exception.ClientException;
 import com.fauna.query.StreamTokenResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
@@ -13,13 +14,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.net.http.HttpTimeoutException;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,6 +33,7 @@ import java.util.stream.Stream;
 import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class E2EStreamingTest {
@@ -140,7 +145,7 @@ public class E2EStreamingTest {
         // It would be nice to have another test that generates a stream with normal events, and then an error
         // event, but this at least tests some of the functionality.
         QuerySuccess<StreamTokenResponse> queryResp = client.query(fql("Product.all().toStream()"), StreamTokenResponse.class);
-        StreamRequest request = new StreamRequest(queryResp.getData().getToken(), "invalid_cursor");
+        StreamRequest request = StreamRequest.builder((queryResp.getData().getToken())).cursor("invalid_cursor").build();
         FaunaStream stream = client.stream(request, Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
@@ -149,6 +154,17 @@ public class E2EStreamingTest {
             Thread.sleep(100);
         }
         assertTrue(stream.isClosed());
+    }
+
+    @Test
+    public void handleStreamTimeout() {
+        QuerySuccess<StreamTokenResponse> queryResp = client.query(fql("Product.all().toStream()"), StreamTokenResponse.class);
+        StreamRequest request = StreamRequest.builder((queryResp.getData().getToken())).timeout(Duration.ofMillis(1)).build();
+        ClientException exc = assertThrows(ClientException.class, () -> client.stream(request, Product.class));
+        assertEquals(ExecutionException.class, exc.getCause().getClass());
+        assertEquals(HttpTimeoutException.class, exc.getCause().getCause().getClass());
+
+
     }
 
     @Disabled("Will fix this for GA, I think the other drivers have this bug too.")
