@@ -6,6 +6,7 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
+import com.fauna.feed.FeedRequest;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
@@ -30,6 +31,7 @@ public class RequestBuilder {
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
     private static final String STREAM_PATH = "/stream/1";
+    private static final String FEED_PATH = "/changefeed/1";
 
 
     private final HttpRequest.Builder baseRequestBuilder;
@@ -41,6 +43,7 @@ public class RequestBuilder {
         static final String TOKEN = "token";
         static final String CURSOR = "cursor";
         static final String START_TS = "start_ts";
+        static final String PAGE_SIZE = "page_size";
     }
 
     static class Headers {
@@ -89,6 +92,10 @@ public class RequestBuilder {
         return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
     }
 
+    public static RequestBuilder feedRequestBuilder(FaunaConfig config, Logger logger) {
+        return new RequestBuilder(URI.create(config.getEndpoint() + FEED_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
+    }
+
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
@@ -125,6 +132,12 @@ public class RequestBuilder {
         }
     }
 
+    /**
+     * Builds and returns the request body for the Fauna Streams API.
+     * @param request       An Object representing the Stream request.
+     * @return
+     * @throws IOException
+     */
     public String buildStreamRequestBody(StreamRequest request) throws IOException {
         // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
         // start_ts is a JSON numeric/integer, not a tagged '@long'.
@@ -144,6 +157,28 @@ public class RequestBuilder {
         return requestBytes.toString(StandardCharsets.UTF_8);
     }
 
+    public String buildFeedRequestBody(FeedRequest request) throws IOException {
+        // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
+        // start_ts is a JSON numeric/integer, not a tagged '@long'.
+        ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
+        JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
+        gen.writeStartObject();
+        gen.writeStringField(FieldNames.TOKEN, request.getToken());
+        // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
+        if (request.getCursor().isPresent()) {
+            gen.writeStringField(FieldNames.CURSOR, request.getCursor().get());
+        }
+        if (request.getStartTs().isPresent()) {
+            gen.writeNumberField(FieldNames.START_TS, request.getStartTs().get());
+        }
+        if (request.getPageSize().isPresent()) {
+            gen.writeNumberField(FieldNames.PAGE_SIZE, request.getPageSize().get());
+        }
+        gen.writeEndObject();
+        gen.flush();
+        return requestBytes.toString(StandardCharsets.UTF_8);
+    }
+
     public HttpRequest buildStreamRequest(StreamRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         request.getTimeout().ifPresent(builder::timeout);
@@ -155,6 +190,20 @@ public class RequestBuilder {
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Stream request.", e);
         }
+    }
+
+    public HttpRequest buildFeedRequest(FeedRequest request) {
+        HttpRequest.Builder builder = baseRequestBuilder.copy();
+        try {
+            String body = buildFeedRequestBody(request);
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            logRequest(body, req);
+            return req;
+        } catch (IOException e) {
+            throw new ClientException("Unable to build Fauna Feed request.", e);
+        }
+
+
     }
 
     private static String buildAuthHeader(String token) {

@@ -17,7 +17,7 @@ import static com.fauna.constants.ResponseFields.DATA_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.ERROR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
-import static com.fauna.constants.ResponseFields.STREAM_CURSOR_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
 public class StreamEvent<E> {
@@ -106,7 +106,7 @@ public class StreamEvent<E> {
     static <E> Builder<E> parseField(Builder<E> builder, JsonParser parser) throws IOException {
         String fieldName = parser.getValueAsString();
         switch (fieldName) {
-            case STREAM_CURSOR_FIELD_NAME:
+            case CURSOR_FIELD_NAME:
                 return builder.cursor(parser.nextTextValue());
             case DATA_FIELD_NAME:
                 return builder.parseData(parser);

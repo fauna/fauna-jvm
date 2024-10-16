@@ -7,6 +7,8 @@ import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
+import com.fauna.feed.FeedRequest;
+import com.fauna.feed.FeedSuccess;
 import com.fauna.query.AfterToken;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
@@ -50,6 +52,7 @@ public abstract class FaunaClient {
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
     abstract RequestBuilder getStreamRequestBuilder();
+    abstract RequestBuilder getFeedRequestBuilder();
 
     public FaunaClient(String secret, Logger logger) {
         this.faunaSecret = secret;
@@ -101,6 +104,14 @@ public abstract class FaunaClient {
         }
     }
 
+    private <E> void completeFeedRequest(FeedSuccess<E> success, Throwable throwable) {
+        if (success != null) {
+            // TODO: Update TS?
+        } else if (throwable != null) {
+            extractServiceException(throwable).ifPresent(exc -> updateTs(exc.getResponse()));
+        }
+    }
+
     private void logResponse(HttpResponse<InputStream> response) {
         logger.fine(MessageFormat.format("Fauna HTTP Response {0} from {1}, headers: {2}",
                 response.statusCode(), response.uri(), headersAsString(response.headers())));
@@ -113,6 +124,14 @@ public abstract class FaunaClient {
                     logResponse(response);
                     return QueryResponse.parseResponse(response, codec);
                 }).whenComplete(this::completeRequest);
+    }
+
+    private <E> Supplier<CompletableFuture<FeedSuccess<E>>> makeAsyncFeedRequest(HttpClient client, HttpRequest request, Codec<E> codec) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(
+                response -> {
+                    logResponse(response);
+                    return FeedSuccess.parseResponse(response, codec);
+                }).whenComplete(this::completeFeedRequest);
     }
 
     private <R> R completeAsync(CompletableFuture<R> future, String executionMessage) {
@@ -457,5 +476,17 @@ public abstract class FaunaClient {
     public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
         return completeAsync(asyncStream(fql, elementClass), STREAM_SUBSCRIPTION);
     }
+    //endregion
+
+    //region Event Feeds
+    public <E> CompletableFuture<FeedSuccess<E>> asyncFeed(FeedRequest feedRequest, Class<E> elementClass) {
+        return new RetryHandler<FeedSuccess<E>>(getRetryStrategy(), logger).execute(makeAsyncFeedRequest(
+                getHttpClient(), getRequestBuilder().buildFeedRequest(feedRequest), codecProvider.get(elementClass)));
+    }
+
+    public <E> FeedIterator<E> feed(FeedRequest request, Class<E> elementClass) {
+        return new FeedIterator<>(this, request, elementClass);
+    }
+
     //endregion
 }
