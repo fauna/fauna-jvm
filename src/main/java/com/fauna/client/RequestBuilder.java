@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.logging.Logger;
 
 import static com.fauna.client.Logging.headersAsString;
@@ -31,6 +32,7 @@ public class RequestBuilder {
     private static final String STREAM_PATH = "/stream/1";
 
     private final HttpRequest.Builder baseRequestBuilder;
+    private final Duration clientTimeoutBuffer;
     private final Logger logger;
 
     static class FieldNames {
@@ -56,7 +58,7 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(URI uri, String token, int maxContentionRetries, Logger logger) {
+    public RequestBuilder(URI uri, String token, int maxContentionRetries, Duration clientTimeoutBuffer, Logger logger) {
         // DriverEnvironment is not needed outside the constructor for now.
         DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
@@ -68,32 +70,36 @@ public class RequestBuilder {
                 RequestBuilder.Headers.MAX_CONTENTION_RETRIES, String.valueOf(maxContentionRetries),
                 Headers.AUTHORIZATION, buildAuthHeader(token)
         );
+        this.clientTimeoutBuffer = clientTimeoutBuffer;
         this.logger = logger;
     }
 
-    public RequestBuilder(HttpRequest.Builder builder, Logger logger) {
+    public RequestBuilder(HttpRequest.Builder builder, Duration clientTimeoutBuffer, Logger logger) {
         this.baseRequestBuilder = builder;
+        this.clientTimeoutBuffer = clientTimeoutBuffer;
         this.logger = logger;
     }
 
     public static RequestBuilder queryRequestBuilder(FaunaConfig config, Logger logger) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries(), logger);
+        return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
     }
 
     public static RequestBuilder streamRequestBuilder(FaunaConfig config, Logger logger) {
-        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), logger);
+        return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
     }
 
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
         newBuilder.setHeader(Headers.AUTHORIZATION, buildAuthHeader(token));
-        return new RequestBuilder(newBuilder, logger);
+        return new RequestBuilder(newBuilder, clientTimeoutBuffer, logger);
     }
 
     private void logRequest(String body, HttpRequest req) {
-        logger.fine(MessageFormat.format("Fauna HTTP {0} Request to {1} (timeout {2}), headers: {3}",
-                req.method(), req.uri(), req.timeout(), headersAsString(req.headers())));
+        String timeout = req.timeout().map(
+                val -> MessageFormat.format(" (timeout: {0})", val)).orElse("");
+        logger.fine(MessageFormat.format("Fauna HTTP {0} Request to {1}{2}, headers: {3}",
+                req.method(), req.uri(), timeout, headersAsString(req.headers())));
         logger.finest("Request body: " + body);
     }
 
@@ -139,6 +145,7 @@ public class RequestBuilder {
 
     public HttpRequest buildStreamRequest(StreamRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
+        request.getTimeout().ifPresent(builder::timeout);
         try {
             String body = buildStreamRequestBody(request);
             HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
@@ -166,7 +173,11 @@ public class RequestBuilder {
             builder.setHeader(Headers.LAST_TXN_TS, String.valueOf(lastTxnTs));
         }
         if (options != null) {
-            options.getTimeoutMillis().ifPresent(val -> builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val)));
+
+            options.getTimeoutMillis().ifPresent(val -> {
+                    builder.timeout(Duration.ofMillis(val).plus(clientTimeoutBuffer));
+                    builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val));
+            });
             options.getLinearized().ifPresent(val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
             options.getTypeCheck().ifPresent(val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
             options.getTraceParent().ifPresent(val -> builder.header(Headers.TRACE_PARENT, val));
