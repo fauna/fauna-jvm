@@ -67,7 +67,8 @@ public class FaunaConfig {
     }
 
     /**
-     *
+     * Gets the buffer that will be added to the HTTP client timeout, in addition to any query timeout.
+     * @return  The timeout buffer Duration.
      */
 
     public Duration getClientTimeoutBuffer() {
