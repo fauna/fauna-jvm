@@ -12,8 +12,8 @@ jobs:
         image: fauna/faunadb
         ports:
           - 8443:8443
-        options:
-          - -e FLAG_ACCOUNT_CHANGE_FEEDS=true
+        env:
+          FLAG_ACCOUNT_CHANGE_FEEDS: "true"
 
     steps:
     - name: Check out repository
