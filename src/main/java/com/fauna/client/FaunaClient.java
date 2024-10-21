@@ -5,12 +5,15 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
+import com.fauna.exception.ProtocolException;
 import com.fauna.exception.ServiceException;
 import com.fauna.feed.FeedRequest;
 import com.fauna.feed.FeedSuccess;
 import com.fauna.query.AfterToken;
 import com.fauna.query.QueryOptions;
+import com.fauna.response.QueryFailure;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.StreamTokenResponse;
 import com.fauna.query.builder.Query;
@@ -35,6 +38,7 @@ import java.util.logging.Logger;
 
 import static com.fauna.client.Logging.headersAsString;
 import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.constants.ErrorMessages.FEED_SUBSCRIPTION;
 import static com.fauna.constants.ErrorMessages.QUERY_EXECUTION;
 import static com.fauna.constants.ErrorMessages.QUERY_PAGE;
 import static com.fauna.constants.ErrorMessages.STREAM_SUBSCRIPTION;
@@ -130,6 +134,15 @@ public abstract class FaunaClient {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(
                 response -> {
                     logResponse(response);
+                    if (response.statusCode() >= 400) {
+                        // There are possibly some different error cases to handle for feeds. This seems like
+                        // a comprehensive solution for now. In the future we could rename QueryFailure et. al. to
+                        // something like FaunaFailure, or implement "FeedFailure".
+                        QueryFailure failure = new QueryFailure(response.statusCode(), QueryResponse.builder(codec));
+                        ErrorHandler.handleQueryFailure(response.statusCode(), failure);
+                        // Fall back on ProtocolException.
+                        throw new ProtocolException(response.statusCode(), failure);
+                    }
                     return FeedSuccess.parseResponse(response, codec);
                 }).whenComplete(this::completeFeedRequest);
     }
@@ -481,7 +494,15 @@ public abstract class FaunaClient {
     //region Event Feeds
     public <E> CompletableFuture<FeedSuccess<E>> asyncFeed(FeedRequest feedRequest, Class<E> elementClass) {
         return new RetryHandler<FeedSuccess<E>>(getRetryStrategy(), logger).execute(makeAsyncFeedRequest(
-                getHttpClient(), getRequestBuilder().buildFeedRequest(feedRequest), codecProvider.get(elementClass)));
+                getHttpClient(), getFeedRequestBuilder().buildFeedRequest(feedRequest), codecProvider.get(elementClass)));
+    }
+
+    public <E> CompletableFuture<FeedIterator<E>> asyncFeed(Query fql, long startTs, Class<E> elementClass) {
+        return this.asyncQuery(fql, StreamTokenResponse.class).thenApply(str -> this.feed(FeedRequest.builder(str.getData().getToken()).startTs(startTs).build(), elementClass));
+    }
+
+    public <E> FeedIterator<E> feed(Query fql, long startTs, Class<E> elementClass) {
+        return completeAsync(asyncFeed(fql, startTs, elementClass), FEED_SUBSCRIPTION);
     }
 
     public <E> FeedIterator<E> feed(FeedRequest request, Class<E> elementClass) {

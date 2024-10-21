@@ -138,7 +138,7 @@ public class StreamEvent<E> {
     }
 
     public static <E> StreamEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
-        if (parser.nextToken() == START_OBJECT) {
+        if (parser.currentToken() == START_OBJECT || parser.nextToken() == START_OBJECT) {
             Builder<E> builder = StreamEvent.builder(dataCodec);
             while (parser.nextToken() == FIELD_NAME) {
                 builder = parseField(builder, parser);

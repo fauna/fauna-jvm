@@ -138,7 +138,6 @@ public class FeedSuccess<E> {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
             if (parser.nextToken() == START_OBJECT) {
-
                 Builder<E> builder = FeedSuccess.builder(elementCodec);
                 while (parser.nextToken() == FIELD_NAME) {
                     builder.parseField(parser);

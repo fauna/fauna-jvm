@@ -49,7 +49,6 @@ public class FeedIterator<E> implements Iterator<FeedSuccess<E>> {
                 if (fs.hasNext()) {
                     FeedRequest.Builder builder = FeedRequest.builder(initialRequest.getToken()).cursor(fs.getCursor());
                     initialRequest.getPageSize().ifPresent(builder::pageSize);
-                    FeedRequest request = FeedRequest.builder(initialRequest.getToken()).cursor(fs.getCursor()).build();
                     this.feedFuture = client.asyncFeed(builder.build(), resultClass);
                 } else {
                     this.feedFuture = null;
