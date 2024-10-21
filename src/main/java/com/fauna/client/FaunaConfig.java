@@ -8,7 +8,7 @@ import java.util.logging.Level;
 
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
- * It encapsulates various settings such as the endpoint URL, secret key, query timeout, and others.
+ * It encapsulates various settings such as the endpoint URL, secret key, and more.
  */
 public class FaunaConfig {
 
@@ -67,9 +67,9 @@ public class FaunaConfig {
     }
 
     /**
-     *
+     * Gets the buffer that will be added to the HTTP client timeout, in addition to any query timeout.
+     * @return  The timeout buffer Duration.
      */
-
     public Duration getClientTimeoutBuffer() {
         return clientTimeoutBuffer;
     }
@@ -81,7 +81,6 @@ public class FaunaConfig {
     public Handler getLogHandler() {
         return logHandler;
     }
-
 
     /**
      * Creates a new builder for FaunaConfig.
@@ -171,7 +170,7 @@ public class FaunaConfig {
             return this;
         }
 
-                                  /**
+        /**
          * Builds and returns a new FaunaConfig instance.
          *
          * @return A new instance of FaunaConfig.
