@@ -54,6 +54,7 @@ class RequestBuilderTest {
         assertEquals("POST", httpRequest.method());
         assertTrue(httpRequest.bodyPublisher().orElseThrow().contentLength() > 0);
         HttpHeaders headers = httpRequest.headers();
+        assertTrue(httpRequest.timeout().isEmpty());
         assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("runtime=java"));
         assertTrue(headers.firstValue(DRIVER_ENV).orElse("").contains("driver="));
         assertNotNull(headers.firstValue(AUTHORIZATION));
@@ -76,12 +77,26 @@ class RequestBuilderTest {
         assertNotNull(headers.firstValue(QUERY_TAGS));
         assertEquals("traceParent", headers.firstValue(TRACE_PARENT).orElseThrow());
         assertEquals("1", headers.firstValue(LAST_TXN_TS).orElseThrow());
+        // Query timeout + 5 seconds (default).
+        assertEquals(Duration.ofSeconds(20), httpRequest.timeout().orElseThrow());
+    }
+
+    @Test
+    void buildRequest_withCustomTimeoutBuffer() {
+        QueryOptions defaultOpts = QueryOptions.builder().build();
+        QueryOptions timeoutOpts = QueryOptions.builder().timeout(Duration.ofSeconds(15)).build();
+
+        RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(
+                FaunaConfig.builder().clientTimeoutBuffer(Duration.ofSeconds(1)).build(), Logger.getGlobal());
+        HttpRequest req = requestBuilder.buildRequest(fql("42"), defaultOpts, codecProvider, 1L);
+        assertEquals(Duration.ofSeconds(6), requestBuilder.buildRequest(fql("42"), defaultOpts, codecProvider, 1L).timeout().orElseThrow());
+        assertEquals(Duration.ofSeconds(16), requestBuilder.buildRequest(fql("42"), timeoutOpts, codecProvider, 1L).timeout().orElseThrow());
     }
 
     @Test
     void buildStreamRequestBody_shouldOnlyIncludeToken() throws IOException {
         // Given
-        StreamRequest request = new StreamRequest("tkn");
+        StreamRequest request = StreamRequest.builder("tkn").build();
         // When
         String body = requestBuilder.buildStreamRequestBody(request);
         // Then
@@ -91,7 +106,7 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldIncludeCursor() throws IOException {
         // Given
-        StreamRequest request = new StreamRequest("tkn", "cur");
+        StreamRequest request = StreamRequest.builder("tkn").cursor("cur").build();
         // When
         String body = requestBuilder.buildStreamRequestBody(request);
         // Then
@@ -101,7 +116,7 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldIncludeTimestamp() throws IOException {
         // Given
-        StreamRequest request = new StreamRequest("tkn", Long.MAX_VALUE / 2);
+        StreamRequest request = StreamRequest.builder("tkn").startTs(Long.MAX_VALUE / 2).build();
         // When
         String body = requestBuilder.buildStreamRequestBody(request);
         // Then
