@@ -32,3 +32,8 @@ replay_pid*
 
 #macOs
 .DS_STORE
+
+# Internal files
+.fauna-project
+rawstats*.csv
+stats*.txt
