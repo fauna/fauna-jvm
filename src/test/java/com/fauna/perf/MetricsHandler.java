@@ -58,7 +58,7 @@ public class MetricsHandler {
             // *100, round, /100 trick to get two decimal places
             double p50 = Math.round(stats.getPercentile(50) * 100) / 100;
             double p95 = Math.round(stats.getPercentile(95) * 100) / 100;
-            double p99 = Math.round(stats.getPercentile(95) * 100) / 100;
+            double p99 = Math.round(stats.getPercentile(99) * 100) / 100;
             double stddev = Math.round(stats.getStandardDeviation() * 100) / 100;
 
             var line = String.format("%-35s%9s%9s%9s%9s", entry.getKey(), p50, p95, p99, stddev);
