@@ -46,6 +46,11 @@ public class PerformanceTest {
     @MethodSource("getTestData")
     @Tag("perfTests")
     public void executeQueryAndCollectStats(String name, List<String> queryParts, boolean typed, boolean page) throws InterruptedException, ExecutionException {
+        if (queryParts.size() == 0) {
+            System.out.println("Skipping empty query from queries.json");
+            return;
+        }
+        
         for (int i = 0; i < 20; i++) {
             Query query = getCompositedQueryFromParts(queryParts);
             AtomicInteger queryTime = new AtomicInteger(0);
