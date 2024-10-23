@@ -11,6 +11,14 @@ resources:
     source:
       url: ((slack-webhook))
 
+  - name: repo.git
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:fauna/fauna-jvm.git
+      branch: main
+      private_key: ((github-ssh-key))
+
   - name: fauna-jvm-repository
     type: git
     icon: github
@@ -42,12 +50,10 @@ jobs:
   - name: set-self
     serial: true
     plan:
-      - get: fauna-jvm-repository
-        trigger: true
-      - get: fauna-jvm-repository-docs
+      - get: repo.git
         trigger: true
       - set_pipeline: self
-        file: fauna-jvm-repository/concourse/pipeline.yml
+        file: repo.git/concourse/pipeline.yml
 
   - name: perf-tests-dev
     serial: true
@@ -56,12 +62,10 @@ jobs:
       - get: dev-tests-trigger
         trigger: true
 
-      - get: fauna-jvm-repository
+      - get: repo.git
 
       - task: run-perf
-        file: fauna-jvm-repository/concourse/tasks/perf.yml
-        input_mapping:
-          repo.git: fauna-jvm-repository
+        file: repo.git/concourse/tasks/perf.yml
         params:
           FAUNA_ENDPOINT: https://db.fauna-dev.com
           FAUNA_SECRET: ((dev-driver-perf-test-key))
@@ -78,9 +82,7 @@ jobs:
     plan:
       - get: fauna-jvm-repository
         trigger: true
-        passed: [set-self]
       - get: fauna-jvm-repository-docs
-        passed: [set-self]
 
       # - in_parallel:
       #   - task: integration-tests-oracle-jdk11
