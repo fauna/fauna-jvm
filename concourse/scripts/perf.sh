@@ -19,7 +19,7 @@ pushd perf-test-setup
 # Build solution and run performance tests
 popd
 ./gradlew clean
-./gradlew test -i --tests '*PerformanceTest*'
+./gradlew perfTests -i
 
 # Test run should output stats.txt, cat it to the slack-message output for display in Slack
 echo ":stopwatch: *Perf test results for _<https://github.com/fauna/fauna-jvm|fauna-jvm>_* ($FAUNA_ENVIRONMENT)" > ../slack-message/perf-stats
