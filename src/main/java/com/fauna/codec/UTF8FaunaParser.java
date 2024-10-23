@@ -54,11 +54,13 @@ public class UTF8FaunaParser {
     private final Stack<Object> tokenStack = new Stack<>();
     private FaunaTokenType currentFaunaTokenType = NONE;
     private FaunaTokenType bufferedFaunaTokenType;
+    private Object bufferedTokenValue;
     private String taggedTokenValue;
 
 
     private enum InternalTokenType {
-        START_ESCAPED_OBJECT
+        START_ESCAPED_OBJECT,
+        START_PAGE_UNMATERIALIZED
     }
 
     public UTF8FaunaParser(JsonParser jsonParser) {
@@ -132,6 +134,8 @@ public class UTF8FaunaParser {
             }
             return true;
         }
+
+        bufferedTokenValue = null;
 
         if (!advance()) {
             return false;
@@ -223,7 +227,20 @@ public class UTF8FaunaParser {
                     case SET_TAG:
                         advanceTrue();
                         currentFaunaTokenType = FaunaTokenType.START_PAGE;
-                        tokenStack.push(FaunaTokenType.START_PAGE);
+
+                        if (jsonParser.currentToken() == JsonToken.VALUE_STRING) {
+                            bufferedFaunaTokenType = FaunaTokenType.STRING;
+
+                            try {
+                                bufferedTokenValue = jsonParser.getValueAsString();
+                            } catch (IOException e) {
+                                throw new CodecException(e.getMessage(), e);
+                            }
+
+                            tokenStack.push(InternalTokenType.START_PAGE_UNMATERIALIZED);
+                        } else {
+                            tokenStack.push(FaunaTokenType.START_PAGE);
+                        }
                         break;
                     case REF_TAG:
                         advanceTrue();
@@ -253,6 +270,8 @@ public class UTF8FaunaParser {
         if (startToken.equals(FaunaTokenType.START_DOCUMENT)) {
             currentFaunaTokenType = END_DOCUMENT;
             advanceTrue();
+        } else if (startToken.equals(InternalTokenType.START_PAGE_UNMATERIALIZED)) {
+            currentFaunaTokenType = END_PAGE;
         } else if (startToken.equals(FaunaTokenType.START_PAGE)) {
             currentFaunaTokenType = END_PAGE;
             advanceTrue();
@@ -325,6 +344,9 @@ public class UTF8FaunaParser {
 
     public String getValueAsString() {
         try {
+            if (bufferedTokenValue != null) {
+                return bufferedTokenValue.toString();
+            }
             return jsonParser.getValueAsString();
         } catch (IOException e) {
             throw new CodecException("Error getting the current token as String", e);
