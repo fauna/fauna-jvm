@@ -234,9 +234,9 @@ public abstract class FaunaClient {
      * ... do some other stuff ...
      * Document doc = future.get().getData();
      *
-     * @param fql         The FQL query to be executed.
-     * @param resultClass The expected class of the query result.
-     * @return QuerySuccess     The successful query result.
+     * @param fql               The FQL query to be executed.
+     * @param resultClass       The expected class of the query result.
+     * @return QuerySuccess     A CompletableFuture that completes with the successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, Class<T> resultClass) {
@@ -492,19 +492,53 @@ public abstract class FaunaClient {
     //endregion
 
     //region Event Feeds
+
+    /**
+     * Send a request to the Fauna feed endpoint, and return a CompletableFuture that completes with the response.
+     * @param feedRequest   The Feed Request object.
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedSuccess  A CompletableFuture that completes with the successful feed response.
+     * @param <E>           The type of the feed events.
+     */
     public <E> CompletableFuture<FeedSuccess<E>> asyncFeed(FeedRequest feedRequest, Class<E> elementClass) {
         return new RetryHandler<FeedSuccess<E>>(getRetryStrategy(), logger).execute(makeAsyncFeedRequest(
                 getHttpClient(), getFeedRequestBuilder().buildFeedRequest(feedRequest), codecProvider.get(elementClass)));
     }
 
+    /**
+     * Return a CompletableFuture that completes with a FeedIterator based on an FQL query. This method sends two
+     * requests, one to the query endpoint to get the stream/feed token, and then another request to the feed endpoint
+     * to get the first page of results.
+     * @param fql           The FQL query to be executed. It must return a token, e.g. ends in `.changesOn()`.
+     * @param startTs       Stream start time in microseconds since the Unix epoch.
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedIterator A CompletableFuture that completes with a feed iterator that returns pages of Feed events.
+     * @param <E>           The type of the feed events.
+     */
     public <E> CompletableFuture<FeedIterator<E>> asyncFeed(Query fql, long startTs, Class<E> elementClass) {
         return this.asyncQuery(fql, StreamTokenResponse.class).thenApply(str -> this.feed(FeedRequest.builder(str.getData().getToken()).startTs(startTs).build(), elementClass));
     }
 
+    /**
+     * Return a FeedIterator based on an FQL query. This method sends two requests, one to the query endpoint to get
+     * the stream/feed token, and then another request to the feed endpoint to get the first page of results.
+     * @param fql           The FQL query to be executed. It must return a token, e.g. ends in `.changesOn()`.
+     * @param startTs       Stream start time in microseconds since the Unix epoch.
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedIterator An iterator that returns pages of Feed events.
+     * @param <E>           The type of the feed events.
+     */
     public <E> FeedIterator<E> feed(Query fql, long startTs, Class<E> elementClass) {
         return completeAsync(asyncFeed(fql, startTs, elementClass), FEED_SUBSCRIPTION);
     }
 
+    /**
+     * Send a request to the Feed endpoint and return a FeedIterator.
+     * @param request       The Feed Request object.
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedIterator An iterator that returns pages of Feed events.
+     * @param <E>           The type of the feed events.
+     */
     public <E> FeedIterator<E> feed(FeedRequest request, Class<E> elementClass) {
         return new FeedIterator<>(this, request, elementClass);
     }
