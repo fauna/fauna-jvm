@@ -372,6 +372,26 @@ class UTF8FaunaParserTest {
         assertReader(reader, expectedTokens);
     }
 
+
+    @Test
+    public void testReadUnmaterializedSet() {
+        String s = "{\"products\":{\"@set\":\"sometoken\"},\"name\":\"foo\"}";
+        UTF8FaunaParser reader = UTF8FaunaParser.fromInputStream(new ByteArrayInputStream(s.getBytes()));
+
+        List<Map.Entry<FaunaTokenType, Object>> expectedTokens = List.of(
+                new AbstractMap.SimpleEntry<>(FaunaTokenType.START_OBJECT, null),
+                Map.entry(FaunaTokenType.FIELD_NAME, "products"),
+                new AbstractMap.SimpleEntry<>(FaunaTokenType.START_PAGE, null),
+                Map.entry(FaunaTokenType.STRING, "sometoken"),
+                new AbstractMap.SimpleEntry<>(FaunaTokenType.END_PAGE, null),
+                Map.entry(FaunaTokenType.FIELD_NAME, "name"),
+                Map.entry(FaunaTokenType.STRING, "foo"),
+                new AbstractMap.SimpleEntry<>(FaunaTokenType.END_OBJECT, null)
+        );
+
+        assertReader(reader, expectedTokens);
+    }
+
     @Test
     public void testReadRef() throws IOException {
         String s = "{\"@ref\": {\"id\": \"123\", \"coll\": {\"@mod\": \"Col\"}}}";
