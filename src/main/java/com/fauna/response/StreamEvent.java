@@ -43,7 +43,7 @@ public class StreamEvent<E> {
         this.error = error;
     }
 
-    static class Builder<E> {
+    public static class Builder<E> {
         private final Codec<E> dataCodec;
         String cursor = null;
         StreamEvent.EventType eventType = null;
@@ -99,7 +99,7 @@ public class StreamEvent<E> {
 
     }
 
-    static <E> Builder<E> builder(Codec<E> dataCodec) {
+    public static <E> Builder<E> builder(Codec<E> dataCodec) {
         return new Builder<>(dataCodec);
     }
 
