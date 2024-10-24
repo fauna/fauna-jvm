@@ -193,6 +193,10 @@ public class RequestBuilder {
 
     public HttpRequest buildFeedRequest(FeedRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
+        request.getTimeout().ifPresent(val -> {
+            builder.timeout(val.plus(clientTimeoutBuffer));
+            builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val.toMillis()));
+        });
         try {
             String body = buildFeedRequestBody(request);
             HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();

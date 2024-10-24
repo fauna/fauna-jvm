@@ -10,7 +10,7 @@ public class QueryOptions {
     private final QueryTags queryTags;
     private final String traceParent;
 
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
+    public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
     public static QueryOptions DEFAULT = QueryOptions.builder().build();
 
     public QueryOptions(Builder builder) {
