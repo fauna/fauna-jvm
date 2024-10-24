@@ -6,6 +6,7 @@ public class ScopedFaunaClient extends FaunaClient {
     private final FaunaClient client;
     private final RequestBuilder requestBuilder;
     private final RequestBuilder streamRequestBuilder;
+    private final RequestBuilder feedRequestBuilder;
 
 
     public ScopedFaunaClient(FaunaClient client, FaunaScope scope) {
@@ -13,6 +14,7 @@ public class ScopedFaunaClient extends FaunaClient {
         this.client = client;
         this.requestBuilder = client.getRequestBuilder().scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
         this.streamRequestBuilder = client.getStreamRequestBuilder().scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
+        this.feedRequestBuilder = client.getFeedRequestBuilder().scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
     }
 
 
@@ -28,11 +30,16 @@ public class ScopedFaunaClient extends FaunaClient {
 
     @Override
     RequestBuilder getRequestBuilder() {
-        return this.requestBuilder;
+        return requestBuilder;
     }
 
     @Override
     RequestBuilder getStreamRequestBuilder() {
-        return this.streamRequestBuilder;
+        return streamRequestBuilder;
+    }
+
+    @Override
+    RequestBuilder getFeedRequestBuilder() {
+        return feedRequestBuilder;
     }
 }

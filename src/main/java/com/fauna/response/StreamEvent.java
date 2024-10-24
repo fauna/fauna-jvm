@@ -17,7 +17,7 @@ import static com.fauna.constants.ResponseFields.DATA_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.ERROR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
-import static com.fauna.constants.ResponseFields.STREAM_CURSOR_FIELD_NAME;
+import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
 public class StreamEvent<E> {
@@ -43,7 +43,7 @@ public class StreamEvent<E> {
         this.error = error;
     }
 
-    static class Builder<E> {
+    public static class Builder<E> {
         private final Codec<E> dataCodec;
         String cursor = null;
         StreamEvent.EventType eventType = null;
@@ -99,14 +99,14 @@ public class StreamEvent<E> {
 
     }
 
-    static <E> Builder<E> builder(Codec<E> dataCodec) {
+    public static <E> Builder<E> builder(Codec<E> dataCodec) {
         return new Builder<>(dataCodec);
     }
 
     static <E> Builder<E> parseField(Builder<E> builder, JsonParser parser) throws IOException {
         String fieldName = parser.getValueAsString();
         switch (fieldName) {
-            case STREAM_CURSOR_FIELD_NAME:
+            case CURSOR_FIELD_NAME:
                 return builder.cursor(parser.nextTextValue());
             case DATA_FIELD_NAME:
                 return builder.parseData(parser);
@@ -138,7 +138,7 @@ public class StreamEvent<E> {
     }
 
     public static <E> StreamEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
-        if (parser.nextToken() == START_OBJECT) {
+        if (parser.currentToken() == START_OBJECT || parser.nextToken() == START_OBJECT) {
             Builder<E> builder = StreamEvent.builder(dataCodec);
             while (parser.nextToken() == FIELD_NAME) {
                 builder = parseField(builder, parser);
