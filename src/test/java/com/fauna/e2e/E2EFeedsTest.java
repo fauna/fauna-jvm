@@ -63,7 +63,7 @@ public class E2EFeedsTest {
 
     @Test
     public void feedFlattened() {
-        FeedIterator<Product> iter = client.feed(fql("Product.all().toStream()"), productCollectionTs, Product.class);
+        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), productCollectionTs, Product.class);
         Iterator<StreamEvent<Product>> productIter = iter.flatten();
         List<StreamEvent<Product>> products = new ArrayList<>();
         // Java iterators not being iterable (or useable in a for-each loop) is annoying.
