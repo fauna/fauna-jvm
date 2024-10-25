@@ -51,7 +51,7 @@ public class E2EFeedsTest {
 
     @Test
     public void feedError() {
-        FeedIterator<Product> iter = client.feed(fql("Product.all().toStream()"), 0L, Product.class);
+        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), 0L, Product.class);
         FeedSuccess<Product> pageOne = iter.next();
         assertFalse(pageOne.hasNext());
         assertEquals(1, pageOne.getEvents().size());
