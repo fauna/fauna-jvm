@@ -482,16 +482,13 @@ public class FeedExample {
             Product.class // Class for the type returned in events
         );
 
-        // Gather event pages
-        List<List<StreamEvent<Product>>> pages = new ArrayList<>();
-        syncIterator.forEachRemaining(page -> pages.add(page.getEvents()));
-
-        // Flatten pages to a single list of events.
-        List<StreamEvent<Product>> syncEvents = pages.stream()
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
-
-        System.out.println("Received " + syncEvents.size() + " events from feed().");
+        // Handle each page of events
+        syncIterator.forEachRemaining(page -> {
+            // Handle each event
+            for (StreamEvent<Product> event : page.getEvents()) {
+                System.out.println("Event: " + event);
+            }
+        });
 
         // Get an event source.
         Query query = fql("Product.all().eventSource() { name, stock }");
