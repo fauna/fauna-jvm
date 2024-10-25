@@ -31,7 +31,7 @@ public class RequestBuilder {
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
     private static final String STREAM_PATH = "/stream/1";
-    private static final String FEED_PATH = "/changefeed/1";
+    private static final String FEED_PATH = "/feed/1";
 
     private final HttpRequest.Builder baseRequestBuilder;
     private final Duration clientTimeoutBuffer;

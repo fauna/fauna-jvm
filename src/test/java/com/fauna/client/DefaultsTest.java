@@ -93,7 +93,7 @@ public class DefaultsTest {
         HttpRequest req = builder.buildFeedRequest(FeedRequest.builder("token").build());
         assertEquals(Duration.ofSeconds(10), req.timeout().orElseThrow()); // Unlike query, the default timeout for feeds is not set.
         assertEquals("POST", req.method());
-        assertEquals("https://db.fauna.com/changefeed/1", req.uri().toString());
+        assertEquals("https://db.fauna.com/feed/1", req.uri().toString());
     }
 
 
