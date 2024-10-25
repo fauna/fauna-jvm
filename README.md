@@ -432,27 +432,31 @@ QuerySuccess result = client.query(query, String.class, options);
 
 ## Event Streaming
 
-The driver supports [Event Streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+The driver supports [Event
+Streaming](https://docs.fauna.com/fauna/current/learn/cdc/#event-streaming).
 
-To get a stream token, append
-[`toStream()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/tostream)
+An Event Stream lets you consume events from an [event
+source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source)
+as a real-time subscription.
+
+To get an event source, append
+[`eventSource()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/eventsource)
 or
-[`changesOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/changeson)
-to a set from a [supported
-source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
+[`eventsOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/eventson)
+to a [supported Set](https://docs.fauna.com/fauna/current/reference/cdc/#sets).
 
-To start and subscribe to the stream, use a stream token to create a
+To start and subscribe to an Event Stream, use an event source to create a
 [`StreamRequest`](https://fauna.github.io/fauna-jvm/latest/com/fauna/stream/StreamRequest.html)
 and pass it to  `stream()` or `asyncStream()`:
 
 ```java
-// Get a stream token.
-Query query = fql("Product.all().toStream() { name, stock }");
+// Get an event source.
+Query query = fql("Product.all().eventSource() { name, stock }");
 QuerySuccess<StreamTokenResponse> tokenResponse = client.query(query, StreamTokenResponse.class);
-String streamToken = tokenResponse.getData().getToken();
+String eventSource = tokenResponse.getData().getToken();
 
 // Create a StreamRequest.
-StreamRequest request = new StreamRequest(streamToken);
+StreamRequest request = new StreamRequest(eventSource);
 
 // Use stream() when you want to ensure the stream is ready before proceeding
 // with other operations, or when working in a synchronous context.
@@ -464,11 +468,11 @@ FaunaStream<Product> stream = client.stream(request, Product.class);
 CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(request, Product.class);
 ```
 
-Alternatively, you can pass an FQL query that returns a stream token to `stream()` or
+Alternatively, you can pass an FQL query that returns an event source to `stream()` or
 `asyncStream()`:
 
 ```java
-Query query = fql("Product.all().toStream() { name, stock }");
+Query query = fql("Product.all().eventSource() { name, stock }");
 // Create and subscribe to a stream in one step.
 // stream() example:
 FaunaStream<Product> stream = client.stream(query, Product.class);
@@ -506,7 +510,7 @@ public class App {
             FaunaClient client = Fauna.client();
 
             // Create a stream of all products. Project the name and stock.
-            FaunaStream<Product> stream = client.stream(fql("Product.all().toStream() { name, stock }"), Product.class);
+            FaunaStream<Product> stream = client.stream(fql("Product.all().eventSource() { name, stock }"), Product.class);
 
             // Create a subscriber to handle stream events.
             ProductSubscriber subscriber = new ProductSubscriber();
