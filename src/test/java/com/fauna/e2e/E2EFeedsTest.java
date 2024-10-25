@@ -41,7 +41,7 @@ public class E2EFeedsTest {
 
     @Test
     public void feedOfAll() {
-        FeedIterator<Product> iter = client.feed(fql("Product.all().toStream()"), productCollectionTs, Product.class);
+        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), productCollectionTs, Product.class);
         List<List<StreamEvent<Product>>> pages = new ArrayList<>();
         iter.forEachRemaining(page -> pages.add(page.getEvents()));
         assertEquals(4, pages.size());
