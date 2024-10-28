@@ -525,7 +525,7 @@ after a specific start time or event cursor.
 ### Get events after a specific start time
 
 When you first poll an event source using an Event Feed, you usually pass
-`startTs` argument to `feed()` or `asyncFeed()`.
+a `startTs` argument to `feed()` or `asyncFeed()`.
 
 `startTs` is an integer representing a time in microseconds since the Unix
 epoch. The request returns events that occurred after the specified timestamp
