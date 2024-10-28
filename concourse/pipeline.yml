@@ -11,6 +11,14 @@ resources:
     source:
       url: ((slack-webhook))
 
+  - name: repo.git
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:fauna/fauna-jvm.git
+      branch: main
+      private_key: ((github-ssh-key))
+
   - name: fauna-jvm-repository
     type: git
     icon: github
@@ -27,25 +35,54 @@ resources:
       branch: gh-pages
       private_key: ((github-ssh-key))
 
+  - name: perf-notify
+    type: slack-notification
+    source:
+      # webhook for #notify-driver-perf channel
+      url: ((driver-perf-slack-url))
+
+  - name: dev-tests-trigger
+    type: time
+    source:
+      interval: 6h
+
 jobs:
   - name: set-self
     serial: true
     plan:
-      - get: fauna-jvm-repository
-        trigger: true
-      - get: fauna-jvm-repository-docs
+      - get: repo.git
         trigger: true
       - set_pipeline: self
-        file: fauna-jvm-repository/concourse/pipeline.yml
+        file: repo.git/concourse/pipeline.yml
+
+  - name: perf-tests-dev
+    serial: true
+    public: false
+    plan:
+      - get: dev-tests-trigger
+        trigger: true
+
+      - get: repo.git
+
+      - task: run-perf
+        file: repo.git/concourse/tasks/perf.yml
+        params:
+          FAUNA_ENDPOINT: https://db.fauna-dev.com
+          FAUNA_SECRET: ((dev-driver-perf-test-key))
+          FAUNA_ENVIRONMENT: dev
+          CONCOURSE_URL: http://concourse.faunadb.net/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+        on_success:
+          put: perf-notify
+          params:
+            text_file: slack-message/perf-stats
+
   - name: release
     serial: true
     public: false
     plan:
       - get: fauna-jvm-repository
         trigger: true
-        passed: [set-self]
       - get: fauna-jvm-repository-docs
-        passed: [set-self]
 
       # - in_parallel:
       #   - task: integration-tests-oracle-jdk11
