@@ -2,6 +2,7 @@ package com.fauna.e2e;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
+import com.fauna.client.FaunaConfig;
 import com.fauna.client.FaunaStream;
 import com.fauna.e2e.beans.Product;
 import com.fauna.exception.ClientException;
@@ -113,17 +114,29 @@ public class E2EStreamingTest {
 
     @Test
     public void query_streamOfProduct() throws InterruptedException {
-        FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .defaultStatsCollector()
+                .build();
+        var streamClient = Fauna.client(cfg);
+
+        FaunaStream stream = streamClient.stream(fql("Product.all().toStream()"), Product.class);
+        var stats = streamClient.getStatsCollector().get().readAndReset();
+        assertEquals(1, stats.getComputeOps());
+
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
         assertFalse(stream.isClosed());
+
         List<Product> products = new ArrayList<>();
         products.add(client.query(fql("Product.create({name: 'cheese', quantity: 1})"), Product.class).getData());
         products.add(client.query(fql("Product.create({name: 'bread', quantity: 2})"), Product.class).getData());
         products.add(client.query(fql("Product.create({name: 'wine', quantity: 3})"), Product.class).getData());
+
         long start = System.currentTimeMillis();
         int events = inventory.countEvents();
-        System.out.println("Events: " + events);
+
         while (System.currentTimeMillis() < start + 2_000) {
             Thread.sleep(10);
             int latest = inventory.countEvents();
@@ -132,12 +145,17 @@ public class E2EStreamingTest {
             }
         }
         inventory.onComplete();
-        System.out.println(inventory.status());
         Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
+
         assertEquals(total, inventory.countInventory());
+
         assertFalse(stream.isClosed());
         stream.close();
         assertTrue(stream.isClosed());
+
+        stats = streamClient.getStatsCollector().get().read();
+        assertEquals(11, stats.getReadOps());
+        assertEquals(events, stats.getComputeOps());
     }
 
     @Test

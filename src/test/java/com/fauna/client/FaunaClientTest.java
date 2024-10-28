@@ -81,16 +81,10 @@ class FaunaClientTest {
     void defaultClient() {
         FaunaClient client = Fauna.client();
         assertTrue(client.getHttpClient().connectTimeout().isEmpty());
+        assertTrue(client.getStatsCollector().isEmpty());
         assertEquals(URI.create("https://db.fauna.com/query/1"),
                 client.getRequestBuilder().buildRequest(
                         fql("hello"), QueryOptions.builder().build(), DefaultCodecProvider.SINGLETON, 1L).uri());
-    }
-
-    @Test
-    void defaultConfigBuilder() {
-        FaunaConfig config = FaunaConfig.builder().build();
-        assertEquals("https://db.fauna.com", config.getEndpoint());
-        assertEquals("", config.getSecret());
     }
 
     @Test
@@ -108,8 +102,13 @@ class FaunaClientTest {
 
     @Test
     void customConfigConstructor() {
-        FaunaClient client = Fauna.client(FaunaConfig.builder().secret("foo").build());
+        FaunaConfig cfg = FaunaConfig.builder()
+                .secret("foo")
+                .defaultStatsCollector()
+                .build();
+        FaunaClient client = Fauna.client(cfg);
         assertTrue(client.toString().startsWith("com.fauna.client.BaseFaunaClient"));
+        assertTrue(client.getStatsCollector().isPresent());
     }
 
     @Test

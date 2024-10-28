@@ -22,6 +22,7 @@ public class FaunaConfig {
     private final int maxContentionRetries;
     private final Duration clientTimeoutBuffer;
     private final Handler logHandler;
+    private final StatsCollector statsCollector;
     public static final FaunaConfig DEFAULT = FaunaConfig.builder().build();
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
             FaunaEndpoint.LOCAL).secret("secret").build();
@@ -37,6 +38,7 @@ public class FaunaConfig {
         this.maxContentionRetries = builder.maxContentionRetries;
         this.clientTimeoutBuffer = builder.clientTimeoutBuffer;
         this.logHandler = builder.logHandler;
+        this.statsCollector = builder.statsCollector;
     }
 
     /**
@@ -83,6 +85,14 @@ public class FaunaConfig {
     }
 
     /**
+     * Gets the stats collector for the client.
+     * @return A log handler instance.
+     */
+    public StatsCollector getStatsCollector() {
+        return statsCollector;
+    }
+
+    /**
      * Creates a new builder for FaunaConfig.
      *
      * @return A new instance of Builder.
@@ -100,6 +110,7 @@ public class FaunaConfig {
         private int maxContentionRetries = 3;
         private Duration clientTimeoutBuffer = Duration.ofSeconds(5);
         private Handler logHandler = defaultLogHandler();
+        private StatsCollector statsCollector;
 
         static Level getLogLevel(String debug) {
             if (debug == null || debug.isBlank()) {
@@ -167,6 +178,25 @@ public class FaunaConfig {
          */
         public Builder logHandler(Handler handler) {
             this.logHandler = handler;
+            return this;
+        }
+
+        /**
+         * Set a StatsCollector.
+         * @param statsCollector    A stats collector instance.
+         * @return                  The current Builder instance.
+         */
+        public Builder statsCollector(StatsCollector statsCollector) {
+            this.statsCollector = statsCollector;
+            return this;
+        }
+
+        /**
+         * Set a default StatsCollector.
+         * @return  The current Builder instance.
+         */
+        public Builder defaultStatsCollector() {
+            this.statsCollector = new StatsCollectorImpl();
             return this;
         }
 

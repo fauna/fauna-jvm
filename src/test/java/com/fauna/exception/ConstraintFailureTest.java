@@ -97,7 +97,7 @@ public class ConstraintFailureTest {
         HttpResponse<InputStream> resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn(new ByteArrayInputStream(body.getBytes()));
         when(resp.statusCode()).thenReturn(400);
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null));
+        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null, null));
         assertEquals(Optional.of(List.of("name")), exc.getConstraintFailures()[0].getPathStrings());
     }
 
@@ -109,7 +109,7 @@ public class ConstraintFailureTest {
         HttpResponse<InputStream> resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn(new ByteArrayInputStream(body.getBytes()));
         when(resp.statusCode()).thenReturn(400);
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null));
+        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,() -> QueryResponse.parseResponse(resp, null, null));
         assertEquals(Optional.of(List.of("name", "name2.1.2.name3")), exc.getConstraintFailures()[0].getPathStrings());
     }
 

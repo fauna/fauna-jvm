@@ -25,7 +25,7 @@ public final class BaseFaunaClient extends FaunaClient {
      */
     public BaseFaunaClient(FaunaConfig faunaConfig,
                            HttpClient httpClient, RetryStrategy retryStrategy) {
-        super(faunaConfig.getSecret(), faunaConfig.getLogHandler());
+        super(faunaConfig.getSecret(), faunaConfig.getLogHandler(), faunaConfig.getStatsCollector());
         this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");

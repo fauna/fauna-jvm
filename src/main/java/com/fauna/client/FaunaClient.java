@@ -45,22 +45,25 @@ public abstract class FaunaClient {
     private final CodecProvider codecProvider = new DefaultCodecProvider(new DefaultCodecRegistry());
     private final AtomicLong lastTransactionTs = new AtomicLong(-1);
     private final Logger logger;
+    private final StatsCollector statsCollector;
 
     abstract RetryStrategy getRetryStrategy();
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
     abstract RequestBuilder getStreamRequestBuilder();
 
-    public FaunaClient(String secret, Logger logger) {
+    public FaunaClient(String secret, Logger logger, StatsCollector statsCollector) {
         this.faunaSecret = secret;
         this.logger = logger;
+        this.statsCollector = statsCollector;
     }
 
-    public FaunaClient(String secret, Handler logHandler) {
+    public FaunaClient(String secret, Handler logHandler, StatsCollector statsCollector) {
         this.faunaSecret = secret;
         this.logger = Logger.getLogger(this.getClass().getCanonicalName());
         this.logger.addHandler(logHandler);
         this.logger.setLevel(logHandler.getLevel());
+        this.statsCollector = statsCollector;
     }
 
     protected String getFaunaSecret() {
@@ -69,6 +72,10 @@ public abstract class FaunaClient {
 
     public Logger getLogger() {
         return this.logger;
+    }
+
+    public Optional<StatsCollector> getStatsCollector() {
+        return Optional.ofNullable(this.statsCollector);
     }
 
     public Optional<Long> getLastTransactionTs() {
@@ -111,7 +118,7 @@ public abstract class FaunaClient {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(
                 response -> {
                     logResponse(response);
-                    return QueryResponse.parseResponse(response, codec);
+                    return QueryResponse.parseResponse(response, codec, statsCollector);
                 }).whenComplete(this::completeRequest);
     }
 
@@ -406,7 +413,7 @@ public abstract class FaunaClient {
         return getHttpClient().sendAsync(streamReq,
                 HttpResponse.BodyHandlers.ofPublisher()).thenCompose(response -> {
                     CompletableFuture<FaunaStream<E>> publisher = new CompletableFuture<>();
-                    FaunaStream<E> fstream = new FaunaStream<>(elementClass);
+                    FaunaStream<E> fstream = new FaunaStream<>(elementClass, this.statsCollector);
                     response.body().subscribe(fstream);
                     publisher.complete(fstream);
                     return publisher;

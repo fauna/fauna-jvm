@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Flow.Processor;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
@@ -25,8 +26,10 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
     private Subscription subscription;
     private Subscriber<? super StreamEvent<E>> eventSubscriber;
     private MultiByteBufferInputStream buffer = null;
+    private final StatsCollector statsCollector;
 
-    public FaunaStream(Class<E> elementClass) {
+    public FaunaStream(Class<E> elementClass, StatsCollector statsCollector) {
+        this.statsCollector = statsCollector;
         this.dataCodec = DefaultCodecProvider.SINGLETON.get(elementClass);
     }
 
@@ -60,6 +63,11 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                 try {
                     JsonParser parser = JSON_FACTORY.createParser(buffer);
                     StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
+
+                    if (statsCollector != null) {
+                        statsCollector.add(event.getStats());
+                    }
+
                     if (event.getType() == StreamEvent.EventType.ERROR) {
                         ErrorInfo error = event.getError();
                         this.onComplete();

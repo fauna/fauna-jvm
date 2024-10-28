@@ -2,6 +2,7 @@ package com.fauna.e2e;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
+import com.fauna.client.FaunaConfig;
 import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
 import com.fauna.exception.QueryRuntimeException;
@@ -276,5 +277,38 @@ public class E2EQueryTest {
                         .queryTag("second", "2").build());
         assertEquals("1", success.getQueryTags().get("first"));
         assertEquals("2", success.getQueryTags().get("second"));
+    }
+
+    @Test
+    public void query_trackStatsOnSuccess() {
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .defaultStatsCollector()
+                .build();
+        var client = Fauna.client(cfg);
+
+        var q = fql("Author.all().toArray()");
+
+        client.query(q, listOf(Author.class));
+        var stats = client.getStatsCollector().get().read();
+        assertEquals(10, stats.getReadOps());
+        assertEquals(1, stats.getComputeOps());
+    }
+
+    @Test
+    public void query_trackStatsOnFailure() throws IOException {
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .defaultStatsCollector()
+                .build();
+        var client = Fauna.client(cfg);
+
+        var q = fql("Author.all().toArray()\nabort(null)");
+        assertThrows(AbortException.class, () -> client.query(q));
+        var stats = client.getStatsCollector().get().read();
+        assertEquals(8, stats.getReadOps());
+        assertEquals(1, stats.getComputeOps());
     }
 }

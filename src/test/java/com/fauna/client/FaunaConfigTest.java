@@ -8,6 +8,8 @@ import java.time.Duration;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FaunaConfigTest {
@@ -21,6 +23,7 @@ public class FaunaConfigTest {
         assertEquals(Level.WARNING, config.getLogHandler().getLevel());
         assertEquals("", config.getSecret());
         assertEquals(3, config.getMaxContentionRetries());
+        assertNull(config.getStatsCollector());
     }
 
     @Test
@@ -35,11 +38,13 @@ public class FaunaConfigTest {
                 .logHandler(handler)
                 .maxContentionRetries(1)
                 .clientTimeoutBuffer(Duration.ofSeconds(1))
+                .defaultStatsCollector()
                 .build();
         assertEquals("endpoint", config.getEndpoint());
         assertEquals(Level.ALL, config.getLogHandler().getLevel());
         assertEquals("foo", config.getSecret());
         assertEquals(1, config.getMaxContentionRetries());
+        assertNotNull(config.getStatsCollector());
     }
 
     @ParameterizedTest
