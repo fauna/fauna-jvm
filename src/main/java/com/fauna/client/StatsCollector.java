@@ -21,4 +21,10 @@ public interface StatsCollector {
      * @return Stats object
      */
     QueryStatsSummary readAndReset();
+
+    /**
+     * Clone the stats collector instance.
+     * @return A clone of the stats collector instance.
+     */
+    StatsCollector clone();
 }

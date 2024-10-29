@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fauna.beans.ClassWithAttributes;
+import com.fauna.client.StatsCollectorImpl;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.codec.CodecRegistry;
@@ -55,7 +56,7 @@ class QueryResponseTest {
         HttpResponse resp = mockResponse(body);
         when(resp.statusCode()).thenReturn(200);
 
-        QuerySuccess<ClassWithAttributes> success = QueryResponse.parseResponse(resp, codec);
+        QuerySuccess<ClassWithAttributes> success = QueryResponse.parseResponse(resp, codec, new StatsCollectorImpl());
 
         assertEquals(baz.getFirstName(), success.getData().getFirstName());
         assertEquals("PersonWithAttributes", success.getStaticType().get());
@@ -68,14 +69,14 @@ class QueryResponseTest {
         HttpResponse resp = mockResponse("{\"not valid json\"");
         when(resp.statusCode()).thenReturn(400);
 
-        ClientResponseException exc = assertThrows(ClientResponseException.class, () -> QueryResponse.parseResponse(resp, codecProvider.get(Object.class)));
+        ClientResponseException exc = assertThrows(ClientResponseException.class, () -> QueryResponse.parseResponse(resp, codecProvider.get(Object.class), new StatsCollectorImpl()));
         assertEquals("ClientResponseException HTTP 400: Failed to handle error response.", exc.getMessage());
     }
 
     @Test
     public void handleResponseWithEmptyFieldsDoesNotThrow() {
         HttpResponse resp = mockResponse("{}");
-        QuerySuccess<Object> response = QueryResponse.parseResponse(resp,  codecProvider.get(Object.class));
+        QuerySuccess<Object> response = QueryResponse.parseResponse(resp,  codecProvider.get(Object.class), new StatsCollectorImpl());
         assertEquals(QuerySuccess.class, response.getClass());
         assertNull(response.getSchemaVersion());
         assertNull(response.getSummary());

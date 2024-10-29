@@ -89,5 +89,10 @@ public class StatsCollectorImpl implements StatsCollector {
                 rateLimitedWriteQueryCount.getAndSet(0)
         );
     }
+
+    @Override
+    public StatsCollector clone() {
+        return new StatsCollectorImpl();
+    }
 }
 

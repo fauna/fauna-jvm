@@ -65,7 +65,7 @@ public class TestErrorHandler {
         HttpResponse<InputStream> resp = mock(HttpResponse.class);
         when(resp.body()).thenReturn(new ByteArrayInputStream(root.toString().getBytes()));
         when(resp.statusCode()).thenReturn(args.httpStatus);
-        assertThrows(args.exception, () -> parseResponse(resp, null));
+        assertThrows(args.exception, () -> parseResponse(resp, null, null));
     }
 
 }

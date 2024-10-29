@@ -2,6 +2,7 @@ package com.fauna.e2e;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
+import com.fauna.client.FaunaConfig;
 import com.fauna.client.PageIterator;
 import com.fauna.e2e.beans.Product;
 import com.fauna.response.QuerySuccess;
@@ -110,5 +111,37 @@ public class E2EPaginationTest {
             products.add(p);
         }
         assertEquals(50, products.size());
+    }
+
+    @Test
+    public void query_statsAreTrackedForExplicitPagination() {
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .build();
+        var client = Fauna.client(cfg);
+        PageIterator<Product> iter = client.paginate(fql("Product.all()"), Product.class);
+        iter.forEachRemaining(page -> {});
+
+        var stats = client.getStatsCollector().read();
+        assertEquals(82, stats.getReadOps());
+        assertEquals(4, stats.getComputeOps());
+    }
+
+    @Test
+    public void query_statsAreTrackedForFlattenedPagination() {
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .build();
+        var client = Fauna.client(cfg);
+        PageIterator<Product> iter = client.paginate(fql("Product.all()"), Product.class);
+        Iterator<Product> productIter = iter.flatten();
+        for (Product p : (Iterable<Product>) () -> productIter) {
+        }
+
+        var stats = client.getStatsCollector().read();
+        assertEquals(82, stats.getReadOps());
+        assertEquals(4, stats.getComputeOps());
     }
 }

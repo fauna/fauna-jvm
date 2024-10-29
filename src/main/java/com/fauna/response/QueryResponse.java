@@ -3,6 +3,7 @@ package com.fauna.response;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fauna.client.StatsCollector;
 import com.fauna.codec.Codec;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
@@ -135,7 +136,7 @@ public abstract class QueryResponse {
         }
     }
 
-    public static <T>  QuerySuccess<T> parseResponse(HttpResponse<InputStream> response, Codec<T> codec) throws FaunaException {
+    public static <T>  QuerySuccess<T> parseResponse(HttpResponse<InputStream> response, Codec<T> codec, StatsCollector statsCollector) throws FaunaException {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
 
@@ -147,6 +148,11 @@ public abstract class QueryResponse {
             while (parser.nextToken() == JsonToken.FIELD_NAME) {
                 builder = handleField(builder, parser);
             }
+
+            if (builder.stats != null) {
+                statsCollector.add(builder.stats);
+            }
+
             int httpStatus = response.statusCode();
             if (httpStatus >= 400) {
                 QueryFailure failure = new QueryFailure(httpStatus, builder);
