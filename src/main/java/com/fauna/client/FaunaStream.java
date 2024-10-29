@@ -64,9 +64,7 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                     JsonParser parser = JSON_FACTORY.createParser(buffer);
                     StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
 
-                    if (statsCollector != null) {
-                        statsCollector.add(event.getStats());
-                    }
+                    statsCollector.add(event.getStats());
 
                     if (event.getType() == StreamEvent.EventType.ERROR) {
                         ErrorInfo error = event.getError();

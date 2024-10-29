@@ -9,7 +9,7 @@ public class ScopedFaunaClient extends FaunaClient {
 
 
     public ScopedFaunaClient(FaunaClient client, FaunaScope scope) {
-        super(client.getFaunaSecret(), client.getLogger(), client.getStatsCollector().orElse(null));
+        super(client.getFaunaSecret(), client.getLogger(), client.getStatsCollector().clone());
         this.client = client;
         this.requestBuilder = client.getRequestBuilder().scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
         this.streamRequestBuilder = client.getStreamRequestBuilder().scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));

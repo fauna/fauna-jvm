@@ -117,12 +117,11 @@ public class E2EStreamingTest {
         var cfg = FaunaConfig.builder()
                 .secret("secret")
                 .endpoint("http://localhost:8443")
-                .defaultStatsCollector()
                 .build();
         var streamClient = Fauna.client(cfg);
 
-        FaunaStream stream = streamClient.stream(fql("Product.all().toStream()"), Product.class);
-        var stats = streamClient.getStatsCollector().get().readAndReset();
+        FaunaStream<Product> stream = streamClient.stream(fql("Product.all().toStream()"), Product.class);
+        var stats = streamClient.getStatsCollector().readAndReset();
         assertEquals(1, stats.getComputeOps());
 
         InventorySubscriber inventory = new InventorySubscriber();
@@ -153,7 +152,7 @@ public class E2EStreamingTest {
         stream.close();
         assertTrue(stream.isClosed());
 
-        stats = streamClient.getStatsCollector().get().read();
+        stats = streamClient.getStatsCollector().read();
         assertEquals(11, stats.getReadOps());
         assertEquals(events, stats.getComputeOps());
     }

@@ -86,7 +86,7 @@ public class FaunaConfig {
 
     /**
      * Gets the stats collector for the client.
-     * @return A log handler instance.
+     * @return A StatsCollector instance.
      */
     public StatsCollector getStatsCollector() {
         return statsCollector;
@@ -110,7 +110,7 @@ public class FaunaConfig {
         private int maxContentionRetries = 3;
         private Duration clientTimeoutBuffer = Duration.ofSeconds(5);
         private Handler logHandler = defaultLogHandler();
-        private StatsCollector statsCollector;
+        private StatsCollector statsCollector = new StatsCollectorImpl();
 
         static Level getLogLevel(String debug) {
             if (debug == null || debug.isBlank()) {
@@ -188,15 +188,6 @@ public class FaunaConfig {
          */
         public Builder statsCollector(StatsCollector statsCollector) {
             this.statsCollector = statsCollector;
-            return this;
-        }
-
-        /**
-         * Set a default StatsCollector.
-         * @return  The current Builder instance.
-         */
-        public Builder defaultStatsCollector() {
-            this.statsCollector = new StatsCollectorImpl();
             return this;
         }
 

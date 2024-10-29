@@ -118,13 +118,12 @@ public class E2EPaginationTest {
         var cfg = FaunaConfig.builder()
                 .secret("secret")
                 .endpoint("http://localhost:8443")
-                .defaultStatsCollector()
                 .build();
         var client = Fauna.client(cfg);
         PageIterator<Product> iter = client.paginate(fql("Product.all()"), Product.class);
         iter.forEachRemaining(page -> {});
 
-        var stats = client.getStatsCollector().get().read();
+        var stats = client.getStatsCollector().read();
         assertEquals(82, stats.getReadOps());
         assertEquals(4, stats.getComputeOps());
     }
@@ -134,7 +133,6 @@ public class E2EPaginationTest {
         var cfg = FaunaConfig.builder()
                 .secret("secret")
                 .endpoint("http://localhost:8443")
-                .defaultStatsCollector()
                 .build();
         var client = Fauna.client(cfg);
         PageIterator<Product> iter = client.paginate(fql("Product.all()"), Product.class);
@@ -142,7 +140,7 @@ public class E2EPaginationTest {
         for (Product p : (Iterable<Product>) () -> productIter) {
         }
 
-        var stats = client.getStatsCollector().get().read();
+        var stats = client.getStatsCollector().read();
         assertEquals(82, stats.getReadOps());
         assertEquals(4, stats.getComputeOps());
     }

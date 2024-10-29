@@ -23,7 +23,7 @@ public class FaunaConfigTest {
         assertEquals(Level.WARNING, config.getLogHandler().getLevel());
         assertEquals("", config.getSecret());
         assertEquals(3, config.getMaxContentionRetries());
-        assertNull(config.getStatsCollector());
+        assertNotNull(config.getStatsCollector());
     }
 
     @Test
@@ -38,7 +38,6 @@ public class FaunaConfigTest {
                 .logHandler(handler)
                 .maxContentionRetries(1)
                 .clientTimeoutBuffer(Duration.ofSeconds(1))
-                .defaultStatsCollector()
                 .build();
         assertEquals("endpoint", config.getEndpoint());
         assertEquals(Level.ALL, config.getLogHandler().getLevel());

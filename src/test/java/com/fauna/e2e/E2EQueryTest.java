@@ -284,14 +284,13 @@ public class E2EQueryTest {
         var cfg = FaunaConfig.builder()
                 .secret("secret")
                 .endpoint("http://localhost:8443")
-                .defaultStatsCollector()
                 .build();
         var client = Fauna.client(cfg);
 
         var q = fql("Author.all().toArray()");
 
         client.query(q, listOf(Author.class));
-        var stats = client.getStatsCollector().get().read();
+        var stats = client.getStatsCollector().read();
         assertEquals(10, stats.getReadOps());
         assertEquals(1, stats.getComputeOps());
     }
@@ -301,13 +300,12 @@ public class E2EQueryTest {
         var cfg = FaunaConfig.builder()
                 .secret("secret")
                 .endpoint("http://localhost:8443")
-                .defaultStatsCollector()
                 .build();
         var client = Fauna.client(cfg);
 
         var q = fql("Author.all().toArray()\nabort(null)");
         assertThrows(AbortException.class, () -> client.query(q));
-        var stats = client.getStatsCollector().get().read();
+        var stats = client.getStatsCollector().read();
         assertEquals(8, stats.getReadOps());
         assertEquals(1, stats.getComputeOps());
     }

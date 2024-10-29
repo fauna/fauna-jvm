@@ -149,7 +149,7 @@ public abstract class QueryResponse {
                 builder = handleField(builder, parser);
             }
 
-            if (statsCollector != null && builder.stats != null) {
+            if (builder.stats != null) {
                 statsCollector.add(builder.stats);
             }
 

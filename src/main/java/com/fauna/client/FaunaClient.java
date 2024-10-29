@@ -74,8 +74,8 @@ public abstract class FaunaClient {
         return this.logger;
     }
 
-    public Optional<StatsCollector> getStatsCollector() {
-        return Optional.ofNullable(this.statsCollector);
+    public StatsCollector getStatsCollector() {
+        return this.statsCollector;
     }
 
     public Optional<Long> getLastTransactionTs() {
