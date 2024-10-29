@@ -14,11 +14,11 @@ public interface StatsCollector {
      * Return the collected Stats.
      * @return Stats object
      */
-    Stats read();
+    QueryStatsSummary read();
 
     /**
      * Return the collected Stats and reset counts.
      * @return Stats object
      */
-    Stats readAndReset();
+    QueryStatsSummary readAndReset();
 }

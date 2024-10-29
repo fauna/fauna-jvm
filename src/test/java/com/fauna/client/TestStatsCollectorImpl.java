@@ -36,7 +36,7 @@ public class TestStatsCollectorImpl {
         statsCollector.add(stats);
 
         // Assert
-        Stats result = statsCollector.read();
+        QueryStatsSummary result = statsCollector.read();
         assertEquals(10, result.getComputeOps());
         assertEquals(20, result.getReadOps());
         assertEquals(5, result.getWriteOps());
@@ -62,7 +62,7 @@ public class TestStatsCollectorImpl {
         statsCollector.add(stats2);
 
         // Assert
-        Stats result = statsCollector.read();
+        QueryStatsSummary result = statsCollector.read();
         assertEquals(25, result.getComputeOps());
         assertEquals(45, result.getReadOps());
         assertEquals(15, result.getWriteOps());
@@ -80,7 +80,7 @@ public class TestStatsCollectorImpl {
     @Test
     public void testRead_initialStats_returnsZeroStats() {
         // Act
-        Stats result = statsCollector.read();
+        QueryStatsSummary result = statsCollector.read();
 
         // Assert
         assertEquals(0, result.getComputeOps());
@@ -106,8 +106,8 @@ public class TestStatsCollectorImpl {
         statsCollector.add(stats);
 
         // Act
-        Stats beforeReset = statsCollector.readAndReset();
-        Stats afterReset = statsCollector.read();
+        QueryStatsSummary beforeReset = statsCollector.readAndReset();
+        QueryStatsSummary afterReset = statsCollector.read();
 
         // Assert the stats before reset
         assertEquals(10, beforeReset.getComputeOps());

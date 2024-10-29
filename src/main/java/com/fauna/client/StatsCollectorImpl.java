@@ -55,8 +55,8 @@ public class StatsCollectorImpl implements StatsCollector {
     }
 
     @Override
-    public Stats read() {
-        return new Stats(
+    public QueryStatsSummary read() {
+        return new QueryStatsSummary(
                 readOps.get(),
                 computeOps.get(),
                 writeOps.get(),
@@ -73,8 +73,8 @@ public class StatsCollectorImpl implements StatsCollector {
     }
 
     @Override
-    public Stats readAndReset() {
-        return new Stats(
+    public QueryStatsSummary readAndReset() {
+        return new QueryStatsSummary(
                 readOps.getAndSet(0),
                 computeOps.getAndSet(0),
                 writeOps.getAndSet(0),
