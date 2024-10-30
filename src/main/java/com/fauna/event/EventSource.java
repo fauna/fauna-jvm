@@ -1,6 +1,4 @@
-package com.fauna.feed;
-
-import com.fauna.query.EventSourceResponse;
+package com.fauna.event;
 
 public class EventSource {
     private final String token;

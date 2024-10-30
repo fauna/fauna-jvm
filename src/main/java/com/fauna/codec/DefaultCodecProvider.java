@@ -14,7 +14,7 @@ import com.fauna.codec.codecs.QueryCodec;
 import com.fauna.codec.codecs.QueryLiteralCodec;
 import com.fauna.codec.codecs.QueryObjCodec;
 import com.fauna.codec.codecs.EventSourceResponseCodec;
-import com.fauna.query.EventSourceResponse;
+import com.fauna.event.EventSourceResponse;
 import com.fauna.codec.codecs.QueryValCodec;
 import com.fauna.query.builder.Query;
 import com.fauna.query.builder.QueryArr;

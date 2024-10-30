@@ -6,11 +6,11 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
-import com.fauna.feed.EventSource;
-import com.fauna.feed.FeedOptions;
-import com.fauna.feed.FeedRequest;
+import com.fauna.event.EventSource;
+import com.fauna.event.FeedOptions;
+import com.fauna.event.FeedRequest;
 import com.fauna.query.QueryOptions;
-import com.fauna.stream.StreamRequest;
+import com.fauna.event.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
 

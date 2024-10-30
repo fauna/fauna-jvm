@@ -6,7 +6,7 @@ import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
-import com.fauna.query.EventSourceResponse;
+import com.fauna.event.EventSourceResponse;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.Page;

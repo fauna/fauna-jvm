@@ -1,11 +1,12 @@
-package com.fauna.response;
+package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.codec.Codec;
-import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
+import com.fauna.response.ErrorInfo;
+import com.fauna.response.QueryStats;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -21,7 +22,6 @@ import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
 public class StreamEvent<E> {
-    private static final Codec<QueryStats> statsCodec = DefaultCodecProvider.SINGLETON.get(QueryStats.class);
     public enum EventType {
         STATUS, ADD, UPDATE, REMOVE, ERROR
     }

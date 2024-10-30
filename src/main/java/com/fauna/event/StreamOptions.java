@@ -1,4 +1,4 @@
-package com.fauna.query;
+package com.fauna.event;
 
 import com.fauna.client.RetryStrategy;
 

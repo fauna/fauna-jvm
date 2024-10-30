@@ -1,11 +1,8 @@
-package com.fauna.client;
+package com.fauna.event;
 
 
+import com.fauna.client.FaunaClient;
 import com.fauna.exception.FaunaException;
-import com.fauna.feed.EventSource;
-import com.fauna.feed.FeedOptions;
-import com.fauna.feed.FeedPage;
-import com.fauna.response.StreamEvent;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

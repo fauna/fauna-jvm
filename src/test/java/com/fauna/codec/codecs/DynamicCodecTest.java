@@ -5,7 +5,7 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.exception.NullDocumentException;
-import com.fauna.query.EventSourceResponse;
+import com.fauna.event.EventSourceResponse;
 import com.fauna.types.Module;
 import com.fauna.types.*;
 import org.junit.jupiter.api.Test;

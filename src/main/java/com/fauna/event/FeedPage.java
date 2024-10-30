@@ -1,11 +1,10 @@
-package com.fauna.feed;
+package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.codec.Codec;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.response.QueryStats;
-import com.fauna.response.StreamEvent;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.fauna.client;
+package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -6,7 +6,6 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
 import com.fauna.response.ErrorInfo;
-import com.fauna.response.StreamEvent;
 import com.fauna.response.MultiByteBufferInputStream;
 
 import java.io.IOException;

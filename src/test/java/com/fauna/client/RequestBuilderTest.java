@@ -5,7 +5,7 @@ import com.fauna.codec.CodecRegistry;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.query.QueryOptions;
-import com.fauna.stream.StreamRequest;
+import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 

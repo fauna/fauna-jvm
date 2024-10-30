@@ -1,12 +1,9 @@
 package com.fauna.stream;
 
-import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
-import com.fauna.codec.UTF8FaunaGenerator;
+import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

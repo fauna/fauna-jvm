@@ -1,4 +1,4 @@
-package com.fauna.feed;
+package com.fauna.event;
 
 import com.fauna.query.QueryOptions;
 

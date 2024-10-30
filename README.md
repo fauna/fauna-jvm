@@ -460,8 +460,8 @@ using `flatten()`.
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
-import com.fauna.client.FeedIterator;
-import com.fauna.response.StreamEvent;
+import com.fauna.event.FeedIterator;
+import com.fauna.event.StreamEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -687,10 +687,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaStream;
+import com.fauna.event.FaunaStream;
 import com.fauna.exception.FaunaException;
 import static com.fauna.query.builder.Query.fql;
-import com.fauna.response.StreamEvent;
+import com.fauna.event.StreamEvent;
 
 // Import the Product class for event data.
 import org.example.Product;
