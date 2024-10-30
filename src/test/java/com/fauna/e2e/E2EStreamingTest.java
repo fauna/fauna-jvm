@@ -2,15 +2,16 @@ package com.fauna.e2e;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
+import com.fauna.client.QueryStatsSummary;
+import com.fauna.event.EventSource;
 import com.fauna.event.FaunaStream;
 import com.fauna.e2e.beans.Product;
+import com.fauna.event.StreamOptions;
 import com.fauna.exception.ClientException;
 import com.fauna.event.EventSourceResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
 import com.fauna.event.FaunaEvent;
-import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -114,47 +115,41 @@ public class E2EStreamingTest {
 
     @Test
     public void query_streamOfProduct() throws InterruptedException {
-        var cfg = FaunaConfig.builder()
-                .secret("secret")
-                .endpoint("http://localhost:8443")
-                .build();
-        var streamClient = Fauna.client(cfg);
-
-        FaunaStream<Product> stream = streamClient.stream(fql("Product.all().toStream()"), Product.class);
-        var stats = streamClient.getStatsCollector().readAndReset();
-        assertEquals(1, stats.getComputeOps());
-
-        InventorySubscriber inventory = new InventorySubscriber();
-        stream.subscribe(inventory);
-        assertFalse(stream.isClosed());
-
-        List<Product> products = new ArrayList<>();
-        products.add(client.query(fql("Product.create({name: 'cheese', quantity: 1})"), Product.class).getData());
-        products.add(client.query(fql("Product.create({name: 'bread', quantity: 2})"), Product.class).getData());
-        products.add(client.query(fql("Product.create({name: 'wine', quantity: 3})"), Product.class).getData());
-
-        long start = System.currentTimeMillis();
-        int events = inventory.countEvents();
-
-        while (System.currentTimeMillis() < start + 2_000) {
-            Thread.sleep(10);
-            int latest = inventory.countEvents();
-            if (latest > events) {
-                events = latest;
+        QueryStatsSummary initialStats = client.getStatsCollector().read();
+        // Initialize stream outside try-with-resources so we can assert that it's closed at the end of this test;.
+        FaunaStream<Product> stream = client.stream(fql("Product.all().toStream()"), Product.class);
+        try (stream) {
+            InventorySubscriber inventory = new InventorySubscriber();
+            stream.subscribe(inventory);
+            assertFalse(stream.isClosed());
+            List<Product> products = new ArrayList<>();
+            products.add(client.query(fql("Product.create({name: 'cheese', quantity: 1})"), Product.class).getData());
+            products.add(client.query(fql("Product.create({name: 'bread', quantity: 2})"), Product.class).getData());
+            products.add(client.query(fql("Product.create({name: 'wine', quantity: 3})"), Product.class).getData());
+            long start = System.currentTimeMillis();
+            int events = inventory.countEvents();
+            System.out.println("Events: " + events);
+            while (System.currentTimeMillis() < start + 2_000) {
+                Thread.sleep(10);
+                int latest = inventory.countEvents();
+                if (latest > events) {
+                    events = latest;
+                }
             }
+            inventory.onComplete();
+            System.out.println(inventory.status());
+            Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
+            assertEquals(total, inventory.countInventory());
+            assertFalse(stream.isClosed());
         }
-        inventory.onComplete();
-        Integer total = products.stream().map(Product::getQuantity).reduce(0, Integer::sum);
-
-        assertEquals(total, inventory.countInventory());
-
-        assertFalse(stream.isClosed());
         stream.close();
         assertTrue(stream.isClosed());
 
-        stats = streamClient.getStatsCollector().read();
-        assertEquals(11, stats.getReadOps());
-        assertEquals(events, stats.getComputeOps());
+        QueryStatsSummary finalStats = client.getStatsCollector().read();
+        assertEquals(11, finalStats.getReadOps() - initialStats.getReadOps());
+        assertEquals(8, finalStats.getComputeOps() - initialStats.getComputeOps());
+        assertEquals(8, finalStats.getQueryCount() - initialStats.getQueryCount());
+
     }
 
     @Test
@@ -162,8 +157,9 @@ public class E2EStreamingTest {
         // It would be nice to have another test that generates a stream with normal events, and then an error
         // event, but this at least tests some of the functionality.
         QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().toStream()"), EventSourceResponse.class);
-        StreamRequest request = StreamRequest.builder((queryResp.getData().getToken())).cursor("invalid_cursor").build();
-        FaunaStream stream = client.stream(request, Product.class);
+        EventSource source = EventSource.fromResponse(queryResp.getData());
+        StreamOptions options = StreamOptions.builder().cursor("invalid_cursor").build();
+        FaunaStream<Product> stream = client.stream(source, options, Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
         stream.subscribe(inventory);
         long start = System.currentTimeMillis();
@@ -176,8 +172,9 @@ public class E2EStreamingTest {
     @Test
     public void handleStreamTimeout() {
         QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().toStream()"), EventSourceResponse.class);
-        StreamRequest request = StreamRequest.builder((queryResp.getData().getToken())).timeout(Duration.ofMillis(1)).build();
-        ClientException exc = assertThrows(ClientException.class, () -> client.stream(request, Product.class));
+        EventSource source = EventSource.fromResponse(queryResp.getData());
+        StreamOptions options = StreamOptions.builder().timeout(Duration.ofMillis(1)).build();
+        ClientException exc = assertThrows(ClientException.class, () -> client.stream(source, options, Product.class));
         assertEquals(ExecutionException.class, exc.getCause().getClass());
         assertEquals(HttpTimeoutException.class, exc.getCause().getCause().getClass());
 
@@ -187,9 +184,11 @@ public class E2EStreamingTest {
     @Disabled("Will fix this for GA, I think the other drivers have this bug too.")
     @Test
     public void handleLargeEvents() throws InterruptedException {
-        FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
-        InventorySubscriber inventory = new InventorySubscriber();
-        stream.subscribe(inventory);
+        InventorySubscriber inventory;
+        try (FaunaStream<Product> stream = client.stream(fql("Product.all().toStream()"), Product.class)) {
+            inventory = new InventorySubscriber();
+            stream.subscribe(inventory);
+        }
         List<Product> products = new ArrayList<>();
 
         byte[] image = new byte[20];

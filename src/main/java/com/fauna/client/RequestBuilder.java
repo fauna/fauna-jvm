@@ -1,24 +1,21 @@
 package com.fauna.client;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
+import com.fauna.event.StreamOptions;
+import com.fauna.event.StreamRequest;
 import com.fauna.exception.ClientException;
 import com.fauna.event.EventSource;
 import com.fauna.event.FeedOptions;
 import com.fauna.event.FeedRequest;
 import com.fauna.query.QueryOptions;
-import com.fauna.event.StreamRequest;
 import com.fauna.query.builder.Query;
 import com.fauna.codec.UTF8FaunaGenerator;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.logging.Logger;
@@ -133,36 +130,11 @@ public class RequestBuilder {
         }
     }
 
-    /**
-     * Builds and returns the request body for the Fauna Streams API.
-     * @param request       An Object representing the Stream request.
-     * @return
-     * @throws IOException
-     */
-    public String buildStreamRequestBody(StreamRequest request) throws IOException {
-        // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
-        // start_ts is a JSON numeric/integer, not a tagged '@long'.
-        ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
-        JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
-        gen.writeStartObject();
-        gen.writeStringField(FieldNames.TOKEN, request.getToken());
-        // Only one of cursor / start_ts can be present, prefer cursor.
-        // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
-        if (request.getCursor().isPresent()) {
-            gen.writeStringField(FieldNames.CURSOR, request.getCursor().get());
-        } else if (request.getStartTs().isPresent()) {
-            gen.writeNumberField(FieldNames.START_TS, request.getStartTs().get());
-        }
-        gen.writeEndObject();
-        gen.flush();
-        return requestBytes.toString(StandardCharsets.UTF_8);
-    }
-
-    public HttpRequest buildStreamRequest(StreamRequest request) {
+    public HttpRequest buildStreamRequest(EventSource eventSource, StreamOptions streamOptions) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
-        request.getTimeout().ifPresent(builder::timeout);
+        streamOptions.getTimeout().ifPresent(builder::timeout);
         try {
-            String body = buildStreamRequestBody(request);
+            String body = new StreamRequest(eventSource, streamOptions).serialize();
             HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
             logRequest(body, req);
             return req;

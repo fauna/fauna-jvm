@@ -3,6 +3,7 @@ package com.fauna.client;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.event.EventSource;
 import com.fauna.event.FeedOptions;
+import com.fauna.event.StreamOptions;
 import com.fauna.query.QueryOptions;
 import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,7 @@ public class DefaultsTest {
         assertEquals(Duration.ofSeconds(10), feedRequest.timeout().orElseThrow());
 
         // We do not want a timeout set for stream requests, because the client may hold the stream open indefinitely.
-        HttpRequest streamRequest = streamRequestBuilder.buildStreamRequest(StreamRequest.builder("token").build());
+        HttpRequest streamRequest = streamRequestBuilder.buildStreamRequest(source, StreamOptions.builder().build());
         assertTrue(streamRequest.headers().firstValue(RequestBuilder.Headers.QUERY_TIMEOUT_MS).isEmpty());
         assertTrue(streamRequest.timeout().isEmpty());
 
@@ -85,7 +86,7 @@ public class DefaultsTest {
 
     @Test
     public void testOverridingTimeouts() {
-        HttpRequest streamRequest = streamRequestBuilder.buildStreamRequest(StreamRequest.builder("token").timeout(Duration.ofMinutes(10)).build());
+        HttpRequest streamRequest = streamRequestBuilder.buildStreamRequest(source, StreamOptions.builder().timeout(Duration.ofMinutes(10)).build());
         assertEquals(Duration.ofMinutes(10), streamRequest.timeout().orElseThrow());
     }
 

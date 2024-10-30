@@ -6,6 +6,7 @@ import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.event.FaunaStream;
 import com.fauna.event.FeedIterator;
+import com.fauna.event.StreamOptions;
 import com.fauna.exception.ClientException;
 import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
@@ -437,13 +438,13 @@ public abstract class FaunaClient {
      * Send a request to the Fauna stream endpoint, and return a CompletableFuture that completes with the FaunaStream
      * publisher.
      *
-     * @param streamRequest         The request object including a stream token, and optionally a cursor, or timestamp.
-     * @param elementClass          The expected class &lt;E&gt; of the stream events.
+     * @param eventSource
+     * @param streamOptions
      * @return CompletableFuture    A CompletableFuture of FaunaStream<E>.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public <E> CompletableFuture<FaunaStream<E>> asyncStream(StreamRequest streamRequest, Class<E> elementClass) {
-        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(streamRequest);
+    public <E> CompletableFuture<FaunaStream<E>> asyncStream(EventSource eventSource, StreamOptions streamOptions, Class<E> elementClass) {
+        HttpRequest streamReq = getStreamRequestBuilder().buildStreamRequest(eventSource, streamOptions);
         return getHttpClient().sendAsync(streamReq,
                 HttpResponse.BodyHandlers.ofPublisher()).thenCompose(response -> {
                     CompletableFuture<FaunaStream<E>> publisher = new CompletableFuture<>();
@@ -456,19 +457,24 @@ public abstract class FaunaClient {
 
     /**
      * Send a request to the Fauna stream endpoint to start a stream, and return a FaunaStream publisher.
-     * @param streamRequest     The request object including a stream token, and optionally a cursor, or timestamp.
-     * @param elementClass      The expected class &lt;E&gt; of the stream events.
+     *
+     * @param eventSource   The request object including a stream token, and optionally a cursor, or timestamp.
+     * @param streamOptions
+     * @param elementClass  The expected class &lt;E&gt; of the stream events.
      * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public <E> FaunaStream<E> stream(StreamRequest streamRequest, Class<E> elementClass) {
-        return completeAsync(asyncStream(streamRequest, elementClass), STREAM_SUBSCRIPTION);
+    public <E> FaunaStream<E> stream(EventSource eventSource, StreamOptions streamOptions, Class<E> elementClass) {
+        return completeAsync(asyncStream(eventSource, streamOptions, elementClass), STREAM_SUBSCRIPTION);
     }
 
     /**
      * Start a Fauna stream based on an FQL query, and return a CompletableFuture of the resulting FaunaStream
      * publisher. This method sends two requests, one to the query endpoint to get the stream token, and then another
      * to the stream endpoint. This method is equivalent to calling the query, then the stream methods on FaunaClient.
+     *
+     * This method does not take QueryOptions, or StreamOptions as parameters. If you need specify either
+     * query, or stream options; you can use the asyncQuery/asyncStream methods.
      *
      * @param fql               The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
      * @param elementClass      The expected class &lt;E&gt; of the stream events.
@@ -477,7 +483,7 @@ public abstract class FaunaClient {
      */
     public <E> CompletableFuture<FaunaStream<E>> asyncStream(Query fql, Class<E> elementClass) {
         return this.asyncQuery(fql, EventSourceResponse.class).thenApply(
-                queryResponse -> this.stream(StreamRequest.fromTokenResponse(queryResponse.getData()), elementClass));
+                queryResponse -> this.stream(EventSource.fromResponse(queryResponse.getData()), StreamOptions.builder().build(), elementClass));
     }
 
     /**
