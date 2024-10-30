@@ -496,14 +496,14 @@ public abstract class FaunaClient {
     /**
      * Send a request to the Fauna feed endpoint, and return a CompletableFuture that completes with the feed page.
      * @param source        An EventSource object with the feed token.
-     * @param feedOptions   The FeedOptions object.
+     * @param feedOptions   The FeedOptions object (default options will be used if null).
      * @param elementClass  The expected class &lt;E&gt; of the feed events.
      * @return FeedSuccess  A CompletableFuture that completes with the successful feed response.
      * @param <E>           The type of the feed events.
      */
-    public <E> CompletableFuture<FeedPage<E>> feedPage(EventSource source, FeedOptions feedOptions, Class<E> elementClass) {
+    public <E> CompletableFuture<FeedPage<E>> poll(EventSource source, FeedOptions feedOptions, Class<E> elementClass) {
         return new RetryHandler<FeedPage<E>>(getRetryStrategy(), logger).execute(makeAsyncFeedRequest(
-                getHttpClient(), getFeedRequestBuilder().buildFeedRequest(source, feedOptions), codecProvider.get(elementClass)));
+                getHttpClient(), getFeedRequestBuilder().buildFeedRequest(source, feedOptions != null ? feedOptions : FeedOptions.DEFAULT), codecProvider.get(elementClass)));
     }
 
     /**

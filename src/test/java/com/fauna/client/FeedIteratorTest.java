@@ -70,7 +70,7 @@ public class FeedIteratorTest {
     @Test
     public void test_single_page() throws IOException {
         FeedOptions options = FeedOptions.builder().pageSize(8).build();
-        when(client.feedPage(source, options, String.class)).thenReturn(successFuture(false, 0));
+        when(client.poll(source, options, String.class)).thenReturn(successFuture(false, 0));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, options, String.class);
         assertTrue(feedIterator.hasNext());
         assertEquals(List.of("0-a", "0-b"), feedIterator.next().getEvents().stream().map(e -> e.getData().get()).collect(Collectors.toList()));
@@ -80,7 +80,7 @@ public class FeedIteratorTest {
 
     @Test
     public void test_single_page_without_calling_hasNext() throws IOException {
-        when(client.feedPage(source, FeedOptions.DEFAULT, String.class)).thenReturn(successFuture(false, 0));
+        when(client.poll(source, FeedOptions.DEFAULT, String.class)).thenReturn(successFuture(false, 0));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
         // No call to hasNext here.
         assertEquals(List.of("0-a", "0-b"), feedIterator.next().getEvents().stream().map(e -> e.getData().get()).collect(Collectors.toList()));
@@ -90,8 +90,8 @@ public class FeedIteratorTest {
 
     @Test
     public void test_multiple_pages() throws IOException {
-        when(client.feedPage(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
-        when(client.feedPage(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
+        when(client.poll(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
+        when(client.poll(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         assertTrue(feedIterator.hasNext());
@@ -105,7 +105,7 @@ public class FeedIteratorTest {
 
     @Test
     public void test_multiple_pages_async() throws IOException, ExecutionException, InterruptedException {
-        when(client.feedPage(argThat(source::equals), any(), any(Class.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
+        when(client.poll(argThat(source::equals), any(), any(Class.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         boolean hasNext = feedIterator.hasNext();
@@ -120,8 +120,8 @@ public class FeedIteratorTest {
 
     @Test
     public void test_flatten() throws IOException  {
-        when(client.feedPage(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
-        when(client.feedPage(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
+        when(client.poll(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
+        when(client.poll(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
         Iterator<StreamEvent<String>> iter = feedIterator.flatten();
         List<String> products = new ArrayList<>();
@@ -132,7 +132,7 @@ public class FeedIteratorTest {
 
     @Test
     public void test_error_thrown() throws IOException {
-        when(client.feedPage(source, FeedOptions.DEFAULT, String.class)).thenReturn(failureFuture());
+        when(client.poll(source, FeedOptions.DEFAULT, String.class)).thenReturn(failureFuture());
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         // We could return the wrapped completion exception here.

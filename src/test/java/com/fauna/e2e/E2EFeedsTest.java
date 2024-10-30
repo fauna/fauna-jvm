@@ -62,7 +62,7 @@ public class E2EFeedsTest {
         EventSource source = EventSource.fromResponse(sourceQuery.getData());
         List<StreamEvent<Product>> productUpdates = new ArrayList<>();
         FeedOptions initialOptions = FeedOptions.builder().startTs(productCollectionTs).pageSize(2).build();
-        CompletableFuture<FeedPage<Product>> pageFuture = client.feedPage(source, initialOptions, Product.class);
+        CompletableFuture<FeedPage<Product>> pageFuture = client.poll(source, initialOptions, Product.class);
         int pageCount = 0;
         String lastPageCursor = null;
 
@@ -77,7 +77,7 @@ public class E2EFeedsTest {
             FeedOptions nextPageOptions = initialOptions.nextPage(latestPage);
             // You can also inspect next
             if (latestPage.hasNext()) {
-                pageFuture = client.feedPage(source, nextPageOptions, Product.class);
+                pageFuture = client.poll(source, nextPageOptions, Product.class);
             } else {
                 pageFuture = null;
             }

@@ -36,7 +36,7 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
         this.resultClass = resultClass;
         this.eventSource = eventSource;
         this.latestOptions = feedOptions;
-        this.feedFuture = client.feedPage(eventSource, feedOptions, resultClass);
+        this.feedFuture = client.poll(eventSource, feedOptions, resultClass);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
                 if (fs.hasNext()) {
                     FeedOptions options = this.latestOptions.nextPage(fs);
                     this.latestOptions = options;
-                    this.feedFuture = client.feedPage(this.eventSource, options, resultClass);
+                    this.feedFuture = client.poll(this.eventSource, options, resultClass);
                 } else {
                     this.feedFuture = null;
                 }
