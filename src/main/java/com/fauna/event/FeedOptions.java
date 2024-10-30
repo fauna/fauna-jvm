@@ -1,6 +1,6 @@
 package com.fauna.event;
 
-import com.fauna.query.QueryOptions;
+import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -43,7 +43,7 @@ public class FeedOptions {
         public String cursor = null;
         public Long startTs = null;
         public Integer pageSize = null;
-        public Duration timeout = QueryOptions.DEFAULT_TIMEOUT;
+        public Duration timeout = DEFAULT_TIMEOUT;
 
         public Builder cursor(String cursor) {
             if (startTs != null) {
