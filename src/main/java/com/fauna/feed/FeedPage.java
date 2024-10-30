@@ -3,8 +3,6 @@ package com.fauna.feed;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.codec.Codec;
-import com.fauna.codec.FaunaTokenType;
-import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.response.QueryStats;
 import com.fauna.response.StreamEvent;
@@ -21,21 +19,20 @@ import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
 import static com.fauna.constants.ResponseFields.EVENTS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.FEED_HAS_NEXT_FIELD_NAME;
-import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 
-public class FeedSuccess<E> {
+public class FeedPage<E> {
     private final List<StreamEvent<E>> events;
     private final String cursor;
     private final boolean hasNext;
     private final QueryStats stats;
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-    public FeedSuccess(final List<StreamEvent<E>> events,
-                       final String cursor,
-                       final boolean hasNext,
-                       final QueryStats stats) {
+    public FeedPage(final List<StreamEvent<E>> events,
+                    final String cursor,
+                    final boolean hasNext,
+                    final QueryStats stats) {
         this.events = events;
         this.cursor = cursor;
         this.hasNext = hasNext;
@@ -108,8 +105,8 @@ public class FeedSuccess<E> {
             return this;
         }
 
-        public FeedSuccess<E> build() {
-            return new FeedSuccess<>(events, cursor, hasNext, stats);
+        public FeedPage<E> build() {
+            return new FeedPage<>(events, cursor, hasNext, stats);
         }
 
         public Builder parseField(JsonParser parser) throws IOException {
@@ -134,11 +131,11 @@ public class FeedSuccess<E> {
         return new Builder<>(elementCodec);
     }
 
-    public static <E> FeedSuccess<E> parseResponse(HttpResponse<InputStream> response, Codec<E> elementCodec) {
+    public static <E> FeedPage<E> parseResponse(HttpResponse<InputStream> response, Codec<E> elementCodec) {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
             if (parser.nextToken() == START_OBJECT) {
-                Builder<E> builder = FeedSuccess.builder(elementCodec);
+                Builder<E> builder = FeedPage.builder(elementCodec);
                 while (parser.nextToken() == FIELD_NAME) {
                     builder.parseField(parser);
                 }

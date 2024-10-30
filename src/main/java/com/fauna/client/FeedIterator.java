@@ -2,8 +2,9 @@ package com.fauna.client;
 
 
 import com.fauna.exception.FaunaException;
-import com.fauna.feed.FeedRequest;
-import com.fauna.feed.FeedSuccess;
+import com.fauna.feed.EventSource;
+import com.fauna.feed.FeedOptions;
+import com.fauna.feed.FeedPage;
 import com.fauna.response.StreamEvent;
 
 import java.util.Iterator;
@@ -15,23 +16,27 @@ import java.util.concurrent.CompletionException;
  * FeedIterator iterates over Event Feed pages from Fauna.
  * @param <E>
  */
-public class FeedIterator<E> implements Iterator<FeedSuccess<E>> {
+public class FeedIterator<E> implements Iterator<FeedPage<E>> {
     private final FaunaClient client;
     private final Class<E> resultClass;
-    private final FeedRequest initialRequest;
-    private CompletableFuture<FeedSuccess<E>> feedFuture;
+    private final EventSource eventSource;
+    private FeedOptions latestOptions;
+    private CompletableFuture<FeedPage<E>> feedFuture;
 
     /**
      * Construct a new PageIterator.
+     *
      * @param client            A client that makes requests to Fauna.
-     * @param request           The Feed Request object.
+     * @param eventSource       The Fauna Event Source.
+     * @param feedOptions       The FeedOptions object.
      * @param resultClass       The class of the elements returned from Fauna (i.e. the rows).
      */
-    public FeedIterator(FaunaClient client, FeedRequest request, Class<E> resultClass) {
+    public FeedIterator(FaunaClient client, EventSource eventSource, FeedOptions feedOptions, Class<E> resultClass) {
         this.client = client;
         this.resultClass = resultClass;
-        this.initialRequest = request;
-        this.feedFuture = client.asyncFeed(request, resultClass);
+        this.eventSource = eventSource;
+        this.latestOptions = feedOptions;
+        this.feedFuture = client.feedPage(eventSource, feedOptions, resultClass);
     }
 
     @Override
@@ -41,15 +46,17 @@ public class FeedIterator<E> implements Iterator<FeedSuccess<E>> {
 
     /**
      * Returns a CompletableFuture that will complete with the next page (or throw a FaunaException).
-     * @return  A c
+     * When the future completes, the next page will be fetched in the background.
+     *
+     * @return  A CompletableFuture that completes with a new FeedPage instance.
      */
-    public CompletableFuture<FeedSuccess<E>> nextAsync() {
+    public CompletableFuture<FeedPage<E>> nextAsync() {
         if (this.feedFuture != null) {
             return this.feedFuture.thenApply(fs -> {
                 if (fs.hasNext()) {
-                    FeedRequest.Builder builder = FeedRequest.builder(initialRequest.getToken()).cursor(fs.getCursor());
-                    initialRequest.getPageSize().ifPresent(builder::pageSize);
-                    this.feedFuture = client.asyncFeed(builder.build(), resultClass);
+                    FeedOptions options = this.latestOptions.nextPage(fs);
+                    this.latestOptions = options;
+                    this.feedFuture = client.feedPage(this.eventSource, options, resultClass);
                 } else {
                     this.feedFuture = null;
                 }
@@ -62,12 +69,12 @@ public class FeedIterator<E> implements Iterator<FeedSuccess<E>> {
 
 
     /**
-     * Get the next Page.
-     * @return                  The next Page of elements E.
+     * Get the next Page (synchronously).
+     * @return  FeedPage        The next Page of elements E.
      * @throws  FaunaException  If there is an error getting the next page.
      */
     @Override
-    public FeedSuccess<E> next() {
+    public FeedPage<E> next() {
         try {
             return nextAsync().join();
         } catch (CompletionException ce) {

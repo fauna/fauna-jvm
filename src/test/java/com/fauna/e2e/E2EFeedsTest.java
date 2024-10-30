@@ -5,7 +5,11 @@ import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.client.FeedIterator;
 import com.fauna.e2e.beans.Product;
-import com.fauna.feed.FeedSuccess;
+import com.fauna.feed.EventSource;
+import com.fauna.feed.FeedOptions;
+import com.fauna.feed.FeedPage;
+import com.fauna.query.EventSourceResponse;
+import com.fauna.response.QuerySuccess;
 import com.fauna.response.StreamEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -41,7 +46,8 @@ public class E2EFeedsTest {
 
     @Test
     public void feedOfAll() {
-        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), productCollectionTs, Product.class);
+        FeedOptions options = FeedOptions.builder().startTs(productCollectionTs).build();
+        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), options, Product.class);
         List<List<StreamEvent<Product>>> pages = new ArrayList<>();
         iter.forEachRemaining(page -> pages.add(page.getEvents()));
         assertEquals(4, pages.size());
@@ -50,12 +56,48 @@ public class E2EFeedsTest {
     }
 
     @Test
+    public void manualFeed() {
+        // Use the feeds API with complete (i.e. manual) control of the calls made to Fauna.
+        QuerySuccess<EventSourceResponse> sourceQuery = client.query(fql("Product.all().eventSource()"), EventSourceResponse.class);
+        EventSource source = EventSource.fromResponse(sourceQuery.getData());
+        List<StreamEvent<Product>> productUpdates = new ArrayList<>();
+        FeedOptions initialOptions = FeedOptions.builder().startTs(productCollectionTs).pageSize(2).build();
+        CompletableFuture<FeedPage<Product>> pageFuture = client.feedPage(source, initialOptions, Product.class);
+        int pageCount = 0;
+        String lastPageCursor = null;
+
+        while(pageFuture != null) {
+            // Handle page
+            FeedPage<Product> latestPage = pageFuture.join();
+            lastPageCursor = latestPage.getCursor();
+            productUpdates.addAll(latestPage.getEvents());
+            pageCount++;
+
+            // Get next page (if it's not null)
+            FeedOptions nextPageOptions = initialOptions.nextPage(latestPage);
+            // You can also inspect next
+            if (latestPage.hasNext()) {
+                pageFuture = client.feedPage(source, nextPageOptions, Product.class);
+            } else {
+                pageFuture = null;
+            }
+        }
+        assertEquals(50, productUpdates.size());
+        assertEquals(25, pageCount);
+        // Because there is no filtering, these cursors are the same.
+        // If we filtered events, then the page cursor could be different from the cursor of the last element.
+        assertEquals(lastPageCursor, productUpdates.get(productUpdates.size()-1).getCursor());
+
+    }
+
+    @Test
     public void feedError() {
-        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), 0L, Product.class);
-        FeedSuccess<Product> pageOne = iter.next();
+        FeedOptions options = FeedOptions.builder().startTs(0L).build();
+        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), options, Product.class);
+        FeedPage<Product> pageOne = iter.next();
         assertFalse(pageOne.hasNext());
         assertEquals(1, pageOne.getEvents().size());
-        StreamEvent errorEvent = pageOne.getEvents().get(0);
+        StreamEvent<Product> errorEvent = pageOne.getEvents().get(0);
         assertEquals(ERROR, errorEvent.getType());
         assertEquals("invalid_stream_start_time", errorEvent.getError().getCode());
         assertTrue(errorEvent.getError().getMessage().contains("is too far in the past"));
@@ -63,7 +105,8 @@ public class E2EFeedsTest {
 
     @Test
     public void feedFlattened() {
-        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), productCollectionTs, Product.class);
+        FeedOptions options = FeedOptions.builder().startTs(productCollectionTs).build();
+        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), options, Product.class);
         Iterator<StreamEvent<Product>> productIter = iter.flatten();
         List<StreamEvent<Product>> products = new ArrayList<>();
         // Java iterators not being iterable (or useable in a for-each loop) is annoying.

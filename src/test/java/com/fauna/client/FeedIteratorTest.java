@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.InvalidRequestException;
-import com.fauna.feed.FeedRequest;
-import com.fauna.feed.FeedSuccess;
+import com.fauna.feed.EventSource;
+import com.fauna.feed.FeedOptions;
+import com.fauna.feed.FeedPage;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
@@ -30,18 +31,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
 public class FeedIteratorTest {
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final EventSource source = EventSource.fromToken("token");
+    private static final String CURSOR_0 = "cursor0";
 
     @Mock
     private FaunaClient client;
 
-    private CompletableFuture<FeedSuccess<String>> successFuture(boolean after, int num) throws IOException {
+    private CompletableFuture<FeedPage<String>> successFuture(boolean after, int num) throws IOException {
         List<StreamEvent<String>> events = new ArrayList<>();
         Codec<String> codec = DefaultCodecProvider.SINGLETON.get(String.class);
         events.add(new StreamEvent<>(StreamEvent.EventType.ADD,
@@ -51,10 +54,10 @@ public class FeedIteratorTest {
                 "cursor0", System.currentTimeMillis() - 5,
                 num + "-b", null, null));
 
-        return CompletableFuture.supplyAsync(() -> FeedSuccess.builder(codec).events(events).cursor("cursor0").hasNext(after).build());
+        return CompletableFuture.supplyAsync(() -> FeedPage.builder(codec).events(events).cursor("cursor0").hasNext(after).build());
     }
 
-    private CompletableFuture<FeedSuccess<String>> failureFuture() throws IOException {
+    private CompletableFuture<FeedPage<String>> failureFuture() throws IOException {
         ObjectNode root = MAPPER.createObjectNode();
         ObjectNode error = root.putObject("error");
         error.put("code", "invalid_query");
@@ -66,9 +69,9 @@ public class FeedIteratorTest {
 
     @Test
     public void test_single_page() throws IOException {
-        FeedRequest req = FeedRequest.builder("token").pageSize(8).build();
-        when(client.asyncFeed(req, String.class)).thenReturn(successFuture(false, 0));
-        FeedIterator<String> feedIterator = new FeedIterator<>(client, req, String.class);
+        FeedOptions options = FeedOptions.builder().pageSize(8).build();
+        when(client.feedPage(source, options, String.class)).thenReturn(successFuture(false, 0));
+        FeedIterator<String> feedIterator = new FeedIterator<>(client, source, options, String.class);
         assertTrue(feedIterator.hasNext());
         assertEquals(List.of("0-a", "0-b"), feedIterator.next().getEvents().stream().map(e -> e.getData().get()).collect(Collectors.toList()));
         assertFalse(feedIterator.hasNext());
@@ -77,9 +80,8 @@ public class FeedIteratorTest {
 
     @Test
     public void test_single_page_without_calling_hasNext() throws IOException {
-        FeedRequest req = FeedRequest.builder("token").build();
-        when(client.asyncFeed(req, String.class)).thenReturn(successFuture(false, 0));
-        FeedIterator<String> feedIterator = new FeedIterator<>(client, req, String.class);
+        when(client.feedPage(source, FeedOptions.DEFAULT, String.class)).thenReturn(successFuture(false, 0));
+        FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
         // No call to hasNext here.
         assertEquals(List.of("0-a", "0-b"), feedIterator.next().getEvents().stream().map(e -> e.getData().get()).collect(Collectors.toList()));
         assertFalse(feedIterator.hasNext());
@@ -88,9 +90,9 @@ public class FeedIteratorTest {
 
     @Test
     public void test_multiple_pages() throws IOException {
-        FeedRequest req = FeedRequest.builder("token").build();
-        when(client.asyncFeed(any(FeedRequest.class), eq(String.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
-        FeedIterator<String> feedIterator = new FeedIterator<>(client, req, String.class);
+        when(client.feedPage(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
+        when(client.feedPage(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
+        FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         assertTrue(feedIterator.hasNext());
         assertEquals(List.of("0-a", "0-b"), feedIterator.next().getEvents().stream().map(e -> e.getData().get()).collect(Collectors.toList()));
@@ -103,9 +105,8 @@ public class FeedIteratorTest {
 
     @Test
     public void test_multiple_pages_async() throws IOException, ExecutionException, InterruptedException {
-        FeedRequest req = FeedRequest.builder("token").build();
-        when(client.asyncFeed(any(FeedRequest.class), eq(String.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
-        FeedIterator<String> feedIterator = new FeedIterator<>(client, req, String.class);
+        when(client.feedPage(argThat(source::equals), any(), any(Class.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
+        FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         boolean hasNext = feedIterator.hasNext();
         List<String> products = new ArrayList<>();
@@ -119,9 +120,9 @@ public class FeedIteratorTest {
 
     @Test
     public void test_flatten() throws IOException  {
-        when(client.asyncFeed(any(FeedRequest.class), eq(String.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
-        FeedRequest req = FeedRequest.builder("token").build();
-        FeedIterator<String> feedIterator = new FeedIterator<>(client, req, String.class);
+        when(client.feedPage(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
+        when(client.feedPage(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
+        FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
         Iterator<StreamEvent<String>> iter = feedIterator.flatten();
         List<String> products = new ArrayList<>();
         iter.forEachRemaining(event -> products.add(event.getData().orElseThrow()));
@@ -131,9 +132,8 @@ public class FeedIteratorTest {
 
     @Test
     public void test_error_thrown() throws IOException {
-        FeedRequest req = FeedRequest.builder("token").build();
-        when(client.asyncFeed(req, String.class)).thenReturn(failureFuture());
-        FeedIterator<String> feedIterator = new FeedIterator<>(client, req, String.class);
+        when(client.feedPage(source, FeedOptions.DEFAULT, String.class)).thenReturn(failureFuture());
+        FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         // We could return the wrapped completion exception here.
         assertTrue(feedIterator.hasNext());

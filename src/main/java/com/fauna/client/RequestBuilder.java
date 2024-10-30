@@ -6,6 +6,8 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
+import com.fauna.feed.EventSource;
+import com.fauna.feed.FeedOptions;
 import com.fauna.feed.FeedRequest;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
@@ -37,12 +39,12 @@ public class RequestBuilder {
     private final Duration clientTimeoutBuffer;
     private final Logger logger;
 
-    static class FieldNames {
+    public static class FieldNames {
         static final String QUERY = "query";
-        static final String TOKEN = "token";
-        static final String CURSOR = "cursor";
-        static final String START_TS = "start_ts";
-        static final String PAGE_SIZE = "page_size";
+        public static final String TOKEN = "token";
+        public static final String CURSOR = "cursor";
+        public static final String START_TS = "start_ts";
+        public static final String PAGE_SIZE = "page_size";
     }
 
     static class Headers {
@@ -156,28 +158,6 @@ public class RequestBuilder {
         return requestBytes.toString(StandardCharsets.UTF_8);
     }
 
-    public String buildFeedRequestBody(FeedRequest request) throws IOException {
-        // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
-        // start_ts is a JSON numeric/integer, not a tagged '@long'.
-        ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
-        JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
-        gen.writeStartObject();
-        gen.writeStringField(FieldNames.TOKEN, request.getToken());
-        // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
-        if (request.getCursor().isPresent()) {
-            gen.writeStringField(FieldNames.CURSOR, request.getCursor().get());
-        }
-        if (request.getStartTs().isPresent()) {
-            gen.writeNumberField(FieldNames.START_TS, request.getStartTs().get());
-        }
-        if (request.getPageSize().isPresent()) {
-            gen.writeNumberField(FieldNames.PAGE_SIZE, request.getPageSize().get());
-        }
-        gen.writeEndObject();
-        gen.flush();
-        return requestBytes.toString(StandardCharsets.UTF_8);
-    }
-
     public HttpRequest buildStreamRequest(StreamRequest request) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         request.getTimeout().ifPresent(builder::timeout);
@@ -191,15 +171,16 @@ public class RequestBuilder {
         }
     }
 
-    public HttpRequest buildFeedRequest(FeedRequest request) {
+    public HttpRequest buildFeedRequest(EventSource eventSource, FeedOptions options) {
+        FeedRequest request = new FeedRequest(eventSource, options);
         HttpRequest.Builder builder = baseRequestBuilder.copy();
-        request.getTimeout().ifPresent(val -> {
+        options.getTimeout().ifPresent(val -> {
             builder.timeout(val.plus(clientTimeoutBuffer));
             builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val.toMillis()));
         });
         try {
-            String body = buildFeedRequestBody(request);
-            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+            String body = request.serialize();
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(request.serialize())).build();
             logRequest(body, req);
             return req;
         } catch (IOException e) {

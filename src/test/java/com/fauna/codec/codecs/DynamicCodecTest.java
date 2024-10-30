@@ -4,10 +4,8 @@ import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.codec.Helpers;
-import com.fauna.exception.ClientException;
 import com.fauna.exception.NullDocumentException;
-import com.fauna.query.StreamTokenResponse;
+import com.fauna.query.EventSourceResponse;
 import com.fauna.types.Module;
 import com.fauna.types.*;
 import org.junit.jupiter.api.Test;
@@ -16,7 +14,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
@@ -67,7 +64,7 @@ public class DynamicCodecTest extends TestBase {
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, NAMED_DOCUMENT_WIRE, NAMED_DOCUMENT, null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, NAMED_DOCUMENT_REF_WIRE, NAMED_DOCUMENT_REF, null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, NULL_DOC_WIRE, null, NULL_DOC_EXCEPTION),
-                Arguments.of(TestType.Decode, DYNAMIC_CODEC, "{\"@stream\":\"token\"}", new StreamTokenResponse("token"), null),
+                Arguments.of(TestType.Decode, DYNAMIC_CODEC, "{\"@stream\":\"token\"}", new EventSourceResponse("token"), null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC, "{\"@bytes\": \"RmF1bmE=\"}", new byte[]{70, 97, 117, 110, 97}, null)
         );
     }

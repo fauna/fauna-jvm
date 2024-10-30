@@ -1,82 +1,53 @@
 package com.fauna.feed;
 
-import com.fauna.query.QueryOptions;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fauna.client.RequestBuilder;
+import com.fauna.query.EventSourceResponse;
 
-import java.time.Duration;
-import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class FeedRequest {
-    private final String token;
-    private final String cursor;
-    private final Long startTs;
-    private final Integer pageSize;
-    private final Duration timeout;
+    private final EventSource source;
+    private final FeedOptions options;
 
-    public FeedRequest(final String token, final String cursor, final Long startTs, final Integer pageSize, final Duration timeout) {
-        this.token = token;
-        this.cursor = cursor;
-        this.startTs = startTs;
-        this.pageSize = pageSize;
-        this.timeout = timeout;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public Optional<String> getCursor() {
-        return Optional.ofNullable(cursor);
-    }
-
-    public Optional<Long> getStartTs() {
-        return Optional.ofNullable(startTs);
-    }
-
-    public Optional<Integer> getPageSize() {
-        return Optional.ofNullable(pageSize);
-    }
-
-    public Optional<Duration> getTimeout() {
-        return Optional.ofNullable(timeout);
-    }
-
-    public static class Builder {
-        public final String token;
-        public String cursor;
-        public Long startTs;
-        public Integer pageSize;
-        public Duration timeout = QueryOptions.DEFAULT_TIMEOUT;
-
-        public Builder(final String token) {
-            this.token = token;
+    public FeedRequest(EventSource source, FeedOptions options) {
+        this.source = source;
+        this.options = options;
+        if (source == null) {
+            throw new IllegalArgumentException("EventSource cannot be null.");
         }
-
-        public Builder cursor(final String cursor) {
-            this.cursor = cursor;
-            return this;
-        }
-
-        public Builder startTs(final Long startTs) {
-            this.startTs = startTs;
-            return this;
-        }
-
-        public Builder pageSize(final int pageSize) {
-            this.pageSize = pageSize;
-            return this;
-        }
-
-        public Builder timeout(final Duration timeout) {
-            this.timeout = timeout;
-            return this;
-        }
-
-        public FeedRequest build() {
-            return new FeedRequest(token, cursor, startTs, pageSize, timeout);
+        if (options == null) {
+            throw new IllegalArgumentException("FeedOptions cannot be null.");
         }
     }
 
-    public static Builder builder(String token) {
-        return new Builder(token);
+    public String serialize() throws IOException {
+        // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
+        // start_ts is a JSON numeric/integer, not a tagged '@long'.
+        ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
+        JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
+        gen.writeStartObject();
+        gen.writeStringField(RequestBuilder.FieldNames.TOKEN, source.getToken());
+        // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
+        if (options.getCursor().isPresent()) {
+            gen.writeStringField(RequestBuilder.FieldNames.CURSOR, options.getCursor().get());
+        }
+        if (options.getStartTs().isPresent()) {
+            gen.writeNumberField(RequestBuilder.FieldNames.START_TS, options.getStartTs().get());
+        }
+        if (options.getPageSize().isPresent()) {
+            gen.writeNumberField(RequestBuilder.FieldNames.PAGE_SIZE, options.getPageSize().get());
+        }
+        gen.writeEndObject();
+        gen.flush();
+        return requestBytes.toString(StandardCharsets.UTF_8);
     }
+
+    public static FeedRequest fromResponse(EventSourceResponse resp, FeedOptions options) {
+        return new FeedRequest(EventSource.fromToken(resp.getToken()), options);
+    }
+
 }

@@ -1,6 +1,6 @@
 package com.fauna.stream;
 
-import com.fauna.query.StreamTokenResponse;
+import com.fauna.query.EventSourceResponse;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -27,7 +27,7 @@ public class StreamRequest {
         }
     }
 
-    public static StreamRequest fromTokenResponse(StreamTokenResponse tokenResponse) {
+    public static StreamRequest fromTokenResponse(EventSourceResponse tokenResponse) {
         return new StreamRequest(tokenResponse.getToken(), null, null, null);
     }
 
