@@ -1,3 +1,3 @@
 [submodule "perf-test-setup"]
 	path = perf-test-setup
-	url = https://github.com/fauna/driver-perf-utils.git
+	url = git@github.com:fauna/driver-perf-utils.git
