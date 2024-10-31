@@ -67,6 +67,11 @@ class FaunaClientTest {
     String bodyBase = "{\"data\":{\"@set\":{\"data\":[%s],\"after\":%s}},\"summary\":\"\"," +
             "\"txn_ts\":1723844145837000,\"stats\":{},\"schema_version\":1723844028490000}";
 
+    String feedResponse = "{\"events\": " +
+            "[{\"type\": \"update\",\"data\": %s,\"txn_ts\": 424242424242," +
+            "\"cursor\": \"eventCursor\",\"stats\": {}}]," +
+            "\"cursor\": \"pageCursor\",\"has_next\": false,\"stats\": {}}";
+
     @BeforeEach
     void setUp() {
         client = Fauna.client(FaunaConfig.LOCAL, mockHttpClient, FaunaClient.DEFAULT_RETRY_STRATEGY);
@@ -360,5 +365,4 @@ class FaunaClientTest {
         assertEquals("product-1", ((Document) secondPage.getData().get(0)).get("name"));
         assertFalse(iter.hasNext());
     }
-
 }

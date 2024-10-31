@@ -6,6 +6,9 @@ import com.fauna.codec.Codec;
 import com.fauna.codec.CodecProvider;
 import com.fauna.env.DriverEnvironment;
 import com.fauna.exception.ClientException;
+import com.fauna.feed.EventSource;
+import com.fauna.feed.FeedOptions;
+import com.fauna.feed.FeedRequest;
 import com.fauna.query.QueryOptions;
 import com.fauna.stream.StreamRequest;
 import com.fauna.query.builder.Query;
@@ -30,16 +33,18 @@ public class RequestBuilder {
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
     private static final String STREAM_PATH = "/stream/1";
+    private static final String FEED_PATH = "/feed/1";
 
     private final HttpRequest.Builder baseRequestBuilder;
     private final Duration clientTimeoutBuffer;
     private final Logger logger;
 
-    static class FieldNames {
+    public static class FieldNames {
         static final String QUERY = "query";
-        static final String TOKEN = "token";
-        static final String CURSOR = "cursor";
-        static final String START_TS = "start_ts";
+        public static final String TOKEN = "token";
+        public static final String CURSOR = "cursor";
+        public static final String START_TS = "start_ts";
+        public static final String PAGE_SIZE = "page_size";
     }
 
     static class Headers {
@@ -88,6 +93,10 @@ public class RequestBuilder {
         return new RequestBuilder(URI.create(config.getEndpoint() + STREAM_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
     }
 
+    public static RequestBuilder feedRequestBuilder(FaunaConfig config, Logger logger) {
+        return new RequestBuilder(URI.create(config.getEndpoint() + FEED_PATH), config.getSecret(), config.getMaxContentionRetries(), config.getClientTimeoutBuffer(), logger);
+    }
+
     public RequestBuilder scopedRequestBuilder(String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
         // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
@@ -124,6 +133,12 @@ public class RequestBuilder {
         }
     }
 
+    /**
+     * Builds and returns the request body for the Fauna Streams API.
+     * @param request       An Object representing the Stream request.
+     * @return
+     * @throws IOException
+     */
     public String buildStreamRequestBody(StreamRequest request) throws IOException {
         // Use JsonGenerator directly rather than UTF8FaunaGenerator because this is not FQL. For example,
         // start_ts is a JSON numeric/integer, not a tagged '@long'.
@@ -154,6 +169,25 @@ public class RequestBuilder {
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Stream request.", e);
         }
+    }
+
+    public HttpRequest buildFeedRequest(EventSource eventSource, FeedOptions options) {
+        FeedRequest request = new FeedRequest(eventSource, options);
+        HttpRequest.Builder builder = baseRequestBuilder.copy();
+        options.getTimeout().ifPresent(val -> {
+            builder.timeout(val.plus(clientTimeoutBuffer));
+            builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val.toMillis()));
+        });
+        try {
+            String body = request.serialize();
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(request.serialize())).build();
+            logRequest(body, req);
+            return req;
+        } catch (IOException e) {
+            throw new ClientException("Unable to build Fauna Feed request.", e);
+        }
+
+
     }
 
     private static String buildAuthHeader(String token) {

@@ -75,7 +75,7 @@ public class E2EQueryTest {
     public void queryTimeout() {
         QueryOptions opts = QueryOptions.builder().timeout(Duration.ofMillis(1)).build();
         QueryTimeoutException exc = assertThrows(QueryTimeoutException.class,
-                () -> c.query(fql("Author.byId('9090090')"), listOf(Author.class), opts));
+                () -> c.query(fql("Author.all()"), listOf(Author.class), opts));
         assertTrue(exc.getMessage().contains("Client set aggressive deadline"));
     }
 

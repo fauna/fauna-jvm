@@ -6,7 +6,7 @@ import com.fauna.client.FaunaConfig;
 import com.fauna.client.FaunaStream;
 import com.fauna.e2e.beans.Product;
 import com.fauna.exception.ClientException;
-import com.fauna.query.StreamTokenResponse;
+import com.fauna.query.EventSourceResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
 import com.fauna.response.StreamEvent;
@@ -161,7 +161,7 @@ public class E2EStreamingTest {
     public void handleStreamError() throws InterruptedException {
         // It would be nice to have another test that generates a stream with normal events, and then an error
         // event, but this at least tests some of the functionality.
-        QuerySuccess<StreamTokenResponse> queryResp = client.query(fql("Product.all().toStream()"), StreamTokenResponse.class);
+        QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().toStream()"), EventSourceResponse.class);
         StreamRequest request = StreamRequest.builder((queryResp.getData().getToken())).cursor("invalid_cursor").build();
         FaunaStream stream = client.stream(request, Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
@@ -175,7 +175,7 @@ public class E2EStreamingTest {
 
     @Test
     public void handleStreamTimeout() {
-        QuerySuccess<StreamTokenResponse> queryResp = client.query(fql("Product.all().toStream()"), StreamTokenResponse.class);
+        QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().toStream()"), EventSourceResponse.class);
         StreamRequest request = StreamRequest.builder((queryResp.getData().getToken())).timeout(Duration.ofMillis(1)).build();
         ClientException exc = assertThrows(ClientException.class, () -> client.stream(request, Product.class));
         assertEquals(ExecutionException.class, exc.getCause().getClass());

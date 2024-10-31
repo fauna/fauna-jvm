@@ -5,12 +5,18 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.exception.ClientException;
+import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
+import com.fauna.exception.ProtocolException;
 import com.fauna.exception.ServiceException;
+import com.fauna.feed.EventSource;
+import com.fauna.feed.FeedOptions;
+import com.fauna.feed.FeedPage;
 import com.fauna.query.AfterToken;
 import com.fauna.query.QueryOptions;
+import com.fauna.response.QueryFailure;
 import com.fauna.stream.StreamRequest;
-import com.fauna.query.StreamTokenResponse;
+import com.fauna.query.EventSourceResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
 import com.fauna.response.QuerySuccess;
@@ -33,6 +39,7 @@ import java.util.logging.Logger;
 
 import static com.fauna.client.Logging.headersAsString;
 import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.constants.ErrorMessages.FEED_SUBSCRIPTION;
 import static com.fauna.constants.ErrorMessages.QUERY_EXECUTION;
 import static com.fauna.constants.ErrorMessages.QUERY_PAGE;
 import static com.fauna.constants.ErrorMessages.STREAM_SUBSCRIPTION;
@@ -51,6 +58,7 @@ public abstract class FaunaClient {
     abstract HttpClient getHttpClient();
     abstract RequestBuilder getRequestBuilder();
     abstract RequestBuilder getStreamRequestBuilder();
+    abstract RequestBuilder getFeedRequestBuilder();
 
     public FaunaClient(String secret, Logger logger, StatsCollector statsCollector) {
         this.faunaSecret = secret;
@@ -108,6 +116,13 @@ public abstract class FaunaClient {
         }
     }
 
+    private <E> void completeFeedRequest(FeedPage<E> success, Throwable throwable) {
+        // Feeds do not update the clients latest transaction timestamp.
+        if (throwable != null) {
+            extractServiceException(throwable).ifPresent(exc -> updateTs(exc.getResponse()));
+        }
+    }
+
     private void logResponse(HttpResponse<InputStream> response) {
         logger.fine(MessageFormat.format("Fauna HTTP Response {0} from {1}, headers: {2}",
                 response.statusCode(), response.uri(), headersAsString(response.headers())));
@@ -120,6 +135,23 @@ public abstract class FaunaClient {
                     logResponse(response);
                     return QueryResponse.parseResponse(response, codec, statsCollector);
                 }).whenComplete(this::completeRequest);
+    }
+
+    private <E> Supplier<CompletableFuture<FeedPage<E>>> makeAsyncFeedRequest(HttpClient client, HttpRequest request, Codec<E> codec) {
+        return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(
+                response -> {
+                    logResponse(response);
+                    if (response.statusCode() >= 400) {
+                        // There are possibly some different error cases to handle for feeds. This seems like
+                        // a comprehensive solution for now. In the future we could rename QueryFailure et. al. to
+                        // something like FaunaFailure, or implement "FeedFailure".
+                        QueryFailure failure = new QueryFailure(response.statusCode(), QueryResponse.builder(codec));
+                        ErrorHandler.handleQueryFailure(response.statusCode(), failure);
+                        // Fall back on ProtocolException.
+                        throw new ProtocolException(response.statusCode(), failure);
+                    }
+                    return FeedPage.parseResponse(response, codec);
+                }).whenComplete(this::completeFeedRequest);
     }
 
     private <R> R completeAsync(CompletableFuture<R> future, String executionMessage) {
@@ -209,9 +241,9 @@ public abstract class FaunaClient {
      * ... do some other stuff ...
      * Document doc = future.get().getData();
      *
-     * @param fql         The FQL query to be executed.
-     * @param resultClass The expected class of the query result.
-     * @return QuerySuccess     The successful query result.
+     * @param fql               The FQL query to be executed.
+     * @param resultClass       The expected class of the query result.
+     * @return QuerySuccess     A CompletableFuture that completes with the successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql, Class<T> resultClass) {
@@ -442,7 +474,7 @@ public abstract class FaunaClient {
      * @throws FaunaException   If the query does not succeed, an exception will be thrown.
      */
     public <E> CompletableFuture<FaunaStream<E>> asyncStream(Query fql, Class<E> elementClass) {
-        return this.asyncQuery(fql, StreamTokenResponse.class).thenApply(
+        return this.asyncQuery(fql, EventSourceResponse.class).thenApply(
                 queryResponse -> this.stream(StreamRequest.fromTokenResponse(queryResponse.getData()), elementClass));
     }
 
@@ -464,5 +496,60 @@ public abstract class FaunaClient {
     public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
         return completeAsync(asyncStream(fql, elementClass), STREAM_SUBSCRIPTION);
     }
+    //endregion
+
+    //region Event Feeds
+
+    /**
+     * Send a request to the Fauna feed endpoint, and return a CompletableFuture that completes with the feed page.
+     * @param source        An EventSource object with the feed token.
+     * @param feedOptions   The FeedOptions object (default options will be used if null).
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedSuccess  A CompletableFuture that completes with the successful feed response.
+     * @param <E>           The type of the feed events.
+     */
+    public <E> CompletableFuture<FeedPage<E>> poll(EventSource source, FeedOptions feedOptions, Class<E> elementClass) {
+        return new RetryHandler<FeedPage<E>>(getRetryStrategy(), logger).execute(makeAsyncFeedRequest(
+                getHttpClient(), getFeedRequestBuilder().buildFeedRequest(source, feedOptions != null ? feedOptions : FeedOptions.DEFAULT), codecProvider.get(elementClass)));
+    }
+
+    /**
+     * Return a CompletableFuture that completes with a FeedIterator based on an FQL query. This method sends two
+     * requests, one to the query endpoint to get the event source token, and then another request to the feed endpoint
+     * to get the first page of results.
+     * @param fql           The FQL query to be executed. It must return a token, e.g. ends in `.changesOn()`.
+     * @param feedOptions   The FeedOptions object (must not be null).
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedIterator A CompletableFuture that completes with a feed iterator that returns pages of Feed events.
+     * @param <E>           The type of the feed events.
+     */
+    public <E> CompletableFuture<FeedIterator<E>> asyncFeed(Query fql, FeedOptions feedOptions, Class<E> elementClass) {
+        return this.asyncQuery(fql, EventSourceResponse.class).thenApply(success -> this.feed(EventSource.fromResponse(success.getData()), feedOptions, elementClass));
+    }
+
+    /**
+     * Return a FeedIterator based on an FQL query. This method sends two requests, one to the query endpoint to get
+     * the stream/feed token, and then another request to the feed endpoint to get the first page of results.
+     * @param fql           The FQL query to be executed. It must return a token, e.g. ends in `.changesOn()`.
+     * @param feedOptions   The Feed Op
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedIterator An iterator that returns pages of Feed events.
+     * @param <E>           The type of the feed events.
+     */
+    public <E> FeedIterator<E> feed(Query fql, FeedOptions feedOptions, Class<E> elementClass) {
+        return completeAsync(asyncFeed(fql, feedOptions, elementClass), FEED_SUBSCRIPTION);
+    }
+
+    /**
+     * Send a request to the Feed endpoint and return a FeedIterator.
+     * @param eventSource   The Fauna Event Source.
+     * @param elementClass  The expected class &lt;E&gt; of the feed events.
+     * @return FeedIterator An iterator that returns pages of Feed events.
+     * @param <E>           The type of the feed events.
+     */
+    public <E> FeedIterator<E> feed(EventSource eventSource, FeedOptions feedOptions, Class<E> elementClass) {
+        return new FeedIterator<>(this, eventSource, feedOptions, elementClass);
+    }
+
     //endregion
 }

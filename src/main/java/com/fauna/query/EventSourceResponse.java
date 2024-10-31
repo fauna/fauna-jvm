@@ -3,14 +3,14 @@ package com.fauna.query;
 
 import java.util.Objects;
 
-public class StreamTokenResponse {
+public class EventSourceResponse {
     private String token;
 
-    public StreamTokenResponse(String token) {
+    public EventSourceResponse(String token) {
         this.token = token;
     }
 
-    public StreamTokenResponse() {}
+    public EventSourceResponse() {}
 
     public String getToken() {
         return this.token;
@@ -24,7 +24,7 @@ public class StreamTokenResponse {
 
         if (getClass() != o.getClass()) return false;
 
-        StreamTokenResponse c = (StreamTokenResponse) o;
+        EventSourceResponse c = (EventSourceResponse) o;
 
         return Objects.equals(token, c.token);
     }
