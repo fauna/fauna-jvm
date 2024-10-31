@@ -2,6 +2,7 @@ package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fauna.client.StatsCollector;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.exception.ClientException;
@@ -12,18 +13,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Flow.Processor;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.SubmissionPublisher;
 
 
-public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implements Processor<List<ByteBuffer>, StreamEvent<E>> {
+public class FaunaStream<E> extends SubmissionPublisher<FaunaEvent<E>> implements Processor<List<ByteBuffer>, FaunaEvent<E>> {
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
     private final Codec<E> dataCodec;
     private Subscription subscription;
-    private Subscriber<? super StreamEvent<E>> eventSubscriber;
+    private Subscriber<? super FaunaEvent<E>> eventSubscriber;
     private MultiByteBufferInputStream buffer = null;
     private final StatsCollector statsCollector;
 
@@ -33,7 +33,7 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
     }
 
     @Override
-    public void subscribe(Subscriber<? super StreamEvent<E>> subscriber) {
+    public void subscribe(Subscriber<? super FaunaEvent<E>> subscriber) {
         if (this.eventSubscriber == null) {
             this.eventSubscriber = subscriber;
             super.subscribe(subscriber);
@@ -61,11 +61,11 @@ public class FaunaStream<E> extends SubmissionPublisher<StreamEvent<E>> implemen
                 }
                 try {
                     JsonParser parser = JSON_FACTORY.createParser(buffer);
-                    StreamEvent<E> event = StreamEvent.parse(parser, dataCodec);
+                    FaunaEvent<E> event = FaunaEvent.parse(parser, dataCodec);
 
                     statsCollector.add(event.getStats());
 
-                    if (event.getType() == StreamEvent.EventType.ERROR) {
+                    if (event.getType() == FaunaEvent.EventType.ERROR) {
                         ErrorInfo error = event.getError();
                         this.onComplete();
                         this.close();

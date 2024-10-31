@@ -9,7 +9,7 @@ import com.fauna.exception.ClientException;
 import com.fauna.event.EventSourceResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
-import com.fauna.event.StreamEvent;
+import com.fauna.event.FaunaEvent;
 import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -59,7 +59,7 @@ public class E2EStreamingTest {
     }
 
 
-    static class InventorySubscriber implements Flow.Subscriber<StreamEvent<Product>> {
+    static class InventorySubscriber implements Flow.Subscriber<FaunaEvent<Product>> {
         private final AtomicLong timestamp = new AtomicLong(0);
         private String cursor = null;
         private final AtomicInteger events = new AtomicInteger(0);
@@ -73,7 +73,7 @@ public class E2EStreamingTest {
         }
 
         @Override
-        public void onNext(StreamEvent<Product> event) {
+        public void onNext(FaunaEvent<Product> event) {
             System.out.println(MessageFormat.format("Event {0}, {1}", event.getCursor(), event.getTimestamp().orElse(-1L)));
             events.addAndGet(1);
             event.getData().ifPresent(product -> inventory.put(product.getName(), product.getQuantity()));

@@ -22,13 +22,13 @@ import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 
 public class FeedPage<E> {
-    private final List<StreamEvent<E>> events;
+    private final List<FaunaEvent<E>> events;
     private final String cursor;
     private final boolean hasNext;
     private final QueryStats stats;
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-    public FeedPage(final List<StreamEvent<E>> events,
+    public FeedPage(final List<FaunaEvent<E>> events,
                     final String cursor,
                     final boolean hasNext,
                     final QueryStats stats) {
@@ -44,7 +44,7 @@ public class FeedPage<E> {
         }
     }
 
-    public List<StreamEvent<E>> getEvents() {
+    public List<FaunaEvent<E>> getEvents() {
         return events;
     }
 
@@ -62,7 +62,7 @@ public class FeedPage<E> {
 
     public static class Builder<E> {
         private final Codec<E> elementCodec;
-        public List<StreamEvent<E>> events;
+        public List<FaunaEvent<E>> events;
         public String cursor = "";
         public Boolean hasNext = false;
         public QueryStats stats = null;
@@ -71,7 +71,7 @@ public class FeedPage<E> {
             this.elementCodec = elementCodec;
         }
 
-        public Builder events(List<StreamEvent<E>> events) {
+        public Builder events(List<FaunaEvent<E>> events) {
             this.events = events;
             return this;
         }
@@ -93,9 +93,9 @@ public class FeedPage<E> {
 
         public Builder<E> parseEvents(JsonParser parser) throws IOException {
             if (parser.nextToken() == START_ARRAY) {
-                List<StreamEvent<E>> events = new ArrayList<>();
+                List<FaunaEvent<E>> events = new ArrayList<>();
                 while (parser.nextToken() != END_ARRAY) {
-                    events.add(StreamEvent.parse(parser, elementCodec));
+                    events.add(FaunaEvent.parse(parser, elementCodec));
                 }
                 this.events = events;
             } else {
