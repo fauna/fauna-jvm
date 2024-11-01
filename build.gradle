@@ -101,5 +101,13 @@ task writeProps(type: WriteProperties) {
     property('name', project.name)
     property('group', project.group)
 }
+
+tasks.register('packageJar', Zip) {
+    into('lib') {
+        from(tasks.jar)
+        from(configurations.runtimeClasspath)
+    }
+}
+
 processResources.dependsOn(writeProps)
 sourcesJar.dependsOn(writeProps)
