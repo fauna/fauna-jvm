@@ -1,10 +1,10 @@
 package com.fauna.client;
 
 import com.fauna.codec.DefaultCodecProvider;
-import com.fauna.feed.EventSource;
-import com.fauna.feed.FeedOptions;
+import com.fauna.event.EventSource;
+import com.fauna.event.FeedOptions;
 import com.fauna.query.QueryOptions;
-import com.fauna.stream.StreamRequest;
+import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;

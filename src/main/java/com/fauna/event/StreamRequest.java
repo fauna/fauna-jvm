@@ -1,6 +1,4 @@
-package com.fauna.stream;
-
-import com.fauna.query.EventSourceResponse;
+package com.fauna.event;
 
 import java.time.Duration;
 import java.util.Optional;

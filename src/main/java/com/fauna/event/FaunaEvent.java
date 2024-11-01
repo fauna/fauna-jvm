@@ -1,11 +1,12 @@
-package com.fauna.response;
+package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fauna.codec.Codec;
-import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.ClientResponseException;
+import com.fauna.response.ErrorInfo;
+import com.fauna.response.QueryStats;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -20,8 +21,7 @@ import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
-public class StreamEvent<E> {
-    private static final Codec<QueryStats> statsCodec = DefaultCodecProvider.SINGLETON.get(QueryStats.class);
+public class FaunaEvent<E> {
     public enum EventType {
         STATUS, ADD, UPDATE, REMOVE, ERROR
     }
@@ -34,7 +34,7 @@ public class StreamEvent<E> {
     private final ErrorInfo error;
 
 
-    public StreamEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats, ErrorInfo error) {
+    public FaunaEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats, ErrorInfo error) {
         this.type = type;
         this.cursor = cursor;
         this.txn_ts = txn_ts;
@@ -46,7 +46,7 @@ public class StreamEvent<E> {
     public static class Builder<E> {
         private final Codec<E> dataCodec;
         String cursor = null;
-        StreamEvent.EventType eventType = null;
+        FaunaEvent.EventType eventType = null;
         QueryStats stats = null;
         E data = null;
         Long txn_ts = null;
@@ -61,7 +61,7 @@ public class StreamEvent<E> {
             return this;
         }
 
-        public Builder<E> eventType(StreamEvent.EventType eventType) {
+        public Builder<E> eventType(FaunaEvent.EventType eventType) {
             this.eventType = eventType;
             return this;
         }
@@ -93,8 +93,8 @@ public class StreamEvent<E> {
             return this;
         }
 
-        public StreamEvent<E> build() {
-            return new StreamEvent<>(eventType, cursor, txn_ts, data, stats, errorInfo);
+        public FaunaEvent<E> build() {
+            return new FaunaEvent<>(eventType, cursor, txn_ts, data, stats, errorInfo);
         }
 
     }
@@ -124,11 +124,11 @@ public class StreamEvent<E> {
 
     }
 
-    private static StreamEvent.EventType parseEventType(JsonParser parser) throws IOException {
+    private static FaunaEvent.EventType parseEventType(JsonParser parser) throws IOException {
         if (parser.nextToken() == VALUE_STRING) {
             String typeString = parser.getText().toUpperCase();
             try {
-                return StreamEvent.EventType.valueOf(typeString);
+                return FaunaEvent.EventType.valueOf(typeString);
             } catch (IllegalArgumentException e) {
                 throw new ClientResponseException("Invalid event type: " + typeString, e);
             }
@@ -137,9 +137,9 @@ public class StreamEvent<E> {
         }
     }
 
-    public static <E> StreamEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
+    public static <E> FaunaEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
         if (parser.currentToken() == START_OBJECT || parser.nextToken() == START_OBJECT) {
-            Builder<E> builder = StreamEvent.builder(dataCodec);
+            Builder<E> builder = FaunaEvent.builder(dataCodec);
             while (parser.nextToken() == FIELD_NAME) {
                 builder = parseField(builder, parser);
             }
@@ -149,7 +149,7 @@ public class StreamEvent<E> {
         }
     }
 
-    public StreamEvent.EventType getType() {
+    public FaunaEvent.EventType getType() {
         return type;
     }
 

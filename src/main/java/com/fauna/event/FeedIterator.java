@@ -1,11 +1,8 @@
-package com.fauna.client;
+package com.fauna.event;
 
 
+import com.fauna.client.FaunaClient;
 import com.fauna.exception.FaunaException;
-import com.fauna.feed.EventSource;
-import com.fauna.feed.FeedOptions;
-import com.fauna.feed.FeedPage;
-import com.fauna.response.StreamEvent;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -90,17 +87,17 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
      * Return an iterator that iterates directly over the items that make up the page contents.
      * @return      An iterator of E.
      */
-    public Iterator<StreamEvent<E>> flatten() {
+    public Iterator<FaunaEvent<E>> flatten() {
         return new Iterator<>() {
             private final FeedIterator<E> feedIterator = FeedIterator.this;
-            private Iterator<StreamEvent<E>> thisPage = feedIterator.hasNext() ? feedIterator.next().getEvents().iterator() : null;
+            private Iterator<FaunaEvent<E>> thisPage = feedIterator.hasNext() ? feedIterator.next().getEvents().iterator() : null;
             @Override
             public boolean hasNext() {
                 return thisPage != null && (thisPage.hasNext() || feedIterator.hasNext());
             }
 
             @Override
-            public StreamEvent<E> next() {
+            public FaunaEvent<E> next() {
                 if (thisPage == null) {
                     throw new NoSuchElementException();
                 }

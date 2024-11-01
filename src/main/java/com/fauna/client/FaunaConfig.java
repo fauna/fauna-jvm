@@ -6,6 +6,10 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import static com.fauna.constants.Defaults.LOCAL_FAUNA_SECRET;
+import static com.fauna.constants.Defaults.MAX_CONTENTION_RETRIES;
+import static com.fauna.constants.Defaults.CLIENT_TIMEOUT_BUFFER;
+
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
  * It encapsulates various settings such as the endpoint URL, secret key, and more.
@@ -25,7 +29,7 @@ public class FaunaConfig {
     private final StatsCollector statsCollector;
     public static final FaunaConfig DEFAULT = FaunaConfig.builder().build();
     public static final FaunaConfig LOCAL = FaunaConfig.builder().endpoint(
-            FaunaEndpoint.LOCAL).secret("secret").build();
+            FaunaEndpoint.LOCAL).secret(LOCAL_FAUNA_SECRET).build();
 
     /**
      * Private constructor for FaunaConfig.
@@ -107,8 +111,8 @@ public class FaunaConfig {
     public static class Builder {
         private String endpoint = FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT);
         private String secret = FaunaEnvironment.faunaSecret().orElse("");
-        private int maxContentionRetries = 3;
-        private Duration clientTimeoutBuffer = Duration.ofSeconds(5);
+        private int maxContentionRetries = MAX_CONTENTION_RETRIES;
+        private Duration clientTimeoutBuffer = CLIENT_TIMEOUT_BUFFER;
         private Handler logHandler = defaultLogHandler();
         private StatsCollector statsCollector = new StatsCollectorImpl();
 

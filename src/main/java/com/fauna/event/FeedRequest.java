@@ -1,9 +1,8 @@
-package com.fauna.feed;
+package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fauna.client.RequestBuilder;
-import com.fauna.query.EventSourceResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -5,7 +5,7 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.exception.CodecException;
-import com.fauna.query.EventSourceResponse;
+import com.fauna.event.EventSourceResponse;
 
 public class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
 

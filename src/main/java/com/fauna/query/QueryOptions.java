@@ -3,6 +3,8 @@ package com.fauna.query;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
+
 public class QueryOptions {
     private final Boolean linearized;
     private final Boolean typeCheck;
@@ -10,7 +12,6 @@ public class QueryOptions {
     private final QueryTags queryTags;
     private final String traceParent;
 
-    public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
     public static QueryOptions DEFAULT = QueryOptions.builder().build();
 
     public QueryOptions(Builder builder) {

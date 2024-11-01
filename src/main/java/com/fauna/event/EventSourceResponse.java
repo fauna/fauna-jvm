@@ -1,4 +1,4 @@
-package com.fauna.query;
+package com.fauna.event;
 
 
 import java.util.Objects;

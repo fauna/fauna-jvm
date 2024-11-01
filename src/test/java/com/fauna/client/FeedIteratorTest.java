@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.event.FeedIterator;
 import com.fauna.exception.InvalidRequestException;
-import com.fauna.feed.EventSource;
-import com.fauna.feed.FeedOptions;
-import com.fauna.feed.FeedPage;
+import com.fauna.event.EventSource;
+import com.fauna.event.FeedOptions;
+import com.fauna.event.FeedPage;
 import com.fauna.response.ErrorInfo;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryResponse;
-import com.fauna.response.StreamEvent;
+import com.fauna.event.FaunaEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -45,12 +46,12 @@ public class FeedIteratorTest {
     private FaunaClient client;
 
     private CompletableFuture<FeedPage<String>> successFuture(boolean after, int num) throws IOException {
-        List<StreamEvent<String>> events = new ArrayList<>();
+        List<FaunaEvent<String>> events = new ArrayList<>();
         Codec<String> codec = DefaultCodecProvider.SINGLETON.get(String.class);
-        events.add(new StreamEvent<>(StreamEvent.EventType.ADD,
+        events.add(new FaunaEvent<>(FaunaEvent.EventType.ADD,
                 "cursor0", System.currentTimeMillis() - 10,
                 num + "-a", null, null));
-        events.add(new StreamEvent<>(StreamEvent.EventType.ADD,
+        events.add(new FaunaEvent<>(FaunaEvent.EventType.ADD,
                 "cursor0", System.currentTimeMillis() - 5,
                 num + "-b", null, null));
 
@@ -123,7 +124,7 @@ public class FeedIteratorTest {
         when(client.poll(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
         when(client.poll(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
-        Iterator<StreamEvent<String>> iter = feedIterator.flatten();
+        Iterator<FaunaEvent<String>> iter = feedIterator.flatten();
         List<String> products = new ArrayList<>();
         iter.forEachRemaining(event -> products.add(event.getData().orElseThrow()));
         assertEquals(4, products.size());
