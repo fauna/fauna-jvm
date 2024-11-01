@@ -55,7 +55,7 @@ public class FeedIteratorTest {
                 "cursor0", System.currentTimeMillis() - 5,
                 num + "-b", null, null));
 
-        return CompletableFuture.supplyAsync(() -> FeedPage.builder(codec).events(events).cursor("cursor0").hasNext(after).build());
+        return CompletableFuture.supplyAsync(() -> FeedPage.builder(codec, client.getStatsCollector()).events(events).cursor("cursor0").hasNext(after).build());
     }
 
     private CompletableFuture<FeedPage<String>> failureFuture() throws IOException {

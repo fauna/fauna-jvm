@@ -2,6 +2,7 @@ package com.fauna.event;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fauna.client.StatsCollector;
 import com.fauna.codec.Codec;
 import com.fauna.exception.ClientResponseException;
 import com.fauna.response.QueryStats;
@@ -62,13 +63,15 @@ public class FeedPage<E> {
 
     public static class Builder<E> {
         private final Codec<E> elementCodec;
+        private final StatsCollector statsCollector;
         public List<FaunaEvent<E>> events;
         public String cursor = "";
         public Boolean hasNext = false;
         public QueryStats stats = null;
 
-        public Builder(Codec<E> elementCodec) {
+        public Builder(Codec<E> elementCodec, StatsCollector statsCollector) {
             this.elementCodec = elementCodec;
+            this.statsCollector = statsCollector;
         }
 
         public Builder events(List<FaunaEvent<E>> events) {
@@ -116,7 +119,9 @@ public class FeedPage<E> {
                 case EVENTS_FIELD_NAME:
                     return parseEvents(parser);
                 case STATS_FIELD_NAME:
-                    return stats(QueryStats.parseStats(parser));
+                    QueryStats stats = QueryStats.parseStats(parser);
+                    statsCollector.add(stats);
+                    return stats(stats);
                 case FEED_HAS_NEXT_FIELD_NAME:
                     return hasNext(parser.nextBooleanValue());
                 default:
@@ -126,15 +131,15 @@ public class FeedPage<E> {
 
     }
 
-    public static <E> Builder<E> builder(Codec<E> elementCodec) {
-        return new Builder<>(elementCodec);
+    public static <E> Builder<E> builder(Codec<E> elementCodec, StatsCollector statsCollector) {
+        return new Builder<>(elementCodec, statsCollector);
     }
 
-    public static <E> FeedPage<E> parseResponse(HttpResponse<InputStream> response, Codec<E> elementCodec) {
+    public static <E> FeedPage<E> parseResponse(HttpResponse<InputStream> response, Codec<E> elementCodec, StatsCollector statsCollector) {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
             if (parser.nextToken() == START_OBJECT) {
-                Builder<E> builder = FeedPage.builder(elementCodec);
+                Builder<E> builder = FeedPage.builder(elementCodec, statsCollector);
                 while (parser.nextToken() == FIELD_NAME) {
                     builder.parseField(parser);
                 }

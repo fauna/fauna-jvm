@@ -153,7 +153,7 @@ public abstract class FaunaClient {
                         // Fall back on ProtocolException.
                         throw new ProtocolException(response.statusCode(), failure);
                     }
-                    return FeedPage.parseResponse(response, codec);
+                    return FeedPage.parseResponse(response, codec, statsCollector);
                 }).whenComplete(this::completeFeedRequest);
     }
 
