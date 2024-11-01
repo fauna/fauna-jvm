@@ -44,6 +44,13 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         this.queryFuture = client.asyncQuery(fql, this.pageClass, options);
     }
 
+    public PageIterator(FaunaClient client, Page<E> firstPage, Class<E> resultClass, QueryOptions options) {
+        this.client = client;
+        this.pageClass = new PageOf<>(resultClass);
+        this.options = options;
+        firstPage.getAfter().ifPresentOrElse(this::doPaginatedQuery, this::endPagination);
+    }
+
     @Override
     public boolean hasNext() {
         return this.queryFuture != null;

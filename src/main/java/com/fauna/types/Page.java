@@ -11,7 +11,7 @@ import java.util.Optional;
  *
  * @param <T> The type of data contained in the page.
  */
-public class Page<T>{
+public class Page<T> {
     private final List<T> data;
     private final String after;
 
