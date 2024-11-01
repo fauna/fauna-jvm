@@ -117,7 +117,7 @@ public class E2EStreamingTest {
     public void query_streamOfProduct() throws InterruptedException {
         QueryStatsSummary initialStats = client.getStatsCollector().read();
         // Initialize stream outside try-with-resources so we can assert that it's closed at the end of this test;.
-        FaunaStream<Product> stream = client.stream(fql("Product.all().toStream()"), Product.class);
+        FaunaStream<Product> stream = client.stream(fql("Product.all().eventSource()"), Product.class);
         try (stream) {
             InventorySubscriber inventory = new InventorySubscriber();
             stream.subscribe(inventory);
@@ -156,7 +156,7 @@ public class E2EStreamingTest {
     public void handleStreamError() throws InterruptedException {
         // It would be nice to have another test that generates a stream with normal events, and then an error
         // event, but this at least tests some of the functionality.
-        QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().toStream()"), EventSourceResponse.class);
+        QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().eventSource()"), EventSourceResponse.class);
         EventSource source = EventSource.fromResponse(queryResp.getData());
         StreamOptions options = StreamOptions.builder().cursor("invalid_cursor").build();
         FaunaStream<Product> stream = client.stream(source, options, Product.class);
@@ -171,7 +171,7 @@ public class E2EStreamingTest {
 
     @Test
     public void handleStreamTimeout() {
-        QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().toStream()"), EventSourceResponse.class);
+        QuerySuccess<EventSourceResponse> queryResp = client.query(fql("Product.all().eventSource()"), EventSourceResponse.class);
         EventSource source = EventSource.fromResponse(queryResp.getData());
         StreamOptions options = StreamOptions.builder().timeout(Duration.ofMillis(1)).build();
         ClientException exc = assertThrows(ClientException.class, () -> client.stream(source, options, Product.class));
@@ -185,7 +185,7 @@ public class E2EStreamingTest {
     @Test
     public void handleLargeEvents() throws InterruptedException {
         InventorySubscriber inventory;
-        try (FaunaStream<Product> stream = client.stream(fql("Product.all().toStream()"), Product.class)) {
+        try (FaunaStream<Product> stream = client.stream(fql("Product.all().eventSource()"), Product.class)) {
             inventory = new InventorySubscriber();
             stream.subscribe(inventory);
         }
@@ -233,7 +233,7 @@ public class E2EStreamingTest {
     @Disabled("This test sometimes causes Fauna to generate an error for getting too far behind.")
     @Test
     public void handleManyEvents() throws InterruptedException {
-        FaunaStream stream = client.stream(fql("Product.all().toStream()"), Product.class);
+        FaunaStream stream = client.stream(fql("Product.all().eventSource()"), Product.class);
         InventorySubscriber inventory = new InventorySubscriber();
 
         stream.subscribe(inventory);
