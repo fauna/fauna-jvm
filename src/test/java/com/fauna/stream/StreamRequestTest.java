@@ -38,8 +38,12 @@ public class StreamRequestTest {
 
     @Test
     public void testCursorAndTsRequest() {
-        assertThrows(IllegalArgumentException.class, () -> StreamRequest.builder("tkn").startTs(10L).cursor("hello"));
-        assertThrows(IllegalArgumentException.class, () -> StreamRequest.builder("tkn").cursor("hello").startTs(10L));
+        assertThrows(IllegalArgumentException.class,
+                () -> StreamRequest.builder("tkn").startTs(10L)
+                        .cursor("hello"));
+        assertThrows(IllegalArgumentException.class,
+                () -> StreamRequest.builder("tkn").cursor("hello")
+                        .startTs(10L));
     }
 
 }

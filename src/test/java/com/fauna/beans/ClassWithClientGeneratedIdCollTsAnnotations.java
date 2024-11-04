@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class ClassWithClientGeneratedIdCollTsAnnotations {
 
-    @FaunaId( isClientGenerate = true )
+    @FaunaId(isClientGenerate = true)
     private String id;
     @FaunaColl
     private Module coll;
@@ -21,7 +21,10 @@ public class ClassWithClientGeneratedIdCollTsAnnotations {
 
     private String lastName;
 
-    public ClassWithClientGeneratedIdCollTsAnnotations(String id, Module coll, Instant ts, String firstName, String lastName) {
+    public ClassWithClientGeneratedIdCollTsAnnotations(String id, Module coll,
+                                                       Instant ts,
+                                                       String firstName,
+                                                       String lastName) {
         this.id = id;
         this.coll = coll;
         this.ts = ts;
@@ -44,13 +47,20 @@ public class ClassWithClientGeneratedIdCollTsAnnotations {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+      if (this == o) {
+        return true;
+      }
 
-        if (o == null) return false;
+      if (o == null) {
+        return false;
+      }
 
-        if (getClass() != o.getClass()) return false;
+      if (getClass() != o.getClass()) {
+        return false;
+      }
 
-        ClassWithClientGeneratedIdCollTsAnnotations c = (ClassWithClientGeneratedIdCollTsAnnotations) o;
+        ClassWithClientGeneratedIdCollTsAnnotations c =
+                (ClassWithClientGeneratedIdCollTsAnnotations) o;
 
         return Objects.equals(id, c.id)
                 && Objects.equals(coll, c.coll)

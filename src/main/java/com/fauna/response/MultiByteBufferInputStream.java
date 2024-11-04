@@ -32,7 +32,7 @@ public class MultiByteBufferInputStream extends InputStream {
     public synchronized int read() throws IOException {
         if (currentBuffer.hasRemaining()) {
             return currentBuffer.get() & 0xFF;
-        } else if (buffers.size() > index+1) {
+        } else if (buffers.size() > index + 1) {
             index++;
             currentBuffer = buffers.get(index);
             return currentBuffer.get() & 0xFF;
@@ -49,7 +49,6 @@ public class MultiByteBufferInputStream extends InputStream {
         index = 0;
         currentBuffer = buffers.get(index);
     }
-
 
 
 }

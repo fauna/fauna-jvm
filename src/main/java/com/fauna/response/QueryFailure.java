@@ -31,9 +31,11 @@ public final class QueryFailure extends QueryResponse {
     }
 
     public String getFullMessage() {
-        String summarySuffix = this.getSummary() != null ? "\n---\n" + this.getSummary() : "";
+        String summarySuffix =
+                this.getSummary() != null ? "\n---\n" + this.getSummary() : "";
         return String.format("%d (%s): %s%s",
-                this.getStatusCode(), this.getErrorCode(), this.getMessage(), summarySuffix);
+                this.getStatusCode(), this.getErrorCode(), this.getMessage(),
+                summarySuffix);
 
     }
 

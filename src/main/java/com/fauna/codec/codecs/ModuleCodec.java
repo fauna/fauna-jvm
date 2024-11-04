@@ -1,9 +1,9 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Module;
 
 public class ModuleCodec extends BaseCodec<Module> {
@@ -18,12 +18,15 @@ public class ModuleCodec extends BaseCodec<Module> {
             case MODULE:
                 return parser.getValueAsModule();
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Module obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, Module obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -38,6 +41,6 @@ public class ModuleCodec extends BaseCodec<Module> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Module, FaunaType.Null};
+        return new FaunaType[] {FaunaType.Module, FaunaType.Null};
     }
 }

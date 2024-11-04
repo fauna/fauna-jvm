@@ -25,7 +25,7 @@ public class StreamOptions {
 
     }
 
-    public Optional<Boolean>  getStatusEvents() {
+    public Optional<Boolean> getStatusEvents() {
         return Optional.ofNullable(statusEvents);
     }
 

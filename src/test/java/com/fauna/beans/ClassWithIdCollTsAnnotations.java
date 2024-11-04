@@ -21,7 +21,8 @@ public class ClassWithIdCollTsAnnotations {
 
     private String lastName;
 
-    public ClassWithIdCollTsAnnotations(String id, Module coll, Instant ts, String firstName, String lastName) {
+    public ClassWithIdCollTsAnnotations(String id, Module coll, Instant ts,
+                                        String firstName, String lastName) {
         this.id = id;
         this.coll = coll;
         this.ts = ts;
@@ -44,11 +45,17 @@ public class ClassWithIdCollTsAnnotations {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+      if (this == o) {
+        return true;
+      }
 
-        if (o == null) return false;
+      if (o == null) {
+        return false;
+      }
 
-        if (getClass() != o.getClass()) return false;
+      if (getClass() != o.getClass()) {
+        return false;
+      }
 
         ClassWithIdCollTsAnnotations c = (ClassWithIdCollTsAnnotations) o;
 

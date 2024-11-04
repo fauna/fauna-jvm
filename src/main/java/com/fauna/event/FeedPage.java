@@ -16,10 +16,10 @@ import static com.fasterxml.jackson.core.JsonToken.END_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
 import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
+import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.EVENTS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.FEED_HAS_NEXT_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
-import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 
 public class FeedPage<E> {
     private final List<FaunaEvent<E>> events;
@@ -99,7 +99,8 @@ public class FeedPage<E> {
                 }
                 this.events = events;
             } else {
-                throw new IOException("Invalid event starting with: " + parser.currentToken());
+                throw new IOException("Invalid event starting with: " +
+                        parser.currentToken());
             }
             return this;
         }
@@ -120,7 +121,8 @@ public class FeedPage<E> {
                 case FEED_HAS_NEXT_FIELD_NAME:
                     return hasNext(parser.nextBooleanValue());
                 default:
-                    throw new ClientResponseException("Unknown StreamEvent field: " + fieldName);
+                    throw new ClientResponseException(
+                            "Unknown StreamEvent field: " + fieldName);
             }
         }
 
@@ -130,7 +132,8 @@ public class FeedPage<E> {
         return new Builder<>(elementCodec);
     }
 
-    public static <E> FeedPage<E> parseResponse(HttpResponse<InputStream> response, Codec<E> elementCodec) {
+    public static <E> FeedPage<E> parseResponse(
+            HttpResponse<InputStream> response, Codec<E> elementCodec) {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
             if (parser.nextToken() == START_OBJECT) {
@@ -140,10 +143,13 @@ public class FeedPage<E> {
                 }
                 return builder.build();
             } else {
-                throw new ClientResponseException("Invalid event starting with: " + parser.currentToken());
+                throw new ClientResponseException(
+                        "Invalid event starting with: " +
+                                parser.currentToken());
             }
         } catch (IOException e) {
-            throw new ClientResponseException("Error parsing Feed response.", e);
+            throw new ClientResponseException("Error parsing Feed response.",
+                    e);
         }
     }
 }

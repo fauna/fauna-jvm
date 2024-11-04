@@ -29,7 +29,8 @@ public class ErrorInfo {
     private final ConstraintFailure[] constraintFailures;
     private final TreeNode abort;
 
-    public ErrorInfo(String code, String message, ConstraintFailure[] constraintFailures, TreeNode abort) {
+    public ErrorInfo(String code, String message,
+                     ConstraintFailure[] constraintFailures, TreeNode abort) {
         this.code = code;
         this.message = message;
         this.constraintFailures = constraintFailures;
@@ -62,7 +63,6 @@ public class ErrorInfo {
     }
 
 
-
     public static class Builder {
         String code = null;
         String message = null;
@@ -84,13 +84,16 @@ public class ErrorInfo {
             return this;
         }
 
-        public Builder constraintFailures(List<ConstraintFailure> constraintFailures) {
-            this.constraintFailures = constraintFailures.toArray(new ConstraintFailure[0]);
+        public Builder constraintFailures(
+                List<ConstraintFailure> constraintFailures) {
+            this.constraintFailures =
+                    constraintFailures.toArray(new ConstraintFailure[0]);
             return this;
         }
 
         public ErrorInfo build() {
-            return new ErrorInfo(this.code, this.message, this.constraintFailures, this.abort);
+            return new ErrorInfo(this.code, this.message,
+                    this.constraintFailures, this.abort);
         }
     }
 
@@ -98,7 +101,8 @@ public class ErrorInfo {
         return new Builder();
     }
 
-    private static Builder handleField(Builder builder, JsonParser parser) throws IOException {
+    private static Builder handleField(Builder builder, JsonParser parser)
+            throws IOException {
         String fieldName = parser.getCurrentName();
         switch (fieldName) {
             case ERROR_CODE_FIELD_NAME:
@@ -121,15 +125,22 @@ public class ErrorInfo {
                     }
                     return builder.constraintFailures(failures);
                 } else {
-                    throw new ClientResponseException("Unexpected token in constraint failures: " + token);
+                    throw new ClientResponseException(
+                            "Unexpected token in constraint failures: " +
+                                    token);
                 }
-            default: throw new ClientResponseException("Unexpected token in error info: " + parser.currentToken());
+            default:
+                throw new ClientResponseException(
+                        "Unexpected token in error info: " +
+                                parser.currentToken());
         }
     }
 
     public static ErrorInfo parse(JsonParser parser) throws IOException {
         if (parser.nextToken() != JsonToken.START_OBJECT) {
-            throw new ClientResponseException("Error parsing error info, got token" + parser.currentToken());
+            throw new ClientResponseException(
+                    "Error parsing error info, got token" +
+                            parser.currentToken());
         }
         Builder builder = ErrorInfo.builder();
 

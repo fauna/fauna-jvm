@@ -7,7 +7,8 @@ import java.util.Objects;
  * Represents an object fragment of a Fauna query. Object fragments allow for the evaluation of FQL statements
  * stored on the object. This class encapsulates an object that can be a variable in the query.
  */
-public class QueryObj<E extends QueryFragment> extends QueryFragment<Map<String,E>> {
+public class QueryObj<E extends QueryFragment>
+        extends QueryFragment<Map<String, E>> {
 
     public static <E extends QueryFragment> QueryObj of(Map<String, E> val) {
         //noinspection unchecked
@@ -21,7 +22,7 @@ public class QueryObj<E extends QueryFragment> extends QueryFragment<Map<String,
      *
      * @param value the value to encapsulate.
      */
-    public QueryObj(Map<String,E> value) {
+    public QueryObj(Map<String, E> value) {
         this.value = value;
     }
 
@@ -31,14 +32,18 @@ public class QueryObj<E extends QueryFragment> extends QueryFragment<Map<String,
      * @return the encapsulated object.
      */
     @Override
-    public Map<String,E> get() {
+    public Map<String, E> get() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
 
         QueryObj that = (QueryObj) o;
 

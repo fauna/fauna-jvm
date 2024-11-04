@@ -15,7 +15,8 @@ public class ClassWithFaunaIgnore {
     @FaunaIgnore
     private Integer age;
 
-    public ClassWithFaunaIgnore(String firstName, String lastName, Integer age) {
+    public ClassWithFaunaIgnore(String firstName, String lastName,
+                                Integer age) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
@@ -39,11 +40,17 @@ public class ClassWithFaunaIgnore {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+      if (this == o) {
+        return true;
+      }
 
-        if (o == null) return false;
+      if (o == null) {
+        return false;
+      }
 
-        if (getClass() != o.getClass()) return false;
+      if (getClass() != o.getClass()) {
+        return false;
+      }
 
         ClassWithFaunaIgnore c = (ClassWithFaunaIgnore) o;
 

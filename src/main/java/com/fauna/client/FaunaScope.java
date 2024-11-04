@@ -28,7 +28,8 @@ public class FaunaScope {
         }
 
         public FaunaScope build() {
-            return new FaunaScope(this.database, this.role != null ? this.role : FaunaRole.SERVER);
+            return new FaunaScope(this.database,
+                    this.role != null ? this.role : FaunaRole.SERVER);
 
         }
     }
@@ -36,7 +37,6 @@ public class FaunaScope {
     public static Builder builder(String database) {
         return new Builder(database);
     }
-
 
 
 }

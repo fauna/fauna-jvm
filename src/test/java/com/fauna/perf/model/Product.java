@@ -5,12 +5,13 @@ import com.fauna.types.DocumentRef;
 public class Product {
     private String name;
     private String category;
-    private int price = 0;
-    private int quantity = 0;
-    private boolean inStock = false;
+    private final int price = 0;
+    private final int quantity = 0;
+    private final boolean inStock = false;
     private DocumentRef manufacturerRef;
 
-    public Product() { }
+    public Product() {
+    }
 
     // Getters for all properties
     public String getName() {

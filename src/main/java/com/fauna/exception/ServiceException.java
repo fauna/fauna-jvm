@@ -1,10 +1,10 @@
 package com.fauna.exception;
 
-import java.util.Map;
-import java.util.Optional;
-
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * An exception representing a query failure returned by Fauna.

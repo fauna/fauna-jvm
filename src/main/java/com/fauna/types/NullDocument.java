@@ -33,6 +33,7 @@ public final class NullDocument<T> extends NullableDocument<T> {
 
     /**
      * Get the ID of the null document.
+     *
      * @return The document ID.
      */
     public String getId() {
@@ -41,6 +42,7 @@ public final class NullDocument<T> extends NullableDocument<T> {
 
     /**
      * Get the Collection associated with the null document.
+     *
      * @return A Module representing the collection.
      */
     public Module getCollection() {
@@ -49,11 +51,17 @@ public final class NullDocument<T> extends NullableDocument<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+      if (this == o) {
+        return true;
+      }
 
-        if (o == null) return false;
+      if (o == null) {
+        return false;
+      }
 
-        if (getClass() != o.getClass()) return false;
+      if (getClass() != o.getClass()) {
+        return false;
+      }
 
         var c = (NullDocument<?>) o;
         return id.equals(c.getId())

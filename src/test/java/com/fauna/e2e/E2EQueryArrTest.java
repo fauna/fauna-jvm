@@ -24,7 +24,7 @@ public class E2EQueryArrTest {
         Query q = fql("${obj}", Map.of("obj", obj));
         QuerySuccess<List<Integer>> res = c.query(q, listOf(Integer.class));
 
-        assertEquals(List.of(4,6,8), res.getData());
+        assertEquals(List.of(4, 6, 8), res.getData());
     }
 
     @Test
@@ -34,6 +34,6 @@ public class E2EQueryArrTest {
         Query q = fql("${obj}", Map.of("obj", obj));
         var res = c.query(q);
 
-        assertEquals(List.of(List.of(4,6,8)), res.getData());
+        assertEquals(List.of(List.of(4, 6, 8)), res.getData());
     }
 }

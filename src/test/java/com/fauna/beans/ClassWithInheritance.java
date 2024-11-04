@@ -14,11 +14,17 @@ public class ClassWithInheritance extends ClassWithAttributes {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+      if (this == o) {
+        return true;
+      }
 
-        if (o == null) return false;
+      if (o == null) {
+        return false;
+      }
 
-        if (getClass() != o.getClass()) return false;
+      if (getClass() != o.getClass()) {
+        return false;
+      }
 
         ClassWithInheritance c = (ClassWithInheritance) o;
 
