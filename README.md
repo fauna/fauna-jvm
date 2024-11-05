@@ -457,7 +457,7 @@ To get an event feed, you can use one of the following methods:
 
 * `poll()`: Asynchronously fetches a single page of events from the event feed
    and returns a `CompletableFuture<FeedPage>` that you can use to handle each
-   page individually.
+   page individually. You can repeatedly call `poll()` to get successive pages.
 
 You can use `flatten()` on a `FeedIterator` to iterate through events rather
 than pages.
@@ -555,7 +555,7 @@ public class EventFeedExample {
         });
 
         // Example 2: Using `flatten()` on a `FeedIterator`
-        `FeedIterator`<Product> flattenedIterator = client.feed(
+        FeedIterator<Product> flattenedIterator = client.feed(
             fql("Product.all().eventSource()"),
             options,
             Product.class
@@ -626,7 +626,7 @@ epoch. The request returns events that occurred after the specified timestamp
 Query query = fql("Product.all().eventsOn(.price, .stock)");
 
 // Calculate the timestamp for 10 minutes ago in microseconds.
-long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
+long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000);
 
 FeedOptions options = FeedOptions.builder()
         .startTs(tenMinutesAgo)
