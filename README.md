@@ -554,7 +554,7 @@ public class EventFeedExample {
             }
         });
 
-        // Example 2: Using `flatten()` on a `FeedIterator`
+        // Example 3: Using `flatten()` on a `FeedIterator`
         FeedIterator<Product> flattenedIterator = client.feed(
             fql("Product.all().eventSource()"),
             options,
