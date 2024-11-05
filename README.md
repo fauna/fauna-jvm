@@ -334,7 +334,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
 import com.fauna.query.builder.Query;
@@ -345,8 +344,7 @@ import com.fauna.response.QuerySuccess;
 public class App {
     public static void main(String[] args) {
         try {
-            FaunaConfig config = FaunaConfig.builder().secret("FAUNA_SECRET").build();
-            FaunaClient client = Fauna.client(config);
+            FaunaClient client = Fauna.client();
 
             Query query = fql("'Hello world'");
 
@@ -465,7 +463,6 @@ than pages.
 ```java
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
 import com.fauna.event.FeedIterator;
 import com.fauna.event.EventSource;
 import com.fauna.event.FeedOptions;
@@ -510,10 +507,7 @@ public class EventFeedExample {
     }
 
     public static void main(String[] args) {
-        FaunaConfig config = FaunaConfig.builder()
-                .secret("FAUNA_SECRET")
-                .build();
-        FaunaClient client = Fauna.client(config);
+        FaunaClient client = Fauna.client();
 
         long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
         FeedOptions options = FeedOptions.builder()
