@@ -8,17 +8,13 @@ import com.fauna.event.FaunaStream;
 import com.fauna.event.FeedIterator;
 import com.fauna.event.StreamOptions;
 import com.fauna.exception.ClientException;
-import com.fauna.exception.ErrorHandler;
 import com.fauna.exception.FaunaException;
-import com.fauna.exception.ProtocolException;
 import com.fauna.exception.ServiceException;
 import com.fauna.event.EventSource;
 import com.fauna.event.FeedOptions;
 import com.fauna.event.FeedPage;
 import com.fauna.query.AfterToken;
 import com.fauna.query.QueryOptions;
-import com.fauna.response.QueryFailure;
-import com.fauna.event.StreamRequest;
 import com.fauna.event.EventSourceResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QueryResponse;
@@ -144,15 +140,6 @@ public abstract class FaunaClient {
         return () -> client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply(
                 response -> {
                     logResponse(response);
-                    if (response.statusCode() >= 400) {
-                        // There are possibly some different error cases to handle for feeds. This seems like
-                        // a comprehensive solution for now. In the future we could rename QueryFailure et. al. to
-                        // something like FaunaFailure, or implement "FeedFailure".
-                        QueryFailure failure = new QueryFailure(response.statusCode(), QueryResponse.builder(codec));
-                        ErrorHandler.handleQueryFailure(response.statusCode(), failure);
-                        // Fall back on ProtocolException.
-                        throw new ProtocolException(response.statusCode(), failure);
-                    }
                     return FeedPage.parseResponse(response, codec, statsCollector);
                 }).whenComplete(this::completeFeedRequest);
     }

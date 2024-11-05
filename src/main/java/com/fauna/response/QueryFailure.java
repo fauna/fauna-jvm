@@ -27,7 +27,6 @@ public final class QueryFailure extends QueryResponse {
 
     public <T> Optional<T> getAbort(Class<T> clazz) {
         return errorInfo.getAbort(clazz);
-
     }
 
     public String getFullMessage() {
