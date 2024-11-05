@@ -641,7 +641,7 @@ FeedIterator<Product> syncIterator = client.feed(
 );
 
 // Example 2: Using `asyncFeed()`
-CompletableFuture<FeedPage<Product>> pageFuture = client.asyncFeed(
+CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
     query,
     options,
     Product.class
@@ -684,7 +684,7 @@ FeedIterator<Product> syncIterator = client.feed(
 );
 
 // Example 2: Using `asyncFeed()`
-CompletableFuture<FeedPage<Product>> pageFuture = client.asyncFeed(
+CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
     query,
     options,
     Product.class
