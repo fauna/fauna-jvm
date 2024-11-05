@@ -459,7 +459,6 @@ using `flatten()`.
 ```java
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
 import com.fauna.event.FeedIterator;
 import com.fauna.event.StreamEvent;
 
@@ -471,10 +470,9 @@ import java.util.stream.Collectors;
 public class FeedExample {
 
     public static void main(String[] args) {
-        FaunaConfig config = new FaunaConfig.Builder()
-                .secret("FAUNA_SECRET")
-                .build();
-        FaunaClient client = Fauna.client(config);
+        // By default, FaunaClient will look for a secret in the FAUNA_SECRET environment variable, but you
+        // can also inject it e.g. FaunaClient.client(FaunaConfig.builder().secret("secret").build())
+        FaunaClient client = Fauna.client();
 
         // Use `feed()` to create an event feed with a blocking request.
         FeedIterator<Product> syncIterator = client.feed(
