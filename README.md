@@ -521,7 +521,7 @@ public class EventFeedExample {
                 .pageSize(10)
                 .build();
 
-        // Example 1: Use `feed()` to get an event feed with a blocking request
+        // Example 1: Using `feed()`
         FeedIterator<Product> syncIterator = client.feed(
             fql("Product.all().eventsOn(.price, .stock)"),
             options,
@@ -537,9 +537,8 @@ public class EventFeedExample {
             }
         });
 
-        // Example 2: Use `asyncFeed()` to get an event feed with an async request
+        // Example 2: Using `asyncFeed()`
         CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
-            //
             fql("Product.all().eventsOn(.price, .stock)"),
             options,
             Product.class
@@ -555,8 +554,8 @@ public class EventFeedExample {
             }
         });
 
-        // Example 3: Flatten feed into a list of events
-        FeedIterator<Product> flattenedIterator = client.feed(
+        // Example 2: Using `flatten()` on a `FeedIterator`
+        `FeedIterator`<Product> flattenedIterator = client.feed(
             fql("Product.all().eventSource()"),
             options,
             Product.class
@@ -572,8 +571,7 @@ public class EventFeedExample {
             printEventDetails(event);
         }
 
-        // Example 4: Use `poll()` to get an event feed with an async request
-        // `poll()` returns a Feed Page rather than an iterator.
+        // Example 4: Using `poll()`
         QuerySuccess<EventSourceResponse> sourceQuery = client.query(
             fql("Product.all().eventSource()"),
             EventSourceResponse.class
