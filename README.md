@@ -446,11 +446,21 @@ or
 [`eventsOn()`](https://docs.fauna.com/fauna/current/reference/fql-api/schema-entities/set/eventson/)
 to a [supported Set](https://docs.fauna.com/fauna/current/reference/cdc/#sets).
 
-To get paginated events, pass an event source or query that produces an
-event source to `feed()` or `poll()`.
+To get an event feed, you can use one of the following methods:
 
-You can then iterate through each page of events. Alternatively, you can
-iterate through individual events instead of pages using `flatten()`.
+* `feed()`: Synchronously fetches an event feed and returns a `FeedIterator`
+   that you can use to iterate through the pages of events.
+
+* `asyncFeed()`: Asynchronously fetches an event feed and returns a
+   `CompletableFuture<FeedIterator>` that you can use to iterate through the
+   pages of events.
+
+* `poll()`: Asynchronously fetches a single page of events from the event feed
+   and returns a `CompletableFuture<FeedPage>` that you can use to handle each
+   page individually.
+
+You can use `flatten()` on a `FeedIterator` to iterate through events rather
+than pages.
 
 ```java
 import com.fauna.client.Fauna;
@@ -474,7 +484,7 @@ import static com.fauna.query.builder.Query.fql;
 // Import the Product class for event data.
 import org.example.Product;
 
-public class App {
+public class EventFeedExample {
     private static void printEventDetails(FaunaEvent<Product> event) {
         System.out.println("Event Details:");
         System.out.println("  Type: " + event.getType());
@@ -505,68 +515,45 @@ public class App {
                 .build();
         FaunaClient client = Fauna.client(config);
 
-        // Calculate the timestamp for 10 minutes ago in microseconds.
         long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
         FeedOptions options = FeedOptions.builder()
                 .startTs(tenMinutesAgo)
                 .pageSize(10)
                 .build();
 
-        // Example 1:  Use `feed()` to get an event feed with a blocking request.
+        // Example 1: Use `feed()` to get an event feed with a blocking request
         FeedIterator<Product> syncIterator = client.feed(
-            // You can pass an EventSource or a query that produces an EventSource.
             fql("Product.all().eventsOn(.price, .stock)"),
             options,
             Product.class
         );
 
-        System.out.println("-------------------");
+        System.out.println("----------------------");
         System.out.println("`feed()` results:");
-        System.out.println("-------------------");
-        // Handle each page of events
+        System.out.println("----------------------");
         syncIterator.forEachRemaining(page -> {
-            // Handle each event
             for (FaunaEvent<Product> event : page.getEvents()) {
                 printEventDetails(event);
             }
         });
 
-        // Example 2: Use `poll()` to get an event feed with an async request.
-        QuerySuccess<EventSourceResponse> sourceQuery = client.query(
-            fql("Product.all().eventSource()"),
-            EventSourceResponse.class
-        );
-        EventSource source = EventSource.fromResponse(sourceQuery.getData());
-
-        CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
-            // You can pass an EventSource or a query that produces an EventSource.
-            source,
+        // Example 2: Use `asyncFeed()` to get an event feed with an async request
+        CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
+            //
+            fql("Product.all().eventsOn(.price, .stock)"),
             options,
             Product.class
         );
 
-        while (pageFuture != null) {
-            // Handle each page of events
-            FeedPage<Product> page = pageFuture.join();
-
-            List<FaunaEvent<Product>> events = page.getEvents();
-
-            System.out.println("-------------------");
-            System.out.println("`poll()` results:");
-            System.out.println("-------------------");
-            // Handle each event
-            for (FaunaEvent<Product> event : events) {
+        FeedIterator<Product> iterator = iteratorFuture.join();
+        System.out.println("----------------------");
+        System.out.println("`asyncFeed()` results:");
+        System.out.println("----------------------");
+        iterator.forEachRemaining(page -> {
+            for (FaunaEvent<Product> event : page.getEvents()) {
                 printEventDetails(event);
             }
-
-            // Get next page if available
-            if (page.hasNext()) {
-                FeedOptions nextPageOptions = options.nextPage(page);
-                pageFuture = client.poll(source, nextPageOptions, Product.class);
-            } else {
-                pageFuture = null;
-            }
-        }
+        });
 
         // Example 3: Flatten feed into a list of events
         FeedIterator<Product> flattenedIterator = client.feed(
@@ -578,11 +565,44 @@ public class App {
         Iterator<FaunaEvent<Product>> eventIterator = flattenedIterator.flatten();
         List<FaunaEvent<Product>> allEvents = new ArrayList<>();
         eventIterator.forEachRemaining(allEvents::add);
-        System.out.println("-------------------");
-        System.out.println("Flattened results:");
-        System.out.println("-------------------");
+        System.out.println("----------------------");
+        System.out.println("`flatten()` results:");
+        System.out.println("----------------------");
         for (FaunaEvent<Product> event : allEvents) {
             printEventDetails(event);
+        }
+
+        // Example 4: Use `poll()` to get an event feed with an async request
+        // `poll()` returns a Feed Page rather than an iterator.
+        QuerySuccess<EventSourceResponse> sourceQuery = client.query(
+            fql("Product.all().eventSource()"),
+            EventSourceResponse.class
+        );
+        EventSource source = EventSource.fromResponse(sourceQuery.getData());
+
+        CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+            source,
+            options,
+            Product.class
+        );
+
+        while (pageFuture != null) {
+            FeedPage<Product> page = pageFuture.join();
+            List<FaunaEvent<Product>> events = page.getEvents();
+
+            System.out.println("----------------------");
+            System.out.println("`poll()` results:");
+            System.out.println("----------------------");
+            for (FaunaEvent<Product> event : events) {
+                printEventDetails(event);
+            }
+
+            if (page.hasNext()) {
+                FeedOptions nextPageOptions = options.nextPage(page);
+                pageFuture = client.poll(source, nextPageOptions, Product.class);
+            } else {
+                pageFuture = null;
+            }
         }
     }
 }
@@ -597,7 +617,8 @@ In most cases, you'll get events after a specific start time or cursor.
 ### Get events after a specific start time
 
 When you first poll an event source using an Event Feed, you usually include a
-`startTs` (start timestamp) in the `FeedOptions` passed to `feed()` or `poll()`.
+`startTs` (start timestamp) in the `FeedOptions` passed to `feed()`,
+`asyncFeed()`, or `poll()`.
 
 `startTs` is an integer representing a time in microseconds since the Unix
 epoch. The request returns events that occurred after the specified timestamp
@@ -614,14 +635,29 @@ FeedOptions options = FeedOptions.builder()
         .pageSize(10)
         .build();
 
+// Example 1: Using `feed()`
 FeedIterator<Product> syncIterator = client.feed(
     query,
     options,
     Product.class
 );
 
-CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+// Example 2: Using `asyncFeed()`
+CompletableFuture<FeedPage<Product>> pageFuture = client.asyncFeed(
     query,
+    options,
+    Product.class
+);
+
+// Example 3: Using `poll()`
+QuerySuccess<EventSourceResponse> sourceQuery = client.query(
+    query,
+    EventSourceResponse.class
+);
+EventSource source = EventSource.fromResponse(sourceQuery.getData());
+
+CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+    source,
     options,
     Product.class
 );
@@ -631,7 +667,8 @@ CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
 
 After the initial request, you usually get subsequent events using the cursor
 for the last page or event. To get events after a cursor (exclusive), include
-the cursor in the `FeedOptions` passed to `feed()` or `poll()`:
+the cursor in the `FeedOptions` passed to passed to `feed()`,
+`asyncFeed()`, or `poll()`.
 
 ```java
 Query query = fql("Product.all().eventsOn(.price, .stock)");
@@ -641,14 +678,29 @@ FeedOptions options = FeedOptions.builder()
         .pageSize(10)
         .build();
 
+// Example 1: Using `feed()`
 FeedIterator<Product> syncIterator = client.feed(
     query,
     options,
     Product.class
 );
 
-CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+// Example 2: Using `asyncFeed()`
+CompletableFuture<FeedPage<Product>> pageFuture = client.asyncFeed(
     query,
+    options,
+    Product.class
+);
+
+// Example 3: Using `poll()`
+QuerySuccess<EventSourceResponse> sourceQuery = client.query(
+    query,
+    EventSourceResponse.class
+);
+EventSource source = EventSource.fromResponse(sourceQuery.getData());
+
+CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+    source,
     options,
     Product.class
 );
