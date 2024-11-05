@@ -626,7 +626,7 @@ epoch. The request returns events that occurred after the specified timestamp
 Query query = fql("Product.all().eventsOn(.price, .stock)");
 
 // Calculate the timestamp for 10 minutes ago in microseconds.
-long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000);
+long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
 
 FeedOptions options = FeedOptions.builder()
         .startTs(tenMinutesAgo)
