@@ -55,7 +55,7 @@ public class FeedIteratorTest {
                 "cursor0", System.currentTimeMillis() - 5,
                 num + "-b", null, null));
 
-        return CompletableFuture.supplyAsync(() -> FeedPage.builder(codec).events(events).cursor("cursor0").hasNext(after).build());
+        return CompletableFuture.supplyAsync(() -> FeedPage.builder(codec, new StatsCollectorImpl()).events(events).cursor("cursor0").hasNext(after).build());
     }
 
     private CompletableFuture<FeedPage<String>> failureFuture() throws IOException {
@@ -91,8 +91,7 @@ public class FeedIteratorTest {
 
     @Test
     public void test_multiple_pages() throws IOException {
-        when(client.poll(argThat(source::equals), argThat(FeedOptions.DEFAULT::equals), any(Class.class))).thenReturn(successFuture(true, 0));
-        when(client.poll(argThat(source::equals), argThat(opts -> opts.getCursor().orElse("").equals(CURSOR_0)), any(Class.class))).thenReturn(successFuture(false, 1));
+        when(client.poll(argThat(source::equals), any(), any(Class.class))).thenReturn(successFuture(true, 0), successFuture(false, 1));
         FeedIterator<String> feedIterator = new FeedIterator<>(client, source, FeedOptions.DEFAULT, String.class);
 
         assertTrue(feedIterator.hasNext());

@@ -9,6 +9,8 @@ import com.fauna.event.EventSource;
 import com.fauna.event.FeedOptions;
 import com.fauna.event.FeedPage;
 import com.fauna.event.EventSourceResponse;
+import com.fauna.exception.InvalidRequestException;
+import com.fauna.response.QueryFailure;
 import com.fauna.response.QuerySuccess;
 import com.fauna.event.FaunaEvent;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -28,7 +31,9 @@ import static com.fauna.query.builder.Query.fql;
 import static com.fauna.event.FaunaEvent.EventType.ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class E2EFeedsTest {
 
@@ -92,8 +97,33 @@ public class E2EFeedsTest {
 
     @Test
     public void feedError() {
+        // Fauna can throw a HTTP error in some cases. In this case it's bad request to the feed API. Presumably
+        // some of the others like ThrottlingException, and AuthenticationException can also be thrown.
+        CompletableFuture<FeedPage<Product>> future= client.poll(EventSource.fromToken("badToken"), FeedOptions.DEFAULT, Product.class);
+        CompletionException ce = assertThrows(CompletionException.class, () -> future.join());
+        InvalidRequestException ire = (InvalidRequestException) ce.getCause();
+
+        assertEquals("invalid_request", ire.getErrorCode());
+        assertEquals(400, ire.getStatusCode());
+        assertEquals("400 (invalid_request): Invalid request body: invalid event source provided.", ire.getMessage());
+        assertTrue(ire.getTxnTs().isEmpty());
+        assertNull(ire.getStats());
+        assertNull(ire.getSchemaVersion());
+        assertNull(ire.getSummary());
+        assertNull(ire.getCause());
+        assertNull(ire.getQueryTags());
+
+        QueryFailure failure = ire.getResponse();
+        assertTrue(failure.getConstraintFailures().isEmpty());
+        assertTrue(failure.getAbort(null).isEmpty());
+    }
+
+    @Test
+    public void feedEventError() {
+        // Fauna can also return a valid feed page, with HTTP 200, but an "error" event type.
         FeedOptions options = FeedOptions.builder().startTs(0L).build();
-        FeedIterator<Product> iter = client.feed(fql("Product.all().eventSource()"), options, Product.class);
+        QuerySuccess<EventSourceResponse> sourceQuery = client.query(fql("Product.all().eventSource()"), EventSourceResponse.class);
+        FeedIterator<Product> iter = client.feed(EventSource.fromResponse(sourceQuery.getData()), options, Product.class);
         FeedPage<Product> pageOne = iter.next();
         assertFalse(pageOne.hasNext());
         assertEquals(1, pageOne.getEvents().size());

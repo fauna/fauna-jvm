@@ -4,6 +4,8 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.CodecRegistry;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
+import com.fauna.event.EventSource;
+import com.fauna.event.StreamOptions;
 import com.fauna.query.QueryOptions;
 import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,8 @@ class RequestBuilderTest {
     private final FaunaConfig faunaConfig = FaunaConfig.builder()
             .endpoint(FaunaConfig.FaunaEndpoint.LOCAL)
             .secret("secret").build();
+
+    private static final EventSource SOURCE = EventSource.fromToken("tkn");
 
     private final RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig, Logger.getGlobal());
 
@@ -88,7 +92,6 @@ class RequestBuilderTest {
 
         RequestBuilder requestBuilder = RequestBuilder.queryRequestBuilder(
                 FaunaConfig.builder().clientTimeoutBuffer(Duration.ofSeconds(1)).build(), Logger.getGlobal());
-        HttpRequest req = requestBuilder.buildRequest(fql("42"), defaultOpts, codecProvider, 1L);
         assertEquals(Duration.ofSeconds(6), requestBuilder.buildRequest(fql("42"), defaultOpts, codecProvider, 1L).timeout().orElseThrow());
         assertEquals(Duration.ofSeconds(16), requestBuilder.buildRequest(fql("42"), timeoutOpts, codecProvider, 1L).timeout().orElseThrow());
     }
@@ -96,9 +99,9 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldOnlyIncludeToken() throws IOException {
         // Given
-        StreamRequest request = StreamRequest.builder("tkn").build();
+        StreamRequest request = new StreamRequest(SOURCE, StreamOptions.DEFAULT);
         // When
-        String body = requestBuilder.buildStreamRequestBody(request);
+        String body = request.serialize();
         // Then
         assertEquals("{\"token\":\"tkn\"}", body);
     }
@@ -106,21 +109,22 @@ class RequestBuilderTest {
     @Test
     void buildStreamRequestBody_shouldIncludeCursor() throws IOException {
         // Given
-        StreamRequest request = StreamRequest.builder("tkn").cursor("cur").build();
+        HttpRequest req = requestBuilder.buildStreamRequest(SOURCE, StreamOptions.builder().cursor("cur").build());
         // When
-        String body = requestBuilder.buildStreamRequestBody(request);
+        long contentLength = req.bodyPublisher().orElseThrow().contentLength();
+
         // Then
-        assertEquals("{\"token\":\"tkn\",\"cursor\":\"cur\"}", body);
+        assertEquals("{\"token\":\"tkn\",\"cursor\":\"cur\"}".length(), contentLength);
     }
 
     @Test
     void buildStreamRequestBody_shouldIncludeTimestamp() throws IOException {
         // Given
-        StreamRequest request = StreamRequest.builder("tkn").startTs(Long.MAX_VALUE / 2).build();
+        HttpRequest request = requestBuilder.buildStreamRequest(SOURCE, StreamOptions.builder().startTimestamp(Long.MAX_VALUE).build());
         // When
-        String body = requestBuilder.buildStreamRequestBody(request);
+        long contentLength = request.bodyPublisher().orElseThrow().contentLength();
         // Then
-        assertEquals("{\"token\":\"tkn\",\"start_ts\":4611686018427387903}", body);
+        assertEquals("{\"token\":\"tkn\",\"start_ts\":4611686018427387903}".length(), contentLength);
     }
 
     @Test

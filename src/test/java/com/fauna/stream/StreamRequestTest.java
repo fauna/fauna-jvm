@@ -2,44 +2,42 @@ package com.fauna.stream;
 
 import com.fauna.codec.CodecProvider;
 import com.fauna.codec.DefaultCodecProvider;
+import com.fauna.event.EventSource;
+import com.fauna.event.StreamOptions;
 import com.fauna.event.StreamRequest;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StreamRequestTest {
     public static final CodecProvider provider = DefaultCodecProvider.SINGLETON;
+    private final static EventSource SOURCE = new EventSource("abc");
 
     @Test
-    public void testTokenOnlyRequest() {
-        StreamRequest req = StreamRequest.builder("abc").build();
-        assertEquals("abc", req.getToken());
-        assertTrue(req.getCursor().isEmpty());
-        assertTrue(req.getStartTs().isEmpty());
+    public void testTokenOnlyRequest() throws IOException {
+        StreamRequest req = new StreamRequest(SOURCE, StreamOptions.DEFAULT);
+        assertEquals("{\"token\":\"abc\"}", req.serialize());
     }
 
     @Test
-    public void testCursorRequest() {
-        StreamRequest req = StreamRequest.builder("abc").cursor("def").build();
-        assertEquals("abc", req.getToken());
-        assertEquals("def", req.getCursor().get());
-        assertTrue(req.getStartTs().isEmpty());
+    public void testCursorRequest() throws IOException {
+        StreamRequest req = new StreamRequest(SOURCE, StreamOptions.builder().cursor("def").build());
+        assertEquals("{\"token\":\"abc\",\"cursor\":\"def\"}", req.serialize());
     }
 
     @Test
-    public void testTsRequest() {
-        StreamRequest req = StreamRequest.builder("abc").startTs(1234L).build();
-        assertEquals("abc", req.getToken());
-        assertTrue(req.getCursor().isEmpty());
-        assertEquals(1234L, req.getStartTs().get());
+    public void testTsRequest() throws IOException {
+        StreamRequest req = new StreamRequest(SOURCE, StreamOptions.builder().startTimestamp(1234L).build());
+        assertEquals("{\"token\":\"abc\",\"start_ts\":1234}", req.serialize());
     }
 
     @Test
-    public void testCursorAndTsRequest() {
-        assertThrows(IllegalArgumentException.class, () -> StreamRequest.builder("tkn").startTs(10L).cursor("hello"));
-        assertThrows(IllegalArgumentException.class, () -> StreamRequest.builder("tkn").cursor("hello").startTs(10L));
+    public void testMissingArgsRequest() {
+        assertThrows(IllegalArgumentException.class, () -> new StreamRequest(SOURCE, null));
+        assertThrows(IllegalArgumentException.class, () -> new StreamRequest(null, StreamOptions.DEFAULT));
     }
 
 }

@@ -90,7 +90,7 @@ public class ServiceException extends FaunaException {
      *
      * @return the schema version as a long value
      */
-    public long getSchemaVersion() {
+    public Long getSchemaVersion() {
         return this.response.getSchemaVersion();
     }
 
