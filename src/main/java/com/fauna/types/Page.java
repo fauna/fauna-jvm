@@ -30,14 +30,18 @@ public class Page<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
         if (o instanceof Page) {
             @SuppressWarnings("rawtypes")
             Page c = (Page) o;
-            return Objects.equals(after,c.after)
+            return Objects.equals(after, c.after)
                     && data.equals(c.data);
         } else {
             return false;

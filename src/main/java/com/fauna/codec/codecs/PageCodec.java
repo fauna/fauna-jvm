@@ -3,14 +3,14 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Page;
 
 import java.util.List;
 
-public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
+public class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
 
     private final Codec<E> elementCodec;
     private final Codec<List<E>> listCodec;
@@ -50,7 +50,9 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
                 // In the event the user requests a Page<T> but the query just returns T
                 return wrapInPage(parser);
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
@@ -59,7 +61,8 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         if (obj == null) {
             gen.writeNullValue();
         } else {
-            throw new CodecException(this.unsupportedTypeMessage(obj.getClass()));
+            throw new CodecException(
+                    this.unsupportedTypeMessage(obj.getClass()));
         }
     }
 
@@ -69,7 +72,8 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
     }
 
 
-    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws CodecException {
+    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken)
+            throws CodecException {
         List<E> data = null;
         String after = null;
 
@@ -88,7 +92,8 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         }
 
         if (data == null) {
-            throw new CodecException("No page data found while deserializing into Page<>");
+            throw new CodecException(
+                    "No page data found while deserializing into Page<>");
         }
 
         @SuppressWarnings("unchecked")
@@ -105,6 +110,10 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.String, FaunaType.Time};
+        return new FaunaType[] {FaunaType.Array, FaunaType.Boolean,
+                FaunaType.Bytes, FaunaType.Date, FaunaType.Double,
+                FaunaType.Document, FaunaType.Int, FaunaType.Long,
+                FaunaType.Module, FaunaType.Null, FaunaType.Object,
+                FaunaType.Ref, FaunaType.Set, FaunaType.String, FaunaType.Time};
     }
 }

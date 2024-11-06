@@ -1,7 +1,6 @@
 package com.fauna.types;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -21,6 +20,8 @@ public class NamedDocumentTest extends TypeTestBase {
         );
 
         var result = mapper.writeValueAsString(doc);
-        assertEquals("{\"data\":{\"some_key\":\"some_val\"},\"ts\":1706016790.300000000,\"collection\":{\"name\":\"MyColl\"},\"name\":\"AName\"}", result);
+        assertEquals(
+                "{\"data\":{\"some_key\":\"some_val\"},\"ts\":1706016790.300000000,\"collection\":{\"name\":\"MyColl\"},\"name\":\"AName\"}",
+                result);
     }
 }

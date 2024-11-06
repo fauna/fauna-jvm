@@ -3,7 +3,6 @@ package com.fauna.query;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,15 +38,19 @@ public class TestQueryOptions {
     public void testQueryTagsBuilderMethods() {
         QueryTags initialTags = new QueryTags();
         initialTags.put("foo", "bar");
-        QueryOptions opts = QueryOptions.builder().queryTags(initialTags).queryTag("hello", "world").build();
-        assertEquals("foo=bar,hello=world", opts.getQueryTags().orElseThrow().encode());
+        QueryOptions opts = QueryOptions.builder().queryTags(initialTags)
+                .queryTag("hello", "world").build();
+        assertEquals("foo=bar,hello=world",
+                opts.getQueryTags().orElseThrow().encode());
     }
 
     @Test
     public void testQueryTagsBuilderMethodsAreAdditive() {
         QueryTags initialTags = new QueryTags();
         initialTags.put("foo", "bar");
-        QueryOptions opts = QueryOptions.builder().queryTag("hello", "world").queryTags(initialTags).build();
-        assertEquals("foo=bar,hello=world", opts.getQueryTags().orElseThrow().encode());
+        QueryOptions opts = QueryOptions.builder().queryTag("hello", "world")
+                .queryTags(initialTags).build();
+        assertEquals("foo=bar,hello=world",
+                opts.getQueryTags().orElseThrow().encode());
     }
 }

@@ -17,8 +17,10 @@ public class DriverEnvironment {
 
     public DriverEnvironment(JvmDriver jvmDriver) {
         this.env = getRuntimeEnvironment();
-        this.os = System.getProperty("os.name") + "-" + System.getProperty("os.version");
-        this.runtime = String.format("java-%s", System.getProperty("java.version"));
+        this.os = System.getProperty("os.name") + "-" +
+                System.getProperty("os.version");
+        this.runtime =
+                String.format("java-%s", System.getProperty("java.version"));
         this.driverVersion = getVersion();
         if (jvmDriver == JvmDriver.SCALA) {
             this.runtime = String.format("%s,scala", this.runtime);
@@ -33,7 +35,8 @@ public class DriverEnvironment {
      */
     public static String getVersion() {
         Properties properties = new Properties();
-        try (InputStream input = DriverEnvironment.class.getClassLoader().getResourceAsStream("version.properties")) {
+        try (InputStream input = DriverEnvironment.class.getClassLoader()
+                .getResourceAsStream("version.properties")) {
             if (input == null) {
                 throw new RuntimeException("Version not found.");
             }
@@ -46,17 +49,21 @@ public class DriverEnvironment {
 
     private String getRuntimeEnvironment() {
         // Checks for various cloud environments based on environment variables
-        if (System.getenv("PATH") != null && System.getenv("PATH").contains(".heroku")) {
+        if (System.getenv("PATH") != null &&
+                System.getenv("PATH").contains(".heroku")) {
             return "Heroku";
         } else if (System.getenv("AWS_LAMBDA_FUNCTION_VERSION") != null) {
             return "AWS Lambda";
-        } else if (System.getenv("_") != null && System.getenv("_").contains("google")) {
+        } else if (System.getenv("_") != null &&
+                System.getenv("_").contains("google")) {
             return "GCP Cloud Functions";
         } else if (System.getenv("GOOGLE_CLOUD_PROJECT") != null) {
             return "GCP Compute Instances";
-        } else if (System.getenv("WEBSITE_FUNCTIONS_AZUREMONITOR_CATEGORIES") != null) {
+        } else if (System.getenv("WEBSITE_FUNCTIONS_AZUREMONITOR_CATEGORIES") !=
+                null) {
             return "Azure Cloud Functions";
-        } else if (System.getenv("ORYX_ENV_TYPE") != null && System.getenv("WEBSITE_INSTANCE_ID") != null &&
+        } else if (System.getenv("ORYX_ENV_TYPE") != null &&
+                System.getenv("WEBSITE_INSTANCE_ID") != null &&
                 System.getenv("ORYX_ENV_TYPE").equals("AppService")) {
             return "Azure Compute";
         } else {

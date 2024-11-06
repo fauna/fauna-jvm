@@ -1,9 +1,9 @@
 package com.fauna.event;
 
-import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
-
 import java.time.Duration;
 import java.util.Optional;
+
+import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
 
 public class FeedOptions {
     private final String cursor;
@@ -13,13 +13,15 @@ public class FeedOptions {
 
     public static FeedOptions DEFAULT = FeedOptions.builder().build();
 
-    public FeedOptions(String cursor, Long startTs, Integer pageSize, Duration timeout) {
+    public FeedOptions(String cursor, Long startTs, Integer pageSize,
+                       Duration timeout) {
         this.cursor = cursor;
         this.startTs = startTs;
         this.pageSize = pageSize;
         this.timeout = timeout;
         if (cursor != null && startTs != null) {
-            throw new IllegalArgumentException("Only one of cursor, and startTs can be set.");
+            throw new IllegalArgumentException(
+                    "Only one of cursor, and startTs can be set.");
         }
     }
 
@@ -47,7 +49,8 @@ public class FeedOptions {
 
         public Builder cursor(String cursor) {
             if (startTs != null) {
-                throw new IllegalArgumentException("Only one of cursor, and startTs can be set.");
+                throw new IllegalArgumentException(
+                        "Only one of cursor, and startTs can be set.");
             }
             this.cursor = cursor;
             return this;
@@ -55,7 +58,8 @@ public class FeedOptions {
 
         public Builder startTs(Long startTs) {
             if (cursor != null) {
-                throw new IllegalArgumentException("Only one of cursor, and startTs can be set.");
+                throw new IllegalArgumentException(
+                        "Only one of cursor, and startTs can be set.");
             }
             this.startTs = startTs;
             return this;
@@ -83,14 +87,15 @@ public class FeedOptions {
 
     /**
      * Return the FeedOptions for the next page, based on the cursor of the given page.
-     *
+     * <p>
      * This method copies options, like pageSize, and timeout.
      *
-     * @param page  The current, or latest page.
-     * @return      A new FeedOptions instance.
+     * @param page The current, or latest page.
+     * @return A new FeedOptions instance.
      */
     public FeedOptions nextPage(FeedPage<?> page) {
-        FeedOptions.Builder builder = FeedOptions.builder().cursor(page.getCursor());
+        FeedOptions.Builder builder =
+                FeedOptions.builder().cursor(page.getCursor());
         // Do not set or copy startTs, because we are using cursor.
         getPageSize().ifPresent(builder::pageSize);
         getTimeout().ifPresent(builder::timeout);

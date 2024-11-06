@@ -26,36 +26,42 @@ public class ErrorHandler {
     /**
      * Handles errors based on the HTTP status code and error code.
      *
-     * @param statusCode                    The HTTP status code.
-     * @param failure                       The decoded QueryFailure body.
-     * @throws AbortException               The transaction was aborted.
-     * @throws AuthenticationException      Invalid or missing authentication token.
-     * @throws AuthorizationException       Invalid or missing authentication token.
-     * @throws ConstraintFailureException   The transaction failed a check constraint.
+     * @param statusCode The HTTP status code.
+     * @param failure    The decoded QueryFailure body.
+     * @throws AbortException                The transaction was aborted.
+     * @throws AuthenticationException       Invalid or missing authentication token.
+     * @throws AuthorizationException        Invalid or missing authentication token.
+     * @throws ConstraintFailureException    The transaction failed a check constraint.
      * @throws ContendedTransactionException Too much contention occurred on a document while executing a query.
-     * @throws InvalidRequestException      The request body does not conform to the API specification.
-     * @throws QueryCheckException          The query failed one or more validation checks.
-     * @throws QueryRuntimeException        The query failed due to a runtime error.
-     * @throws QueryTimeoutException        The client specified timeout was exceeded.
-     * @throws ServiceInternalException     An unexpected server error occured.
-     * @throws ThrottlingException          The query exceeded some capacity limit.
-     *
+     * @throws InvalidRequestException       The request body does not conform to the API specification.
+     * @throws QueryCheckException           The query failed one or more validation checks.
+     * @throws QueryRuntimeException         The query failed due to a runtime error.
+     * @throws QueryTimeoutException         The client specified timeout was exceeded.
+     * @throws ServiceInternalException      An unexpected server error occured.
+     * @throws ThrottlingException           The query exceeded some capacity limit.
      */
-    public static void handleQueryFailure(int statusCode, QueryFailure failure) {
+    public static void handleQueryFailure(int statusCode,
+                                          QueryFailure failure) {
         switch (statusCode) {
             case HTTP_BAD_REQUEST:
                 switch (failure.getErrorCode()) {
-                    case INVALID_QUERY: throw new QueryCheckException(failure);
-                    case LIMIT_EXCEEDED: throw new ThrottlingException(failure);
-                    case INVALID_REQUEST: throw new InvalidRequestException(failure);
-                    case ABORT: throw new AbortException(failure);
-                    case CONSTRAINT_FAILURE: throw new ConstraintFailureException(failure);
-                    // There are ~30 more error codes that map to a QueryRuntimeException.
-                    // By using a default here, one of them is not strictly required. But we
-                    // _do_ require a valid JSON body that can be decoded to a
-                    // QueryFailure. Defaulting here also slightly future-proofs this client
-                    // because Fauna can throw 400s with new error codes.
-                    default: throw new QueryRuntimeException(failure);
+                    case INVALID_QUERY:
+                        throw new QueryCheckException(failure);
+                    case LIMIT_EXCEEDED:
+                        throw new ThrottlingException(failure);
+                    case INVALID_REQUEST:
+                        throw new InvalidRequestException(failure);
+                    case ABORT:
+                        throw new AbortException(failure);
+                    case CONSTRAINT_FAILURE:
+                        throw new ConstraintFailureException(failure);
+                        // There are ~30 more error codes that map to a QueryRuntimeException.
+                        // By using a default here, one of them is not strictly required. But we
+                        // _do_ require a valid JSON body that can be decoded to a
+                        // QueryFailure. Defaulting here also slightly future-proofs this client
+                        // because Fauna can throw 400s with new error codes.
+                    default:
+                        throw new QueryRuntimeException(failure);
                 }
             case HTTP_UNAUTHORIZED:
                 if (UNAUTHORIZED.equals(failure.getErrorCode())) {

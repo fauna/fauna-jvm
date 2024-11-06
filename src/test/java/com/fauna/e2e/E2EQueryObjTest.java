@@ -24,7 +24,8 @@ public class E2EQueryObjTest {
         Map<String, QueryFragment> obj = Map.of("k", subq);
 
         Query q = fql("${obj}", Map.of("obj", QueryObj.of(obj)));
-        QuerySuccess<Map<String,Integer>> res = c.query(q, mapOf(Integer.class));
+        QuerySuccess<Map<String, Integer>> res =
+                c.query(q, mapOf(Integer.class));
 
         assertEquals(Map.of("k", 6), res.getData());
     }
@@ -32,10 +33,12 @@ public class E2EQueryObjTest {
     @Test
     public void query_mapMixedWithEmbeddedQuery() {
         Query subq = fql("4 + 2");
-        Map<String, QueryFragment> obj = Map.of("k", subq, "k2", new QueryVal<>(42));
+        Map<String, QueryFragment> obj =
+                Map.of("k", subq, "k2", new QueryVal<>(42));
 
         Query q = fql("${obj}", Map.of("obj", QueryObj.of(obj)));
-        QuerySuccess<Map<String,Integer>> res = c.query(q, mapOf(Integer.class));
+        QuerySuccess<Map<String, Integer>> res =
+                c.query(q, mapOf(Integer.class));
 
         assertEquals(Map.of("k", 6, "k2", 42), res.getData());
     }

@@ -32,18 +32,24 @@ public class E2EErrorHandlingTest {
         Handler handler = new ConsoleHandler();
         handler.setLevel(Level.FINEST);
         handler.setFormatter(new SimpleFormatter());
-        client = Fauna.client(FaunaConfig.builder().logHandler(handler).endpoint(FaunaConfig.FaunaEndpoint.LOCAL).secret("secret").build());
+        client = Fauna.client(FaunaConfig.builder().logHandler(handler)
+                .endpoint(FaunaConfig.FaunaEndpoint.LOCAL).secret("secret")
+                .build());
 
         Fixtures.ProductCollection(client);
     }
 
     @Test
     public void checkConstraintFailure() throws IOException {
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,
-                () -> client.query(fql("Product.create({name: ${name}, quantity: -1})", Map.of("name", now().toString()))));
+        ConstraintFailureException exc =
+                assertThrows(ConstraintFailureException.class,
+                        () -> client.query(
+                                fql("Product.create({name: ${name}, quantity: -1})",
+                                        Map.of("name", now().toString()))));
 
         ConstraintFailure actual = exc.getConstraintFailures()[0];
-        assertEquals("Document failed check constraint `posQuantity`", actual.getMessage());
+        assertEquals("Document failed check constraint `posQuantity`",
+                actual.getMessage());
         assertTrue(actual.getName().isEmpty());
         assertTrue(actual.getPaths().isEmpty());
     }
@@ -52,8 +58,11 @@ public class E2EErrorHandlingTest {
     public void uniqueConstraintFailure() throws IOException {
         client.query(fql("Product.create({name: 'cheese', quantity: 1})"));
 
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class,
-                () -> client.query(fql("Product.create({name: 'cheese', quantity: 2})"), String.class));
+        ConstraintFailureException exc =
+                assertThrows(ConstraintFailureException.class,
+                        () -> client.query(
+                                fql("Product.create({name: 'cheese', quantity: 2})"),
+                                String.class));
 
         ConstraintFailure actual = exc.getConstraintFailures()[0];
         assertEquals("Failed unique constraint", actual.getMessage());
@@ -66,8 +75,10 @@ public class E2EErrorHandlingTest {
 
     @Test
     public void constraintFailureWithInteger() {
-        ConstraintFailureException exc = assertThrows(ConstraintFailureException.class, () -> client.query(
-                fql("Collection.create({name: \"Foo\", constraints: [{unique: [\"$$$\"] }]})")));
+        ConstraintFailureException exc =
+                assertThrows(ConstraintFailureException.class,
+                        () -> client.query(
+                                fql("Collection.create({name: \"Foo\", constraints: [{unique: [\"$$$\"] }]})")));
 
         ConstraintFailure actual = exc.getConstraintFailures()[0];
         ConstraintFailure expected = ConstraintFailure.builder()
@@ -82,7 +93,9 @@ public class E2EErrorHandlingTest {
     @Test
     public void testAbortAPI() throws IOException {
         Instant bigBang = Instant.parse("2019-12-31T23:59:59.999Z");
-        AbortException exc = assertThrows(AbortException.class, () -> client.query(fql("abort(${bigBang})", Map.of("bigBang", bigBang))));
+        AbortException exc = assertThrows(AbortException.class,
+                () -> client.query(
+                        fql("abort(${bigBang})", Map.of("bigBang", bigBang))));
         assertEquals(999000000, exc.getAbort(Instant.class).getNano());
         assertEquals(Instant.class, exc.getAbort().getClass());
         assertEquals(999000000, ((Instant) exc.getAbort()).getNano());

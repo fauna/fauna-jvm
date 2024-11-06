@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Represents the base structure of a document.
  */
-public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
+public abstract class BaseDocument implements Iterable<BaseDocument.Entry> {
 
     protected final Hashtable<String, Object> data = new Hashtable<>();
     private final Instant ts;
@@ -108,7 +108,7 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
      *
      * @return The data.
      */
-    public Map<String,Object> getData() {
+    public Map<String, Object> getData() {
         return Map.copyOf(data);
     }
 

@@ -23,7 +23,6 @@ public class UTF8FaunaGenerator implements AutoCloseable {
 
     /**
      * Initializes a new instance of the FaunaGenerator class with a specified stream.
-     *
      */
     public UTF8FaunaGenerator() throws IOException {
 
@@ -58,7 +57,6 @@ public class UTF8FaunaGenerator implements AutoCloseable {
         return this.output.toString(UTF_8);
 
     }
-
 
 
     /**
@@ -162,7 +160,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value     The double value to write.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeDouble(String fieldName, double value) throws CodecException {
+    public void writeDouble(String fieldName, double value)
+            throws CodecException {
         writeFieldName(fieldName);
         writeDoubleValue(value);
     }
@@ -198,7 +197,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value     The string value to write.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeString(String fieldName, String value) throws CodecException {
+    public void writeString(String fieldName, String value)
+            throws CodecException {
         writeFieldName(fieldName);
         writeStringValue(value);
     }
@@ -210,7 +210,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value     The LocalDateTime value to write.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeDate(String fieldName, LocalDate value) throws CodecException {
+    public void writeDate(String fieldName, LocalDate value)
+            throws CodecException {
         writeFieldName(fieldName);
         writeDateValue(value);
     }
@@ -222,7 +223,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value     The LocalDateTime value to write.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeTime(String fieldName, Instant value) throws CodecException {
+    public void writeTime(String fieldName, Instant value)
+            throws CodecException {
         writeFieldName(fieldName);
         writeTimeValue(value);
     }
@@ -234,7 +236,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value     The boolean value to write.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeBoolean(String fieldName, boolean value) throws CodecException {
+    public void writeBoolean(String fieldName, boolean value)
+            throws CodecException {
         writeFieldName(fieldName);
         writeBooleanValue(value);
     }
@@ -257,7 +260,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value     The Module value to write.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeModule(String fieldName, Module value) throws CodecException {
+    public void writeModule(String fieldName, Module value)
+            throws CodecException {
         writeFieldName(fieldName);
         writeModuleValue(value);
     }
@@ -283,7 +287,8 @@ public class UTF8FaunaGenerator implements AutoCloseable {
      * @param value The value associated with the tag.
      * @throws CodecException If an I/O error occurs.
      */
-    public void writeTaggedValue(String tag, String value) throws CodecException {
+    public void writeTaggedValue(String tag, String value)
+            throws CodecException {
         writeStartObject();
         writeString(tag, value);
         writeEndObject();

@@ -1,9 +1,9 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
 import java.time.Instant;
 
@@ -19,12 +19,15 @@ public class InstantCodec extends BaseCodec<Instant> {
             case TIME:
                 return parser.getValueAsTime();
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Instant obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, Instant obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -39,6 +42,6 @@ public class InstantCodec extends BaseCodec<Instant> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Time};
+        return new FaunaType[] {FaunaType.Null, FaunaType.Time};
     }
 }

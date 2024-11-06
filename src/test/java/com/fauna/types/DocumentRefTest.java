@@ -15,6 +15,7 @@ public class DocumentRefTest extends TypeTestBase {
         );
 
         var result = mapper.writeValueAsString(doc);
-        assertEquals("{\"collection\":{\"name\":\"MyColl\"},\"id\":\"123\"}", result);
+        assertEquals("{\"collection\":{\"name\":\"MyColl\"},\"id\":\"123\"}",
+                result);
     }
 }

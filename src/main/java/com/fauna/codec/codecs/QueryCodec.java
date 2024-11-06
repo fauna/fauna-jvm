@@ -12,17 +12,20 @@ import com.fauna.query.builder.QueryFragment;
 public class QueryCodec extends BaseCodec<Query> {
 
     private final CodecProvider provider;
+
     public QueryCodec(CodecProvider provider) {
         this.provider = provider;
     }
 
     @Override
     public Query decode(UTF8FaunaParser parser) throws CodecException {
-        throw new CodecException("Decoding into a QueryFragment is not supported");
+        throw new CodecException(
+                "Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Query obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, Query obj)
+            throws CodecException {
         gen.writeStartObject();
         gen.writeFieldName("fql");
         gen.writeStartArray();

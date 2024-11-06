@@ -112,7 +112,9 @@ public abstract class QueryResponse {
         return new Builder<>(codec);
     }
 
-    private static <T> Builder<T> handleField(Builder<T> builder, JsonParser parser) throws IOException {
+    private static <T> Builder<T> handleField(Builder<T> builder,
+                                              JsonParser parser)
+            throws IOException {
         String fieldName = parser.getCurrentName();
         switch (fieldName) {
             case ERROR_FIELD_NAME:
@@ -132,18 +134,22 @@ public abstract class QueryResponse {
             case SUMMARY_FIELD_NAME:
                 return builder.summary(parser.nextTextValue());
             default:
-                throw new ClientResponseException("Unexpected field '" + fieldName + "'.");
+                throw new ClientResponseException(
+                        "Unexpected field '" + fieldName + "'.");
         }
     }
 
-    public static <T>  QuerySuccess<T> parseResponse(HttpResponse<InputStream> response, Codec<T> codec, StatsCollector statsCollector) throws FaunaException {
+    public static <T> QuerySuccess<T> parseResponse(
+            HttpResponse<InputStream> response, Codec<T> codec,
+            StatsCollector statsCollector) throws FaunaException {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
 
             JsonToken firstToken = parser.nextToken();
             Builder<T> builder = QueryResponse.builder(codec);
             if (firstToken != JsonToken.START_OBJECT) {
-                throw new ClientResponseException("Response must be JSON object.");
+                throw new ClientResponseException(
+                        "Response must be JSON object.");
             }
             while (parser.nextToken() == JsonToken.FIELD_NAME) {
                 builder = handleField(builder, parser);
@@ -162,7 +168,9 @@ public abstract class QueryResponse {
             }
             return builder.buildSuccess();
         } catch (IOException exc) {
-            throw new ClientResponseException("Failed to handle error response.", exc, response.statusCode());
+            throw new ClientResponseException(
+                    "Failed to handle error response.", exc,
+                    response.statusCode());
         }
 
     }

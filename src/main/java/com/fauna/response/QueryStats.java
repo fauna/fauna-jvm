@@ -36,8 +36,10 @@ public final class QueryStats {
 
     private String stringValue = null;
 
-    public QueryStats(int computeOps, int readOps, int writeOps, int queryTimeMs, int contentionRetries,
-                      int storageBytesRead, int storageBytesWrite, int processingTimeMs, List<String> rateLimitsHit) {
+    public QueryStats(int computeOps, int readOps, int writeOps,
+                      int queryTimeMs, int contentionRetries,
+                      int storageBytesRead, int storageBytesWrite,
+                      int processingTimeMs, List<String> rateLimitsHit) {
         this.computeOps = computeOps;
         this.readOps = readOps;
         this.writeOps = writeOps;
@@ -106,7 +108,9 @@ public final class QueryStats {
         }
 
         QueryStats build() {
-            return new QueryStats(computeOps, readOps, writeOps, queryTimeMs, contentionRetries, storageBytesRead, storageBytesWrite, processingTimeMs, rateLimitsHit);
+            return new QueryStats(computeOps, readOps, writeOps, queryTimeMs,
+                    contentionRetries, storageBytesRead, storageBytesWrite,
+                    processingTimeMs, rateLimitsHit);
         }
 
     }
@@ -115,7 +119,8 @@ public final class QueryStats {
         return new Builder();
     }
 
-    static Builder parseField(Builder builder, JsonParser parser) throws IOException {
+    static Builder parseField(Builder builder, JsonParser parser)
+            throws IOException {
         String fieldName = parser.getValueAsString();
         switch (fieldName) {
             case ResponseFields.STATS_COMPUTE_OPS_FIELD_NAME:
@@ -158,7 +163,9 @@ public final class QueryStats {
         } else if (parser.nextToken() == VALUE_NULL) {
             return null;
         } else {
-            throw new ClientResponseException("Query stats should be an object or null, not " + parser.getCurrentToken());
+            throw new ClientResponseException(
+                    "Query stats should be an object or null, not " +
+                            parser.getCurrentToken());
         }
     }
 

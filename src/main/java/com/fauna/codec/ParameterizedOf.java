@@ -3,7 +3,7 @@ package com.fauna.codec;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class ParameterizedOf<T> implements ParameterizedType  {
+public class ParameterizedOf<T> implements ParameterizedType {
     private final Type rawType;
     private final Type[] typeArguments;
 

@@ -6,9 +6,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import static com.fauna.constants.Defaults.CLIENT_TIMEOUT_BUFFER;
 import static com.fauna.constants.Defaults.LOCAL_FAUNA_SECRET;
 import static com.fauna.constants.Defaults.MAX_CONTENTION_RETRIES;
-import static com.fauna.constants.Defaults.CLIENT_TIMEOUT_BUFFER;
 
 /**
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
@@ -37,7 +37,8 @@ public class FaunaConfig {
      * @param builder The builder used to create the FaunaConfig instance.
      */
     private FaunaConfig(Builder builder) {
-        this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
+        this.endpoint = builder.endpoint != null ? builder.endpoint :
+                FaunaEndpoint.DEFAULT;
         this.secret = builder.secret != null ? builder.secret : "";
         this.maxContentionRetries = builder.maxContentionRetries;
         this.clientTimeoutBuffer = builder.clientTimeoutBuffer;
@@ -66,7 +67,8 @@ public class FaunaConfig {
 
     /**
      * Gets the number of contention retries that the Fauna server will attempt.
-     * @return  An integer value.
+     *
+     * @return An integer value.
      */
     public int getMaxContentionRetries() {
         return maxContentionRetries;
@@ -74,7 +76,8 @@ public class FaunaConfig {
 
     /**
      * Gets the buffer that will be added to the HTTP client timeout, in addition to any query timeout.
-     * @return  The timeout buffer Duration.
+     *
+     * @return The timeout buffer Duration.
      */
     public Duration getClientTimeoutBuffer() {
         return clientTimeoutBuffer;
@@ -82,7 +85,8 @@ public class FaunaConfig {
 
     /**
      * Gets the log handler that the client will use.
-     * @return  A log handler instance.
+     *
+     * @return A log handler instance.
      */
     public Handler getLogHandler() {
         return logHandler;
@@ -90,6 +94,7 @@ public class FaunaConfig {
 
     /**
      * Gets the stats collector for the client.
+     *
      * @return A StatsCollector instance.
      */
     public StatsCollector getStatsCollector() {
@@ -109,7 +114,8 @@ public class FaunaConfig {
      * Builder class for FaunaConfig. Follows the Builder Design Pattern.
      */
     public static class Builder {
-        private String endpoint = FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT);
+        private String endpoint =
+                FaunaEnvironment.faunaEndpoint().orElse(FaunaEndpoint.DEFAULT);
         private String secret = FaunaEnvironment.faunaSecret().orElse("");
         private int maxContentionRetries = MAX_CONTENTION_RETRIES;
         private Duration clientTimeoutBuffer = CLIENT_TIMEOUT_BUFFER;
@@ -131,7 +137,8 @@ public class FaunaConfig {
 
         private static Handler defaultLogHandler() {
             Handler logHandler = new ConsoleHandler();
-            logHandler.setLevel(getLogLevel(FaunaEnvironment.faunaDebug().orElse(null)));
+            logHandler.setLevel(
+                    getLogLevel(FaunaEnvironment.faunaDebug().orElse(null)));
             return logHandler;
         }
 
@@ -159,8 +166,9 @@ public class FaunaConfig {
 
         /**
          * Set the Fauna max-contention-retries setting.
-         * @param maxContentionRetries  A positive integer value.
-         * @return                      The current Builder instance.
+         *
+         * @param maxContentionRetries A positive integer value.
+         * @return The current Builder instance.
          */
         public Builder maxContentionRetries(int maxContentionRetries) {
             this.maxContentionRetries = maxContentionRetries;
@@ -177,8 +185,9 @@ public class FaunaConfig {
 
         /**
          * Override the default log handler with the given log handler.
-         * @param handler   A log handler instance.
-         * @return          The current Builder instance.
+         *
+         * @param handler A log handler instance.
+         * @return The current Builder instance.
          */
         public Builder logHandler(Handler handler) {
             this.logHandler = handler;
@@ -187,8 +196,9 @@ public class FaunaConfig {
 
         /**
          * Set a StatsCollector.
-         * @param statsCollector    A stats collector instance.
-         * @return                  The current Builder instance.
+         *
+         * @param statsCollector A stats collector instance.
+         * @return The current Builder instance.
          */
         public Builder statsCollector(StatsCollector statsCollector) {
             this.statsCollector = statsCollector;
@@ -215,7 +225,8 @@ public class FaunaConfig {
 
         private static Optional<String> environmentVariable(String name) {
             Optional<String> var = Optional.ofNullable(System.getenv(name));
-            return var.isPresent() && var.get().isBlank() ? Optional.empty() : var;
+            return var.isPresent() && var.get().isBlank() ? Optional.empty() :
+                    var;
         }
 
         /**

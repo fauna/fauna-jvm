@@ -18,14 +18,18 @@ public class Query extends QueryFragment<QueryFragment[]> {
 
     /**
      * Construct a Query from the given template String and args.
+     *
      * @param query A Fauna Query Language (FQL) v10 template string.
      * @param args  A map of variable names -> values.
      */
-    public Query(String query, Map<String, Object> args) throws IllegalArgumentException {
-        Spliterator<FaunaTemplate.TemplatePart> iter = new FaunaTemplate(query).spliterator();
+    public Query(String query, Map<String, Object> args)
+            throws IllegalArgumentException {
+        Spliterator<FaunaTemplate.TemplatePart> iter =
+                new FaunaTemplate(query).spliterator();
         this.fql = StreamSupport.stream(iter, true).map(
                 part -> {
-                    Map<String, Object> foo = Objects.requireNonNullElse(args, Map.of());
+                    Map<String, Object> foo =
+                            Objects.requireNonNullElse(args, Map.of());
                     return part.toFragment(foo);
                 }).toArray(QueryFragment[]::new);
     }
@@ -41,7 +45,8 @@ public class Query extends QueryFragment<QueryFragment[]> {
      * @throws IllegalArgumentException if a template variable does not have a corresponding entry in the provided args.
      */
     public static Query fql(String query,
-                            Map<String, Object> args) throws IllegalArgumentException {
+                            Map<String, Object> args)
+            throws IllegalArgumentException {
         return new Query(query, args);
     }
 

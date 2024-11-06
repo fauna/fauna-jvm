@@ -7,6 +7,7 @@ import java.util.Objects;
 public class CodecRegistryKey {
     private final Class<?> base;
     private final Type[] typeArgs;
+
     public <T> CodecRegistryKey(Class<T> clazz, Type[] typeArgs) {
         base = clazz;
         this.typeArgs = typeArgs;
@@ -26,7 +27,8 @@ public class CodecRegistryKey {
             return true;
         } else if (other instanceof CodecRegistryKey) {
             CodecRegistryKey otherCRK = (CodecRegistryKey) other;
-            return Objects.equals(base, otherCRK.base) && Arrays.equals(typeArgs, otherCRK.typeArgs);
+            return Objects.equals(base, otherCRK.base) &&
+                    Arrays.equals(typeArgs, otherCRK.typeArgs);
         } else {
             return false;
         }

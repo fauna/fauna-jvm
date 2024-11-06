@@ -16,17 +16,25 @@ import static com.fauna.codec.codecs.Fixtures.INT_WIRE;
 
 
 public class CharCodecTest extends TestBase {
-    public static final Codec<Character> CHAR_CODEC = DefaultCodecProvider.SINGLETON.get(Character.class);
+    public static final Codec<Character> CHAR_CODEC =
+            DefaultCodecProvider.SINGLETON.get(Character.class);
+
     public static Stream<Arguments> testCases() {
         return Stream.of(
-                Arguments.of(TestType.RoundTrip, CHAR_CODEC, INT_WIRE(84), 'T', null),
+                Arguments.of(TestType.RoundTrip, CHAR_CODEC, INT_WIRE(84), 'T',
+                        null),
                 Arguments.of(TestType.RoundTrip, CHAR_CODEC, "null", null, null)
         );
     }
 
     @ParameterizedTest(name = "CharCodec({index}) -> {0}:{1}:{2}:{3}:{4}")
     @MethodSource("testCases")
-    public <T,E extends Exception> void char_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
+    public <T, E extends Exception> void char_runTestCases(TestType testType,
+                                                           Codec<T> codec,
+                                                           String wire,
+                                                           Object obj,
+                                                           E exception)
+            throws IOException {
         runCase(testType, codec, wire, obj, exception);
     }
 
@@ -37,8 +45,12 @@ public class CharCodecTest extends TestBase {
 
     @ParameterizedTest(name = "CharCodecUnsupportedTypes({index}) -> {0}:{1}")
     @MethodSource("unsupportedTypeCases")
-    public void char_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
-        var exMsg = MessageFormat.format("Unable to decode `{0}` with `CharCodec<Character>`. Supported types for codec are [Int, Null].", type);
-        runCase(TestType.Decode, CHAR_CODEC, wire, null, new CodecException(exMsg));
+    public void char_runUnsupportedTypeTestCases(String wire, FaunaType type)
+            throws IOException {
+        var exMsg = MessageFormat.format(
+                "Unable to decode `{0}` with `CharCodec<Character>`. Supported types for codec are [Int, Null].",
+                type);
+        runCase(TestType.Decode, CHAR_CODEC, wire, null,
+                new CodecException(exMsg));
     }
 }

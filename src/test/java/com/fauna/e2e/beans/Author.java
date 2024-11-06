@@ -10,7 +10,8 @@ public class Author {
 
     private int age;
 
-    public Author(String firstName, String lastName, String middleInitial, int age) {
+    public Author(String firstName, String lastName, String middleInitial,
+                  int age) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.middleInitial = middleInitial;

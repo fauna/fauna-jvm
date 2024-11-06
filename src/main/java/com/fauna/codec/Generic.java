@@ -9,7 +9,7 @@ public class Generic {
         return new ListOf<>(elementClass);
     }
 
-    public static <K extends String,V> MapOf<K,V> mapOf(Class<V> valueClass) {
+    public static <K extends String, V> MapOf<K, V> mapOf(Class<V> valueClass) {
         return new MapOf<>(valueClass);
     }
 
@@ -21,7 +21,8 @@ public class Generic {
         return new OptionalOf<>(valueClass);
     }
 
-    public static <E> NullableDocumentOf<E> nullableDocumentOf(Class<E> valueClass) {
+    public static <E> NullableDocumentOf<E> nullableDocumentOf(
+            Class<E> valueClass) {
         return new NullableDocumentOf<>(valueClass);
     }
 }

@@ -14,11 +14,15 @@ import java.util.stream.Stream;
 
 
 public class BoolCodecTest extends TestBase {
-    public static final Codec<Boolean>  BOOL_CODEC = DefaultCodecProvider.SINGLETON.get(Boolean.class);
+    public static final Codec<Boolean> BOOL_CODEC =
+            DefaultCodecProvider.SINGLETON.get(Boolean.class);
+
     public static Stream<Arguments> testCases() {
         return Stream.of(
-                Arguments.of(TestType.RoundTrip, BOOL_CODEC, "true", true, null),
-                Arguments.of(TestType.RoundTrip, BOOL_CODEC, "false", false, null),
+                Arguments.of(TestType.RoundTrip, BOOL_CODEC, "true", true,
+                        null),
+                Arguments.of(TestType.RoundTrip, BOOL_CODEC, "false", false,
+                        null),
                 Arguments.of(TestType.RoundTrip, BOOL_CODEC, "null", null, null)
 
         );
@@ -26,7 +30,12 @@ public class BoolCodecTest extends TestBase {
 
     @ParameterizedTest(name = "BoolCodec({index}) -> {0}:{1}:{2}:{3}:{4}")
     @MethodSource("testCases")
-    public <T,E extends Exception> void bool_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
+    public <T, E extends Exception> void bool_runTestCases(TestType testType,
+                                                           Codec<T> codec,
+                                                           String wire,
+                                                           Object obj,
+                                                           E exception)
+            throws IOException {
         runCase(testType, codec, wire, obj, exception);
     }
 
@@ -36,8 +45,12 @@ public class BoolCodecTest extends TestBase {
 
     @ParameterizedTest(name = "BoolCodecUnsupportedTypes({index}) -> {0}:{1}")
     @MethodSource("unsupportedTypeCases")
-    public void bool_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
-        var exMsg = MessageFormat.format("Unable to decode `{0}` with `BoolCodec<Boolean>`. Supported types for codec are [Boolean, Null].", type);
-        runCase(TestType.Decode, BOOL_CODEC, wire, null, new CodecException(exMsg));
+    public void bool_runUnsupportedTypeTestCases(String wire, FaunaType type)
+            throws IOException {
+        var exMsg = MessageFormat.format(
+                "Unable to decode `{0}` with `BoolCodec<Boolean>`. Supported types for codec are [Boolean, Null].",
+                type);
+        runCase(TestType.Decode, BOOL_CODEC, wire, null,
+                new CodecException(exMsg));
     }
 }

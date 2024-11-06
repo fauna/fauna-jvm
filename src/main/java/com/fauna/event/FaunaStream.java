@@ -19,7 +19,8 @@ import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.SubmissionPublisher;
 
 
-public class FaunaStream<E> extends SubmissionPublisher<FaunaEvent<E>> implements Processor<List<ByteBuffer>, FaunaEvent<E>> {
+public class FaunaStream<E> extends SubmissionPublisher<FaunaEvent<E>>
+        implements Processor<List<ByteBuffer>, FaunaEvent<E>> {
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
     private final Codec<E> dataCodec;
     private Subscription subscription;
@@ -69,7 +70,9 @@ public class FaunaStream<E> extends SubmissionPublisher<FaunaEvent<E>> implement
                         ErrorInfo error = event.getError();
                         this.onComplete();
                         this.close();
-                        throw new ClientException(MessageFormat.format("Stream stopped due to error {0} {1}", error.getCode(), error.getMessage()));
+                        throw new ClientException(MessageFormat.format(
+                                "Stream stopped due to error {0} {1}",
+                                error.getCode(), error.getMessage()));
                     }
                     this.submit(event);
                     this.buffer = null;

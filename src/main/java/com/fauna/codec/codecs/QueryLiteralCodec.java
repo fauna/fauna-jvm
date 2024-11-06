@@ -10,11 +10,13 @@ public class QueryLiteralCodec extends BaseCodec<QueryLiteral> {
 
     @Override
     public QueryLiteral decode(UTF8FaunaParser parser) throws CodecException {
-        throw new CodecException("Decoding into a QueryFragment is not supported");
+        throw new CodecException(
+                "Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryLiteral obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, QueryLiteral obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

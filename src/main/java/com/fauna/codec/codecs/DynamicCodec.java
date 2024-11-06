@@ -5,8 +5,8 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.exception.CodecException;
 import com.fauna.event.EventSourceResponse;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.Page;
@@ -17,7 +17,8 @@ import java.util.Map;
 public class DynamicCodec extends BaseCodec<Object> {
     private final ListCodec<Object, List<Object>> list = new ListCodec<>(this);
     private final PageCodec<Object, Page<Object>> page = new PageCodec<>(this);
-    private final MapCodec<Object, Map<String, Object>> map = new MapCodec<>(this);
+    private final MapCodec<Object, Map<String, Object>> map =
+            new MapCodec<>(this);
     private final CodecProvider provider;
 
     public DynamicCodec(CodecProvider provider) {
@@ -63,12 +64,15 @@ public class DynamicCodec extends BaseCodec<Object> {
                 return parser.getValueAsBoolean();
         }
 
-        throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+        throw new CodecException(this.unsupportedTypeDecodingMessage(
+                parser.getCurrentTokenType().getFaunaType(),
+                getSupportedTypes()));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void encode(UTF8FaunaGenerator gen, Object obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, Object obj)
+            throws CodecException {
 
         // TODO: deal with Object.class loop
         @SuppressWarnings("rawtypes")
@@ -83,6 +87,11 @@ public class DynamicCodec extends BaseCodec<Object> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.Stream, FaunaType.String, FaunaType.Time};
+        return new FaunaType[] {FaunaType.Array, FaunaType.Boolean,
+                FaunaType.Bytes, FaunaType.Date, FaunaType.Double,
+                FaunaType.Document, FaunaType.Int, FaunaType.Long,
+                FaunaType.Module, FaunaType.Null, FaunaType.Object,
+                FaunaType.Ref, FaunaType.Set, FaunaType.Stream,
+                FaunaType.String, FaunaType.Time};
     }
 }

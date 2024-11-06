@@ -21,7 +21,8 @@ public class NullDocumentException extends FaunaException {
     }
 
     public NullDocumentException(String id, Module coll, String nullCause) {
-        super(String.format("Document %s in collection %s is null: %s", id, coll != null ? coll.getName() : "unknown", nullCause));
+        super(String.format("Document %s in collection %s is null: %s", id,
+                coll != null ? coll.getName() : "unknown", nullCause));
         this.id = id;
         this.coll = coll;
         this.nullCause = nullCause;
