@@ -23,6 +23,9 @@ jobs:
         java-version: '17'
         distribution: corretto
 
+    - name: Run checkstyle
+      run: ./gradlew checkstyleMain
+
     - name: Run Gradle test
       run: ./gradlew test -i
 
