@@ -21,16 +21,21 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
             case START_REF:
                 return (BaseRef) decodeInternal(parser);
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
-    private Object decodeInternal(UTF8FaunaParser parser) throws CodecException {
+    private Object decodeInternal(UTF8FaunaParser parser)
+            throws CodecException {
         var builder = new InternalDocument.Builder();
 
-        while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
+        while (parser.read() &&
+                parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                throw new CodecException(unexpectedTokenExceptionMessage(
+                        parser.getCurrentTokenType()));
             }
 
             String fieldName = parser.getValueAsString();
@@ -50,7 +55,8 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, BaseRef obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, BaseRef obj)
+            throws CodecException {
         gen.writeStartRef();
 
         if (obj instanceof DocumentRef) {
@@ -70,6 +76,6 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Ref};
+        return new FaunaType[] {FaunaType.Null, FaunaType.Ref};
     }
 }

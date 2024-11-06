@@ -16,10 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class QueryStatsTest {
     static final ObjectMapper MAPPER = new ObjectMapper();
     static final JsonFactory FACTORY = new JsonFactory();
+
     @Test
     public void testQueryStatsStringValue() {
-        QueryStats stats = new QueryStats(1, 2, 3, 4, 5, 6, 7, 8, List.of("a", "b"));
-        assertEquals("compute: 1, read: 2, write: 3, queryTime: 4, retries: 5, storageRead: 6, storageWrite: 7, limits: [a, b]",
+        QueryStats stats =
+                new QueryStats(1, 2, 3, 4, 5, 6, 7, 8, List.of("a", "b"));
+        assertEquals(
+                "compute: 1, read: 2, write: 3, queryTime: 4, retries: 5, storageRead: 6, storageWrite: 7, limits: [a, b]",
                 stats.toString());
     }
 
@@ -36,13 +39,17 @@ public class QueryStatsTest {
         ArrayNode limits = statsNode.putArray("rate_limits_hit");
         limits.add("a");
         limits.add("b");
-        QueryStats stats = QueryStats.parseStats(FACTORY.createParser(statsNode.toString().getBytes()));
-        assertEquals("compute: 1, read: 2, write: 3, queryTime: 4, retries: 5, storageRead: 6, storageWrite: 7, limits: [a, b]", stats.toString());
+        QueryStats stats = QueryStats.parseStats(
+                FACTORY.createParser(statsNode.toString().getBytes()));
+        assertEquals(
+                "compute: 1, read: 2, write: 3, queryTime: 4, retries: 5, storageRead: 6, storageWrite: 7, limits: [a, b]",
+                stats.toString());
     }
 
     @Test
     public void testParseNullStats() throws IOException {
-        JsonParser parser = FACTORY.createParser("{\"stats\": null}".getBytes());
+        JsonParser parser =
+                FACTORY.createParser("{\"stats\": null}".getBytes());
         parser.nextToken();
         QueryStats stats = QueryStats.parseStats(parser);
         assertNull(stats);

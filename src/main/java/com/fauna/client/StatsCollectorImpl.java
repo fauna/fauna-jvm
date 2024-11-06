@@ -22,21 +22,23 @@ public class StatsCollectorImpl implements StatsCollector {
     private final AtomicLong processingTimeMs = new AtomicLong();
     private final AtomicInteger queryCount = new AtomicInteger();
     private final AtomicInteger rateLimitedReadQueryCount = new AtomicInteger();
-    private final AtomicInteger rateLimitedComputeQueryCount = new AtomicInteger();
-    private final AtomicInteger rateLimitedWriteQueryCount = new AtomicInteger();
+    private final AtomicInteger rateLimitedComputeQueryCount =
+            new AtomicInteger();
+    private final AtomicInteger rateLimitedWriteQueryCount =
+            new AtomicInteger();
 
     @Override
     public void add(QueryStats stats) {
-        readOps.addAndGet(stats.readOps);
-        computeOps.addAndGet(stats.computeOps);
-        writeOps.addAndGet(stats.writeOps);
-        queryTimeMs.addAndGet(stats.queryTimeMs);
-        contentionRetries.addAndGet(stats.contentionRetries);
-        storageBytesRead.addAndGet(stats.storageBytesRead);
-        storageBytesWrite.addAndGet(stats.storageBytesWrite);
-        processingTimeMs.addAndGet(stats.processingTimeMs);
+        readOps.addAndGet(stats.getReadOps());
+        computeOps.addAndGet(stats.getComputeOps());
+        writeOps.addAndGet(stats.getWriteOps());
+        queryTimeMs.addAndGet(stats.getQueryTimeMs());
+        contentionRetries.addAndGet(stats.getContentionRetries());
+        storageBytesRead.addAndGet(stats.getStorageBytesRead());
+        storageBytesWrite.addAndGet(stats.getStorageBytesWrite());
+        processingTimeMs.addAndGet(stats.getProcessingTimeMs());
 
-        List<String> rateLimitsHit = stats.rateLimitsHit;
+        List<String> rateLimitsHit = stats.getRateLimitsHit();
         rateLimitsHit.forEach(limitHit -> {
             switch (limitHit) {
                 case RATE_LIMIT_READ_OPS:

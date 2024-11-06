@@ -1,9 +1,9 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
 public class ByteCodec extends BaseCodec<Byte> {
 
@@ -17,7 +17,9 @@ public class ByteCodec extends BaseCodec<Byte> {
             case INT:
                 return parser.getValueAsByte();
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
@@ -37,6 +39,6 @@ public class ByteCodec extends BaseCodec<Byte> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Int, FaunaType.Null};
+        return new FaunaType[] {FaunaType.Int, FaunaType.Null};
     }
 }

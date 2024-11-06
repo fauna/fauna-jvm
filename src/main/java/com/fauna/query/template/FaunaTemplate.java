@@ -82,25 +82,35 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
 
                     TemplatePart part;
                     if (escapedPart != null) {
-                        String literalPart = template.substring(curPos, spanStartPos) + DELIMITER;
-                        part = new TemplatePart(literalPart, TemplatePartType.LITERAL);
+                        String literalPart =
+                                template.substring(curPos, spanStartPos) +
+                                        DELIMITER;
+                        part = new TemplatePart(literalPart,
+                                TemplatePartType.LITERAL);
                         curPos = spanEndPos;
                     } else if (variablePart != null) {
                         if (curPos < spanStartPos) {
-                            part = new TemplatePart(template.substring(curPos, spanStartPos), TemplatePartType.LITERAL);
+                            part = new TemplatePart(
+                                    template.substring(curPos, spanStartPos),
+                                    TemplatePartType.LITERAL);
                             curPos = spanStartPos;
                         } else {
-                            part = new TemplatePart(variablePart, TemplatePartType.VARIABLE);
+                            part = new TemplatePart(variablePart,
+                                    TemplatePartType.VARIABLE);
                             curPos = spanEndPos;
                         }
                     } else {
-                        part = new TemplatePart(template.substring(curPos, spanStartPos), TemplatePartType.LITERAL);
+                        part = new TemplatePart(
+                                template.substring(curPos, spanStartPos),
+                                TemplatePartType.LITERAL);
                         curPos = spanEndPos;
                     }
                     foundMatch = false; // Reset after processing a match
                     return part;
                 } else {
-                    TemplatePart part = new TemplatePart(template.substring(curPos), TemplatePartType.LITERAL);
+                    TemplatePart part =
+                            new TemplatePart(template.substring(curPos),
+                                    TemplatePartType.LITERAL);
                     curPos = template.length();
                     return part;
                 }
@@ -124,10 +134,14 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
         } else {
             String lastLine = lines[lines.length - 1];
             // Adjust the column number for invalid placeholder
-            colno = position - (substringUpToPosition.length() - lastLine.length()) - 1; // -1 to exclude the dollar sign
+            colno = position -
+                    (substringUpToPosition.length() - lastLine.length()) -
+                    1; // -1 to exclude the dollar sign
             lineno = lines.length;
         }
-        throw new IllegalArgumentException(String.format("Invalid placeholder in template: line %d, col %d", lineno, colno));
+        throw new IllegalArgumentException(String.format(
+                "Invalid placeholder in template: line %d, col %d", lineno,
+                colno));
     }
 
     /**
@@ -172,7 +186,9 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
             if (this.getType().equals(TemplatePartType.VARIABLE)) {
                 if (Objects.isNull(args)) {
                     throw new IllegalArgumentException(
-                            String.format("No args provided for Template variable %s.", this.getPart()));
+                            String.format(
+                                    "No args provided for Template variable %s.",
+                                    this.getPart()));
                 }
                 if (args.containsKey(this.getPart())) {
                     // null values are valid, so can't use computeIfPresent / computeIfAbsent here.
@@ -184,7 +200,9 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
                     }
                 } else {
                     throw new IllegalArgumentException(
-                            String.format("Template variable %s not found in provided args.", this.getPart()));
+                            String.format(
+                                    "Template variable %s not found in provided args.",
+                                    this.getPart()));
                 }
             } else {
                 return new QueryLiteral(this.getPart());

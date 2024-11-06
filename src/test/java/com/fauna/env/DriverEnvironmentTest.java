@@ -8,7 +8,8 @@ public class DriverEnvironmentTest {
 
     @Test
     public void testDriverEnvironment() {
-        DriverEnvironment env = new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
+        DriverEnvironment env =
+                new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         String serialized = env.toString();
 
         // These assertions attempt to check that everything looks correct while passing on both developer

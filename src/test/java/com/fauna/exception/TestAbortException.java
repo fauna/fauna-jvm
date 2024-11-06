@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class TestAbortException {
     ObjectMapper mapper = new ObjectMapper();
@@ -25,13 +25,14 @@ public class TestAbortException {
         ObjectNode num = abort.putObject("num");
         num.put("@int", "42");
 
-        QueryFailure failure = new QueryFailure(500, QueryResponse.builder(null).error(ErrorInfo.builder().code("abort").abort(abort).build()));
+        QueryFailure failure = new QueryFailure(500, QueryResponse.builder(null)
+                .error(ErrorInfo.builder().code("abort").abort(abort).build()));
 
         // When
         AbortException exc = new AbortException(failure);
 
         // Then
-        HashMap<String, Integer>  expected = new HashMap<>();
+        HashMap<String, Integer> expected = new HashMap<>();
         expected.put("num", 42);
         assertEquals(expected, exc.getAbort());
 
@@ -59,7 +60,8 @@ public class TestAbortException {
         // Given
         QueryFailure failure = new QueryFailure(200,
                 QueryResponse.builder(null).error(
-                        ErrorInfo.builder().code("abort").message("some message").build()));
+                        ErrorInfo.builder().code("abort")
+                                .message("some message").build()));
 
         // When
         AbortException exc = new AbortException(failure);

@@ -1,9 +1,9 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
 public class LongCodec extends BaseCodec<Long> {
 
@@ -18,7 +18,9 @@ public class LongCodec extends BaseCodec<Long> {
             case LONG:
                 return parser.getValueAsLong();
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
@@ -38,6 +40,6 @@ public class LongCodec extends BaseCodec<Long> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Int, FaunaType.Long, FaunaType.Null};
+        return new FaunaType[] {FaunaType.Int, FaunaType.Long, FaunaType.Null};
     }
 }

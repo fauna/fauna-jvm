@@ -1,15 +1,15 @@
 package com.fauna.codec;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fauna.types.Module;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UTF8FaunaGeneratorTest {
 
@@ -159,7 +159,8 @@ public class UTF8FaunaGeneratorTest {
         writer.writeModule("coll", new Module("Authors"));
         writer.writeEndRef();
 
-        assertWriter("{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Authors\"}}}");
+        assertWriter(
+                "{\"@ref\":{\"id\":\"123\",\"coll\":{\"@mod\":\"Authors\"}}}");
     }
 
     public void writeTimeWithSixDecimalPrecision() throws IOException {

@@ -13,26 +13,43 @@ import java.util.List;
  * although markSupported() returns false for this class.
  */
 public class MultiByteBufferInputStream extends InputStream {
-
+    private final int ff = 0xFF;
     private final List<ByteBuffer> buffers;
     private int index = 0;
     private ByteBuffer currentBuffer;
 
 
-    public MultiByteBufferInputStream(List<ByteBuffer> initialBuffers) {
+    /**
+     * Initializes a MultiByteBufferInputStream using the provided byte buffers.
+     *
+     * @param initialBuffers A list of ByteBuffers to use.
+     */
+    public MultiByteBufferInputStream(final List<ByteBuffer> initialBuffers) {
         this.buffers = initialBuffers;
         this.currentBuffer = buffers.get(index);
     }
 
-    public synchronized void add(List<ByteBuffer> additionalBuffers) {
+    /**
+     * Adds additional byte buffers to this instance in a thread-safe manner.
+     *
+     * @param additionalBuffers The additional ByteBuffers.
+     */
+    public synchronized void add(final List<ByteBuffer> additionalBuffers) {
         buffers.addAll(additionalBuffers);
     }
 
+    /**
+     * Reads the next byte from the buffer.
+     *
+     * @return The next byte.
+     * @throws IOException Thrown when the byte buffers are exhausted.
+     */
+    @SuppressWarnings("checkstyle:MagicNumber")
     @Override
     public synchronized int read() throws IOException {
         if (currentBuffer.hasRemaining()) {
             return currentBuffer.get() & 0xFF;
-        } else if (buffers.size() > index+1) {
+        } else if (buffers.size() > index + 1) {
             index++;
             currentBuffer = buffers.get(index);
             return currentBuffer.get() & 0xFF;
@@ -41,6 +58,9 @@ public class MultiByteBufferInputStream extends InputStream {
         }
     }
 
+    /**
+     * Resets the byte buffer.
+     */
     @Override
     public synchronized void reset() {
         for (ByteBuffer buffer : buffers.subList(0, index)) {
@@ -49,7 +69,6 @@ public class MultiByteBufferInputStream extends InputStream {
         index = 0;
         currentBuffer = buffers.get(index);
     }
-
 
 
 }

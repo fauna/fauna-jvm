@@ -3,14 +3,14 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
+public class MapCodec<V, L extends Map<String, V>> extends BaseCodec<L> {
 
     private final Codec<V> valueCodec;
 
@@ -26,9 +26,13 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
             case START_OBJECT:
                 Map<String, V> map = new HashMap<>();
 
-                while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_OBJECT) {
-                    if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                        throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+                while (parser.read() && parser.getCurrentTokenType() !=
+                        FaunaTokenType.END_OBJECT) {
+                    if (parser.getCurrentTokenType() !=
+                            FaunaTokenType.FIELD_NAME) {
+                        throw new CodecException(
+                                unexpectedTokenExceptionMessage(
+                                        parser.getCurrentTokenType()));
                     }
 
                     String fieldName = parser.getValueAsString();
@@ -41,7 +45,9 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
                 L typed = (L) map;
                 return typed;
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
@@ -79,6 +85,6 @@ public class MapCodec<V,L extends Map<String,V>> extends BaseCodec<L> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.Object};
+        return new FaunaType[] {FaunaType.Null, FaunaType.Object};
     }
 }

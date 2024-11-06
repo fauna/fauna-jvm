@@ -10,7 +10,8 @@ public class EventSourceResponse {
         this.token = token;
     }
 
-    public EventSourceResponse() {}
+    public EventSourceResponse() {
+    }
 
     public String getToken() {
         return this.token;
@@ -18,11 +19,17 @@ public class EventSourceResponse {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
-        if (getClass() != o.getClass()) return false;
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
         EventSourceResponse c = (EventSourceResponse) o;
 

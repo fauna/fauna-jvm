@@ -3,10 +3,11 @@ package com.fauna.client;
 import com.fauna.response.QueryStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestStatsCollectorImpl {
 
@@ -54,8 +55,10 @@ public class TestStatsCollectorImpl {
     @Test
     public void testAdd_multipleQueryStats_accumulatesValuesCorrectly() {
         // Arrange
-        QueryStats stats1 = new QueryStats(10, 20, 5, 100, 1, 500, 300, 30, Collections.singletonList("read"));
-        QueryStats stats2 = new QueryStats(15, 25, 10, 200, 2, 600, 400, 40, Collections.singletonList("write"));
+        QueryStats stats1 = new QueryStats(10, 20, 5, 100, 1, 500, 300, 30,
+                Collections.singletonList("read"));
+        QueryStats stats2 = new QueryStats(15, 25, 10, 200, 2, 600, 400, 40,
+                Collections.singletonList("write"));
 
         // Act
         statsCollector.add(stats1);

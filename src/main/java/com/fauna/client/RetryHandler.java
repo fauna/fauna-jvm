@@ -19,20 +19,24 @@ public class RetryHandler<T> {
 
     /**
      * Construct a new retry handler instance.
-     * @param strategy  The retry strategy to use.
+     *
+     * @param strategy The retry strategy to use.
      */
     public RetryHandler(RetryStrategy strategy, Logger logger) {
         this.strategy = strategy;
         this.logger = logger;
     }
 
-    public CompletableFuture<T> delayRequest(Supplier<CompletableFuture<T>> action, int delayMillis) {
+    public CompletableFuture<T> delayRequest(
+            Supplier<CompletableFuture<T>> action, int delayMillis) {
         return CompletableFuture.supplyAsync(
-                action, CompletableFuture.delayedExecutor(delayMillis, TimeUnit.MILLISECONDS)).join();
+                action, CompletableFuture.delayedExecutor(delayMillis,
+                        TimeUnit.MILLISECONDS)).join();
     }
 
     public static boolean isRetryable(Throwable exc) {
-        return exc instanceof RetryableException || exc.getCause() instanceof RetryableException;
+        return exc instanceof RetryableException ||
+                exc.getCause() instanceof RetryableException;
     }
 
     public CompletableFuture<T> rethrow(Throwable throwable) {
@@ -44,16 +48,19 @@ public class RetryHandler<T> {
         return CompletableFuture.failedFuture(throwable);
     }
 
-    private CompletableFuture<T> retry(Throwable throwable, int retryAttempt, Supplier<CompletableFuture<T>> supplier) {
+    private CompletableFuture<T> retry(Throwable throwable, int retryAttempt,
+                                       Supplier<CompletableFuture<T>> supplier) {
         try {
             boolean retryable = isRetryable(throwable);
             if (retryable && this.strategy.canRetry(retryAttempt)) {
                 int delay = this.strategy.getDelayMillis(retryAttempt);
-                logger.fine(MessageFormat.format("Retry attempt {0} for exception {1}", retryAttempt,
+                logger.fine(MessageFormat.format(
+                        "Retry attempt {0} for exception {1}", retryAttempt,
                         throwable.getClass()));
                 return delayRequest(supplier, delay);
             } else {
-                logger.fine(MessageFormat.format("Re-throwing {0}retryable exception: {1}",
+                logger.fine(MessageFormat.format(
+                        "Re-throwing {0}retryable exception: {1}",
                         retryable ? "" : "non-", throwable.getClass()));
                 return rethrow(throwable);
             }
@@ -66,9 +73,9 @@ public class RetryHandler<T> {
 
     public CompletableFuture<T> execute(Supplier<CompletableFuture<T>> action) {
         CompletableFuture<T> f = action.get();
-        for(int i = 1; i <= this.strategy.getMaxRetryAttempts(); i++) {
+        for (int i = 1; i <= this.strategy.getMaxRetryAttempts(); i++) {
             int finalI = i;
-            f=f.thenApply(CompletableFuture::completedFuture)
+            f = f.thenApply(CompletableFuture::completedFuture)
                     .exceptionally(t -> retry(t, finalI, action))
                     .thenCompose(Function.identity());
         }

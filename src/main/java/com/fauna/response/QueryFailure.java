@@ -10,7 +10,7 @@ public final class QueryFailure extends QueryResponse {
     public QueryFailure(int httpStatus, Builder builder) {
         super(builder);
         this.statusCode = httpStatus;
-        this.errorInfo = builder.error;
+        this.errorInfo = builder.getError();
     }
 
     public int getStatusCode() {
@@ -27,13 +27,14 @@ public final class QueryFailure extends QueryResponse {
 
     public <T> Optional<T> getAbort(Class<T> clazz) {
         return errorInfo.getAbort(clazz);
-
     }
 
     public String getFullMessage() {
-        String summarySuffix = this.getSummary() != null ? "\n---\n" + this.getSummary() : "";
+        String summarySuffix =
+                this.getSummary() != null ? "\n---\n" + this.getSummary() : "";
         return String.format("%d (%s): %s%s",
-                this.getStatusCode(), this.getErrorCode(), this.getMessage(), summarySuffix);
+                this.getStatusCode(), this.getErrorCode(), this.getMessage(),
+                summarySuffix);
 
     }
 

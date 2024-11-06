@@ -16,7 +16,8 @@ public class AbortException extends ServiceException {
     /**
      * Return the abort data as a top-level Object, mostly useful for debugging and other cases where you might
      * not know what to expect back.
-     * @return  An Object with the abort data.
+     *
+     * @return An Object with the abort data.
      */
     public Object getAbort() {
         return getAbort(Object.class);
@@ -24,9 +25,10 @@ public class AbortException extends ServiceException {
 
     /**
      * Return the abort data, decoded into the given class, or null if there was no abort data.
+     *
      * @param clazz The class to decode the abort data into.
-     * @return      The abort data, or null.
      * @param <T>   The type of the abort data.
+     * @return The abort data, or null.
      */
     public <T> T getAbort(Class<T> clazz) {
         if (!decoded.containsKey(clazz)) {

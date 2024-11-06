@@ -6,11 +6,12 @@ import java.util.List;
 
 /**
  * ListOf stores the generic parameter class to evade type erasure during deserialization.
+ *
  * @param <E> The element class of the list.
  */
 public class ListOf<E> extends ParameterizedOf<List<E>> {
 
     public ListOf(Class<E> elementClass) {
-        super(List.class, new Type[]{elementClass});
+        super(List.class, new Type[] {elementClass});
     }
 }

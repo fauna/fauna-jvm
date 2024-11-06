@@ -46,12 +46,19 @@ public enum FaunaTokenType {
 
     public FaunaTokenType getEndToken() {
         switch (this) {
-            case START_DOCUMENT: return END_DOCUMENT;
-            case START_OBJECT: return END_OBJECT;
-            case START_ARRAY: return END_ARRAY;
-            case START_PAGE: return END_PAGE;
-            case START_REF: return END_REF;
-            default: throw new ClientResponseException("No end token for " + this.name());
+            case START_DOCUMENT:
+                return END_DOCUMENT;
+            case START_OBJECT:
+                return END_OBJECT;
+            case START_ARRAY:
+                return END_ARRAY;
+            case START_PAGE:
+                return END_PAGE;
+            case START_REF:
+                return END_REF;
+            default:
+                throw new ClientResponseException(
+                        "No end token for " + this.name());
         }
     }
 
@@ -96,7 +103,8 @@ public enum FaunaTokenType {
             case MODULE:
                 return FaunaType.Module;
             default:
-                throw new IllegalStateException("No associated FaunaType for FaunaTokenType: " + this);
+                throw new IllegalStateException(
+                        "No associated FaunaType for FaunaTokenType: " + this);
         }
     }
 }

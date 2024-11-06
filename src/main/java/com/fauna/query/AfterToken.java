@@ -14,6 +14,7 @@ public class AfterToken {
     }
 
     public static Optional<AfterToken> fromString(String token) {
-        return Optional.ofNullable(token != null ? new AfterToken(token) : null);
+        return Optional.ofNullable(
+                token != null ? new AfterToken(token) : null);
     }
 }

@@ -32,7 +32,8 @@ public final class Document extends BaseDocument {
      * @param ts   The timestamp of the document.
      * @param data Additional data on the document.
      */
-    public Document(String id, Module coll, Instant ts, Map<String, Object> data) {
+    public Document(String id, Module coll, Instant ts,
+                    Map<String, Object> data) {
         super(coll, ts, data);
         this.id = id;
     }
@@ -48,11 +49,17 @@ public final class Document extends BaseDocument {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
-        if (getClass() != o.getClass()) return false;
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
         Document c = (Document) o;
 

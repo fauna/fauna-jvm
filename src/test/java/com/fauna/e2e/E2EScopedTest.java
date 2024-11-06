@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class E2EScopedTest {
     public static final FaunaClient baseClient = Fauna.local();
-    public static final FaunaClient scopedClient = Fauna.scoped(baseClient, "People");
+    public static final FaunaClient scopedClient =
+            Fauna.scoped(baseClient, "People");
 
     @BeforeAll
     public static void setup() {

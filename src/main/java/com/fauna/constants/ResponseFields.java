@@ -20,13 +20,15 @@ public final class ResponseFields {
     public static final String STATS_PROCESSING_TIME_MS = "processing_time_ms";
     public static final String STATS_CONTENTION_RETRIES = "contention_retries";
     public static final String STATS_STORAGE_BYTES_READ = "storage_bytes_read";
-    public static final String STATS_STORAGE_BYTES_WRITE = "storage_bytes_write";
+    public static final String STATS_STORAGE_BYTES_WRITE =
+            "storage_bytes_write";
     public static final String STATS_RATE_LIMITS_HIT = "rate_limits_hit";
 
     // "error" block
     public static final String ERROR_CODE_FIELD_NAME = "code";
     public static final String ERROR_MESSAGE_FIELD_NAME = "message";
-    public static final String ERROR_CONSTRAINT_FAILURES_FIELD_NAME = "constraint_failures";
+    public static final String ERROR_CONSTRAINT_FAILURES_FIELD_NAME =
+            "constraint_failures";
     public static final String ERROR_ABORT_FIELD_NAME = "abort";
     public static final String ERROR_NAME_FIELD_NAME = "name";
     public static final String ERROR_PATHS_FIELD_NAME = "paths";

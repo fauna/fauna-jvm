@@ -30,7 +30,8 @@ class InternalDocument {
             return this;
         }
 
-        InternalDocument.Builder withDocField(String fieldName, UTF8FaunaParser parser) {
+        InternalDocument.Builder withDocField(String fieldName,
+                                              UTF8FaunaParser parser) {
             switch (fieldName) {
                 case "id":
                     if (parser.getCurrentTokenType() == FaunaTokenType.STRING) {
@@ -55,7 +56,8 @@ class InternalDocument {
             return this;
         }
 
-        InternalDocument.Builder withRefField(String fieldName, UTF8FaunaParser parser) {
+        InternalDocument.Builder withRefField(String fieldName,
+                                              UTF8FaunaParser parser) {
             switch (fieldName) {
                 case "id":
                     if (parser.getCurrentTokenType() == FaunaTokenType.STRING) {
@@ -73,7 +75,9 @@ class InternalDocument {
                     }
                     break;
                 case "exists":
-                    if (parser.getCurrentTokenType() == FaunaTokenType.FALSE || parser.getCurrentTokenType() == FaunaTokenType.TRUE) {
+                    if (parser.getCurrentTokenType() == FaunaTokenType.FALSE ||
+                            parser.getCurrentTokenType() ==
+                                    FaunaTokenType.TRUE) {
                         this.exists = parser.getValueAsBoolean();
                     }
                     break;
@@ -88,7 +92,8 @@ class InternalDocument {
 
         Object build() {
             if (exists != null && !exists) {
-                throw new NullDocumentException(id != null ? id : name, coll, cause);
+                throw new NullDocumentException(id != null ? id : name, coll,
+                        cause);
             }
 
             if (id != null && coll != null && ts != null) {

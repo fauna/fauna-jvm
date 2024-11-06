@@ -20,17 +20,21 @@ public class TestServiceException {
 
     @Test
     public void testNullResponseThrowsNullPointer() {
-        assertThrows(NullPointerException.class, () -> new ServiceException(null));
+        assertThrows(NullPointerException.class,
+                () -> new ServiceException(null));
     }
 
     @Test
     public void testGetters() throws IOException {
         // Given
         QueryFailure failure = new QueryFailure(500,
-                QueryResponse.builder(null).summary("summarized").schemaVersion(10L)
+                QueryResponse.builder(null).summary("summarized")
+                        .schemaVersion(10L)
                         .stats(new QueryStats(100, 0, 0, 0, 0, 0, 0, 0, null))
-                        .queryTags(QueryTags.of("foo=bar")).lastSeenTxn(Long.MAX_VALUE / 4).error(
-                                ErrorInfo.builder().code("bad_thing").message("message in a bottle").build()));
+                        .queryTags(QueryTags.of("foo=bar"))
+                        .lastSeenTxn(Long.MAX_VALUE / 4).error(
+                                ErrorInfo.builder().code("bad_thing")
+                                        .message("message in a bottle").build()));
 
         // When
         ServiceException exc = new ServiceException(failure);
@@ -38,9 +42,10 @@ public class TestServiceException {
         // Then
         assertEquals(500, exc.getStatusCode());
         assertEquals("bad_thing", exc.getErrorCode());
-        assertEquals("500 (bad_thing): message in a bottle\n---\nsummarized", exc.getMessage());
+        assertEquals("500 (bad_thing): message in a bottle\n---\nsummarized",
+                exc.getMessage());
         assertEquals("summarized", exc.getSummary());
-        assertEquals(100, exc.getStats().computeOps);
+        assertEquals(100, exc.getStats().getComputeOps());
         assertEquals(10, exc.getSchemaVersion());
         assertEquals(Optional.of(Long.MAX_VALUE / 4), exc.getTxnTs());
         assertEquals(Map.of("foo", "bar"), exc.getQueryTags());

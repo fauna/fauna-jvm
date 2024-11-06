@@ -7,10 +7,10 @@ public final class QuerySuccess<T> extends QueryResponse {
     private final T data;
     private final String staticType;
 
-    public QuerySuccess(Builder<T> builder) {
+    public QuerySuccess(final Builder<T> builder) {
         super(builder);
-        this.data = builder.data;
-        this.staticType = builder.staticType;
+        this.data = builder.getData();
+        this.staticType = builder.getStaticType();
     }
 
     public T getData() {

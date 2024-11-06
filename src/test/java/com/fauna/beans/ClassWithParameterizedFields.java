@@ -12,7 +12,10 @@ public class ClassWithParameterizedFields {
     public ClassWithParameterizedFields() {
     }
 
-    public ClassWithParameterizedFields(String firstName, List<ClassWithAttributes> list, Map<String,Integer> map, Optional<String> optional) {
+    public ClassWithParameterizedFields(String firstName,
+                                        List<ClassWithAttributes> list,
+                                        Map<String, Integer> map,
+                                        Optional<String> optional) {
         this.firstName = firstName;
         this.list = list;
         this.map = map;
@@ -26,18 +29,24 @@ public class ClassWithParameterizedFields {
     public List<ClassWithAttributes> list;
 
     @FaunaField(name = "a_map")
-    public Map<String,Integer> map;
+    public Map<String, Integer> map;
 
     @FaunaField(name = "an_optional")
     public Optional<String> optional;
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
-        if (getClass() != o.getClass()) return false;
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
         ClassWithParameterizedFields c = (ClassWithParameterizedFields) o;
 

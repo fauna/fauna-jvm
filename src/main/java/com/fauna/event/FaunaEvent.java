@@ -14,11 +14,11 @@ import java.util.Optional;
 import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
 import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
+import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.DATA_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.ERROR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.LAST_SEEN_TXN_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
-import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
 public class FaunaEvent<E> {
@@ -34,7 +34,8 @@ public class FaunaEvent<E> {
     private final ErrorInfo error;
 
 
-    public FaunaEvent(EventType type, String cursor, Long txn_ts, E data, QueryStats stats, ErrorInfo error) {
+    public FaunaEvent(EventType type, String cursor, Long txn_ts, E data,
+                      QueryStats stats, ErrorInfo error) {
         this.type = type;
         this.cursor = cursor;
         this.txn_ts = txn_ts;
@@ -94,7 +95,8 @@ public class FaunaEvent<E> {
         }
 
         public FaunaEvent<E> build() {
-            return new FaunaEvent<>(eventType, cursor, txn_ts, data, stats, errorInfo);
+            return new FaunaEvent<>(eventType, cursor, txn_ts, data, stats,
+                    errorInfo);
         }
 
     }
@@ -103,7 +105,8 @@ public class FaunaEvent<E> {
         return new Builder<>(dataCodec);
     }
 
-    static <E> Builder<E> parseField(Builder<E> builder, JsonParser parser) throws IOException {
+    static <E> Builder<E> parseField(Builder<E> builder, JsonParser parser)
+            throws IOException {
         String fieldName = parser.getValueAsString();
         switch (fieldName) {
             case CURSOR_FIELD_NAME:
@@ -119,33 +122,41 @@ public class FaunaEvent<E> {
             case ERROR_FIELD_NAME:
                 return builder.error(ErrorInfo.parse(parser));
             default:
-                throw new ClientResponseException("Unknown StreamEvent field: " + fieldName);
+                throw new ClientResponseException(
+                        "Unknown StreamEvent field: " + fieldName);
         }
 
     }
 
-    private static FaunaEvent.EventType parseEventType(JsonParser parser) throws IOException {
+    private static FaunaEvent.EventType parseEventType(JsonParser parser)
+            throws IOException {
         if (parser.nextToken() == VALUE_STRING) {
             String typeString = parser.getText().toUpperCase();
             try {
                 return FaunaEvent.EventType.valueOf(typeString);
             } catch (IllegalArgumentException e) {
-                throw new ClientResponseException("Invalid event type: " + typeString, e);
+                throw new ClientResponseException(
+                        "Invalid event type: " + typeString, e);
             }
         } else {
-            throw new ClientResponseException("Event type should be a string, but got a " + parser.currentToken().asString());
+            throw new ClientResponseException(
+                    "Event type should be a string, but got a " +
+                            parser.currentToken().asString());
         }
     }
 
-    public static <E> FaunaEvent<E> parse(JsonParser parser, Codec<E> dataCodec) throws IOException {
-        if (parser.currentToken() == START_OBJECT || parser.nextToken() == START_OBJECT) {
+    public static <E> FaunaEvent<E> parse(JsonParser parser, Codec<E> dataCodec)
+            throws IOException {
+        if (parser.currentToken() == START_OBJECT ||
+                parser.nextToken() == START_OBJECT) {
             Builder<E> builder = FaunaEvent.builder(dataCodec);
             while (parser.nextToken() == FIELD_NAME) {
                 builder = parseField(builder, parser);
             }
             return builder.build();
         } else {
-            throw new ClientResponseException("Invalid event starting with: " + parser.currentToken());
+            throw new ClientResponseException(
+                    "Invalid event starting with: " + parser.currentToken());
         }
     }
 

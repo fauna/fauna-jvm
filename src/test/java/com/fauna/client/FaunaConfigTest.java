@@ -8,9 +8,8 @@ import java.time.Duration;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FaunaConfigTest {
 
