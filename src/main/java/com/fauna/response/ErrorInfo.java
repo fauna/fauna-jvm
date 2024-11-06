@@ -29,79 +29,36 @@ public class ErrorInfo {
     private final ConstraintFailure[] constraintFailures;
     private final TreeNode abort;
 
-    public ErrorInfo(String code, String message,
-                     ConstraintFailure[] constraintFailures, TreeNode abort) {
+    /**
+     * Initializes a new ErrorInfo.
+     *
+     * @param code               The Fauna error code
+     * @param message            The error message
+     * @param constraintFailures The constraint failures, if any
+     * @param abort              A abort JSON node of the response, if any
+     */
+    public ErrorInfo(
+            final String code,
+            final String message,
+            final ConstraintFailure[] constraintFailures,
+            final TreeNode abort) {
         this.code = code;
         this.message = message;
         this.constraintFailures = constraintFailures;
         this.abort = abort;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public Optional<ConstraintFailure[]> getConstraintFailures() {
-        return Optional.ofNullable(this.constraintFailures);
-    }
-
-    public Optional<TreeNode> getAbortJson() {
-        return Optional.ofNullable(this.abort);
-    }
-
-    public <T> Optional<T> getAbort(Class<T> abortDataClass) {
-        return this.getAbortJson().map(tree -> {
-            UTF8FaunaParser parser = new UTF8FaunaParser(tree.traverse());
-            Codec<T> codec = DefaultCodecProvider.SINGLETON.get(abortDataClass);
-            parser.read();
-            return codec.decode(parser);
-        });
-    }
-
-
-    public static class Builder {
-        String code = null;
-        String message = null;
-        ConstraintFailure[] constraintFailures = null;
-        TreeNode abort = null;
-
-        public Builder code(String code) {
-            this.code = code;
-            return this;
-        }
-
-        public Builder message(String message) {
-            this.message = message;
-            return this;
-        }
-
-        public Builder abort(TreeNode abort) {
-            this.abort = abort;
-            return this;
-        }
-
-        public Builder constraintFailures(
-                List<ConstraintFailure> constraintFailures) {
-            this.constraintFailures =
-                    constraintFailures.toArray(new ConstraintFailure[0]);
-            return this;
-        }
-
-        public ErrorInfo build() {
-            return new ErrorInfo(this.code, this.message,
-                    this.constraintFailures, this.abort);
-        }
-    }
-
+    /**
+     * A utility method to instantiate an empty builder.
+     *
+     * @return A new builder
+     */
     public static Builder builder() {
         return new Builder();
     }
 
-    private static Builder handleField(Builder builder, JsonParser parser)
+    private static Builder handleField(final Builder builder,
+                                       final JsonParser parser)
             throws IOException {
         String fieldName = parser.getCurrentName();
         switch (fieldName) {
@@ -126,21 +83,28 @@ public class ErrorInfo {
                     return builder.constraintFailures(failures);
                 } else {
                     throw new ClientResponseException(
-                            "Unexpected token in constraint failures: " +
-                                    token);
+                            "Unexpected token in constraint failures: "
+                                    + token);
                 }
             default:
                 throw new ClientResponseException(
-                        "Unexpected token in error info: " +
-                                parser.currentToken());
+                        "Unexpected token in error info: "
+                                + parser.currentToken());
         }
     }
 
-    public static ErrorInfo parse(JsonParser parser) throws IOException {
+    /**
+     * Builds a new ErrorInfo from a JsonParser.
+     *
+     * @param parser The JsonParser to read.
+     * @return A new ErrorInfo instance.
+     * @throws IOException Thrown on errors reading from the parser.
+     */
+    public static ErrorInfo parse(final JsonParser parser) throws IOException {
         if (parser.nextToken() != JsonToken.START_OBJECT) {
             throw new ClientResponseException(
-                    "Error parsing error info, got token" +
-                            parser.currentToken());
+                    "Error parsing error info, got token"
+                            + parser.currentToken());
         }
         Builder builder = ErrorInfo.builder();
 
@@ -148,5 +112,120 @@ public class ErrorInfo {
             builder = handleField(builder, parser);
         }
         return builder.build();
+    }
+
+    /**
+     * Gets the Fauna error code.
+     *
+     * @return A string representing the Fauna error code.
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * Gets the error message.
+     *
+     * @return A string representing the error message.
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * Gets the constraint failures.
+     *
+     * @return An optional containing the constraint failures.
+     */
+    public Optional<ConstraintFailure[]> getConstraintFailures() {
+        return Optional.ofNullable(this.constraintFailures);
+    }
+
+    /**
+     * Gets the abort JSON node.
+     *
+     * @return An optional TreeNode with the abort data.
+     */
+    public Optional<TreeNode> getAbortJson() {
+        return Optional.ofNullable(this.abort);
+    }
+
+    /**
+     * Parses the abort data into the provided class.
+     *
+     * @param abortDataClass The class to decode into.
+     * @param <T>            The type to decode into.
+     * @return An instance of the provided type.
+     */
+    public <T> Optional<T> getAbort(final Class<T> abortDataClass) {
+        return this.getAbortJson().map(tree -> {
+            UTF8FaunaParser parser = new UTF8FaunaParser(tree.traverse());
+            Codec<T> codec = DefaultCodecProvider.SINGLETON.get(abortDataClass);
+            parser.read();
+            return codec.decode(parser);
+        });
+    }
+
+    public static class Builder {
+        private String code = null;
+        private String message = null;
+        private ConstraintFailure[] constraintFailures = null;
+        private TreeNode abort = null;
+
+        /**
+         * Sets the error code on the builder.
+         *
+         * @param code The error code.
+         * @return this
+         */
+        public Builder code(final String code) {
+            this.code = code;
+            return this;
+        }
+
+        /**
+         * Sets the message on the builder.
+         *
+         * @param message The message.
+         * @return this
+         */
+        public Builder message(final String message) {
+            this.message = message;
+            return this;
+        }
+
+        /**
+         * Sets the abort data on the builder.
+         *
+         * @param abort The abort JSON node.
+         * @return this
+         */
+        public Builder abort(final TreeNode abort) {
+            this.abort = abort;
+            return this;
+        }
+
+        /**
+         * Sets the constraint failures on the builder.
+         *
+         * @param constraintFailures The constraint failures.
+         * @return this
+         */
+        public Builder constraintFailures(
+                final List<ConstraintFailure> constraintFailures) {
+            this.constraintFailures =
+                    constraintFailures.toArray(new ConstraintFailure[0]);
+            return this;
+        }
+
+        /**
+         * Returns a new ErrorInfo instance based on the current builder.
+         *
+         * @return An ErrorInfo instance
+         */
+        public ErrorInfo build() {
+            return new ErrorInfo(this.code, this.message,
+                    this.constraintFailures, this.abort);
+        }
     }
 }
