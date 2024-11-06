@@ -45,7 +45,7 @@ public class TestServiceException {
         assertEquals("500 (bad_thing): message in a bottle\n---\nsummarized",
                 exc.getMessage());
         assertEquals("summarized", exc.getSummary());
-        assertEquals(100, exc.getStats().computeOps);
+        assertEquals(100, exc.getStats().getComputeOps());
         assertEquals(10, exc.getSchemaVersion());
         assertEquals(Optional.of(Long.MAX_VALUE / 4), exc.getTxnTs());
         assertEquals(Map.of("foo", "bar"), exc.getQueryTags());

@@ -21,19 +21,39 @@ public final class QueryStatsSummary {
     private final int rateLimitedComputeQueryCount;
     private final int rateLimitedWriteQueryCount;
 
+    /**
+     * @param readOps                      the read ops
+     * @param computeOps                   the compute ops
+     * @param writeOps                     the write ops
+     * @param queryTimeMs                  the query time in milliseconds
+     * @param contentionRetries            the number of retries due to
+     *                                     contention
+     * @param storageBytesRead             the number of storage bytes read
+     * @param storageBytesWrite            the number of storage bytes written
+     * @param processingTimeMs             the event processing time in
+     *                                     milliseconds
+     * @param queryCount                   the number of queries included in the
+     *                                     summary
+     * @param rateLimitedReadQueryCount    the count of queries limited
+     *                                     by read ops
+     * @param rateLimitedComputeQueryCount the count of queries limited
+     *                                     by compute ops
+     * @param rateLimitedWriteQueryCount   the count of queries limited
+     *                                     by write ops
+     */
     public QueryStatsSummary(
-            long readOps,
-            long computeOps,
-            long writeOps,
-            long queryTimeMs,
-            int contentionRetries,
-            long storageBytesRead,
-            long storageBytesWrite,
-            long processingTimeMs,
-            int queryCount,
-            int rateLimitedReadQueryCount,
-            int rateLimitedComputeQueryCount,
-            int rateLimitedWriteQueryCount
+            final long readOps,
+            final long computeOps,
+            final long writeOps,
+            final long queryTimeMs,
+            final int contentionRetries,
+            final long storageBytesRead,
+            final long storageBytesWrite,
+            final long processingTimeMs,
+            final int queryCount,
+            final int rateLimitedReadQueryCount,
+            final int rateLimitedComputeQueryCount,
+            final int rateLimitedWriteQueryCount
     ) {
         this.readOps = readOps;
         this.computeOps = computeOps;
@@ -50,7 +70,7 @@ public final class QueryStatsSummary {
     }
 
     /**
-     * Gets the aggregate read ops.
+     * Gets the aggregate Transactional Read Operations (TROs) recorded.
      *
      * @return A long representing the aggregate read ops
      */
@@ -59,7 +79,7 @@ public final class QueryStatsSummary {
     }
 
     /**
-     * Gets the aggregate compute ops.
+     * Gets the aggregate Transactional Compute Operations (TCOs) recorded.
      *
      * @return A long representing the aggregate compute ops
      */
@@ -68,7 +88,7 @@ public final class QueryStatsSummary {
     }
 
     /**
-     * Gets the aggregate write ops.
+     * Gets the aggregate Transactional Write Operations (TWOs) recorded.
      *
      * @return A long representing the aggregate write ops
      */
@@ -106,16 +126,19 @@ public final class QueryStatsSummary {
     /**
      * Gets the aggregate storage bytes written.
      *
-     * @return A long representing the aggregate number of storage bytes written.
+     * @return A long representing the aggregate number of storage bytes
+     * written.
      */
     public long getStorageBytesWrite() {
         return storageBytesWrite;
     }
 
     /**
-     * Gets the aggregate processing time in milliseconds.
+     * Gets the aggregate event processing time in milliseconds.
+     * Applies to Streams and Feeds only.
      *
-     * @return A long representing the aggregate processing time in milliseconds.
+     * @return A long representing the aggregate processing time in
+     * milliseconds.
      */
     public long getProcessingTimeMs() {
         return processingTimeMs;

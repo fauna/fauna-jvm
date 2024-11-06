@@ -65,7 +65,7 @@ public class PerformanceTest {
                 var result =
                         client.asyncQuery(query, pageOf(Product.class)).get();
                 int queryCount = 1;
-                int queryTimeAgg = result.getStats().queryTimeMs;
+                int queryTimeAgg = result.getStats().getQueryTimeMs();
 
                 while (result.getData().getAfter().isPresent()) {
                     AfterToken after = result.getData().getAfter().get();
@@ -74,7 +74,7 @@ public class PerformanceTest {
                                     Map.of("after", after.getToken())),
                             pageOf(Product.class)).get();
                     queryCount++;
-                    queryTimeAgg += result.getStats().queryTimeMs;
+                    queryTimeAgg += result.getStats().getQueryTimeMs();
                 }
 
                 long endTime = System.currentTimeMillis();
@@ -86,12 +86,12 @@ public class PerformanceTest {
             } else if (typed) {
                 future = client.asyncQuery(query, Product.class)
                         .thenAccept(result -> {
-                            queryTime.set(result.getStats().queryTimeMs);
+                            queryTime.set(result.getStats().getQueryTimeMs());
                         });
             } else {
                 future = client.asyncQuery(query)
                         .thenAccept(result -> {
-                            queryTime.set(result.getStats().queryTimeMs);
+                            queryTime.set(result.getStats().getQueryTimeMs());
                         });
             }
 
