@@ -29,15 +29,23 @@ public final class QueryStats {
     private String stringValue = null;
 
     /**
-     * @param computeOps        the compute ops
-     * @param readOps           the read ops
-     * @param writeOps          the write ops
-     * @param queryTimeMs       the query time in milliseconds
-     * @param contentionRetries the number of retries due to contention
-     * @param storageBytesRead  the number of storage bytes read
-     * @param storageBytesWrite the number of storage bytes written
-     * @param processingTimeMs  the event processing time in milliseconds
-     * @param rateLimitsHit     the rate limits hit
+     * @param computeOps        <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tco">Transactional
+     *                          Compute Operations (TCOs)</a> consumed by the request.
+     * @param readOps           <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional
+     *                          Read Operations (TROs)</a> consumed by the request.
+     * @param writeOps          <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#two">Transactional
+     *                          Write Operations (TROs)</a> consumed by the request.
+     * @param queryTimeMs       Query run time for the request in milliseconds.
+     * @param contentionRetries Number of <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">retries
+     *                          for contended transactions</a>
+     * @param storageBytesRead  Amount of data read from storage, in bytes.
+     * @param storageBytesWrite Amount of data written to storage, in bytes.
+     * @param processingTimeMs  Aggregate event processing time in milliseconds.
+     *                          Only applies to Event Feed and Event Stream
+     *                          requests.
+     * @param rateLimitsHit     Operation types that exceeded
+     *                          <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *                          throughput limits</a>. 
      */
     public QueryStats(final int computeOps, final int readOps,
                       final int writeOps,
@@ -66,7 +74,7 @@ public final class QueryStats {
     }
 
     /**
-     * Gets the Transactional Read Operations (TROs) recorded.
+     * Gets the <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional Read Operations (TROs)</a> recorded.
      *
      * @return An int representing the read ops.
      */
@@ -75,7 +83,7 @@ public final class QueryStats {
     }
 
     /**
-     * Gets the Transactional Write Operations (TWOs) recorded.
+     * Gets the <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#two">Transactional Write Operations (TWOs)</a> recorded.
      *
      * @return An int representing the write ops.
      */
@@ -94,7 +102,7 @@ public final class QueryStats {
 
     /**
      * Gets the event processing time in milliseconds.
-     * Applies to Streams and Feeds only.
+     * Applies to Event Feeds and Event Stream requests only.
      *
      * @return An int representing the processing time in milliseconds.
      */
@@ -103,7 +111,8 @@ public final class QueryStats {
     }
 
     /**
-     * Gets the number of retries due to transaction contention.
+     * Gets the number of <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">retries
+     * for transaction contention</a>.
      *
      * @return An int representing the number of transaction contention retries.
      */
@@ -130,9 +139,10 @@ public final class QueryStats {
     }
 
     /**
-     * Gets a list of operations that exceeded their rate limit.
+     * Gets a list of operation types that exceeded their <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *  throughput limits</a>.
      *
-     * @return A list of operations that exceeded their rate limit.
+     * @return A list of operation types that exceeded their throughput limit.
      */
     public List<String> getRateLimitsHit() {
         return rateLimitsHit;

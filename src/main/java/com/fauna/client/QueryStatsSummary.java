@@ -22,24 +22,47 @@ public final class QueryStatsSummary {
     private final int rateLimitedWriteQueryCount;
 
     /**
-     * @param readOps                      the read ops
-     * @param computeOps                   the compute ops
-     * @param writeOps                     the write ops
-     * @param queryTimeMs                  the query time in milliseconds
-     * @param contentionRetries            the number of retries due to
-     *                                     contention
-     * @param storageBytesRead             the number of storage bytes read
-     * @param storageBytesWrite            the number of storage bytes written
-     * @param processingTimeMs             the event processing time in
-     *                                     milliseconds
-     * @param queryCount                   the number of queries included in the
-     *                                     summary
-     * @param rateLimitedReadQueryCount    the count of queries limited
-     *                                     by read ops
-     * @param rateLimitedComputeQueryCount the count of queries limited
-     *                                     by compute ops
-     * @param rateLimitedWriteQueryCount   the count of queries limited
-     *                                     by write ops
+     * @param readOps                      Aggregate <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional
+     *                                     Read Operations (TROs)</a> consumed
+     *                                     by the requests.
+     * @param computeOps                   Aggregate <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tco">Transactional
+     *                                     Compute Operations (TCOs)</a>
+     *                                     consumed by the requests.
+     * @param writeOps                     Aggregate <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#two">Transactional
+     *                                     Write Operations (TWOs)</a>
+     *                                     consumed by the requests.
+     * @param queryTimeMs                  Aggregate query run time for the
+     *                                     requests in milliseconds.
+     * @param contentionRetries            Aggregate number of 
+     *                                     <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">retries
+     *                                     for contended transactions</a>.
+     * @param storageBytesRead             Aggregate amount of data read from
+     *                                     storage, in bytes.
+     * @param storageBytesWrite            Aggregate amount of data written to
+     *                                     storage, in bytes.
+     * @param processingTimeMs             Aggregate event processing time in
+     *                                     milliseconds. Only applies to Event
+     *                                     Feed and Event Stream requests.
+     * @param queryCount                   Number of requests included in the
+     *                                     summary.
+     * @param rateLimitedReadQueryCount    Aggregate count of requests that
+     *                                     exceeded
+     *                                     <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *                                     throughput limits</a> for
+     *                                     <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional
+     *                                     Read Operations (TROs)</a>.
+     * @param rateLimitedComputeQueryCount Aggregate count of requests that
+     *                                     exceeded
+     *                                     <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *                                     throughput limits</a> for
+     *                                     <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional
+     *                                     Compute Operations (TCOs)</a>.
+     * @param rateLimitedWriteQueryCount   Aggregate count of requests that
+     *                                     exceeded
+     *                                     <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *                                     throughput limits</a> for
+     *                                     <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional
+     *                                     Write Operations (TWOs)</a>.
      */
     public QueryStatsSummary(
             final long readOps,
@@ -70,7 +93,7 @@ public final class QueryStatsSummary {
     }
 
     /**
-     * Gets the aggregate Transactional Read Operations (TROs) recorded.
+     * Gets the aggregate <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional Read Operations (TROs)</a> recorded.
      *
      * @return A long representing the aggregate read ops
      */
@@ -79,7 +102,7 @@ public final class QueryStatsSummary {
     }
 
     /**
-     * Gets the aggregate Transactional Compute Operations (TCOs) recorded.
+     * Gets the aggregate <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tco">Transactional Compute Operations (TCOs)</a> recorded.
      *
      * @return A long representing the aggregate compute ops
      */
@@ -88,7 +111,7 @@ public final class QueryStatsSummary {
     }
 
     /**
-     * Gets the aggregate Transactional Write Operations (TWOs) recorded.
+     * Gets the aggregate <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#two">Transactional Write Operations (TWOs)</a>) recorded.
      *
      * @return A long representing the aggregate write ops
      */
@@ -135,7 +158,7 @@ public final class QueryStatsSummary {
 
     /**
      * Gets the aggregate event processing time in milliseconds.
-     * Applies to Streams and Feeds only.
+     * Applies to Event Feeds and Event Stream requests only.
      *
      * @return A long representing the aggregate processing time in
      * milliseconds.
