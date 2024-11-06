@@ -16,30 +16,43 @@ import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 
 public final class QueryStats {
 
-    public final int computeOps;
-
-    public final int readOps;
-
-    public final int writeOps;
-
-    public final int queryTimeMs;
-
-    public final int processingTimeMs;
-
-    public final int contentionRetries;
-
-    public final int storageBytesRead;
-
-    public final int storageBytesWrite;
-
-    public final List<String> rateLimitsHit;
+    private final int computeOps;
+    private final int readOps;
+    private final int writeOps;
+    private final int queryTimeMs;
+    private final int processingTimeMs;
+    private final int contentionRetries;
+    private final int storageBytesRead;
+    private final int storageBytesWrite;
+    private final List<String> rateLimitsHit;
 
     private String stringValue = null;
 
-    public QueryStats(int computeOps, int readOps, int writeOps,
-                      int queryTimeMs, int contentionRetries,
-                      int storageBytesRead, int storageBytesWrite,
-                      int processingTimeMs, List<String> rateLimitsHit) {
+    /**
+     * @param computeOps        <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tco">Transactional
+     *                          Compute Operations (TCOs)</a> consumed by the request.
+     * @param readOps           <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional
+     *                          Read Operations (TROs)</a> consumed by the request.
+     * @param writeOps          <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#two">Transactional
+     *                          Write Operations (TROs)</a> consumed by the request.
+     * @param queryTimeMs       Query run time for the request in milliseconds.
+     * @param contentionRetries Number of <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">retries
+     *                          for contended transactions</a>
+     * @param storageBytesRead  Amount of data read from storage, in bytes.
+     * @param storageBytesWrite Amount of data written to storage, in bytes.
+     * @param processingTimeMs  Aggregate event processing time in milliseconds.
+     *                          Only applies to Event Feed and Event Stream
+     *                          requests.
+     * @param rateLimitsHit     Operation types that exceeded
+     *                          <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *                          throughput limits</a>. 
+     */
+    public QueryStats(final int computeOps, final int readOps,
+                      final int writeOps,
+                      final int queryTimeMs, final int contentionRetries,
+                      final int storageBytesRead, final int storageBytesWrite,
+                      final int processingTimeMs,
+                      final List<String> rateLimitsHit) {
         this.computeOps = computeOps;
         this.readOps = readOps;
         this.writeOps = writeOps;
@@ -51,59 +64,143 @@ public final class QueryStats {
         this.rateLimitsHit = rateLimitsHit != null ? rateLimitsHit : List.of();
     }
 
+    /**
+     * Gets the Transactional Compute Operations (TCOs) recorded.
+     *
+     * @return An int representing the compute ops.
+     */
+    public int getComputeOps() {
+        return computeOps;
+    }
+
+    /**
+     * Gets the <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#tro">Transactional Read Operations (TROs)</a> recorded.
+     *
+     * @return An int representing the read ops.
+     */
+    public int getReadOps() {
+        return readOps;
+    }
+
+    /**
+     * Gets the <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#two">Transactional Write Operations (TWOs)</a> recorded.
+     *
+     * @return An int representing the write ops.
+     */
+    public int getWriteOps() {
+        return writeOps;
+    }
+
+    /**
+     * Gets the query time in milliseconds.
+     *
+     * @return An int representing the query time in milliseconds.
+     */
+    public int getQueryTimeMs() {
+        return queryTimeMs;
+    }
+
+    /**
+     * Gets the event processing time in milliseconds.
+     * Applies to Event Feeds and Event Stream requests only.
+     *
+     * @return An int representing the processing time in milliseconds.
+     */
+    public int getProcessingTimeMs() {
+        return processingTimeMs;
+    }
+
+    /**
+     * Gets the number of <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">retries
+     * for transaction contention</a>.
+     *
+     * @return An int representing the number of transaction contention retries.
+     */
+    public int getContentionRetries() {
+        return contentionRetries;
+    }
+
+    /**
+     * Gets the amount of data read from storage in bytes.
+     *
+     * @return An int representing the number of bytes read.
+     */
+    public int getStorageBytesRead() {
+        return storageBytesRead;
+    }
+
+    /**
+     * Gets the amount of data written to storage in bytes.
+     *
+     * @return An int representing the number of bytes written.
+     */
+    public int getStorageBytesWrite() {
+        return storageBytesWrite;
+    }
+
+    /**
+     * Gets a list of operation types that exceeded their <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
+     *  throughput limits</a>.
+     *
+     * @return A list of operation types that exceeded their throughput limit.
+     */
+    public List<String> getRateLimitsHit() {
+        return rateLimitsHit;
+    }
+
     static class Builder {
-        int computeOps;
-        int readOps;
-        int writeOps;
-        int queryTimeMs;
-        int contentionRetries;
-        int storageBytesRead;
-        int storageBytesWrite;
-        int processingTimeMs;
-        List<String> rateLimitsHit;
+        private int computeOps;
+        private int readOps;
+        private int writeOps;
+        private int queryTimeMs;
+        private int contentionRetries;
+        private int storageBytesRead;
+        private int storageBytesWrite;
+        private int processingTimeMs;
+        private List<String> rateLimitsHit;
 
-        Builder computeOps(int computeOps) {
-            this.computeOps = computeOps;
+        Builder computeOps(final int value) {
+            this.computeOps = value;
             return this;
         }
 
-        Builder readOps(int readOps) {
-            this.readOps = readOps;
+        Builder readOps(final int value) {
+            this.readOps = value;
             return this;
         }
 
-        Builder writeOps(int writeOps) {
-            this.writeOps = writeOps;
+        Builder writeOps(final int value) {
+            this.writeOps = value;
             return this;
         }
 
-        Builder queryTimeMs(int queryTimeMs) {
-            this.queryTimeMs = queryTimeMs;
+        Builder queryTimeMs(final int value) {
+            this.queryTimeMs = value;
             return this;
         }
 
-        Builder contentionRetries(int contentionRetries) {
-            this.contentionRetries = contentionRetries;
+        Builder contentionRetries(final int value) {
+            this.contentionRetries = value;
             return this;
         }
 
-        Builder storageBytesRead(int storageBytesRead) {
-            this.storageBytesRead = storageBytesRead;
+        Builder storageBytesRead(final int value) {
+            this.storageBytesRead = value;
             return this;
         }
 
-        Builder storageBytesWrite(int storageBytesWrite) {
-            this.storageBytesWrite = storageBytesWrite;
+        Builder storageBytesWrite(final int value) {
+            this.storageBytesWrite = value;
             return this;
         }
 
-        Builder processingTimeMs(int processingTimeMs) {
-            this.processingTimeMs = processingTimeMs;
+        Builder processingTimeMs(final int value) {
+            this.processingTimeMs = value;
             return this;
         }
 
-        Builder rateLimitsHit(List<String> rateLimitsHit) {
-            this.rateLimitsHit = rateLimitsHit;
+        Builder rateLimitsHit(final List<String> value) {
+            this.rateLimitsHit = value;
             return this;
         }
 
@@ -112,14 +209,13 @@ public final class QueryStats {
                     contentionRetries, storageBytesRead, storageBytesWrite,
                     processingTimeMs, rateLimitsHit);
         }
-
     }
 
     static Builder builder() {
         return new Builder();
     }
 
-    static Builder parseField(Builder builder, JsonParser parser)
+    static Builder parseField(final Builder builder, final JsonParser parser)
             throws IOException {
         String fieldName = parser.getValueAsString();
         switch (fieldName) {
@@ -152,8 +248,15 @@ public final class QueryStats {
         }
     }
 
-
-    public static QueryStats parseStats(JsonParser parser) throws IOException {
+    /**
+     * Parse QueryStats from a JsonParser.
+     *
+     * @param parser the JsonParser to consume
+     * @return a QueryStats object containing the parsed stats
+     * @throws IOException thrown from the JsonParser
+     */
+    public static QueryStats parseStats(final JsonParser parser)
+            throws IOException {
         if (parser.nextToken() == START_OBJECT) {
             Builder builder = builder();
             while (parser.nextToken() == FIELD_NAME) {
@@ -164,14 +267,13 @@ public final class QueryStats {
             return null;
         } else {
             throw new ClientResponseException(
-                    "Query stats should be an object or null, not " +
-                            parser.getCurrentToken());
+                    "Query stats should be an object or null, not "
+                            + parser.getCurrentToken());
         }
     }
 
-    private static String statString(String name, Object value) {
+    private static String statString(final String name, final Object value) {
         return String.join(": ", name, String.valueOf(value));
-
     }
 
     @Override
