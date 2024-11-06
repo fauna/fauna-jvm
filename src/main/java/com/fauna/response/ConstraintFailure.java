@@ -21,11 +21,15 @@ public final class ConstraintFailure {
     private final PathElement[][] paths;
 
     /**
-     * Initialize a new ConstraintFailure instance.
+     * Initialize a new ConstraintFailure instance. Queries that fail a <a
+     * href="https://docs.fauna.com/fauna/current/reference/fsl/check/">check</a>
+     * or <a
+     * href="https://docs.fauna.com/fauna/current/reference/fsl/unique/">unique
+     * constraint> return a constraint failure.
      *
-     * @param message The constraint failure message.
-     * @param name    The constraint failure name.
-     * @param paths   The constraint failure paths.
+     * @param message Human-readable description of the constraint failure.
+     * @param name    Name of the failed constraint.
+     * @param paths   A list of paths where the constraint failure occurred.
      */
     public ConstraintFailure(
             final String message,
@@ -135,7 +139,7 @@ public final class ConstraintFailure {
     }
 
     /**
-     * Gets an optional of path elements related to the constraint failure.
+     * Gets an optional path elements related to the constraint failure.
      *
      * @return An array of arrays of PathElements.
      */
@@ -235,7 +239,7 @@ public final class ConstraintFailure {
         /**
          * Tests whether the PathElement stores a string or an integer.
          *
-         * @return True if it's a string, else false.
+         * @return If it's a string, true. Otherwise, false.
          */
         public boolean isString() {
             return sVal != null;
@@ -276,7 +280,7 @@ public final class ConstraintFailure {
          * Sets a message on the builder.
          *
          * @param message The message to set.
-         * @return this
+         * @return this.
          */
         public Builder message(final String message) {
             this.message = message;
@@ -287,7 +291,7 @@ public final class ConstraintFailure {
          * Sets a name on the builder.
          *
          * @param name The name to set.
-         * @return this
+         * @return this.
          */
         public Builder name(final String name) {
             this.name = name;

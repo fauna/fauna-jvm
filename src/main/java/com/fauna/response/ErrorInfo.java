@@ -32,10 +32,17 @@ public class ErrorInfo {
     /**
      * Initializes a new ErrorInfo.
      *
-     * @param code               The Fauna error code
-     * @param message            The error message
-     * @param constraintFailures The constraint failures, if any
-     * @param abort              A abort JSON node of the response, if any
+     * @param code               The <a
+     *                           href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#error-codes">Fauna
+     *                           error code</a>.
+     * @param message            A short, human-readable description of the
+     *                           error.
+     * @param constraintFailures The constraint failures for the error, if any.
+     *                           Only present if the error code is
+     *                           `constraint_failure`.
+     * @param abort              A user-defined error message passed using an
+     *                           FQL `abort()` method call. Only present if the error
+     *                           code is `abort`.
      */
     public ErrorInfo(
             final String code,
@@ -142,7 +149,7 @@ public class ErrorInfo {
     }
 
     /**
-     * Gets the abort JSON node.
+     * Gets the user-defined abort error message as a JSON node.
      *
      * @return An optional TreeNode with the abort data.
      */
