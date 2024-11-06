@@ -460,7 +460,7 @@ using `flatten()`.
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
 import com.fauna.event.FeedIterator;
-import com.fauna.event.StreamEvent;
+import com.fauna.event.FaunaEvent;
 
 import java.util.ArrayList;
 import java.util.List;
