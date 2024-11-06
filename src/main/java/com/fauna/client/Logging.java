@@ -8,8 +8,9 @@ public class Logging {
         String hdrs = "NONE";
         if (headers != null) {
             hdrs = headers.map().entrySet().stream().map(
-                entry -> entry.getKey() + ": " + String.join(
-                        ",", entry.getValue())).collect(Collectors.joining(";"));
+                            entry -> entry.getKey() + ": " + String.join(
+                                    ",", entry.getValue()))
+                    .collect(Collectors.joining(";"));
         }
         return hdrs;
     }

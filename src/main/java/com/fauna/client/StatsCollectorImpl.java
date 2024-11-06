@@ -22,8 +22,10 @@ public class StatsCollectorImpl implements StatsCollector {
     private final AtomicLong processingTimeMs = new AtomicLong();
     private final AtomicInteger queryCount = new AtomicInteger();
     private final AtomicInteger rateLimitedReadQueryCount = new AtomicInteger();
-    private final AtomicInteger rateLimitedComputeQueryCount = new AtomicInteger();
-    private final AtomicInteger rateLimitedWriteQueryCount = new AtomicInteger();
+    private final AtomicInteger rateLimitedComputeQueryCount =
+            new AtomicInteger();
+    private final AtomicInteger rateLimitedWriteQueryCount =
+            new AtomicInteger();
 
     @Override
     public void add(QueryStats stats) {

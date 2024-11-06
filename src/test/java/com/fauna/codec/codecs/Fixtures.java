@@ -11,7 +11,7 @@ public class Fixtures {
         return String.format("{\"@long\":\"%s\"}", l);
     }
 
-    public static String DOUBLE_WIRE(Double d){
+    public static String DOUBLE_WIRE(Double d) {
         return String.format("{\"@double\":\"%s\"}", d);
     }
 
@@ -22,6 +22,7 @@ public class Fixtures {
     public static String TIME_WIRE(String s) {
         return String.format("{\"@time\":\"%s\"}", s);
     }
+
     public static String ESCAPED_OBJECT_WIRE_WITH(String tag) {
         return String.format("{\"@object\":{\"%s\":\"not\"}}", tag);
     }

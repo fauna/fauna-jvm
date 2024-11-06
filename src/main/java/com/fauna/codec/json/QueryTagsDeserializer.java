@@ -11,9 +11,12 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class QueryTagsDeserializer extends JsonDeserializer<Map<String, String>> {
+public class QueryTagsDeserializer
+        extends JsonDeserializer<Map<String, String>> {
     @Override
-    public Map<String,String> deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException {
+    public Map<String, String> deserialize(JsonParser jp,
+                                           DeserializationContext deserializationContext)
+            throws IOException {
         // We can improve performance by building this from tokens instead.
         switch (jp.currentToken()) {
             case VALUE_NULL:
@@ -30,7 +33,9 @@ public class QueryTagsDeserializer extends JsonDeserializer<Map<String, String>>
                         .filter(parts -> parts.length >= 2)
                         .collect(Collectors.toMap(t -> t[0], t -> t[1]));
             default:
-                throw new JsonParseException(jp, MessageFormat.format("Unexpected token `{0}` deserializing query tags", jp.currentToken()));
+                throw new JsonParseException(jp, MessageFormat.format(
+                        "Unexpected token `{0}` deserializing query tags",
+                        jp.currentToken()));
         }
     }
 }

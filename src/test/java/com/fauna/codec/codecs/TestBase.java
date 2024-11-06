@@ -29,11 +29,15 @@ public abstract class TestBase {
 
     public static Stream<Arguments> unsupportedTypeCases(Codec codec) {
         return Arrays.stream(FaunaType.values())
-                .filter(f -> Arrays.stream(codec.getSupportedTypes()).noneMatch(f::equals))
+                .filter(f -> Arrays.stream(codec.getSupportedTypes())
+                        .noneMatch(f::equals))
                 .map(f -> Arguments.of(Helpers.getWire(f), f));
     }
 
-    public <T,E extends Exception> void runCase(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
+    public <T, E extends Exception> void runCase(TestType testType,
+                                                 Codec<T> codec, String wire,
+                                                 Object obj, E exception)
+            throws IOException {
         switch (testType) {
             case RoundTrip:
                 var decodeRoundTrip = Helpers.decode(codec, wire);

@@ -18,10 +18,10 @@ import static com.fasterxml.jackson.core.JsonToken.END_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
 import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
+import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.EVENTS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.FEED_HAS_NEXT_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
-import static com.fauna.constants.ResponseFields.CURSOR_FIELD_NAME;
 
 public class FeedPage<E> {
     private final List<FaunaEvent<E>> events;
@@ -103,7 +103,8 @@ public class FeedPage<E> {
                 }
                 this.events = events;
             } else {
-                throw new IOException("Invalid event starting with: " + parser.currentToken());
+                throw new IOException("Invalid event starting with: " +
+                        parser.currentToken());
             }
             return this;
         }
@@ -126,17 +127,21 @@ public class FeedPage<E> {
                 case FEED_HAS_NEXT_FIELD_NAME:
                     return hasNext(parser.nextBooleanValue());
                 default:
-                    throw new ClientResponseException("Unknown FeedPage field: " + fieldName);
+                    throw new ClientResponseException(
+                            "Unknown FeedPage field: " + fieldName);
             }
         }
 
     }
 
-    public static <E> Builder<E> builder(Codec<E> elementCodec, StatsCollector statsCollector) {
+    public static <E> Builder<E> builder(Codec<E> elementCodec,
+                                         StatsCollector statsCollector) {
         return new Builder<>(elementCodec, statsCollector);
     }
 
-    public static <E> FeedPage<E> parseResponse(HttpResponse<InputStream> response, Codec<E> elementCodec, StatsCollector statsCollector) {
+    public static <E> FeedPage<E> parseResponse(
+            HttpResponse<InputStream> response, Codec<E> elementCodec,
+            StatsCollector statsCollector) {
         try {
             // If you want to inspect the request body before it's parsed, you can uncomment this.
             // String body = new BufferedReader(new InputStreamReader(response.body()))
@@ -145,11 +150,14 @@ public class FeedPage<E> {
                 // It's not ideal to use the QueryResponse parser in the Feed API. But for error cases, the
                 // error response that the Feed API throws is a terser (i.e. subset) version of QueryFailure, and the
                 // parser gracefully handles it. A FaunaException will be thrown by parseResponse.
-                QueryResponse.parseResponse(response, elementCodec, statsCollector);
+                QueryResponse.parseResponse(response, elementCodec,
+                        statsCollector);
             }
             JsonParser parser = JSON_FACTORY.createParser(response.body());
             if (parser.nextToken() != START_OBJECT) {
-                throw new ClientResponseException("Invalid event starting with: " + parser.currentToken());
+                throw new ClientResponseException(
+                        "Invalid event starting with: " +
+                                parser.currentToken());
             }
             Builder<E> builder = FeedPage.builder(elementCodec, statsCollector);
             while (parser.nextToken() == FIELD_NAME) {
@@ -157,7 +165,8 @@ public class FeedPage<E> {
             }
             return builder.build();
         } catch (IOException e) {
-            throw new ClientResponseException("Error parsing Feed response.", e);
+            throw new ClientResponseException("Error parsing Feed response.",
+                    e);
         }
     }
 }

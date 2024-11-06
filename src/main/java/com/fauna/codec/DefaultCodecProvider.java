@@ -4,6 +4,7 @@ import com.fauna.codec.codecs.BaseDocumentCodec;
 import com.fauna.codec.codecs.ClassCodec;
 import com.fauna.codec.codecs.DynamicCodec;
 import com.fauna.codec.codecs.EnumCodec;
+import com.fauna.codec.codecs.EventSourceResponseCodec;
 import com.fauna.codec.codecs.ListCodec;
 import com.fauna.codec.codecs.MapCodec;
 import com.fauna.codec.codecs.NullableDocumentCodec;
@@ -13,9 +14,8 @@ import com.fauna.codec.codecs.QueryArrCodec;
 import com.fauna.codec.codecs.QueryCodec;
 import com.fauna.codec.codecs.QueryLiteralCodec;
 import com.fauna.codec.codecs.QueryObjCodec;
-import com.fauna.codec.codecs.EventSourceResponseCodec;
-import com.fauna.event.EventSourceResponse;
 import com.fauna.codec.codecs.QueryValCodec;
+import com.fauna.event.EventSourceResponse;
 import com.fauna.query.builder.Query;
 import com.fauna.query.builder.QueryArr;
 import com.fauna.query.builder.QueryLiteral;
@@ -36,18 +36,25 @@ public class DefaultCodecProvider implements CodecProvider {
 
     private final CodecRegistry registry;
 
-    public static final CodecProvider SINGLETON = new DefaultCodecProvider(DefaultCodecRegistry.SINGLETON);
+    public static final CodecProvider SINGLETON =
+            new DefaultCodecProvider(DefaultCodecRegistry.SINGLETON);
 
     public DefaultCodecProvider(CodecRegistry registry) {
-        registry.put(CodecRegistryKey.from(Object.class), new DynamicCodec(this));
+        registry.put(CodecRegistryKey.from(Object.class),
+                new DynamicCodec(this));
 
         registry.put(CodecRegistryKey.from(Query.class), new QueryCodec(this));
-        registry.put(CodecRegistryKey.from(QueryObj.class), new QueryObjCodec(this));
-        registry.put(CodecRegistryKey.from(QueryArr.class), new QueryArrCodec(this));
-        registry.put(CodecRegistryKey.from(QueryVal.class), new QueryValCodec(this));
-        registry.put(CodecRegistryKey.from(QueryLiteral.class), new QueryLiteralCodec());
+        registry.put(CodecRegistryKey.from(QueryObj.class),
+                new QueryObjCodec(this));
+        registry.put(CodecRegistryKey.from(QueryArr.class),
+                new QueryArrCodec(this));
+        registry.put(CodecRegistryKey.from(QueryVal.class),
+                new QueryValCodec(this));
+        registry.put(CodecRegistryKey.from(QueryLiteral.class),
+                new QueryLiteralCodec());
 
-        registry.put(CodecRegistryKey.from(EventSourceResponse.class), new EventSourceResponseCodec());
+        registry.put(CodecRegistryKey.from(EventSourceResponse.class),
+                new EventSourceResponseCodec());
 
 
         var bdc = new BaseDocumentCodec(this);
@@ -75,35 +82,40 @@ public class DefaultCodecProvider implements CodecProvider {
     }
 
     @SuppressWarnings({"unchecked"})
-    private <T,E> Codec<T> generate(Class<T> clazz, Type[] typeArgs) {
+    private <T, E> Codec<T> generate(Class<T> clazz, Type[] typeArgs) {
         if (Map.class.isAssignableFrom(clazz)) {
-            var ta = typeArgs == null || typeArgs.length <= 1 ? Object.class : typeArgs[1];
+            var ta = typeArgs == null || typeArgs.length <= 1 ? Object.class :
+                    typeArgs[1];
             Codec<?> valueCodec = this.get((Class<?>) ta, null);
 
-            return (Codec<T>) new MapCodec<E,Map<String,E>>((Codec<E>) valueCodec);
+            return (Codec<T>) new MapCodec<E, Map<String, E>>(
+                    (Codec<E>) valueCodec);
         }
 
-        var ta = typeArgs == null || typeArgs.length == 0 ? Object.class : typeArgs[0];
+        var ta = typeArgs == null || typeArgs.length == 0 ? Object.class :
+                typeArgs[0];
 
         if (List.class.isAssignableFrom(clazz)) {
             Codec<?> elemCodec = this.get((Class<?>) ta, null);
 
-            return (Codec<T>) new ListCodec<E,List<E>>((Codec<E>) elemCodec);
+            return (Codec<T>) new ListCodec<E, List<E>>((Codec<E>) elemCodec);
         }
 
         if (clazz == Optional.class) {
             Codec<?> valueCodec = this.get((Class<?>) ta, null);
-            return (Codec<T>) new OptionalCodec<E,Optional<E>>((Codec<E>) valueCodec);
+            return (Codec<T>) new OptionalCodec<E, Optional<E>>(
+                    (Codec<E>) valueCodec);
         }
 
         if (clazz == Page.class) {
             Codec<?> valueCodec = this.get((Class<?>) ta, null);
-            return (Codec<T>) new PageCodec<E,Page<E>>((Codec<E>) valueCodec);
+            return (Codec<T>) new PageCodec<E, Page<E>>((Codec<E>) valueCodec);
         }
 
         if (clazz == NullableDocument.class) {
             Codec<?> valueCodec = this.get((Class<?>) ta, null);
-            return (Codec<T>) new NullableDocumentCodec<E, NullableDocument<E>>((Codec<E>) valueCodec);
+            return (Codec<T>) new NullableDocumentCodec<E, NullableDocument<E>>(
+                    (Codec<E>) valueCodec);
         }
 
         if (clazz.isEnum()) {

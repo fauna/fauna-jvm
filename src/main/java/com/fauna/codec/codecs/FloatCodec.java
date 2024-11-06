@@ -1,9 +1,9 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
 public class FloatCodec extends BaseCodec<Float> {
 
@@ -19,12 +19,15 @@ public class FloatCodec extends BaseCodec<Float> {
             case DOUBLE:
                 return parser.getValueAsFloat();
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Float obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, Float obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -39,6 +42,7 @@ public class FloatCodec extends BaseCodec<Float> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Double, FaunaType.Int, FaunaType.Long, FaunaType.Null};
+        return new FaunaType[] {FaunaType.Double, FaunaType.Int, FaunaType.Long,
+                FaunaType.Null};
     }
 }

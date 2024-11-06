@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class CodecRegistryTest {
 
@@ -14,7 +13,8 @@ public class CodecRegistryTest {
 
     @Test
     public void put_addsCodecWithKey() {
-        CodecRegistryKey key = CodecRegistryKey.from(String.class, new Type[]{Integer.class});
+        CodecRegistryKey key =
+                CodecRegistryKey.from(String.class, new Type[] {Integer.class});
         Codec<Integer> codec = new IntCodec();
         reg.put(key, codec);
         Codec result = reg.get(key);

@@ -29,13 +29,19 @@ public class EnumCodecTest extends TestBase {
 
 
     public static Stream<Arguments> unsupportedTypeCases() {
-        return unsupportedTypeCases(DefaultCodecProvider.SINGLETON.get(TestEnum.class));
+        return unsupportedTypeCases(
+                DefaultCodecProvider.SINGLETON.get(TestEnum.class));
     }
 
     @ParameterizedTest(name = "EnumCodecUnsupportedTypes({index}) -> {0}:{1}")
     @MethodSource("unsupportedTypeCases")
-    public void enum_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
-        var exMsg = MessageFormat.format("Unable to decode `{0}` with `EnumCodec<TestEnum>`. Supported types for codec are [Null, String].", type);
-        runCase(TestType.Decode, DefaultCodecProvider.SINGLETON.get(TestEnum.class), wire, null, new CodecException(exMsg));
+    public void enum_runUnsupportedTypeTestCases(String wire, FaunaType type)
+            throws IOException {
+        var exMsg = MessageFormat.format(
+                "Unable to decode `{0}` with `EnumCodec<TestEnum>`. Supported types for codec are [Null, String].",
+                type);
+        runCase(TestType.Decode,
+                DefaultCodecProvider.SINGLETON.get(TestEnum.class), wire, null,
+                new CodecException(exMsg));
     }
 }

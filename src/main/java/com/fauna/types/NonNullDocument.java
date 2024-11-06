@@ -30,13 +30,21 @@ public final class NonNullDocument<T> extends NullableDocument<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
-        if (getClass() != o.getClass()) return false;
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
-        if (val.getClass() != ((NonNullDocument<?>) o).get().getClass()) return false;
+        if (val.getClass() != ((NonNullDocument<?>) o).get().getClass()) {
+            return false;
+        }
 
         return val.equals(((NonNullDocument<?>) o).get());
     }

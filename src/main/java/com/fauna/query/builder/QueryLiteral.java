@@ -1,6 +1,7 @@
 package com.fauna.query.builder;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Objects;
 
 /**
@@ -19,7 +20,8 @@ public class QueryLiteral extends QueryFragment {
      */
     public QueryLiteral(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("A literal value must not be null");
+            throw new IllegalArgumentException(
+                    "A literal value must not be null");
         }
         this.value = value;
     }
@@ -36,8 +38,12 @@ public class QueryLiteral extends QueryFragment {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         QueryLiteral that = (QueryLiteral) o;
 

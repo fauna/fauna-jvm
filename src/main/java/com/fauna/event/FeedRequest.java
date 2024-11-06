@@ -29,23 +29,28 @@ public class FeedRequest {
         ByteArrayOutputStream requestBytes = new ByteArrayOutputStream();
         JsonGenerator gen = new JsonFactory().createGenerator(requestBytes);
         gen.writeStartObject();
-        gen.writeStringField(RequestBuilder.FieldNames.TOKEN, source.getToken());
+        gen.writeStringField(RequestBuilder.FieldNames.TOKEN,
+                source.getToken());
         // Cannot use ifPresent(val -> ...) because gen.write methods can throw an IOException.
         if (options.getCursor().isPresent()) {
-            gen.writeStringField(RequestBuilder.FieldNames.CURSOR, options.getCursor().get());
+            gen.writeStringField(RequestBuilder.FieldNames.CURSOR,
+                    options.getCursor().get());
         }
         if (options.getStartTs().isPresent()) {
-            gen.writeNumberField(RequestBuilder.FieldNames.START_TS, options.getStartTs().get());
+            gen.writeNumberField(RequestBuilder.FieldNames.START_TS,
+                    options.getStartTs().get());
         }
         if (options.getPageSize().isPresent()) {
-            gen.writeNumberField(RequestBuilder.FieldNames.PAGE_SIZE, options.getPageSize().get());
+            gen.writeNumberField(RequestBuilder.FieldNames.PAGE_SIZE,
+                    options.getPageSize().get());
         }
         gen.writeEndObject();
         gen.flush();
         return requestBytes.toString(StandardCharsets.UTF_8);
     }
 
-    public static FeedRequest fromResponse(EventSourceResponse resp, FeedOptions options) {
+    public static FeedRequest fromResponse(EventSourceResponse resp,
+                                           FeedOptions options) {
         return new FeedRequest(EventSource.fromToken(resp.getToken()), options);
     }
 

@@ -9,9 +9,12 @@ public class NullDocumentTest extends TypeTestBase {
 
     @Test
     public void nullDoc_playsNiceWithJackson() throws JsonProcessingException {
-        var nonNull = new NullDocument<>("123", new Module("MyColl"), "not found");
+        var nonNull =
+                new NullDocument<>("123", new Module("MyColl"), "not found");
 
         var result = mapper.writeValueAsString(nonNull);
-        assertEquals("{\"id\":\"123\",\"cause\":\"not found\",\"collection\":{\"name\":\"MyColl\"}}", result);
+        assertEquals(
+                "{\"id\":\"123\",\"cause\":\"not found\",\"collection\":{\"name\":\"MyColl\"}}",
+                result);
     }
 }

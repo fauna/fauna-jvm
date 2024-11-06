@@ -35,8 +35,12 @@ public class QueryArr<E extends QueryFragment> extends QueryFragment<List<E>> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         QueryArr that = (QueryArr) o;
 

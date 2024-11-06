@@ -1,25 +1,29 @@
 package com.fauna.codec.codecs;
 
+import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.codec.FaunaTokenType;
-import com.fauna.exception.CodecException;
 import com.fauna.event.EventSourceResponse;
+import com.fauna.exception.CodecException;
 
 public class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
 
     @Override
-    public EventSourceResponse decode(UTF8FaunaParser parser) throws CodecException {
+    public EventSourceResponse decode(UTF8FaunaParser parser)
+            throws CodecException {
         if (parser.getCurrentTokenType() == FaunaTokenType.STREAM) {
             return new EventSourceResponse(parser.getTaggedValueAsString());
         } else {
-            throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+            throw new CodecException(this.unsupportedTypeDecodingMessage(
+                    parser.getCurrentTokenType().getFaunaType(),
+                    getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, EventSourceResponse obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, EventSourceResponse obj)
+            throws CodecException {
         throw new CodecException("Cannot encode StreamTokenResponse");
 
     }
@@ -31,6 +35,6 @@ public class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Stream};
+        return new FaunaType[] {FaunaType.Stream};
     }
 }

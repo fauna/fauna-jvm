@@ -3,14 +3,14 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
+public class ListCodec<E, L extends List<E>> extends BaseCodec<L> {
 
     private final Codec<E> elementCodec;
 
@@ -26,7 +26,8 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
             case START_ARRAY:
                 List<E> list = new ArrayList<>();
 
-                while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_ARRAY) {
+                while (parser.read() && parser.getCurrentTokenType() !=
+                        FaunaTokenType.END_ARRAY) {
                     E value = elementCodec.decode(parser);
                     list.add(value);
                 }
@@ -34,7 +35,9 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
                 var typed = (L) list;
                 return typed;
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
@@ -60,6 +63,6 @@ public class ListCodec<E,L extends List<E>> extends BaseCodec<L> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Array, FaunaType.Null};
+        return new FaunaType[] {FaunaType.Array, FaunaType.Null};
     }
 }

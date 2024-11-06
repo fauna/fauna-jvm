@@ -19,11 +19,13 @@ public class QueryValCodec extends BaseCodec<QueryVal> {
 
     @Override
     public QueryVal decode(UTF8FaunaParser parser) throws CodecException {
-        throw new CodecException("Decoding into a QueryFragment is not supported");
+        throw new CodecException(
+                "Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryVal obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, QueryVal obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

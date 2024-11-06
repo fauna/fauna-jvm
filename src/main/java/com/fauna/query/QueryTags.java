@@ -15,8 +15,9 @@ public class QueryTags extends HashMap<String, String> {
 
     /**
      * Build a set of query tags from a collection of strings.
-     * @param tags  1 or more strings of the form "k=v" where k is the tag key, and v is the tag value.
-     * @return      A new QueryTags instance.
+     *
+     * @param tags 1 or more strings of the form "k=v" where k is the tag key, and v is the tag value.
+     * @return A new QueryTags instance.
      */
     public static QueryTags of(String... tags) {
         QueryTags queryTags = new QueryTags();
@@ -25,7 +26,8 @@ public class QueryTags extends HashMap<String, String> {
             if (tag.length == 2) {
                 queryTags.put(tag[0].strip(), tag[1].strip());
             } else {
-                throw new ClientResponseException("Invalid tag encoding: " + tagString);
+                throw new ClientResponseException(
+                        "Invalid tag encoding: " + tagString);
             }
         }
         return queryTags;
@@ -33,7 +35,8 @@ public class QueryTags extends HashMap<String, String> {
 
     public String encode() {
         return this.entrySet().stream().sorted(Map.Entry.comparingByKey())
-                .map(entry -> String.join(EQUALS, entry.getKey(), entry.getValue()))
+                .map(entry -> String.join(EQUALS, entry.getKey(),
+                        entry.getValue()))
                 .collect(Collectors.joining(COMMA));
     }
 
@@ -48,7 +51,9 @@ public class QueryTags extends HashMap<String, String> {
                 return new QueryTags();
             }
         } else {
-            throw new ClientResponseException("Unexpected token for QueryTags: " + parser.getCurrentToken());
+            throw new ClientResponseException(
+                    "Unexpected token for QueryTags: " +
+                            parser.getCurrentToken());
         }
     }
 }

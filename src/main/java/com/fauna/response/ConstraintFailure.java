@@ -19,7 +19,8 @@ public class ConstraintFailure {
 
     private final PathElement[][] paths;
 
-    public ConstraintFailure(String message, String name, PathElement[][] paths) {
+    public ConstraintFailure(String message, String name,
+                             PathElement[][] paths) {
         this.message = message;
         this.name = name;
         this.paths = paths;
@@ -43,9 +44,10 @@ public class ConstraintFailure {
 
         /**
          * Note that this parse method does not advance the parser.
-         * @param parser        A JsonParser instance.
-         * @return              A new PathElement.
-         * @throws IOException  Can be thrown if e.g. stream ends.
+         *
+         * @param parser A JsonParser instance.
+         * @return A new PathElement.
+         * @throws IOException Can be thrown if e.g. stream ends.
          */
         public static PathElement parse(JsonParser parser) throws IOException {
             if (parser.currentToken().isNumeric()) {
@@ -59,7 +61,8 @@ public class ConstraintFailure {
         public boolean equals(Object o) {
             if (o instanceof PathElement) {
                 PathElement other = (PathElement) o;
-                return other.isString() == this.isString() && other.toString().equals(this.toString());
+                return other.isString() == this.isString() &&
+                        other.toString().equals(this.toString());
             } else {
                 return false;
             }
@@ -78,7 +81,8 @@ public class ConstraintFailure {
             } else if (element instanceof Integer) {
                 path.add(new PathElement((Integer) element));
             } else {
-                throw new IllegalArgumentException("Only strings and integers supported");
+                throw new IllegalArgumentException(
+                        "Only strings and integers supported");
             }
         }
         return path.toArray(new PathElement[0]);
@@ -106,8 +110,10 @@ public class ConstraintFailure {
         }
 
         public ConstraintFailure build() {
-            PathElement[][] paths = this.paths.toArray(new PathElement[this.paths.size()][]);
-            return new ConstraintFailure(this.message, this.name, this.paths.isEmpty() ? null : paths);
+            PathElement[][] paths =
+                    this.paths.toArray(new PathElement[this.paths.size()][]);
+            return new ConstraintFailure(this.message, this.name,
+                    this.paths.isEmpty() ? null : paths);
         }
 
     }
@@ -116,9 +122,12 @@ public class ConstraintFailure {
         return new Builder();
     }
 
-    public static ConstraintFailure parse(JsonParser parser) throws IOException {
-        if (parser.currentToken() != JsonToken.START_OBJECT && parser.nextToken() != JsonToken.START_OBJECT) {
-            throw new ClientResponseException("Constraint failure should be a JSON object.");
+    public static ConstraintFailure parse(JsonParser parser)
+            throws IOException {
+        if (parser.currentToken() != JsonToken.START_OBJECT &&
+                parser.nextToken() != JsonToken.START_OBJECT) {
+            throw new ClientResponseException(
+                    "Constraint failure should be a JSON object.");
         }
         Builder builder = ConstraintFailure.builder();
         while (parser.nextToken() == JsonToken.FIELD_NAME) {
@@ -142,7 +151,9 @@ public class ConstraintFailure {
                             paths.add(path.toArray(new PathElement[0]));
                         }
                     } else if (firstPathToken != JsonToken.VALUE_NULL) {
-                        throw new ClientResponseException("Constraint failure path should be array or null, got: " + firstPathToken.toString());
+                        throw new ClientResponseException(
+                                "Constraint failure path should be array or null, got: " +
+                                        firstPathToken.toString());
                     }
                     paths.forEach(builder::path);
                     break;
@@ -169,14 +180,18 @@ public class ConstraintFailure {
             return Optional.empty();
         } else {
             return Optional.of(Arrays.stream(paths).map(
-                    pathElements -> Arrays.stream(pathElements).map(PathElement::toString).collect(
-                            Collectors.joining("."))).collect(Collectors.toList()));
+                            pathElements -> Arrays.stream(pathElements)
+                                    .map(PathElement::toString).collect(
+                                            Collectors.joining(".")))
+                    .collect(Collectors.toList()));
         }
     }
 
     public boolean pathsAreEqual(ConstraintFailure otherFailure) {
-        PathElement[][] thisArray = this.getPaths().orElse(new PathElement[0][]);
-        PathElement[][] otherArray = otherFailure.getPaths().orElse(new PathElement[0][]);
+        PathElement[][] thisArray =
+                this.getPaths().orElse(new PathElement[0][]);
+        PathElement[][] otherArray =
+                otherFailure.getPaths().orElse(new PathElement[0][]);
         return Arrays.deepEquals(thisArray, otherArray);
     }
 

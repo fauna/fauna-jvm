@@ -19,11 +19,13 @@ public class QueryArrCodec extends BaseCodec<QueryArr> {
 
     @Override
     public QueryArr decode(UTF8FaunaParser parser) throws CodecException {
-        throw new CodecException("Decoding into a QueryFragment is not supported");
+        throw new CodecException(
+                "Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryArr obj) throws CodecException {
+    public void encode(UTF8FaunaGenerator gen, QueryArr obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

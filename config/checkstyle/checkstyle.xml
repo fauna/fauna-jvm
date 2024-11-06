@@ -102,7 +102,6 @@
         <module name="InvalidJavadocPosition"/>
         <module name="JavadocMethod"/>
         <module name="JavadocType"/>
-        <module name="JavadocVariable"/>
         <module name="JavadocStyle"/>
         <module name="MissingJavadocMethod"/>
 
@@ -130,7 +129,6 @@
         <!-- Checks for Size Violations.                    -->
         <!-- See https://checkstyle.org/checks/sizes/index.html -->
         <module name="MethodLength"/>
-        <module name="ParameterNumber"/>
 
         <!-- Checks for whitespace                               -->
         <!-- See https://checkstyle.org/checks/whitespace/index.html -->
@@ -162,7 +160,6 @@
         <!-- See https://checkstyle.org/checks/coding/index.html -->
         <module name="EmptyStatement"/>
         <module name="EqualsHashCode"/>
-        <module name="HiddenField"/>
         <module name="IllegalInstantiation"/>
         <module name="InnerAssignment"/>
         <module name="MagicNumber"/>

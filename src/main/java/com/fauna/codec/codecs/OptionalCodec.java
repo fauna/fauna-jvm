@@ -9,7 +9,7 @@ import com.fauna.exception.CodecException;
 
 import java.util.Optional;
 
-public class OptionalCodec<E,L extends Optional<E>> extends BaseCodec<L> {
+public class OptionalCodec<E, L extends Optional<E>> extends BaseCodec<L> {
 
     private final Codec<E> valueCodec;
 

@@ -51,73 +51,109 @@ public final class QueryStatsSummary {
 
     /**
      * Gets the aggregate read ops.
+     *
      * @return A long representing the aggregate read ops
      */
-    public long getReadOps() { return readOps; }
+    public long getReadOps() {
+        return readOps;
+    }
 
     /**
      * Gets the aggregate compute ops.
+     *
      * @return A long representing the aggregate compute ops
      */
-    public long getComputeOps() { return computeOps; }
+    public long getComputeOps() {
+        return computeOps;
+    }
 
     /**
      * Gets the aggregate write ops.
+     *
      * @return A long representing the aggregate write ops
      */
-    public long getWriteOps() { return writeOps; }
+    public long getWriteOps() {
+        return writeOps;
+    }
 
     /**
      * Gets the aggregate query time in milliseconds.
+     *
      * @return A long representing the aggregate query time in milliseconds.
      */
-    public long getQueryTimeMs() { return queryTimeMs; }
+    public long getQueryTimeMs() {
+        return queryTimeMs;
+    }
 
     /**
      * Gets the count of retries due to contention.
+     *
      * @return An int representing the count of retries due to contention.
      */
-    public int getContentionRetries() { return contentionRetries; }
+    public int getContentionRetries() {
+        return contentionRetries;
+    }
 
     /**
      * Gets the aggregate storage bytes read.
+     *
      * @return A long representing the aggregate number of storage bytes read.
      */
-    public long getStorageBytesRead() { return storageBytesRead; }
+    public long getStorageBytesRead() {
+        return storageBytesRead;
+    }
 
     /**
      * Gets the aggregate storage bytes written.
+     *
      * @return A long representing the aggregate number of storage bytes written.
      */
-    public long getStorageBytesWrite() { return storageBytesWrite; }
+    public long getStorageBytesWrite() {
+        return storageBytesWrite;
+    }
 
     /**
      * Gets the aggregate processing time in milliseconds.
+     *
      * @return A long representing the aggregate processing time in milliseconds.
      */
-    public long getProcessingTimeMs() { return processingTimeMs; }
+    public long getProcessingTimeMs() {
+        return processingTimeMs;
+    }
 
     /**
      * Gets the count of queries summarized on this instance.
+     *
      * @return An int representing the count of queries summarized.
      */
-    public int getQueryCount() { return queryCount; }
+    public int getQueryCount() {
+        return queryCount;
+    }
 
     /**
      * Gets the count of rate limited queries due to read limits.
+     *
      * @return An int representing the count of rate limited queries.
      */
-    public int getRateLimitedReadQueryCount() { return rateLimitedReadQueryCount; }
+    public int getRateLimitedReadQueryCount() {
+        return rateLimitedReadQueryCount;
+    }
 
     /**
      * Gets the count of rate limited queries due to compute limits.
+     *
      * @return An int representing the count of rate limited queries.
      */
-    public int getRateLimitedComputeQueryCount() { return rateLimitedComputeQueryCount; }
+    public int getRateLimitedComputeQueryCount() {
+        return rateLimitedComputeQueryCount;
+    }
 
     /**
      * Gets the count of rate limited queries due to write limits.
+     *
      * @return An int representing the count of rate limited queries.
      */
-    public int getRateLimitedWriteQueryCount() { return rateLimitedWriteQueryCount; }
+    public int getRateLimitedWriteQueryCount() {
+        return rateLimitedWriteQueryCount;
+    }
 }

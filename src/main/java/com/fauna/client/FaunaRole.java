@@ -16,7 +16,8 @@ public class FaunaRole {
 
     public static final FaunaRole ADMIN = new FaunaRole(ADMIN_ROLE_NAME);
     public static final FaunaRole SERVER = new FaunaRole(SERVER_ROLE_NAME);
-    public static final FaunaRole SERVER_READ_ONLY = new FaunaRole(SERVER_READ_ONLY_ROLE_NAME);
+    public static final FaunaRole SERVER_READ_ONLY =
+            new FaunaRole(SERVER_READ_ONLY_ROLE_NAME);
     private static final String ROLE_PREFIX = "@role/";
     private static final Character UNDERSCORE = '_';
 
@@ -38,18 +39,24 @@ public class FaunaRole {
 
     public static void validateRoleName(String name) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Role name cannot be null or empty.");
+            throw new IllegalArgumentException(
+                    "Role name cannot be null or empty.");
         }
         if (BUILT_IN_ROLE_NAMES.contains(name)) {
-            String msg = MessageFormat.format("Role name {0} is reserved, but you can use it as a built-in role", name);
+            String msg = MessageFormat.format(
+                    "Role name {0} is reserved, but you can use it as a built-in role",
+                    name);
             throw new IllegalArgumentException(msg);
         }
         if (!Character.isAlphabetic(name.charAt(0))) {
-            throw new IllegalArgumentException("First character must be a letter.");
+            throw new IllegalArgumentException(
+                    "First character must be a letter.");
         }
         for (Character c : name.toCharArray()) {
-            if (!Character.isAlphabetic(c) && !Character.isDigit(c) && !c.equals(UNDERSCORE)) {
-                throw new IllegalArgumentException("Role names can only contain letters, numbers, and underscores.");
+            if (!Character.isAlphabetic(c) && !Character.isDigit(c) &&
+                    !c.equals(UNDERSCORE)) {
+                throw new IllegalArgumentException(
+                        "Role names can only contain letters, numbers, and underscores.");
             }
         }
 

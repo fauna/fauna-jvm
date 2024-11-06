@@ -14,18 +14,26 @@ import java.text.MessageFormat;
 import java.util.stream.Stream;
 
 public class ModuleCodecTest extends TestBase {
-    public static final Codec<Module> MODULE_CODEC = DefaultCodecProvider.SINGLETON.get(Module.class);
+    public static final Codec<Module> MODULE_CODEC =
+            DefaultCodecProvider.SINGLETON.get(Module.class);
 
     public static Stream<Arguments> testCases() {
         return Stream.of(
-                Arguments.of(TestType.RoundTrip, MODULE_CODEC, "{\"@mod\":\"Foo\"}", new Module("Foo"), null),
-                Arguments.of(TestType.RoundTrip, MODULE_CODEC, "null", null, null)
+                Arguments.of(TestType.RoundTrip, MODULE_CODEC,
+                        "{\"@mod\":\"Foo\"}", new Module("Foo"), null),
+                Arguments.of(TestType.RoundTrip, MODULE_CODEC, "null", null,
+                        null)
         );
     }
 
     @ParameterizedTest(name = "ModuleCodec({index}) -> {0}:{1}:{2}:{3}:{4}")
     @MethodSource("testCases")
-    public <T,E extends Exception> void module_runTestCases(TestType testType, Codec<T> codec, String wire, Object obj, E exception) throws IOException {
+    public <T, E extends Exception> void module_runTestCases(TestType testType,
+                                                             Codec<T> codec,
+                                                             String wire,
+                                                             Object obj,
+                                                             E exception)
+            throws IOException {
         runCase(testType, codec, wire, obj, exception);
     }
 
@@ -35,8 +43,12 @@ public class ModuleCodecTest extends TestBase {
 
     @ParameterizedTest(name = "ModuleCodecUnsupportedTypes({index}) -> {0}:{1}")
     @MethodSource("unsupportedTypeCases")
-    public void module_runUnsupportedTypeTestCases(String wire, FaunaType type) throws IOException {
-        var exMsg = MessageFormat.format("Unable to decode `{0}` with `ModuleCodec<Module>`. Supported types for codec are [Module, Null].", type);
-        runCase(TestType.Decode, MODULE_CODEC, wire, null, new CodecException(exMsg));
+    public void module_runUnsupportedTypeTestCases(String wire, FaunaType type)
+            throws IOException {
+        var exMsg = MessageFormat.format(
+                "Unable to decode `{0}` with `ModuleCodec<Module>`. Supported types for codec are [Module, Null].",
+                type);
+        runCase(TestType.Decode, MODULE_CODEC, wire, null,
+                new CodecException(exMsg));
     }
 }

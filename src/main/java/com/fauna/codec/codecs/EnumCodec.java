@@ -19,9 +19,12 @@ public class EnumCodec<T> extends BaseCodec<T> {
                 return null;
             case STRING:
                 //noinspection unchecked,rawtypes
-                return (T) Enum.valueOf((Class<Enum>) enumType, parser.getValueAsString());
+                return (T) Enum.valueOf((Class<Enum>) enumType,
+                        parser.getValueAsString());
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
@@ -41,6 +44,6 @@ public class EnumCodec<T> extends BaseCodec<T> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Null, FaunaType.String};
+        return new FaunaType[] {FaunaType.Null, FaunaType.String};
     }
 }

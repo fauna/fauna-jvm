@@ -19,7 +19,8 @@ public class HttpRequestMatcher implements ArgumentMatcher<HttpRequest> {
         Map<String, List<String>> headers = httpRequest.headers().map();
         for (Map.Entry<String, String> header : expectedHeaders.entrySet()) {
             // It's possible to have multiple headers returned, but assert that we only get one.
-            if (!headers.getOrDefault(header.getKey(), List.of()).equals(List.of(header.getValue()))) {
+            if (!headers.getOrDefault(header.getKey(), List.of())
+                    .equals(List.of(header.getValue()))) {
                 return false;
             }
         }

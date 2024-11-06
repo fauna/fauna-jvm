@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static com.fauna.codec.Generic.nullableDocumentOf;
-import static com.fauna.query.builder.Query.fql;
 import static com.fauna.codec.Generic.listOf;
 import static com.fauna.codec.Generic.mapOf;
-import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.codec.Generic.nullableDocumentOf;
 import static com.fauna.codec.Generic.optionalOf;
+import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -58,7 +58,8 @@ public class E2EQueryTest {
         FaunaClient client = Fauna.local();
         assertTrue(client.getLastTransactionTs().isEmpty());
         client.query(fql("42"));
-        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() * 1_000_000;
+        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() *
+                1_000_000;
         assertTrue(client.getLastTransactionTs().orElseThrow() > y2k);
     }
 
@@ -66,14 +67,17 @@ public class E2EQueryTest {
     public void clientTransactionTsOnFailure() {
         FaunaClient client = Fauna.local();
         assertTrue(client.getLastTransactionTs().isEmpty());
-        assertThrows(QueryRuntimeException.class, () -> client.query(fql("NonExistantCollection.all()")));
-        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() * 1_000_000;
+        assertThrows(QueryRuntimeException.class,
+                () -> client.query(fql("NonExistantCollection.all()")));
+        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() *
+                1_000_000;
         assertTrue(client.getLastTransactionTs().orElseThrow() > y2k);
     }
 
     @Test
     public void queryTimeout() {
-        QueryOptions opts = QueryOptions.builder().timeout(Duration.ofMillis(1)).build();
+        QueryOptions opts =
+                QueryOptions.builder().timeout(Duration.ofMillis(1)).build();
         QueryTimeoutException exc = assertThrows(QueryTimeoutException.class,
                 () -> c.query(fql("Author.all()"), listOf(Author.class), opts));
         assertTrue(exc.getMessage().contains("Client set aggressive deadline"));
@@ -121,7 +125,8 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithClass() throws ExecutionException, InterruptedException {
+    public void query_asyncWithClass()
+            throws ExecutionException, InterruptedException {
         var q = fql("42");
         var res = c.asyncQuery(q, int.class).get();
         var exp = 42;
@@ -129,7 +134,8 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithParameterized() throws ExecutionException, InterruptedException {
+    public void query_asyncWithParameterized()
+            throws ExecutionException, InterruptedException {
         var q = fql("[42]");
         var res = c.asyncQuery(q, listOf(int.class)).get();
         var exp = List.of(42);
@@ -137,7 +143,8 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithClassAndOptions() throws ExecutionException, InterruptedException {
+    public void query_asyncWithClassAndOptions()
+            throws ExecutionException, InterruptedException {
         var q = fql("42");
         var res = c.asyncQuery(q, int.class, QueryOptions.DEFAULT).get();
         var exp = 42;
@@ -145,9 +152,11 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithParameterizedAndOptions() throws ExecutionException, InterruptedException {
+    public void query_asyncWithParameterizedAndOptions()
+            throws ExecutionException, InterruptedException {
         var q = fql("[42]");
-        var res = c.asyncQuery(q, listOf(int.class), QueryOptions.DEFAULT).get();
+        var res =
+                c.asyncQuery(q, listOf(int.class), QueryOptions.DEFAULT).get();
         var exp = List.of(42);
         assertEquals(exp, res.getData());
     }
@@ -166,11 +175,13 @@ public class E2EQueryTest {
 
     @Test
     public void query_arrayOfPersonOutgoing() {
-        var q = fql("${var}", Map.of("var", List.of(new Author("alice","smith","w", 42))));
+        var q = fql("${var}",
+                Map.of("var", List.of(new Author("alice", "smith", "w", 42))));
 
         var res = c.query(q);
 
-        List<Map<String, Object>> elem = (List<Map<String, Object>>) res.getData();
+        List<Map<String, Object>> elem =
+                (List<Map<String, Object>>) res.getData();
         assertEquals("alice", elem.get(0).get("firstName"));
     }
 
@@ -203,7 +214,7 @@ public class E2EQueryTest {
     @Test
     public void query_optionalNull() {
         var empty = Optional.empty();
-        var q = fql("${empty}", new HashMap<>(){{
+        var q = fql("${empty}", new HashMap<>() {{
             put("empty", empty);
         }});
 
@@ -216,7 +227,7 @@ public class E2EQueryTest {
     @Test
     public void query_optionalNotNull() {
         var val = Optional.of(42);
-        var q = fql("${val}", new HashMap<>(){{
+        var q = fql("${val}", new HashMap<>() {{
             put("val", val);
         }});
 
@@ -234,7 +245,7 @@ public class E2EQueryTest {
         var qs = c.query(q, nullableDocumentOf(Author.class));
         NullableDocument<Author> actual = qs.getData();
         assertInstanceOf(NullDocument.class, actual);
-        assertEquals("not found", ((NullDocument<Author>)actual).getCause());
+        assertEquals("not found", ((NullDocument<Author>) actual).getCause());
     }
 
     @Test
@@ -243,7 +254,8 @@ public class E2EQueryTest {
         var qs = c.query(q, nullableDocumentOf(Author.class));
         NullableDocument<Author> actual = qs.getData();
         assertInstanceOf(NonNullDocument.class, actual);
-        assertEquals("Alice", ((NonNullDocument<Author>)actual).getValue().getFirstName());
+        assertEquals("Alice",
+                ((NonNullDocument<Author>) actual).getValue().getFirstName());
     }
 
     @Test

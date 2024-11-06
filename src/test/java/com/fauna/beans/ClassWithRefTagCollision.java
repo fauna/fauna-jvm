@@ -8,7 +8,9 @@ import java.util.Objects;
 
 public class ClassWithRefTagCollision {
 
-    public ClassWithRefTagCollision(){}
+    public ClassWithRefTagCollision() {
+    }
+
     public ClassWithRefTagCollision(String field) {
         this.field = field;
     }
@@ -18,11 +20,17 @@ public class ClassWithRefTagCollision {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null) return false;
+        if (o == null) {
+            return false;
+        }
 
-        if (getClass() != o.getClass()) return false;
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
         ClassWithRefTagCollision c = (ClassWithRefTagCollision) o;
 

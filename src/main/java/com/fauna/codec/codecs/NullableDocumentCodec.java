@@ -3,16 +3,17 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
-import com.fauna.exception.NullDocumentException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
+import com.fauna.exception.NullDocumentException;
 import com.fauna.types.NonNullDocument;
 import com.fauna.types.NullDocument;
 import com.fauna.types.NullableDocument;
 
 
-public class NullableDocumentCodec<E,L extends NullableDocument<E>> extends BaseCodec<L> {
+public class NullableDocumentCodec<E, L extends NullableDocument<E>>
+        extends BaseCodec<L> {
 
     private final Codec<E> valueCodec;
 
@@ -30,11 +31,14 @@ public class NullableDocumentCodec<E,L extends NullableDocument<E>> extends Base
         try {
             E decoded = valueCodec.decode(parser);
 
-            if (decoded instanceof NullDocument) return (L) decoded;
+            if (decoded instanceof NullDocument) {
+                return (L) decoded;
+            }
 
             return (L) new NonNullDocument<>(decoded);
         } catch (NullDocumentException e) {
-            return (L) new NullDocument<>(e.getId(), e.getCollection(), e.getNullCause());
+            return (L) new NullDocument<>(e.getId(), e.getCollection(),
+                    e.getNullCause());
         }
     }
 
