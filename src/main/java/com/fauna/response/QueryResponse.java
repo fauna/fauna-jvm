@@ -14,6 +14,7 @@ import com.fauna.query.QueryTags;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public abstract class QueryResponse {
     private final QueryStats stats;
 
     @SuppressWarnings("rawtypes")
-    QueryResponse(Builder builder) {
+    QueryResponse(final Builder builder) {
         this.lastSeenTxn = builder.lastSeenTxn;
         this.summary = builder.summary;
         this.schemaVersion = builder.schemaVersion;
@@ -45,75 +46,19 @@ public abstract class QueryResponse {
         this.queryTags = builder.queryTags;
     }
 
-    public static class Builder<T> {
-        final Codec<T> codec;
-        Long lastSeenTxn;
-        String summary;
-        Long schemaVersion;
-        QueryStats stats;
-        QueryTags queryTags;
-        String staticType;
-        ErrorInfo error;
-        T data;
-
-        public Builder(Codec<T> codec) {
-            this.codec = codec;
-        }
-
-        public Builder<T> lastSeenTxn(Long lastSeenTxn) {
-            this.lastSeenTxn = lastSeenTxn;
-            return this;
-        }
-
-        public Builder<T> schemaVersion(Long schemaVersion) {
-            this.schemaVersion = schemaVersion;
-            return this;
-        }
-
-        public Builder<T> data(JsonParser parser) {
-            UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
-            faunaParser.read();
-            this.data = this.codec.decode(faunaParser);
-            return this;
-        }
-
-        public Builder<T> queryTags(QueryTags tags) {
-            this.queryTags = tags;
-            return this;
-        }
-
-        public Builder<T> error(ErrorInfo info) {
-            this.error = info;
-            return this;
-        }
-
-        public Builder<T> staticType(String staticType) {
-            this.staticType = staticType;
-            return this;
-        }
-
-        public Builder<T> summary(String summary) {
-            this.summary = summary;
-            return this;
-        }
-
-        public Builder<T> stats(QueryStats stats) {
-            this.stats = stats;
-            return this;
-        }
-
-        public QuerySuccess<T> buildSuccess() {
-            return new QuerySuccess<>(this);
-        }
-
-    }
-
-    public static <T> Builder<T> builder(Codec<T> codec) {
+    /**
+     * A helper method to instantiate a new builder.
+     *
+     * @param codec The codec to use when parsing data.
+     * @param <T>   The return type of the data.
+     * @return A new Builder instance.
+     */
+    public static <T> Builder<T> builder(final Codec<T> codec) {
         return new Builder<>(codec);
     }
 
-    private static <T> Builder<T> handleField(Builder<T> builder,
-                                              JsonParser parser)
+    private static <T> Builder<T> handleField(final Builder<T> builder,
+                                              final JsonParser parser)
             throws IOException {
         String fieldName = parser.getCurrentName();
         switch (fieldName) {
@@ -139,9 +84,20 @@ public abstract class QueryResponse {
         }
     }
 
+    /**
+     * A helper method to adapt an HTTP response into a QuerySuccess or throw
+     * the appropriate FaunaException.
+     *
+     * @param response       The HTTP response to adapt.
+     * @param codec          The codec to use when reading the HTTP response body.
+     * @param statsCollector The stats collector to accumulate stats against.
+     * @param <T>            The response type on success.
+     * @return A QuerySuccess instance.
+     * @throws FaunaException Thrown on non-200 responses.
+     */
     public static <T> QuerySuccess<T> parseResponse(
-            HttpResponse<InputStream> response, Codec<T> codec,
-            StatsCollector statsCollector) throws FaunaException {
+            final HttpResponse<InputStream> response, final Codec<T> codec,
+            final StatsCollector statsCollector) throws FaunaException {
         try {
             JsonParser parser = JSON_FACTORY.createParser(response.body());
 
@@ -160,7 +116,7 @@ public abstract class QueryResponse {
             }
 
             int httpStatus = response.statusCode();
-            if (httpStatus >= 400) {
+            if (httpStatus >= HttpURLConnection.HTTP_BAD_REQUEST) {
                 QueryFailure failure = new QueryFailure(httpStatus, builder);
                 ErrorHandler.handleQueryFailure(response.statusCode(), failure);
                 // Fall back on ProtocolException.
@@ -175,25 +131,197 @@ public abstract class QueryResponse {
 
     }
 
-
+    /**
+     * Gets the last seen transaction timestamp.
+     *
+     * @return A long representing the last seen transaction timestamp.
+     */
     public Long getLastSeenTxn() {
         return lastSeenTxn;
     }
 
+    /**
+     * Gets the schema version.
+     *
+     * @return A long representing the schema version.
+     */
     public Long getSchemaVersion() {
         return schemaVersion;
     }
 
+    /**
+     * Gets the summary associated with the response.
+     *
+     * @return A string representing the summary.
+     */
     public String getSummary() {
         return summary;
     }
 
+    /**
+     * Gets the query tags associated with the response.
+     *
+     * @return A Map containing the query tags.
+     */
     public Map<String, String> getQueryTags() {
         return queryTags;
     }
 
+    /**
+     * Gets the query stats associated with the response.
+     *
+     * @return A QueryStats instance.
+     */
     public QueryStats getStats() {
         return stats;
+    }
+
+    public static final class Builder<T> {
+        private final Codec<T> codec;
+        private Long lastSeenTxn;
+        private String summary;
+        private Long schemaVersion;
+        private QueryStats stats;
+        private QueryTags queryTags;
+        private String staticType;
+        private ErrorInfo error;
+        private T data;
+
+        /**
+         * Initializes a QueryResponse.Builder.
+         *
+         * @param codec The codec to use when building data.
+         */
+        public Builder(final Codec<T> codec) {
+            this.codec = codec;
+        }
+
+        /**
+         * Set the last seen transaction timestamp on the builder.
+         *
+         * @param lastSeenTxn The last seen transaction timestamp.
+         * @return This
+         */
+        public Builder<T> lastSeenTxn(final Long lastSeenTxn) {
+            this.lastSeenTxn = lastSeenTxn;
+            return this;
+        }
+
+        /**
+         * Set the schema version on the builder.
+         *
+         * @param schemaVersion The schema version.
+         * @return This
+         */
+        public Builder<T> schemaVersion(final Long schemaVersion) {
+            this.schemaVersion = schemaVersion;
+            return this;
+        }
+
+        /**
+         * Set the data on the builder by consuming the provided JsonParser with
+         * the configured codec.
+         *
+         * @param parser The JsonParser to consume.
+         * @return This
+         */
+        public Builder<T> data(final JsonParser parser) {
+            UTF8FaunaParser faunaParser = new UTF8FaunaParser(parser);
+            faunaParser.read();
+            this.data = this.codec.decode(faunaParser);
+            return this;
+        }
+
+        /**
+         * Set the query tags on the builder.
+         *
+         * @param tags The query tags to set.
+         * @return This
+         */
+        public Builder<T> queryTags(final QueryTags tags) {
+            this.queryTags = tags;
+            return this;
+        }
+
+        /**
+         * Sets the error info on the builder.
+         *
+         * @param info The error info to set.
+         * @return This
+         */
+        public Builder<T> error(final ErrorInfo info) {
+            this.error = info;
+            return this;
+        }
+
+        /**
+         * Sets the static type on the builder.
+         *
+         * @param staticType The static type to set.
+         * @return This
+         */
+        public Builder<T> staticType(final String staticType) {
+            this.staticType = staticType;
+            return this;
+        }
+
+        /**
+         * Sets the summary on the builder.
+         *
+         * @param summary The summary to set.
+         * @return This
+         */
+        public Builder<T> summary(final String summary) {
+            this.summary = summary;
+            return this;
+        }
+
+        /**
+         * Sets the query stats on the builder.
+         *
+         * @param stats The query stats to set.
+         * @return This
+         */
+        public Builder<T> stats(final QueryStats stats) {
+            this.stats = stats;
+            return this;
+        }
+
+        /**
+         * Builds a QuerySuccess.
+         *
+         * @return A QuerySuccess from the current builder.
+         */
+        public QuerySuccess<T> buildSuccess() {
+            return new QuerySuccess<>(this);
+        }
+
+        /**
+         * Gets a string representing the static type.
+         *
+         * @return A string representing the static type.
+         */
+        public String getStaticType() {
+            return staticType;
+        }
+
+        /**
+         * Gets an ErrorInfo instance representing an error on the response.
+         *
+         * @return An ErrorInfo instance.
+         */
+        public ErrorInfo getError() {
+            return error;
+        }
+
+        /**
+         * Gets the parsed data from the response.
+         *
+         * @return The parsed data.
+         */
+        public T getData() {
+            return data;
+        }
     }
 }
 

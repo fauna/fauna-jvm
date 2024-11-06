@@ -10,7 +10,7 @@ public final class QueryFailure extends QueryResponse {
     public QueryFailure(int httpStatus, Builder builder) {
         super(builder);
         this.statusCode = httpStatus;
-        this.errorInfo = builder.error;
+        this.errorInfo = builder.getError();
     }
 
     public int getStatusCode() {
