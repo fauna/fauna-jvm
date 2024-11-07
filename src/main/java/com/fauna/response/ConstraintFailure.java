@@ -25,7 +25,7 @@ public final class ConstraintFailure {
      * href="https://docs.fauna.com/fauna/current/reference/fsl/check/">check</a>
      * or <a
      * href="https://docs.fauna.com/fauna/current/reference/fsl/unique/">unique
-     * constraint> return a constraint failure.
+     * constraint</a> return a constraint failure.
      *
      * @param message Human-readable description of the constraint failure.
      * @param name    Name of the failed constraint.
@@ -81,8 +81,8 @@ public final class ConstraintFailure {
      */
     public static ConstraintFailure parse(final JsonParser parser)
             throws IOException {
-        if (parser.currentToken() != JsonToken.START_OBJECT &&
-                parser.nextToken() != JsonToken.START_OBJECT) {
+        if (parser.currentToken() != JsonToken.START_OBJECT
+                && parser.nextToken() != JsonToken.START_OBJECT) {
             throw new ClientResponseException(
                     "Constraint failure should be a JSON object.");
         }
@@ -114,6 +114,7 @@ public final class ConstraintFailure {
                     }
                     paths.forEach(builder::path);
                     break;
+                default:
             }
         }
         return builder.build();
@@ -249,8 +250,8 @@ public final class ConstraintFailure {
         public boolean equals(final Object o) {
             if (o instanceof PathElement) {
                 PathElement other = (PathElement) o;
-                return other.isString() == this.isString() &&
-                        other.toString().equals(this.toString());
+                return other.isString() == this.isString()
+                        && other.toString().equals(this.toString());
             } else {
                 return false;
             }
