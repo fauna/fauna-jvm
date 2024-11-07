@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * A utility class representing a collection of query tags as a map of key-value pairs.
- * This class extends {@link HashMap} and provides methods to build, encode,
- * and parse query tags.
+ * A utility class representing a collection of <a
+ * href="https://docs.fauna.com/fauna/current/manage/query-logs/#tags">query tags</a> as a map of key-value pairs.
+ * This class extends {@link HashMap} and provides methods to build, encode, and parse query tags.
  */
 public class QueryTags extends HashMap<String, String> {
     private static final String EQUALS = "=";

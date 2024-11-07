@@ -3,8 +3,9 @@ package com.fauna.query;
 import java.util.Optional;
 
 /**
- * Represents an after token, used to signify the possibility for pagination
- * continuation.
+ * Represents an `after` token used for <a
+ * href="https://docs.fauna.com/fauna/current/learn/query/pagination/">Set
+ * pagination</a>.
  */
 public class AfterToken {
 

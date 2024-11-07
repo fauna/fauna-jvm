@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Represents a module in Fauna Query Language (FQL), which serves as a symbolic object
  * with associated methods. Modules can represent built-in FQL objects, such as "Collection" or "Math",
- * as well as user-defined entities like custom collections.
+ * as well as custom entities like user-defined collections.
  * <p>
  * For example, a specific collection named "MyCollection" can be represented as a {@code Module} in Java
  * to enable document creation via the Fauna Java driver:

@@ -7,8 +7,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Represents a page of data in a Fauna set, supporting pagination with an optional "after" token
- * for retrieving additional pages.
+ * Represents a page of data in a Fauna Set. Supports <a
+ * href="https://docs.fauna.com/fauna/current/learn/query/pagination/">pagination</a> with an optional `after`
+ * token for retrieving additional pages.
  *
  * @param <T> The type of data contained within the page.
  */
@@ -40,7 +41,8 @@ public final class Page<T> {
      * Retrieves the optional after token for pagination. If present, this token can be used to
      * request the next page of results from Fauna.
      *
-     * @return An {@code Optional<AfterToken>} representing the after token, or an empty {@code Optional} if no token is present.
+     * @return An {@code Optional<AfterToken>} representing the after token, or an empty {@code Optional} if no token
+     * is present.
      */
     public Optional<AfterToken> getAfter() {
         return AfterToken.fromString(after);

@@ -7,7 +7,7 @@ import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
 
 /**
  * Encapsulates options for configuring Fauna queries, such as timeout,
- * linearized reads, type checking, query tags, and trace parent for
+ * linearized reads, typechecking, query tags, and trace parent for
  * distributed tracing.
  */
 public class QueryOptions {
@@ -60,9 +60,9 @@ public class QueryOptions {
     }
 
     /**
-     * Returns an Optional of the timeout duration in milliseconds.
+     * Returns an Optional of the query timeout duration in milliseconds.
      *
-     * @return an Optional containing the timeout duration in milliseconds, or
+     * @return an Optional containing the query timeout duration in milliseconds, or
      * empty if not specified.
      */
     public Optional<Long> getTimeoutMillis() {
@@ -99,7 +99,9 @@ public class QueryOptions {
         private String traceParent = null;
 
         /**
-         * Sets whether reads are linearized.
+         * If true, read-only transactions that don't read indexes are <a
+         * href="https://docs.fauna.com/fauna/current/learn/transactions/">strictly
+         * serialized</a>.
          *
          * @param linearized true to enable linearized reads, false otherwise.
          * @return this Builder instance for chaining.
@@ -110,7 +112,9 @@ public class QueryOptions {
         }
 
         /**
-         * Sets whether type checking is enabled.
+         * If true, <a href="/fauna/current/learn/query/static-typing/">typechecking</a>
+         * is enabled for queries. You can only enable typechecking for databases that
+         * have typechecking enabled.
          *
          * @param typeCheck true to enable type checking, false otherwise.
          * @return this Builder instance for chaining.
@@ -132,7 +136,9 @@ public class QueryOptions {
         }
 
         /**
-         * Sets the query tags for the query.
+         * Sets <a href="https://docs.fauna.com/fauna/current/manage/query-logs/#tags">query tags</a> used to
+         * instrument the query. You typically use query tags to monitor and debug query requests in
+         * <a href="https://docs.fauna.com/fauna/current/manage/query-logs/">Fauna Logs</a>.
          *
          * @param queryTags the QueryTags to associate with the query.
          * @return this Builder instance for chaining.
@@ -162,7 +168,10 @@ public class QueryOptions {
         }
 
         /**
-         * Sets the trace parent for distributed tracing.
+         * Traceparent identifier used for distributed tracing. Passed by the drive in the `traceparent` header of <a
+         * href="https://docs.fauna.com/fauna/current/reference/http/reference/core-api/#operation/query">Query
+         * HTTP endpoint</a> requests. If you don’t include a traceparent identifier or use an invalid identifier,
+         * Fauna generates a valid identifier.
          *
          * @param traceParent the trace parent ID.
          * @return this Builder instance for chaining.

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * Represents a template for constructing Fauna queries with placeholders
- * for variable interpolation.This template uses a dollar-sign ($) syntax for
+ * for variable interpolation. This template uses a dollar-sign ($) syntax for
  * identifying variable placeholders.
  */
 public final class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
