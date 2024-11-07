@@ -7,18 +7,20 @@ import java.util.Objects;
 /**
  * Represents a literal fragment of a Fauna query.
  * This class encapsulates a fixed string that does not contain any variables.
+ * A {@code QueryLiteral} is used to represent literal values in a query.
  */
-public class QueryLiteral extends QueryFragment {
+@SuppressWarnings("rawtypes")
+public final class QueryLiteral extends QueryFragment {
 
     private final String value;
 
     /**
-     * Constructs a new {@code LiteralFragment} with the given literal value.
+     * Constructs a new {@code QueryLiteral} with the given literal value.
      *
      * @param value the string value of this fragment; must not be null.
      * @throws IllegalArgumentException if {@code value} is null.
      */
-    public QueryLiteral(String value) {
+    public QueryLiteral(final String value) {
         if (value == null) {
             throw new IllegalArgumentException(
                     "A literal value must not be null");
@@ -27,9 +29,9 @@ public class QueryLiteral extends QueryFragment {
     }
 
     /**
-     * Retrieves the string value of this fragment.
+     * Retrieves the string value of this literal fragment.
      *
-     * @return the string value.
+     * @return the string value of this fragment.
      */
     @Override
     public String get() {
@@ -37,7 +39,7 @@ public class QueryLiteral extends QueryFragment {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
@@ -55,9 +57,13 @@ public class QueryLiteral extends QueryFragment {
         return value.hashCode();
     }
 
+    /**
+     * Gets the wrapped literal value.
+     *
+     * @return The literal value as a string.
+     */
     @JsonValue
     public String getValue() {
         return this.value;
     }
-
 }

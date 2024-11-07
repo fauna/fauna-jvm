@@ -12,9 +12,10 @@ import java.util.regex.Pattern;
 
 /**
  * Represents a template for constructing Fauna queries with placeholders
- * for variable interpolation.
+ * for variable interpolation. This template uses a dollar-sign ($) syntax for
+ * identifying variable placeholders.
  */
-public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
+public final class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
 
     private static final char DELIMITER = '$';
     private static final String ID_PATTERN = "[\\p{L}_][\\p{L}\\p{N}_]*";
@@ -32,19 +33,22 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
     private final String template;
 
     /**
-     * Constructs a new FaunaTemplate with the given string template.
+     * Constructs a new {@code FaunaTemplate} with the specified template
+     * string. The template may contain literals and variable placeholders
+     * identified by a dollar sign and an optional set of braces
+     * (e.g., ${variable}).
      *
      * @param template the string template containing literals and placeholders.
      */
-    public FaunaTemplate(String template) {
+    public FaunaTemplate(final String template) {
         this.template = template;
     }
 
     /**
      * Creates an iterator over the parts of the template, distinguishing
-     * between literals and variable placeholders.
+     * between literal text and variable placeholders.
      *
-     * @return an Iterator that traverses the template parts.
+     * @return an Iterator that iterates over the template parts.
      */
     @Override
     public Iterator<TemplatePart> iterator() {
@@ -83,8 +87,8 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
                     TemplatePart part;
                     if (escapedPart != null) {
                         String literalPart =
-                                template.substring(curPos, spanStartPos) +
-                                        DELIMITER;
+                                template.substring(curPos, spanStartPos)
+                                        + DELIMITER;
                         part = new TemplatePart(literalPart,
                                 TemplatePartType.LITERAL);
                         curPos = spanEndPos;
@@ -124,19 +128,23 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
      * @param position the starting position of the invalid placeholder.
      * @throws IllegalArgumentException if the placeholder syntax is invalid.
      */
-    private void handleInvalid(int position) {
+    private void handleInvalid(final int position) {
         String substringUpToPosition = template.substring(0, position);
         String[] lines = substringUpToPosition.split("\r?\n");
-        int colno, lineno;
+
+        int colno;
+        int lineno;
+
         if (lines.length == 0) {
             colno = 1;
             lineno = 1;
         } else {
             String lastLine = lines[lines.length - 1];
             // Adjust the column number for invalid placeholder
-            colno = position -
-                    (substringUpToPosition.length() - lastLine.length()) -
-                    1; // -1 to exclude the dollar sign
+            colno = position
+                    - (substringUpToPosition.length()
+                    - lastLine.length())
+                    - 1; // -1 to exclude the dollar sign
             lineno = lines.length;
         }
         throw new IllegalArgumentException(String.format(
@@ -148,17 +156,21 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
      * Represents a part of the template, which can either be a literal string
      * or a variable placeholder.
      */
-    public static class TemplatePart {
+    public static final class TemplatePart {
         private final String part;
         private final TemplatePartType type;
 
         /**
-         * Constructs a new TemplatePart with the given text and type.
+         * Constructs a new {@code TemplatePart} with the specified text and
+         * type.
          *
-         * @param part the text of this part of the template.
-         * @param type the type of this part of the template.
+         * @param part the text for this part of the template, either literal
+         *             text or a variable.
+         * @param type the type of this part of the template,
+         *             either {@link TemplatePartType#LITERAL}
+         *             or {@link TemplatePartType#VARIABLE}.
          */
-        public TemplatePart(String part, TemplatePartType type) {
+        public TemplatePart(final String part, final TemplatePartType type) {
             this.part = part;
             this.type = type;
         }
@@ -166,7 +178,7 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
         /**
          * Retrieves the text of this part of the template.
          *
-         * @return the text of this template part.
+         * @return the text for this template part.
          */
         public String getPart() {
             return part;
@@ -175,14 +187,25 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
         /**
          * Retrieves the type of this part of the template.
          *
-         * @return the type of this template part.
+         * @return the type of this template part, either literal or variable.
          */
         public TemplatePartType getType() {
             return type;
         }
 
+        /**
+         * Converts this template part to a {@code QueryFragment} using the
+         * given arguments. If this part is a variable, the argument map is
+         * checked for a corresponding key, returning an appropriate
+         * {@code QueryFragment}. If no matching argument is found, an exception
+         * is thrown.
+         *
+         * @param args the map of arguments for template substitution.
+         * @return a {@code QueryFragment} representing this template part.
+         * @throws IllegalArgumentException if required arguments are missing.
+         */
         @SuppressWarnings("rawtypes")
-        public QueryFragment toFragment(Map<String, Object> args) {
+        public QueryFragment toFragment(final Map<String, Object> args) {
             if (this.getType().equals(TemplatePartType.VARIABLE)) {
                 if (Objects.isNull(args)) {
                     throw new IllegalArgumentException(
@@ -191,7 +214,6 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
                                     this.getPart()));
                 }
                 if (args.containsKey(this.getPart())) {
-                    // null values are valid, so can't use computeIfPresent / computeIfAbsent here.
                     var arg = args.get(this.getPart());
                     if (arg instanceof QueryFragment) {
                         return (QueryFragment) arg;
@@ -209,5 +231,4 @@ public class FaunaTemplate implements Iterable<FaunaTemplate.TemplatePart> {
             }
         }
     }
-
 }
