@@ -197,7 +197,7 @@ public class E2EStreamingTest {
         // First, we process all the products that existed when the query was made.
         PageIterator<Product> pageIterator =
                 new PageIterator<>(client, inventorySource.firstPage,
-                        Product.class, QueryOptions.DEFAULT);
+                        Product.class, QueryOptions.getDefault());
         Map<String, Integer> inventory = new HashMap<>();
         List<Product> products = new ArrayList<>();
         pageIterator.flatten().forEachRemaining(product -> {
