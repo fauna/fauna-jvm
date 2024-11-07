@@ -103,7 +103,7 @@ public class E2EQueryTest {
     @Test
     public void query_syncWithClassAndOptions() {
         var q = fql("42");
-        var res = c.query(q, int.class, QueryOptions.DEFAULT);
+        var res = c.query(q, int.class, QueryOptions.getDefault());
         var exp = 42;
         assertEquals(exp, res.getData());
     }
@@ -111,7 +111,7 @@ public class E2EQueryTest {
     @Test
     public void query_syncWithParameterizedAndOptions() {
         var q = fql("[42]");
-        var res = c.query(q, listOf(int.class), QueryOptions.DEFAULT);
+        var res = c.query(q, listOf(int.class), QueryOptions.getDefault());
         var exp = List.of(42);
         assertEquals(exp, res.getData());
     }
@@ -146,7 +146,7 @@ public class E2EQueryTest {
     public void query_asyncWithClassAndOptions()
             throws ExecutionException, InterruptedException {
         var q = fql("42");
-        var res = c.asyncQuery(q, int.class, QueryOptions.DEFAULT).get();
+        var res = c.asyncQuery(q, int.class, QueryOptions.getDefault()).get();
         var exp = 42;
         assertEquals(exp, res.getData());
     }
@@ -156,7 +156,7 @@ public class E2EQueryTest {
             throws ExecutionException, InterruptedException {
         var q = fql("[42]");
         var res =
-                c.asyncQuery(q, listOf(int.class), QueryOptions.DEFAULT).get();
+                c.asyncQuery(q, listOf(int.class), QueryOptions.getDefault()).get();
         var exp = List.of(42);
         assertEquals(exp, res.getData());
     }

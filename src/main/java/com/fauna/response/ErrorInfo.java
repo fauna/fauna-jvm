@@ -32,11 +32,10 @@ public class ErrorInfo {
     /**
      * Initializes a new ErrorInfo.
      *
-     * @param code               The <a
-     *                           href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#error-codes">Fauna
-     *                           error code</a>.
-     * @param message            A short, human-readable description of the
-     *                           error.
+     * @param code    The <a
+     *                href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#error-codes">
+     *                Fauna error code</a>.
+     * @param message A short, human-readable description of the error.
      * @param constraintFailures The constraint failures for the error, if any.
      *                           Only present if the error code is
      *                           `constraint_failure`.
