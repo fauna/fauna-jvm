@@ -111,6 +111,7 @@ tasks.register('packageJar', Zip) {
         from(tasks.jar)
         from(configurations.runtimeClasspath)
     }
+    archiveFileName = 'fauna-jvm-package.zip'
 }
 
 checkstyle {
@@ -125,5 +126,6 @@ tasks.withType(Checkstyle).configureEach {
     }
 }
 
+packageJar.dependsOn(compileJava)
 processResources.dependsOn(writeProps)
 sourcesJar.dependsOn(writeProps)
