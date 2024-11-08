@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 /**
- * Represents metadata for a field in a class, including its name, type, associated codec,
+ * Represents metadata for a Fauna document field in a class, including its name, type, associated codec,
  * and other properties used for serialization and deserialization.
  */
 public final class FieldInfo {

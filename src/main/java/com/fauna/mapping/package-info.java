@@ -1,7 +1,6 @@
 /**
- * The {@code com.fauna.mapping} package provides classes and utilities to support
- * the mapping of data fields to and from Fauna, facilitating the serialization,
- * deserialization, and formatting of fields used in Fauna data models.
+ * The {@code com.fauna.mapping} package provides classes and utilities used to
+ * map Fauna document fields for serialization and deserialization in the client.
  *
  * <p>The classes in this package include:
  * <ul>
