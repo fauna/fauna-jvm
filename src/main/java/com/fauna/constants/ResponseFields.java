@@ -28,12 +28,12 @@ public final class ResponseFields {
     public static final String STATIC_TYPE_FIELD_NAME = "static_type";
 
     /**
-     * Field name for statistics in the response.
+     * Field name for <a href="https://docs.fauna.com/fauna/current/reference/http/reference/query-stats/">query and event stats</a> in the response.
      */
     public static final String STATS_FIELD_NAME = "stats";
 
     /**
-     * Field name for the schema version in the response.
+     * Field name for the <a href="https://docs.fauna.com/fauna/current/learn/schema/#version">database schema version</a> in the response.
      */
     public static final String SCHEMA_VERSION_FIELD_NAME = "schema_version";
 
@@ -43,7 +43,7 @@ public final class ResponseFields {
     public static final String SUMMARY_FIELD_NAME = "summary";
 
     /**
-     * Field name for query tags included in the response.
+     * Field name for <a href="https://docs.fauna.com/fauna/current/manage/query-logs/#tags">query tags</a> included in the response.
      */
     public static final String QUERY_TAGS_FIELD_NAME = "query_tags";
 
@@ -69,27 +69,27 @@ public final class ResponseFields {
     public static final String STATS_WRITE_OPS = "write_ops";
 
     /**
-     * Field name for the time taken by the query in milliseconds.
+     * Field name for the query runtime in milliseconds.
      */
     public static final String STATS_QUERY_TIME_MS = "query_time_ms";
 
     /**
-     * Field name for processing time in milliseconds.
+     * Field name for event processing time in milliseconds.
      */
     public static final String STATS_PROCESSING_TIME_MS = "processing_time_ms";
 
     /**
-     * Field name for contention retries count.
+     * Field name for <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">transaction contention retries</a> count.
      */
     public static final String STATS_CONTENTION_RETRIES = "contention_retries";
 
     /**
-     * Field name for storage bytes read.
+     * Field name for data read from storage, in bytes.
      */
     public static final String STATS_STORAGE_BYTES_READ = "storage_bytes_read";
 
     /**
-     * Field name for storage bytes written.
+     * Field name for data written to storage, in bytes.
      */
     public static final String STATS_STORAGE_BYTES_WRITE = "storage_bytes_write";
 
@@ -100,7 +100,7 @@ public final class ResponseFields {
 
     // "error" block
     /**
-     * Field name for the error code in the response.
+     * Field name for the <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#error-codes">error code</a> in the response.
      */
     public static final String ERROR_CODE_FIELD_NAME = "code";
 
@@ -115,7 +115,7 @@ public final class ResponseFields {
     public static final String ERROR_CONSTRAINT_FAILURES_FIELD_NAME = "constraint_failures";
 
     /**
-     * Field name for abort information in the error response.
+     * Field name for <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#abort">abort error</a> information in the error response.
      */
     public static final String ERROR_ABORT_FIELD_NAME = "abort";
 
@@ -135,18 +135,18 @@ public final class ResponseFields {
      */
     public static final String CURSOR_FIELD_NAME = "cursor";
     /**
-     * Field name for the event type in stream and field responses.
+     * Field name for the event type in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> and <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a> responses.
      */
     public static final String STREAM_TYPE_FIELD_NAME = "type";
 
     // Feed-related fields
     /**
-     * Field name for events in feed responses.
+     * Field name for events in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> responses.
      */
     public static final String EVENTS_FIELD_NAME = "events";
 
     /**
-     * Field name indicating whether there are more pages in the feed.
+     * Field name indicating whether there are more pages in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> responses.
      */
     public static final String FEED_HAS_NEXT_FIELD_NAME = "has_next";
 }
