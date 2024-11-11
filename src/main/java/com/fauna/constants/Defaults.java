@@ -29,7 +29,7 @@ public final class Defaults {
     public static final String LOCAL_FAUNA_SECRET = "secret";
 
     /**
-     * The maximum number of retries allowed for handling contention errors.
+     * The maximum number of retries allowed for handling <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">transaction contention</a>.
      */
     public static final int MAX_CONTENTION_RETRIES = 3;
 }
