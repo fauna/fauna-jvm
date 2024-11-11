@@ -101,7 +101,6 @@ jobs:
               input_mapping:
                 driver-repo: repo.git
               params:
-                GIT_COMMIT: ((.:git-commit))
                 FAUNA_JVM: repo.git
                 FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
                 AWS_LAMBDA_ROLE_ARN: ((drivers-platform-tests/aws-lambda-role-arn))
