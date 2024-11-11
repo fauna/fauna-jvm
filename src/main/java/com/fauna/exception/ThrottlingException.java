@@ -3,10 +3,9 @@ package com.fauna.exception;
 import com.fauna.response.QueryFailure;
 
 /**
- * Exception representing a throttling error in Fauna, indicating that a query exceeded
- * allowable usage limits.
+ * Exception representing a <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#rate-limits">throttling error</a> in Fauna, indicating that a query exceeded
+ * <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan throughput limits</a>.
  * <p>
- * This exception is thrown when Fauna restricts query execution due to usage limits.
  * It implements {@link RetryableException}
  * Extends {@link ServiceException} to provide details specific to throttling errors.
  */

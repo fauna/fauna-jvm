@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An exception that represents an aborted query in Fauna.
+ * An exception that represents an <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#abort">abort error</a> in Fauna.
  * This exception extends {@link ServiceException} and includes methods to retrieve
  * the abort data.
  */

@@ -3,7 +3,7 @@ package com.fauna.exception;
 import com.fauna.types.Module;
 
 /**
- * Exception representing a null document error in Fauna.
+ * Exception representing a <a href="https://docs.fauna.com/fauna/current/reference/fql/types/#nulldoc"≥null document</a> error in Fauna.
  * <p>
  * This exception is thrown when a document is null in Fauna, providing details about
  * the document ID, its collection, and the reason it is null.

@@ -4,10 +4,10 @@ import com.fauna.response.ConstraintFailure;
 import com.fauna.response.QueryFailure;
 
 /**
- * Exception representing a constraint failure in a Fauna query.
+ * Exception representing a <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#constraints">constraint failure</a> in a Fauna query.
  * <p>
- * This exception is typically thrown when a query violates a database constraint,
- * such as unique or foreign key constraints.
+ * This exception is typically thrown when a query violates a collection's <a href="https://docs.fauna.com/fauna/current/reference/fsl/check/">check</a> 
+ * or <a href="https://docs.fauna.com/fauna/current/reference/fsl/unique/">unique constraints</a>.
  * Extends {@link ServiceException} and provides access to details about the constraint failures.
  */
 public class ConstraintFailureException extends ServiceException {

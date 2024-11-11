@@ -10,7 +10,7 @@ import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 import static java.net.HttpURLConnection.HTTP_UNAVAILABLE;
 
 /**
- * Provides error handling based on HTTP status codes and error codes returned by Fauna.
+ * Provides error handling based on <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#error-codes">error codes</a> and HTTP status codes returned by Fauna.
  * <p>
  * The {@code ErrorHandler} class contains a static method to manage various error scenarios
  * by analyzing the HTTP status code and specific error codes, mapping them to relevant exceptions.

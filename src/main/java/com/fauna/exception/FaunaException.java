@@ -2,7 +2,7 @@ package com.fauna.exception;
 
 /**
  * Represents a general exception for errors encountered within the Fauna client.
- * This exception serves as the base class for other specific exceptions in the library.
+ * This exception serves as the base class for other specific exceptions in the drive.
  */
 public class FaunaException extends RuntimeException {
 

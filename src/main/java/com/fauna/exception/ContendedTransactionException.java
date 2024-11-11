@@ -3,7 +3,7 @@ package com.fauna.exception;
 import com.fauna.response.QueryFailure;
 
 /**
- * An exception indicating that too much contention occurred on a document while executing a query.
+ * An exception indicating that too much <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/">transaction contention</a> occurred while executing a query.
  * <p>
  * This exception is thrown when a transaction cannot proceed due to conflicts or contention
  * with other concurrent transactions.

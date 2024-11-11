@@ -4,7 +4,7 @@ package com.fauna.exception;
  * Exception representing client-side errors in Fauna.
  * <p>
  * This exception is typically thrown when there is an issue with client configuration,
- * request formation, or any other client-specific error that does not originate from the server.
+ * request formation, or any other client-specific error that does not originate from Fauna.
  * Extends {@link FaunaException} to provide detailed information about the error.
  */
 public class ClientException extends FaunaException {

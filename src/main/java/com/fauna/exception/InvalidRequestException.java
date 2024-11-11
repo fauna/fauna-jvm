@@ -3,7 +3,7 @@ package com.fauna.exception;
 import com.fauna.response.QueryFailure;
 
 /**
- * Exception representing an invalid request in Fauna.
+ * Exception representing an invalid query request.
  * <p>
  * This exception is thrown when a request sent to Fauna does not conform to the API specifications,
  * typically due to malformed data, incorrect parameters, or other request-related issues.

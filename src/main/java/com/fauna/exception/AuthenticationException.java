@@ -4,7 +4,7 @@ import com.fauna.response.QueryFailure;
 
 /**
  * Exception thrown when an authentication error occurs in Fauna.
- * This typically indicates an issue with the credentials used for accessing Fauna's services.
+ * This typically indicates an issue with the <a href="https://docs.fauna.com/fauna/current/learn/security/authentication/#secrets">authentication secret</a> used for Fauna requests.
  * <p>
  * Extends {@link ServiceException} and provides access to detailed failure information through the
  * {@link QueryFailure} response.

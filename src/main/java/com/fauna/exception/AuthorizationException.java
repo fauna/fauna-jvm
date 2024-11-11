@@ -4,8 +4,8 @@ import com.fauna.response.QueryFailure;
 
 /**
  * Exception thrown when an authorization error occurs in Fauna.
- * This typically indicates that the authenticated user does not have permission
- * to perform the requested action.
+ * This typically indicates that the Fauna <a href="https://docs.fauna.com/fauna/current/learn/security/authentication/#secrets">authentication secret</a> does not have permissions
+ * required to perform the requested operation.
  * <p>
  * Extends {@link ServiceException} and provides access to detailed failure information through
  * the {@link QueryFailure} response.
