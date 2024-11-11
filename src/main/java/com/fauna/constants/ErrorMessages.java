@@ -17,7 +17,7 @@ public final class ErrorMessages {
     public static final String QUERY_EXECUTION = "Unable to execute query.";
 
     /**
-     * Error message indicating a failure to subscribe to a stream.
+     * Error message indicating a failure to subscribe to an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a>.
      */
     public static final String STREAM_SUBSCRIPTION = "Unable to subscribe to stream.";
 
