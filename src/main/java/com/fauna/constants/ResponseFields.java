@@ -110,7 +110,7 @@ public final class ResponseFields {
     public static final String ERROR_MESSAGE_FIELD_NAME = "message";
 
     /**
-     * Field name for constraint failures in error information.
+     * Field name for <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#constraints">constraint failures</a> in error information.
      */
     public static final String ERROR_CONSTRAINT_FAILURES_FIELD_NAME = "constraint_failures";
 
