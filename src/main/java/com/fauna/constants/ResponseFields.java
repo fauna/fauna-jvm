@@ -1,7 +1,7 @@
 package com.fauna.constants;
 
 /**
- * Defines constants for field names in responses returned by various Fauna APIs.
+ * Defines constants for field names in responses returned by the <a href="https://docs.fauna.com/fauna/current/reference/http/reference/core-api/">Fauna Core HTTP API</a>.
  *
  * <p>The {@code ResponseFields} class centralizes commonly used JSON field names in Fauna responses,
  * making it easier to reference them consistently and preventing hard-coded strings throughout the codebase.</p>
