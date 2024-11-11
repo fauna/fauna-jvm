@@ -13,7 +13,7 @@
  *   <li>{@link com.fauna.event.FeedOptions} - Specifies configuration options for managing Event Feed pagination and timeout.</li>
  *   <li>{@link com.fauna.event.FeedPage} - Represents a paginated events in an Event Feed, including metadata like cursor and statistics.</li>
  *   <li>{@link com.fauna.event.FeedRequest} - Constructs a request for Fauna's <a href="https://docs.fauna.com/fauna/current/reference/http/reference/core-api/#operation/feed">Event Feed HTTP API endpoint</a>.</li>
- *   <li>{@link com.fauna.event.StreamOptions} - Configures various stream options, such as cursor, retry strategy, and timeout settings.</li>
+ *   <li>{@link com.fauna.event.StreamOptions} - Specified configuration options for an Event Stream, such as cursor, retry strategy, and timeout settings.</li>
  *   <li>{@link com.fauna.event.StreamRequest} - Constructs a request for Fauna's <a href="https://docs.fauna.com/fauna/current/reference/http/reference/core-api/#operation/stream">Event Stream HTTP API endpoint</a>.</li>
  * </ul>
  *
