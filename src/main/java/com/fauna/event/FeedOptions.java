@@ -6,7 +6,7 @@ import java.util.Optional;
 import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
 
 /**
- * Represents the options for configuring a feed in Fauna.
+ * Represents the options for configuring an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Feed</a> request in Fauna.
  * <p>
  * The {@code FeedOptions} class provides configuration parameters such as cursor,
  * start timestamp, page size, and timeout for retrieving feeds from Fauna.
@@ -26,11 +26,11 @@ public class FeedOptions {
     /**
      * Constructs a new {@code FeedOptions} with the specified parameters.
      *
-     * @param cursor   A {@code String} representing the cursor position in the feed. Cannot be provided with a
+     * @param cursor   A {@code String} representing the <a href="https://docs.fauna.com/fauna/current/reference/cdc/#get-events-after-a-specific-cursor">cursor</a> in the feed. Cannot be provided with a
      *                 {@code startTs}.
-     * @param startTs  A {@code Long} representing the start timestamp for the feed. Cannot be provided with a
+     * @param startTs  A {@code Long} representing the start timestamp for the feed. Represents a time in microseconds since the Unix epoch. Cannot be provided with a
      *                 {@code cursor}.
-     * @param pageSize An {@code Integer} specifying the number of items per page.
+     * @param pageSize An {@code Integer} specifying the number of items per feed page.
      * @param timeout  A {@code Duration} specifying the timeout for the feed request.
      * @throws IllegalArgumentException if both {@code cursor} and {@code startTs} are set.
      */
@@ -47,7 +47,7 @@ public class FeedOptions {
     }
 
     /**
-     * Retrieves the cursor associated.
+     * Retrieves the cursor.
      *
      * @return An {@link Optional} containing the cursor, or empty if not set.
      */
@@ -94,7 +94,7 @@ public class FeedOptions {
         /**
          * Sets the cursor.
          *
-         * @param cursor A {@code String} representing the cursor position.
+         * @param cursor A {@code String} representing the cursor.
          * @return This {@code Builder} instance.
          * @throws IllegalArgumentException if {@code startTs} is already set.
          */

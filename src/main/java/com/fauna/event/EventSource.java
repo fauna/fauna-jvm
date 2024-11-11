@@ -3,12 +3,13 @@ package com.fauna.event;
 import com.fauna.query.builder.Query;
 
 /**
- * Represents the source of an event within the Fauna ecosystem, identified by a unique token. Event sources can be
- * used to initiate Streams by calling
- * {@link com.fauna.client.FaunaClient#stream(EventSource, StreamOptions, Class) FaunaClient.stream()} or Feeds by
- * calling {@link com.fauna.client.FaunaClient#feed(EventSource, FeedOptions, Class) FaunaClient.feed()}.
+ * Represents an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-source">event source</a>. You can consume event sources
+as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feeds</a> by
+ * calling {@link com.fauna.client.FaunaClient#feed(EventSource, FeedOptions, Class) FaunaClient.feed()}
+ * or as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Streams</a> by calling
+ * {@link com.fauna.client.FaunaClient#stream(EventSource, StreamOptions, Class) FaunaClient.stream()}.
  * <p>
- * The {@code EventSource} class provides methods for constructing instances from tokens and responses
+ * The {@code EventSource} class provides methods for constructing instances from event source tokens and responses
  */
 public class EventSource {
     private final String token;
@@ -16,14 +17,14 @@ public class EventSource {
     /**
      * Constructs a new {@code EventSource} with the specified token.
      *
-     * @param token A {@code String} representing the unique token of the event source.
+     * @param token A {@code String} representing the event source.
      */
     public EventSource(final String token) {
         this.token = token;
     }
 
     /**
-     * Retrieves the token associated with this event source.
+     * Retrieves the token for the event source.
      *
      * @return A {@code String} representing the token.
      */

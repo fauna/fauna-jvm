@@ -3,7 +3,7 @@ package com.fauna.event;
 import java.util.Objects;
 
 /**
- * Represents a response containing details about an event source in Fauna.
+ * Represents a response containing details about an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-source">event source</a>.
  * <p>
  * The {@code EventSourceResponse} class provides access to the event source token
  * and includes methods for equality checks and hash code generation.

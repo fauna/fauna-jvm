@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Represents a request to fetch a feed of events from Fauna.
+ * Represents an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> request from Fauna.
  * <p>
  * The {@code FeedRequest} class contains an {@link EventSource} and {@link FeedOptions} to
  * specify the details of the feed request, such as the cursor, start timestamp, and page size.

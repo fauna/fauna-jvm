@@ -6,9 +6,9 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * Represents configuration options for a Fauna stream.
+ * Represents configuration options for a Fauna <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a>.
  * <p>
- * The {@code StreamOptions} class allows customization of stream behavior, including cursor,
+ * The {@code StreamOptions} class allows customization of the stream request, including cursor,
  * retry strategy, start timestamp, status events, and timeout.
  */
 public class StreamOptions {
@@ -38,7 +38,7 @@ public class StreamOptions {
     }
 
     /**
-     * Retrieves the cursor for the stream.
+     * Retrieves the event cursor. Used to <a href="https://docs.fauna.com/fauna/current/reference/cdc/#restart-cursor">restart the stream</a>.
      *
      * @return An {@link Optional} containing the cursor, or empty if not set.
      */

@@ -20,7 +20,7 @@ import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
 /**
- * Represents an event generated from a Fauna event source, such as a stream or feed.
+ * Represents an event emitted in an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> or <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a>.
  * @param <E> The type of data contained in the event.
  */
 public final class FaunaEvent<E> {
@@ -44,9 +44,9 @@ public final class FaunaEvent<E> {
      *
      * @param type    The type of the event.
      * @param cursor  The cursor for the event.
-     * @param txnTs   The transaction timestamp of the event.
-     * @param data    The data associated with the event.
-     * @param stats   The query statistics for the event.
+     * @param txnTs   The transaction timestamp for the document change that triggered the event.
+     * @param data    The data for the document that triggered the event.
+     * @param stats   The <a href="https://docs.fauna.com/fauna/current/reference/http/reference/query-stats/#event-stats">event stats</a>.
      * @param error   The error information for the event, if any.
      */
     public FaunaEvent(final EventType type, final String cursor, final Long txnTs,
@@ -69,7 +69,7 @@ public final class FaunaEvent<E> {
     }
 
     /**
-     * Retrieves the data associated with this event.
+     * Retrieves the Fauna document data associated with this event.
      *
      * @return An {@link Optional} containing the event data, or empty if no data is available.
      */
@@ -78,7 +78,7 @@ public final class FaunaEvent<E> {
     }
 
     /**
-     * Retrieves the timestamp of this event.
+     * Retrieves the transaction timestamp for the document change that triggered the event.
      *
      * @return An {@link Optional} containing the transaction timestamp, or empty if not present.
      */
@@ -96,7 +96,7 @@ public final class FaunaEvent<E> {
     }
 
     /**
-     * Retrieves the query statistics associated with this event.
+     * Retrieves stats associated with this event.
      *
      * @return A {@link QueryStats} object representing the statistics.
      */

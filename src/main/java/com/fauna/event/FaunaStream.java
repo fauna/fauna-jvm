@@ -19,13 +19,13 @@ import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.SubmissionPublisher;
 
 /**
- * A processor for handling and decoding Fauna streams.
+ * A processor for handling and decoding Fauna <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Streams</a>.
  * <p>
  * The {@code FaunaStream} class extends {@link SubmissionPublisher} to process
  * incoming ByteBuffers, decode them into {@link FaunaEvent} objects, and forward
  * them to subscribers.
  *
- * @param <E> The type of data contained in the Fauna events.
+ * @param <E> The type of document data contained in the Fauna events.
  */
 public class FaunaStream<E> extends SubmissionPublisher<FaunaEvent<E>>
         implements Processor<List<ByteBuffer>, FaunaEvent<E>> {
