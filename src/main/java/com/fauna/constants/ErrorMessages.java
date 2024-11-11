@@ -22,7 +22,7 @@ public final class ErrorMessages {
     public static final String STREAM_SUBSCRIPTION = "Unable to subscribe to stream.";
 
     /**
-     * Error message indicating a failure to subscribe to a feed.
+     * Error message indicating a failure to subscribe to an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a>.
      */
     public static final String FEED_SUBSCRIPTION = "Unable to subscribe to feed.";
 
