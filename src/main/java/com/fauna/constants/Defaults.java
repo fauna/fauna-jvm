@@ -24,7 +24,7 @@ public final class Defaults {
     public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
 
     /**
-     * The default secret for local Fauna deployments, used in development environments.
+     * The default secret for local Fauna deployments created using the <a href="https://docs.fauna.com/fauna/current/build/tools/docker/">Fauna Docker image</a>.
      */
     public static final String LOCAL_FAUNA_SECRET = "secret";
 
