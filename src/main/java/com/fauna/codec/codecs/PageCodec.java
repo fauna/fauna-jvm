@@ -8,6 +8,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 import com.fauna.types.Page;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -84,10 +85,19 @@ public final class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
 
     private L decodePage(final UTF8FaunaParser parser, final FaunaTokenType endToken)
             throws CodecException {
+
+        parser.read();
+        if (parser.getCurrentTokenType() == FaunaTokenType.STRING) {
+            return handleUnmaterialized(parser, endToken);
+        } else {
+            return handleMaterialized(parser, endToken);
+        }
+    }
+
+    private L handleMaterialized(final UTF8FaunaParser parser, final FaunaTokenType endToken) {
         List<E> data = null;
         String after = null;
-
-        while (parser.read() && parser.getCurrentTokenType() != endToken) {
+        do {
             String fieldName = parser.getValueAsString();
             parser.read();
 
@@ -101,16 +111,23 @@ public final class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
                 default:
                     break;
             }
+        } while (parser.read() && parser.getCurrentTokenType() != endToken);
+
+        //noinspection unchecked
+        return (L) new Page<>(data, after);
+    }
+
+    private L handleUnmaterialized(final UTF8FaunaParser parser, final FaunaTokenType endToken) {
+        var after = parser.getValueAsString();
+        parser.read();
+
+        if (parser.getCurrentTokenType() != endToken) {
+            throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
         }
 
-        if (data == null) {
-            throw new CodecException(
-                    "No page data found while deserializing into Page<>");
-        }
+        //noinspection unchecked
+        return (L) new Page<>(new ArrayList<>(), after);
 
-        @SuppressWarnings("unchecked")
-        L res = (L) new Page<>(data, after);
-        return res;
     }
 
     private L wrapInPage(final UTF8FaunaParser parser) throws CodecException {
