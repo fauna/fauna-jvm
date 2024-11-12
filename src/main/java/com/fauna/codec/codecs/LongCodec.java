@@ -5,12 +5,15 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
-public class LongCodec extends BaseCodec<Long> {
+/**
+ * A codec for encoding and decoding {@link Long} values in Fauna's wire format.
+ */
+public final class LongCodec extends BaseCodec<Long> {
 
-    public static final LongCodec singleton = new LongCodec();
+    public static final LongCodec SINGLETON = new LongCodec();
 
     @Override
-    public Long decode(UTF8FaunaParser parser) throws CodecException {
+    public Long decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -25,7 +28,7 @@ public class LongCodec extends BaseCodec<Long> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Long obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final Long obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

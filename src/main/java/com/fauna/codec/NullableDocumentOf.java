@@ -4,15 +4,20 @@ import com.fauna.types.NullableDocument;
 
 import java.lang.reflect.Type;
 
-
 /**
- * NullableDocumentOf stores the generic parameter class to evade type erasure during deserialization.
+ * Represents a {@link NullableDocument} with a specified value type, allowing for retention
+ * of the generic type {@code E} during deserialization by circumventing type erasure.
  *
- * @param <E> The value class of the list.
+ * @param <E> The type of the value contained in the {@code NullableDocument}.
  */
-public class NullableDocumentOf<E>
-        extends ParameterizedOf<NullableDocument<E>> {
-    public NullableDocumentOf(Class<E> valueClass) {
-        super(NullableDocument.class, new Type[] {valueClass});
+public final class NullableDocumentOf<E> extends ParameterizedOf<NullableDocument<E>> {
+
+    /**
+     * Constructs a {@code NullableDocumentOf} instance for the specified value type.
+     *
+     * @param valueClass The class of the value contained in the {@code NullableDocument}.
+     */
+    public NullableDocumentOf(final Class<E> valueClass) {
+        super(NullableDocument.class, new Type[]{valueClass});
     }
 }

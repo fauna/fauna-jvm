@@ -7,10 +7,13 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.event.EventSourceResponse;
 import com.fauna.exception.CodecException;
 
-public class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
+/**
+ * Codec for encoding and decoding {@link EventSourceResponse} instances in the Fauna wire format.
+ */
+public final class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
 
     @Override
-    public EventSourceResponse decode(UTF8FaunaParser parser)
+    public EventSourceResponse decode(final UTF8FaunaParser parser)
             throws CodecException {
         if (parser.getCurrentTokenType() == FaunaTokenType.STREAM) {
             return new EventSourceResponse(parser.getTaggedValueAsString());
@@ -22,10 +25,9 @@ public class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, EventSourceResponse obj)
+    public void encode(final UTF8FaunaGenerator gen, final EventSourceResponse obj)
             throws CodecException {
         throw new CodecException("Cannot encode StreamTokenResponse");
-
     }
 
     @Override

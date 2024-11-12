@@ -7,12 +7,15 @@ import com.fauna.exception.CodecException;
 
 import java.time.LocalDate;
 
-public class LocalDateCodec extends BaseCodec<LocalDate> {
+/**
+ * A codec for encoding and decoding {@link LocalDate} in Fauna's wire format.
+ */
+public final class LocalDateCodec extends BaseCodec<LocalDate> {
 
     public static final LocalDateCodec SINGLETON = new LocalDateCodec();
 
     @Override
-    public LocalDate decode(UTF8FaunaParser parser) throws CodecException {
+    public LocalDate decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -26,7 +29,7 @@ public class LocalDateCodec extends BaseCodec<LocalDate> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, LocalDate obj)
+    public void encode(final UTF8FaunaGenerator gen, final LocalDate obj)
             throws CodecException {
         if (obj == null) {
             gen.writeNullValue();

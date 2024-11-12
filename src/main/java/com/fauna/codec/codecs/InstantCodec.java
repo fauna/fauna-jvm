@@ -7,12 +7,15 @@ import com.fauna.exception.CodecException;
 
 import java.time.Instant;
 
-public class InstantCodec extends BaseCodec<Instant> {
+/**
+ * Codec for encoding and decoding {@link Instant} values in Fauna's wire format.
+ */
+public final class InstantCodec extends BaseCodec<Instant> {
 
     public static final InstantCodec SINGLETON = new InstantCodec();
 
     @Override
-    public Instant decode(UTF8FaunaParser parser) throws CodecException {
+    public Instant decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -26,8 +29,7 @@ public class InstantCodec extends BaseCodec<Instant> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Instant obj)
-            throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final Instant obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

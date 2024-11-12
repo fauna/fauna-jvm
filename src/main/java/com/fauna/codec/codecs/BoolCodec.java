@@ -5,12 +5,15 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
-public class BoolCodec extends BaseCodec<Boolean> {
+/**
+ * Codec for encoding and decoding Fauna boolean values.
+ */
+public final class BoolCodec extends BaseCodec<Boolean> {
 
-    public static final BoolCodec singleton = new BoolCodec();
+    public static final BoolCodec SINGLETON = new BoolCodec();
 
     @Override
-    public Boolean decode(UTF8FaunaParser parser) throws CodecException {
+    public Boolean decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -25,7 +28,7 @@ public class BoolCodec extends BaseCodec<Boolean> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Boolean obj)
+    public void encode(final UTF8FaunaGenerator gen, final Boolean obj)
             throws CodecException {
         if (obj == null) {
             gen.writeNullValue();

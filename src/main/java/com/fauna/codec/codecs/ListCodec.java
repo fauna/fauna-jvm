@@ -10,16 +10,27 @@ import com.fauna.exception.CodecException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListCodec<E, L extends List<E>> extends BaseCodec<L> {
+/**
+ * A codec for encoding and decoding lists of elements in Fauna's wire format.
+ *
+ * @param <E> The type of elements in the list.
+ * @param <L> The type of the list that will hold the elements.
+ */
+public final class ListCodec<E, L extends List<E>> extends BaseCodec<L> {
 
     private final Codec<E> elementCodec;
 
-    public ListCodec(Codec<E> elementCodec) {
+    /**
+     * Creates a codec for encoding and decoding lists of elements.
+     *
+     * @param elementCodec The codec used to encode/decode elements of the list.
+     */
+    public ListCodec(final Codec<E> elementCodec) {
         this.elementCodec = elementCodec;
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws CodecException {
+    public L decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -42,7 +53,7 @@ public class ListCodec<E, L extends List<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
             return;

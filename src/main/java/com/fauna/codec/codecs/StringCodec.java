@@ -5,12 +5,15 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
-public class StringCodec extends BaseCodec<String> {
+/**
+ * Codec for encoding and decoding {@link String} values.
+ */
+public final class StringCodec extends BaseCodec<String> {
 
-    public static final StringCodec singleton = new StringCodec();
+    public static final StringCodec SINGLETON = new StringCodec();
 
     @Override
-    public String decode(UTF8FaunaParser parser) throws CodecException {
+    public String decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -26,7 +29,7 @@ public class StringCodec extends BaseCodec<String> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, String obj)
+    public void encode(final UTF8FaunaGenerator gen, final String obj)
             throws CodecException {
         if (obj == null) {
             gen.writeNullValue();

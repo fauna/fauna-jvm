@@ -29,7 +29,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClassCodec<T> extends BaseCodec<T> {
+/**
+ * A codec for encoding and decoding Java classes, handling Fauna-specific annotations and types.
+ *
+ * @param <T> The type of the class to encode/decode.
+ */
+public final class ClassCodec<T> extends BaseCodec<T> {
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "name";
     private final Class<T> type;
@@ -37,7 +42,13 @@ public class ClassCodec<T> extends BaseCodec<T> {
     private final Map<String, FieldInfo> fieldsByName;
     private final boolean shouldEscapeObject;
 
-    public ClassCodec(Class<T> ty, CodecProvider provider) {
+    /**
+     * Constructs a {@code ClassCodec} for a given type, initializing field mappings based on Fauna annotations.
+     *
+     * @param ty       The class type.
+     * @param provider The codec provider for resolving codecs for field types.
+     */
+    public ClassCodec(final Class<T> ty, final CodecProvider provider) {
         this.type = ty;
 
         List<FieldInfo> fieldsList = new ArrayList<>();
@@ -58,8 +69,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
             var attr =
                     new FaunaFieldImpl(field.getAnnotation(FaunaField.class));
 
-            var name = attr.name() != null ? attr.name() :
-                    FieldName.canonical(field.getName());
+            var name = attr.name() != null ? attr.name() : FieldName.canonical(field.getName());
             if (byNameMap.containsKey(name)) {
                 throw new IllegalArgumentException(
                         "Duplicate field name " + name + " in " + ty);
@@ -88,7 +98,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
         this.fieldsByName = Map.copyOf(byNameMap);
     }
 
-    private FieldType getFieldType(Field field) {
+    private FieldType getFieldType(final Field field) {
         if (field.getAnnotation(FaunaId.class) != null) {
             var impl = new FaunaIdImpl(field.getAnnotation(FaunaId.class));
             if (impl.isClientGenerate()) {
@@ -108,7 +118,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public T decode(UTF8FaunaParser parser) throws CodecException {
+    public T decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -123,9 +133,11 @@ public class ClassCodec<T> extends BaseCodec<T> {
                     @SuppressWarnings("unchecked")
                     T typed = (T) instance;
                     return typed;
-                } catch (IllegalAccessException | ClassNotFoundException |
-                         InvocationTargetException | InstantiationException |
-                         NoSuchMethodException e) {
+                } catch (IllegalAccessException
+                         | ClassNotFoundException
+                         | InvocationTargetException
+                         | InstantiationException
+                         | NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
             default:
@@ -136,7 +148,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, T obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final T obj) throws CodecException {
         if (shouldEscapeObject) {
             gen.writeStartEscapedObject();
         } else {
@@ -145,8 +157,9 @@ public class ClassCodec<T> extends BaseCodec<T> {
         for (FieldInfo fi : fields) {
             if (!fi.getName().startsWith("this$")) {
                 var fieldType = fi.getFieldType();
-                if (fieldType == FieldType.Coll || fieldType == FieldType.Ts ||
-                        fieldType == FieldType.ServerGeneratedId) {
+                if (fieldType == FieldType.Coll
+                        || fieldType == FieldType.Ts
+                        || fieldType == FieldType.ServerGeneratedId) {
                     // never encode coll and ts and server generated IDs
                     continue;
                 }
@@ -157,8 +170,7 @@ public class ClassCodec<T> extends BaseCodec<T> {
                     @SuppressWarnings("unchecked")
                     T value = obj != null ? (T) fi.getField().get(obj) : null;
 
-                    if (fieldType == FieldType.ClientGeneratedId &&
-                            value == null) {
+                    if (fieldType == FieldType.ClientGeneratedId && value == null) {
                         // The field is a client generated ID but set to null, so assume they're doing something
                         // other than creating the object.
                         continue;
@@ -202,8 +214,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
         return constructor.newInstance();
     }
 
-    private void setFields(Object instance, UTF8FaunaParser parser,
-                           FaunaTokenType endToken)
+    private void setFields(final Object instance, final UTF8FaunaParser parser,
+                           final FaunaTokenType endToken)
             throws IllegalAccessException {
 
         InternalDocument.Builder builder = new InternalDocument.Builder();
@@ -234,8 +246,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
         builder.build();
     }
 
-    private void trySetId(String fieldName, Object instance,
-                          UTF8FaunaParser parser)
+    private void trySetId(final String fieldName, final Object instance,
+                          final UTF8FaunaParser parser)
             throws IllegalAccessException {
         if (parser.getCurrentTokenType() != FaunaTokenType.STRING) {
             return;
@@ -255,8 +267,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
         }
     }
 
-    private void trySetName(String fieldName, Object instance,
-                            UTF8FaunaParser parser)
+    private void trySetName(final String fieldName, final Object instance,
+                            final UTF8FaunaParser parser)
             throws IllegalAccessException {
         if (parser.getCurrentTokenType() != FaunaTokenType.STRING) {
             return;
@@ -272,8 +284,8 @@ public class ClassCodec<T> extends BaseCodec<T> {
         }
     }
 
-    private void trySetField(String fieldName, Object instance,
-                             UTF8FaunaParser parser)
+    private void trySetField(final String fieldName, final Object instance,
+                             final UTF8FaunaParser parser)
             throws IllegalAccessException {
         FieldInfo field = fieldsByName.get(fieldName);
         if (field == null) {

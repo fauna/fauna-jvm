@@ -9,12 +9,15 @@ import com.fauna.types.BaseRef;
 import com.fauna.types.DocumentRef;
 import com.fauna.types.NamedDocumentRef;
 
-public class BaseRefCodec extends BaseCodec<BaseRef> {
+/**
+ * Codec for encoding and decoding Fauna {@link BaseRef} instances.
+ */
+public final class BaseRefCodec extends BaseCodec<BaseRef> {
 
     public static final BaseRefCodec SINGLETON = new BaseRefCodec();
 
     @Override
-    public BaseRef decode(UTF8FaunaParser parser) throws CodecException {
+    public BaseRef decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -27,15 +30,12 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
         }
     }
 
-    private Object decodeInternal(UTF8FaunaParser parser)
-            throws CodecException {
+    private Object decodeInternal(final UTF8FaunaParser parser) throws CodecException {
         var builder = new InternalDocument.Builder();
 
-        while (parser.read() &&
-                parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
+        while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
             if (parser.getCurrentTokenType() != FaunaTokenType.FIELD_NAME) {
-                throw new CodecException(unexpectedTokenExceptionMessage(
-                        parser.getCurrentTokenType()));
+                throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
             }
 
             String fieldName = parser.getValueAsString();
@@ -48,6 +48,8 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
                 case "cause":
                     builder = builder.withRefField(fieldName, parser);
                     break;
+                default:
+                    break;
             }
         }
 
@@ -55,8 +57,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, BaseRef obj)
-            throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final BaseRef obj) throws CodecException {
         gen.writeStartRef();
 
         if (obj instanceof DocumentRef) {
@@ -76,6 +77,6 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[] {FaunaType.Null, FaunaType.Ref};
+        return new FaunaType[]{FaunaType.Null, FaunaType.Ref};
     }
 }

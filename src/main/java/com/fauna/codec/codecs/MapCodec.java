@@ -10,16 +10,31 @@ import com.fauna.exception.CodecException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapCodec<V, L extends Map<String, V>> extends BaseCodec<L> {
+/**
+ * A codec for encoding and decoding {@link Map} values in Fauna's wire format.
+ * <p>
+ * This class handles encoding and decoding of maps, where the keys are strings and the values are of a generic
+ * type {@code V}.
+ * </p>
+ *
+ * @param <V> The type of the values in the map.
+ * @param <L> The type of the map.
+ */
+public final class MapCodec<V, L extends Map<String, V>> extends BaseCodec<L> {
 
     private final Codec<V> valueCodec;
 
-    public MapCodec(Codec<V> valueCodec) {
+    /**
+     * Constructs a {@code MapCodec} with the specified {@code Codec}.
+     *
+     * @param valueCodec The codec to use for the value.
+     */
+    public MapCodec(final Codec<V> valueCodec) {
         this.valueCodec = valueCodec;
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws CodecException {
+    public L decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -52,7 +67,7 @@ public class MapCodec<V, L extends Map<String, V>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
             return;
