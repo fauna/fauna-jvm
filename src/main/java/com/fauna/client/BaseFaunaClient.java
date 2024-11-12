@@ -24,8 +24,8 @@ public final class BaseFaunaClient extends FaunaClient {
      * @param httpClient    A Java HTTP client instance.
      * @param retryStrategy An implementation of RetryStrategy.
      */
-    public BaseFaunaClient(FaunaConfig faunaConfig,
-                           HttpClient httpClient, RetryStrategy retryStrategy) {
+    public BaseFaunaClient(final FaunaConfig faunaConfig,
+                           final HttpClient httpClient, final RetryStrategy retryStrategy) {
         super(faunaConfig.getSecret(), faunaConfig.getLogHandler(),
                 faunaConfig.getStatsCollector());
         this.httpClient = httpClient;
@@ -52,7 +52,7 @@ public final class BaseFaunaClient extends FaunaClient {
      *
      * @param faunaConfig The Fauna configuration settings.
      */
-    public BaseFaunaClient(FaunaConfig faunaConfig) {
+    public BaseFaunaClient(final FaunaConfig faunaConfig) {
         this(faunaConfig, HttpClient.newBuilder().build(),
                 DEFAULT_RETRY_STRATEGY);
     }

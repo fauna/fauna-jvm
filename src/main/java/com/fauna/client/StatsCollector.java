@@ -26,9 +26,9 @@ public interface StatsCollector {
     QueryStatsSummary readAndReset();
 
     /**
-     * Clone the stats collector instance.
+     * Creates a new instance of a {@code StatsCollector}.
      *
-     * @return A clone of the stats collector instance.
+     * @return A {@code StatsCollector} instance.
      */
-    StatsCollector clone();
+    StatsCollector createNew();
 }

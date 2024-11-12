@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class StatsCollectorImpl implements StatsCollector {
+public final class StatsCollectorImpl implements StatsCollector {
 
     private static final String RATE_LIMIT_READ_OPS = "read";
     private static final String RATE_LIMIT_COMPUTE_OPS = "compute";
@@ -28,7 +28,7 @@ public class StatsCollectorImpl implements StatsCollector {
             new AtomicInteger();
 
     @Override
-    public void add(QueryStats stats) {
+    public void add(final QueryStats stats) {
         readOps.addAndGet(stats.getReadOps());
         computeOps.addAndGet(stats.getComputeOps());
         writeOps.addAndGet(stats.getWriteOps());
@@ -49,6 +49,8 @@ public class StatsCollectorImpl implements StatsCollector {
                     break;
                 case RATE_LIMIT_WRITE_OPS:
                     rateLimitedWriteQueryCount.incrementAndGet();
+                    break;
+                default:
                     break;
             }
         });
@@ -93,7 +95,7 @@ public class StatsCollectorImpl implements StatsCollector {
     }
 
     @Override
-    public StatsCollector clone() {
+    public StatsCollector createNew() {
         return new StatsCollectorImpl();
     }
 }

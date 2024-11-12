@@ -1,6 +1,5 @@
 package com.fauna.client;
 
-
 import com.fauna.codec.PageOf;
 import com.fauna.exception.FaunaException;
 import com.fauna.query.AfterToken;
@@ -20,7 +19,7 @@ import static com.fauna.query.builder.Query.fql;
 /**
  * PageIterator iterates over paged responses from Fauna, the default page size is 16.
  *
- * @param <E>
+ * @param <E> The type of elements in the page.
  */
 public class PageIterator<E> implements Iterator<Page<E>> {
     static final String TOKEN_NAME = "token";
@@ -35,11 +34,11 @@ public class PageIterator<E> implements Iterator<Page<E>> {
      *
      * @param client      A client that makes requests to Fauna.
      * @param fql         The FQL query.
-     * @param resultClass The class of the elements returned from Fauna (i.e. the rows).
+     * @param resultClass The class of the elements returned from Fauna (i.e., the rows).
      * @param options     (optionally) pass in QueryOptions.
      */
-    public PageIterator(FaunaClient client, Query fql, Class<E> resultClass,
-                        QueryOptions options) {
+    public PageIterator(final FaunaClient client, final Query fql, final Class<E> resultClass,
+                        final QueryOptions options) {
         this.client = client;
         this.pageClass = new PageOf<>(resultClass);
         this.options = options;
@@ -47,8 +46,16 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         this.queryFuture = client.asyncQuery(fql, this.pageClass, options);
     }
 
-    public PageIterator(FaunaClient client, Page<E> firstPage,
-                        Class<E> resultClass, QueryOptions options) {
+    /**
+     * Construct a new PageIterator starting from a given page.
+     *
+     * @param client      A client that makes requests to Fauna.
+     * @param firstPage   The first Page of elements.
+     * @param resultClass The class of the elements returned from Fauna (i.e., the rows).
+     * @param options     (optionally) pass in QueryOptions.
+     */
+    public PageIterator(final FaunaClient client, final Page<E> firstPage,
+                        final Class<E> resultClass, final QueryOptions options) {
         this.client = client;
         this.pageClass = new PageOf<>(resultClass);
         this.options = options;
@@ -56,21 +63,40 @@ public class PageIterator<E> implements Iterator<Page<E>> {
                 .ifPresentOrElse(this::doPaginatedQuery, this::endPagination);
     }
 
+    /**
+     * Check if there is a next page available.
+     *
+     * @return True if there is a next page, false otherwise.
+     */
     @Override
     public boolean hasNext() {
         return this.queryFuture != null;
     }
 
-    public static Query buildPageQuery(AfterToken afterToken) {
+    /**
+     * Build the page query with a specific AfterToken.
+     *
+     * @param afterToken The token indicating where the next page should start.
+     * @return A Query to fetch the next page.
+     */
+    public static Query buildPageQuery(final AfterToken afterToken) {
         return fql(PAGINATE_QUERY, Map.of(TOKEN_NAME, afterToken.getToken()));
     }
 
-    private void doPaginatedQuery(AfterToken afterToken) {
+    /**
+     * Performs a paginated query with the provided AfterToken.
+     *
+     * @param afterToken The token indicating where the next page should start.
+     */
+    private void doPaginatedQuery(final AfterToken afterToken) {
         this.queryFuture =
                 client.asyncQuery(PageIterator.buildPageQuery(afterToken),
                         pageClass, options);
     }
 
+    /**
+     * Ends the pagination process when no further pages are available.
+     */
     private void endPagination() {
         this.queryFuture = null;
     }
@@ -78,7 +104,7 @@ public class PageIterator<E> implements Iterator<Page<E>> {
     /**
      * Returns a CompletableFuture that will complete with the next page (or throw a FaunaException).
      *
-     * @return A c
+     * @return A CompletableFuture representing the next page of elements.
      */
     public CompletableFuture<Page<E>> nextAsync() {
         if (this.queryFuture != null) {
@@ -93,7 +119,6 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         }
     }
 
-
     /**
      * Get the next Page.
      *
@@ -105,8 +130,7 @@ public class PageIterator<E> implements Iterator<Page<E>> {
         try {
             return nextAsync().join();
         } catch (CompletionException ce) {
-            if (ce.getCause() != null &&
-                    ce.getCause() instanceof FaunaException) {
+            if (ce.getCause() != null && ce.getCause() instanceof FaunaException) {
                 throw (FaunaException) ce.getCause();
             } else {
                 throw ce;
@@ -122,15 +146,26 @@ public class PageIterator<E> implements Iterator<Page<E>> {
     public Iterator<E> flatten() {
         return new Iterator<>() {
             private final PageIterator<E> pageIterator = PageIterator.this;
-            private Iterator<E> thisPage = pageIterator.hasNext() ?
-                    pageIterator.next().getData().iterator() : null;
+            private Iterator<E> thisPage = pageIterator.hasNext()
+                    ? pageIterator.next().getData().iterator()
+                    : null;
 
+            /**
+             * Check if there are more items to iterate over.
+             *
+             * @return True if there are more items, false otherwise.
+             */
             @Override
             public boolean hasNext() {
-                return thisPage != null &&
-                        (thisPage.hasNext() || pageIterator.hasNext());
+                return thisPage != null && (thisPage.hasNext() || pageIterator.hasNext());
             }
 
+            /**
+             * Get the next item in the iteration.
+             *
+             * @return The next item in the iteration.
+             * @throws NoSuchElementException if no more items are available.
+             */
             @Override
             public E next() {
                 if (thisPage == null) {

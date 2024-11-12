@@ -25,7 +25,7 @@ import static com.fauna.client.Logging.headersAsString;
 /**
  * The RequestBuilder class is responsible for building HTTP requests for communicating with Fauna.
  */
-public class RequestBuilder {
+public final class RequestBuilder {
 
     private static final String BEARER = "Bearer";
     private static final String QUERY_PATH = "/query/1";
@@ -36,6 +36,9 @@ public class RequestBuilder {
     private final Duration clientTimeoutBuffer;
     private final Logger logger;
 
+    /**
+     * Field names for HTTP requests.
+     */
     public static class FieldNames {
         static final String QUERY = "query";
         public static final String TOKEN = "token";
@@ -44,6 +47,9 @@ public class RequestBuilder {
         public static final String PAGE_SIZE = "page_size";
     }
 
+    /**
+     * HTTP headers used for Fauna requests.
+     */
     static class Headers {
         static final String LAST_TXN_TS = "X-Last-Txn-Ts";
         static final String LINEARIZED = "X-Linearized";
@@ -60,9 +66,17 @@ public class RequestBuilder {
         static final String FORMAT = "X-Format";
     }
 
-    public RequestBuilder(URI uri, String token, int maxContentionRetries,
-                          Duration clientTimeoutBuffer, Logger logger) {
-        // DriverEnvironment is not needed outside the constructor for now.
+    /**
+     * Constructor for creating a RequestBuilder with the specified Fauna configuration.
+     *
+     * @param uri                   The URI for the Fauna endpoint.
+     * @param token                 The secret key used for authorization.
+     * @param maxContentionRetries  The maximum retries for contention errors.
+     * @param clientTimeoutBuffer   The buffer for the client timeout.
+     * @param logger                The logger to log HTTP request details.
+     */
+    public RequestBuilder(final URI uri, final String token, final int maxContentionRetries,
+                          final Duration clientTimeoutBuffer, final Logger logger) {
         DriverEnvironment env =
                 new DriverEnvironment(DriverEnvironment.JvmDriver.JAVA);
         this.baseRequestBuilder = HttpRequest.newBuilder().uri(uri).headers(
@@ -80,43 +94,76 @@ public class RequestBuilder {
         this.logger = logger;
     }
 
-    public RequestBuilder(HttpRequest.Builder builder,
-                          Duration clientTimeoutBuffer, Logger logger) {
+    /**
+     * Constructor for creating a RequestBuilder with an existing HttpRequest.Builder.
+     *
+     * @param builder              The HttpRequest.Builder to use.
+     * @param clientTimeoutBuffer  The buffer for the client timeout.
+     * @param logger               The logger to log HTTP request details.
+     */
+    public RequestBuilder(final HttpRequest.Builder builder,
+                          final Duration clientTimeoutBuffer, final Logger logger) {
         this.baseRequestBuilder = builder;
         this.clientTimeoutBuffer = clientTimeoutBuffer;
         this.logger = logger;
     }
 
-    public static RequestBuilder queryRequestBuilder(FaunaConfig config,
-                                                     Logger logger) {
+    /**
+     * Creates a new RequestBuilder for Fauna queries.
+     *
+     * @param config The FaunaConfig containing endpoint and secret.
+     * @param logger The logger for logging HTTP request details.
+     * @return A new instance of RequestBuilder.
+     */
+    public static RequestBuilder queryRequestBuilder(final FaunaConfig config,
+                                                     final Logger logger) {
         return new RequestBuilder(URI.create(config.getEndpoint() + QUERY_PATH),
                 config.getSecret(), config.getMaxContentionRetries(),
                 config.getClientTimeoutBuffer(), logger);
     }
 
-    public static RequestBuilder streamRequestBuilder(FaunaConfig config,
-                                                      Logger logger) {
+    /**
+     * Creates a new RequestBuilder for Fauna streams.
+     *
+     * @param config The FaunaConfig containing endpoint and secret.
+     * @param logger The logger for logging HTTP request details.
+     * @return A new instance of RequestBuilder.
+     */
+    public static RequestBuilder streamRequestBuilder(final FaunaConfig config,
+                                                      final Logger logger) {
         return new RequestBuilder(
                 URI.create(config.getEndpoint() + STREAM_PATH),
                 config.getSecret(), config.getMaxContentionRetries(),
                 config.getClientTimeoutBuffer(), logger);
     }
 
-    public static RequestBuilder feedRequestBuilder(FaunaConfig config,
-                                                    Logger logger) {
+    /**
+     * Creates a new RequestBuilder for Fauna feed requests.
+     *
+     * @param config The FaunaConfig containing endpoint and secret.
+     * @param logger The logger for logging HTTP request details.
+     * @return A new instance of RequestBuilder.
+     */
+    public static RequestBuilder feedRequestBuilder(final FaunaConfig config,
+                                                    final Logger logger) {
         return new RequestBuilder(URI.create(config.getEndpoint() + FEED_PATH),
                 config.getSecret(), config.getMaxContentionRetries(),
                 config.getClientTimeoutBuffer(), logger);
     }
 
-    public RequestBuilder scopedRequestBuilder(String token) {
+    /**
+     * Creates a scoped request builder with the given token.
+     *
+     * @param token The token to be used for the request's authorization header.
+     * @return A new instance of RequestBuilder with the scoped token.
+     */
+    public RequestBuilder scopedRequestBuilder(final String token) {
         HttpRequest.Builder newBuilder = this.baseRequestBuilder.copy();
-        // .setHeader(..) clears existing headers (which we want) while .header(..) would append it :)
         newBuilder.setHeader(Headers.AUTHORIZATION, buildAuthHeader(token));
         return new RequestBuilder(newBuilder, clientTimeoutBuffer, logger);
     }
 
-    private void logRequest(String body, HttpRequest req) {
+    private void logRequest(final String body, final HttpRequest req) {
         String timeout = req.timeout().map(
                 val -> MessageFormat.format(" (timeout: {0})", val)).orElse("");
         logger.fine(MessageFormat.format(
@@ -129,12 +176,15 @@ public class RequestBuilder {
     /**
      * Builds and returns an HTTP request for a given Fauna query string (FQL).
      *
-     * @param fql The Fauna query string.
+     * @param fql        The Fauna query string.
+     * @param options    The query options.
+     * @param provider   The codec provider to encode the query.
+     * @param lastTxnTs  The last transaction timestamp (optional).
      * @return An HttpRequest object configured for the Fauna query.
      */
-    public HttpRequest buildRequest(Query fql, QueryOptions options,
-                                    CodecProvider provider, Long last_txn_ts) {
-        HttpRequest.Builder builder = getBuilder(options, last_txn_ts);
+    public HttpRequest buildRequest(final Query fql, final QueryOptions options,
+                                    final CodecProvider provider, final Long lastTxnTs) {
+        HttpRequest.Builder builder = getBuilder(options, lastTxnTs);
         try (UTF8FaunaGenerator gen = UTF8FaunaGenerator.create()) {
             gen.writeStartObject();
             gen.writeFieldName(FieldNames.QUERY);
@@ -150,26 +200,36 @@ public class RequestBuilder {
         }
     }
 
-    public HttpRequest buildStreamRequest(EventSource eventSource,
-                                          StreamOptions streamOptions) {
+    /**
+     * Builds and returns an HTTP request for a Fauna stream.
+     *
+     * @param eventSource The event source for the stream.
+     * @param streamOptions The stream options.
+     * @return An HttpRequest object configured for the Fauna stream.
+     */
+    public HttpRequest buildStreamRequest(final EventSource eventSource,
+                                          final StreamOptions streamOptions) {
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         streamOptions.getTimeout().ifPresent(builder::timeout);
         try {
-            String body =
-                    new StreamRequest(eventSource, streamOptions).serialize();
-            HttpRequest req =
-                    builder.POST(HttpRequest.BodyPublishers.ofString(body))
-                            .build();
+            String body = new StreamRequest(eventSource, streamOptions).serialize();
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
             logRequest(body, req);
             return req;
         } catch (IOException e) {
-            throw new ClientException("Unable to build Fauna Stream request.",
-                    e);
+            throw new ClientException("Unable to build Fauna Stream request.", e);
         }
     }
 
-    public HttpRequest buildFeedRequest(EventSource eventSource,
-                                        FeedOptions options) {
+    /**
+     * Builds and returns an HTTP request for a Fauna feed.
+     *
+     * @param eventSource The event source for the feed.
+     * @param options     The feed options.
+     * @return An HttpRequest object configured for the Fauna feed.
+     */
+    public HttpRequest buildFeedRequest(final EventSource eventSource,
+                                        final FeedOptions options) {
         FeedRequest request = new FeedRequest(eventSource, options);
         HttpRequest.Builder builder = baseRequestBuilder.copy();
         options.getTimeout().ifPresent(val -> {
@@ -179,29 +239,32 @@ public class RequestBuilder {
         });
         try {
             String body = request.serialize();
-            HttpRequest req = builder.POST(
-                            HttpRequest.BodyPublishers.ofString(request.serialize()))
-                    .build();
+            HttpRequest req = builder.POST(HttpRequest.BodyPublishers.ofString(request.serialize())).build();
             logRequest(body, req);
             return req;
         } catch (IOException e) {
             throw new ClientException("Unable to build Fauna Feed request.", e);
         }
-
-
     }
 
-    private static String buildAuthHeader(String token) {
+    /**
+     * Builds an authorization header for the given token.
+     *
+     * @param token The token to be used in the authorization header.
+     * @return The authorization header value.
+     */
+    private static String buildAuthHeader(final String token) {
         return String.join(" ", RequestBuilder.BEARER, token);
     }
 
     /**
-     * Get either the base request builder (if options is null) or a copy with the options applied.
+     * Gets the base request builder or a copy with options applied.
      *
-     * @param options The QueryOptions (must not be null).
+     * @param options   The QueryOptions (must not be null).
+     * @param lastTxnTs The last transaction timestamp (optional).
+     * @return The HttpRequest.Builder configured with options.
      */
-    private HttpRequest.Builder getBuilder(QueryOptions options,
-                                           Long lastTxnTs) {
+    private HttpRequest.Builder getBuilder(final QueryOptions options, final Long lastTxnTs) {
         if (options == null && (lastTxnTs == null || lastTxnTs <= 0)) {
             return baseRequestBuilder;
         }
@@ -212,16 +275,13 @@ public class RequestBuilder {
         if (options != null) {
 
             options.getTimeoutMillis().ifPresent(val -> {
-                builder.timeout(
-                        Duration.ofMillis(val).plus(clientTimeoutBuffer));
+                builder.timeout(Duration.ofMillis(val).plus(clientTimeoutBuffer));
                 builder.header(Headers.QUERY_TIMEOUT_MS, String.valueOf(val));
             });
             options.getLinearized().ifPresent(
-                    val -> builder.header(Headers.LINEARIZED,
-                            String.valueOf(val)));
+                    val -> builder.header(Headers.LINEARIZED, String.valueOf(val)));
             options.getTypeCheck().ifPresent(
-                    val -> builder.header(Headers.TYPE_CHECK,
-                            String.valueOf(val)));
+                    val -> builder.header(Headers.TYPE_CHECK, String.valueOf(val)));
             options.getTraceParent().ifPresent(
                     val -> builder.header(Headers.TRACE_PARENT, val));
             options.getQueryTags().ifPresent(
