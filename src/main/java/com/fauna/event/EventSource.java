@@ -2,6 +2,8 @@ package com.fauna.event;
 
 import com.fauna.query.builder.Query;
 
+import java.util.Objects;
+
 /**
  * Represents an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-source">event source</a>. You can consume event sources
 as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feeds</a> by
@@ -41,14 +43,38 @@ public class EventSource {
     public static EventSource fromToken(final String token) {
         return new EventSource(token);
     }
+    /**
+     * Compares this {@code EventSourceResponse} with another object for equality.
+     *
+     * @param o The object to compare with.
+     * @return {@code true} if the specified object is equal to this {@code EventSourceResponse}; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null) {
+            return false;
+        }
+
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+
+        EventSource c = (EventSource) o;
+
+        return Objects.equals(token, c.token);
+    }
 
     /**
-     * Creates an {@code EventSource} from an {@code EventSourceResponse}.
+     * Returns the hash code for this {@code EventSourceResponse}.
      *
-     * @param response An {@code EventSourceResponse} containing the token for the event source.
-     * @return A new {@code EventSource} instance.
+     * @return An {@code int} representing the hash code of this object.
      */
-    public static EventSource fromResponse(final EventSourceResponse response) {
-        return new EventSource(response.getToken());
+    @Override
+    public int hashCode() {
+        return Objects.hash(token);
     }
 }
