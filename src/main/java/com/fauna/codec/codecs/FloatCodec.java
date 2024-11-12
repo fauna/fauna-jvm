@@ -6,7 +6,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding {@link Float} values in the Fauna wire format.
+ * Codec for encoding and decoding {@link Float} values in the Fauna tagged data format.
  */
 public final class FloatCodec extends BaseCodec<Float> {
 

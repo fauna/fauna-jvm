@@ -6,7 +6,7 @@ import com.fauna.exception.ClientResponseException;
  * Enumeration representing token types for Fauna serialization.
  * <p>
  * The {@code FaunaTokenType} enum defines various tokens that are used to
- * identify different elements and data structures within Fauna's serialization
+ * identify different elements and data structures within FQL serialization
  * and deserialization processes.
  * </p>
  */

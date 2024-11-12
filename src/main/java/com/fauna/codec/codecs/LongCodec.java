@@ -6,7 +6,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * A codec for encoding and decoding {@link Long} values in Fauna's wire format.
+ * A codec for encoding and decoding {@link Long} values in Fauna's tagged data format.
  */
 public final class LongCodec extends BaseCodec<Long> {
 

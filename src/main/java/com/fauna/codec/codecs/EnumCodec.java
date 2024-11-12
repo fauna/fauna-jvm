@@ -6,7 +6,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding Java Enum types in the Fauna wire format.
+ * Codec for encoding and decoding Java Enum types in the Fauna tagged data format.
  *
  * @param <T> The type of the enum.
  */

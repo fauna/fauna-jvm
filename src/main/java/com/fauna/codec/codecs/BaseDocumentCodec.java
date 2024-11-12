@@ -11,7 +11,7 @@ import com.fauna.types.Document;
 import com.fauna.types.NamedDocument;
 
 /**
- * Codec for encoding and decoding Fauna {@link BaseDocument} instances.
+ * Codec for encoding and decoding FQL {@link BaseDocument} instances.
  */
 public final class BaseDocumentCodec extends BaseCodec<BaseDocument> {
 

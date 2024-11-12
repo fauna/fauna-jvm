@@ -24,7 +24,7 @@ public class CodecRegistryKey {
     }
 
     /**
-     * Creates a {@code CodecRegistryKey} for the specified class, without any type arguments.
+     * Creates a {@code CodecRegistryKey} for the specified class without any type arguments.
      *
      * @param clazz The base class of the codec.
      * @param <T>   The type of the base class.
@@ -47,7 +47,7 @@ public class CodecRegistryKey {
     }
 
     /**
-     * Compares this key with another object for equality, based on the base class and type arguments.
+     * Compares this key with another object for equality based on the base class and type arguments.
      *
      * @param other The object to compare with this key.
      * @return {@code true} if the other object is a {@code CodecRegistryKey} with the same base class and type arguments;

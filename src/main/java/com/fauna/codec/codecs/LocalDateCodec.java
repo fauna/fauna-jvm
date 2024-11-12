@@ -8,7 +8,7 @@ import com.fauna.exception.CodecException;
 import java.time.LocalDate;
 
 /**
- * A codec for encoding and decoding {@link LocalDate} in Fauna's wire format.
+ * A codec for encoding and decoding {@link LocalDate} in Fauna's tagged data format.
  */
 public final class LocalDateCodec extends BaseCodec<LocalDate> {
 

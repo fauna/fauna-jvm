@@ -6,7 +6,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding {@code Byte} values in Fauna's wire format.
+ * Codec for encoding and decoding {@code Byte} values in Fauna's tagged data format.
  */
 public final class ByteCodec extends BaseCodec<Byte> {
 

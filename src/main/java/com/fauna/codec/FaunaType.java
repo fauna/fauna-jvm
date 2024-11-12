@@ -1,51 +1,51 @@
 package com.fauna.codec;
 
 /**
- * Enum representing various data types used by Fauna for data storage and retrieval.
- * These types align with Fauna's type system, providing structured representations for
- * encoding and decoding data in Fauna queries and responses.
+ * Enum representing various FQL data types used by Fauna for data storage and retrieval.
+ * These types provide structured representations for
+ * encoding and decoding data in FQL queries and responses.
  */
 public enum FaunaType {
 
     /**
-     * Represents an integer value in Fauna.
+     * Represents an integer value in FQL.
      */
     Int,
 
     /**
-     * Represents a long integer value in Fauna.
+     * Represents a long integer value in FQL.
      */
     Long,
 
     /**
-     * Represents a double-precision floating-point number in Fauna.
+     * Represents a double-precision floating-point number in FQL.
      */
     Double,
 
     /**
-     * Represents a UTF-8 encoded string in Fauna.
+     * Represents a UTF-8 encoded string in FQL.
      */
     String,
 
     /**
-     * Represents a date without time in Fauna.
+     * Represents a date without time in FQL.
      * Dates are in ISO 8601 format (YYYY-MM-DD).
      */
     Date,
 
     /**
-     * Represents an exact timestamp or time value in Fauna.
+     * Represents an exact timestamp or time value in FQL.
      * Timestamps are in ISO 8601 format.
      */
     Time,
 
     /**
-     * Represents a boolean value in Fauna.
+     * Represents a boolean value in FQL.
      */
     Boolean,
 
     /**
-     * Represents an object in Fauna.
+     * Represents an object in FQL.
      */
     Object,
 
@@ -55,41 +55,41 @@ public enum FaunaType {
     Ref,
 
     /**
-     * Represents a complete document within Fauna.
+     * Represents a complete document in FQL.
      */
     Document,
 
     /**
-     * Represents an array (or list) of values in Fauna.
+     * Represents an array (or list) of values in FQL.
      * Arrays are ordered collections of elements and can contain multiple data types.
      */
     Array,
 
     /**
-     * Represents binary data encoded in Base64 within Fauna.
+     * Represents binary data encoded in Base64 within FQL.
      * Used for storing raw bytes of data.
      */
     Bytes,
 
     /**
-     * Represents a null value in Fauna, denoting the absence of a value.
+     * Represents a null value in FQL, denoting the absence of a value.
      */
     Null,
 
     /**
-     * Represents a stream type in Fauna, primarily used for real-time data streams.
-     * Streams allow clients to receive data changes as they occur.
+     * Represents an event source in FQL.
+     * Event sources are used to track events as Event Feeds or Event Streams.
      */
     Stream,
 
     /**
-     * Represents a module in Fauna Query Language (FQL), which serves as a symbolic object
+     * Represents a module in FQL, which serves as a symbolic object
      * with associated methods
      */
     Module,
 
     /**
-     * Represents a pageable set of query results in Fauna.
+     * Represents a pageable Set in FQL.
      */
     Set
 }

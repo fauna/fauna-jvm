@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The default codec registry for Fauna serialization and deserialization.
  * <p>
- * This registry provides pre-defined codecs for common data types, enabling them to be
- * serialized to and deserialized from Fauna's data format.
+ * This registry provides pre-defined codecs for common data types, enabling
+ * serialization to and deserialization from FQL.
  * </p>
  */
 public final class DefaultCodecRegistry implements CodecRegistry {

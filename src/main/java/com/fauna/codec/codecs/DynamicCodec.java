@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Codec for dynamically encoding and decoding various Fauna types.
+ * Codec for dynamically encoding and decoding various FQL types.
  * <p>
- * This codec adapts to different Fauna types by delegating to other codecs as needed.
+ * This codec adapts to different FQL types by delegating to other codecs as needed.
  */
 public final class DynamicCodec extends BaseCodec<Object> {
     private final ListCodec<Object, List<Object>> list = new ListCodec<>(this);

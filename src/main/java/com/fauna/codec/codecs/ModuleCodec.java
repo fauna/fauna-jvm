@@ -7,7 +7,7 @@ import com.fauna.exception.CodecException;
 import com.fauna.types.Module;
 
 /**
- * A codec for encoding and decoding {@link Module} in Fauna's wire format.
+ * A codec for encoding and decoding {@link Module} in Fauna's tagged data format.
  */
 public final class ModuleCodec extends BaseCodec<Module> {
 

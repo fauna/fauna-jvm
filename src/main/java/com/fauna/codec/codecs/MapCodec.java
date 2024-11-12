@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A codec for encoding and decoding {@link Map} values in Fauna's wire format.
+ * A codec for encoding and decoding {@link Map} values in Fauna's tagged data format.
  * <p>
  * This class handles encoding and decoding of maps, where the keys are strings and the values are of a generic
  * type {@code V}.

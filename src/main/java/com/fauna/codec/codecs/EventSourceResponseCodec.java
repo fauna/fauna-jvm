@@ -8,7 +8,7 @@ import com.fauna.event.EventSourceResponse;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding {@link EventSourceResponse} instances in the Fauna wire format.
+ * Codec for encoding and decoding {@link EventSourceResponse} instances in the Fauna tagged format.
  */
 public final class EventSourceResponseCodec extends BaseCodec<EventSourceResponse> {
 

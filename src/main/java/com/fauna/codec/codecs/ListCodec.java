@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A codec for encoding and decoding lists of elements in Fauna's wire format.
+ * A codec for encoding and decoding lists of elements in Fauna's tagged data format.
  *
  * @param <E> The type of elements in the list.
  * @param <L> The type of the list that will hold the elements.

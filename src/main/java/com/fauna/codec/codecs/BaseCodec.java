@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public abstract class BaseCodec<T> implements Codec<T> {
 
-    /** Set of known tag identifiers for Fauna's wire format. */
+    /** Set of known tag identifiers for Fauna's tagged data format. */
     public static final Set<String> TAGS = new HashSet<>(Arrays.asList(
             "@int", "@long", "@double", "@date", "@time", "@mod", "@ref",
             "@doc", "@set", "@object", "@bytes"

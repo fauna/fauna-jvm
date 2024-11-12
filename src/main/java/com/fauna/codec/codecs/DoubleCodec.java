@@ -6,16 +6,16 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding {@link Double} values in Fauna's wire format.
+ * Codec for encoding and decoding {@link Double} values in Fauna's tagged data format.
  */
 public final class DoubleCodec extends BaseCodec<Double> {
 
     public static final DoubleCodec SINGLETON = new DoubleCodec();
 
     /**
-     * Decodes a {@code Double} value from the Fauna wire format.
+     * Decodes a {@code Double} value from the Fauna tagged data format.
      *
-     * @param parser The parser instance for reading Fauna wire format data.
+     * @param parser The parser instance for reading Fauna tagged format data.
      * @return The decoded {@code Double} value or {@code null} if the token is {@code NULL}.
      * @throws CodecException If the token type is unsupported for decoding a {@code Double}.
      */
@@ -36,9 +36,9 @@ public final class DoubleCodec extends BaseCodec<Double> {
     }
 
     /**
-     * Encodes a {@code Double} value to Fauna's wire format.
+     * Encodes a {@code Double} value to Fauna's tagged data format.
      *
-     * @param gen The generator used to write Fauna wire format data.
+     * @param gen The generator used to write Fauna tagged format data.
      * @param obj The {@code Double} value to encode, or {@code null} to write a {@code NULL} value.
      * @throws CodecException If encoding fails.
      */

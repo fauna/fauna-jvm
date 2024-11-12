@@ -10,7 +10,7 @@ import com.fauna.types.DocumentRef;
 import com.fauna.types.NamedDocumentRef;
 
 /**
- * Codec for encoding and decoding Fauna {@link BaseRef} instances.
+ * Codec for encoding and decoding FQL {@link BaseRef} instances.
  */
 public final class BaseRefCodec extends BaseCodec<BaseRef> {
 

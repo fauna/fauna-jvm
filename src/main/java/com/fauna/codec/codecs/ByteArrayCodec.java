@@ -6,7 +6,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding byte arrays to and from Fauna's wire format.
+ * Codec for encoding and decoding FQL byte arrays.
  */
 public final class ByteArrayCodec extends BaseCodec<byte[]> {
 

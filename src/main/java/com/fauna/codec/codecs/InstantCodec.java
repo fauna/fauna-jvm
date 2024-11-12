@@ -8,7 +8,7 @@ import com.fauna.exception.CodecException;
 import java.time.Instant;
 
 /**
- * Codec for encoding and decoding {@link Instant} values in Fauna's wire format.
+ * Codec for encoding and decoding {@link Instant} values in Fauna's tagged data format.
  */
 public final class InstantCodec extends BaseCodec<Instant> {
 

@@ -3,7 +3,7 @@ package com.fauna.codec;
 import java.lang.reflect.Type;
 
 /**
- * Interface for providing codecs, responsible for obtaining codecs for specific classes and types.
+ * Interface for providing codecs. Responsible for obtaining codecs for specific classes and types.
  */
 public interface CodecProvider {
 
@@ -17,7 +17,7 @@ public interface CodecProvider {
     <T> Codec<T> get(Class<T> clazz);
 
     /**
-     * Retrieves a codec for the specified class type, with additional type arguments for generic classes.
+     * Retrieves a codec for the specified class type with additional type arguments for generic classes.
      *
      * @param clazz    The class type for which to obtain a codec.
      * @param typeArgs The generic type arguments, if applicable.

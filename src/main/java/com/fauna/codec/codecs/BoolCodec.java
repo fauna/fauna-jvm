@@ -6,7 +6,7 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
 /**
- * Codec for encoding and decoding Fauna boolean values.
+ * Codec for encoding and decoding FQL boolean values.
  */
 public final class BoolCodec extends BaseCodec<Boolean> {
 
