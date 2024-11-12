@@ -1,7 +1,4 @@
-# Official JVM Driver for [Fauna v10](https://fauna.com) (current - beta)
-
-> [!CAUTION]
-> This driver is currently in beta and should not be used in production.
+# Official JVM Driver for [Fauna v10](https://fauna.com) (current)
 
 The Fauna JVM driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
