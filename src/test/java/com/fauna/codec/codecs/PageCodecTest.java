@@ -4,8 +4,10 @@ import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
+import com.fauna.codec.Helpers;
 import com.fauna.exception.CodecException;
 import com.fauna.types.Page;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,6 +17,8 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class PageCodecTest extends TestBase {
@@ -76,5 +80,16 @@ public class PageCodecTest extends TestBase {
                 type);
         runCase(TestType.Decode, pageCodecOf(Object.class), wire, null,
                 new CodecException(exMsg));
+    }
+
+    @Test
+    public void page_decodeUnmaterializedSet()
+    {
+        var token = "aftertoken";
+        var wire = "{\"@set\":\"" + token + "\"}";
+        var codec = pageCodecOf(Object.class);
+        var decoded = Helpers.decode(codec, wire);
+        assertEquals(token, decoded.getAfter().get().getToken());
+        assertEquals(0, decoded.getData().size());
     }
 }
