@@ -6,7 +6,6 @@
  *
  * <ul>
  *   <li>{@link com.fauna.event.EventSource} - Represents an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-source">event source</a>.</li>
- *   <li>{@link com.fauna.event.EventSourceResponse} - Encapsulates the response containing an event source token.</li>
  *   <li>{@link com.fauna.event.FaunaEvent} - Defines an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#events">event</a>.</li>
  *   <li>{@link com.fauna.event.FaunaStream} - Processes events from an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a>, decoding them into {@code FaunaEvent} instances.</li>
  *   <li>{@link com.fauna.event.FeedIterator} - Enables iteration through pages of events in an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a>.</li>
