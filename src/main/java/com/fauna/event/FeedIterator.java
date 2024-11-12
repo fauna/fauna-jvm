@@ -14,7 +14,7 @@ import java.util.concurrent.CompletionException;
  *
  * @param <E>
  */
-public class FeedIterator<E> implements Iterator<FeedPage<E>> {
+public final class FeedIterator<E> implements Iterator<FeedPage<E>> {
     private final FaunaClient client;
     private final Class<E> resultClass;
     private final EventSource eventSource;
@@ -29,8 +29,8 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
      * @param feedOptions The FeedOptions object.
      * @param resultClass The class of the elements returned from Fauna (i.e. the rows).
      */
-    public FeedIterator(FaunaClient client, EventSource eventSource,
-                        FeedOptions feedOptions, Class<E> resultClass) {
+    public FeedIterator(final FaunaClient client, final EventSource eventSource,
+                        final FeedOptions feedOptions, final Class<E> resultClass) {
         this.client = client;
         this.resultClass = resultClass;
         this.eventSource = eventSource;
@@ -79,8 +79,7 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
         try {
             return nextAsync().join();
         } catch (CompletionException ce) {
-            if (ce.getCause() != null &&
-                    ce.getCause() instanceof FaunaException) {
+            if (ce.getCause() != null && ce.getCause() instanceof FaunaException) {
                 throw (FaunaException) ce.getCause();
             } else {
                 throw ce;
@@ -96,13 +95,13 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
     public Iterator<FaunaEvent<E>> flatten() {
         return new Iterator<>() {
             private final FeedIterator<E> feedIterator = FeedIterator.this;
-            private Iterator<FaunaEvent<E>> thisPage = feedIterator.hasNext() ?
-                    feedIterator.next().getEvents().iterator() : null;
+            private Iterator<FaunaEvent<E>> thisPage = feedIterator.hasNext()
+                    ? feedIterator.next().getEvents().iterator()
+                    : null;
 
             @Override
             public boolean hasNext() {
-                return thisPage != null &&
-                        (thisPage.hasNext() || feedIterator.hasNext());
+                return thisPage != null && (thisPage.hasNext() || feedIterator.hasNext());
             }
 
             @Override
@@ -114,8 +113,7 @@ public class FeedIterator<E> implements Iterator<FeedPage<E>> {
                     return thisPage.next();
                 } catch (NoSuchElementException e) {
                     if (feedIterator.hasNext()) {
-                        this.thisPage =
-                                feedIterator.next().getEvents().iterator();
+                        this.thisPage = feedIterator.next().getEvents().iterator();
                         return thisPage.next();
                     } else {
                         throw e;
