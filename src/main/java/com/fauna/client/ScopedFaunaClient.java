@@ -2,16 +2,25 @@ package com.fauna.client;
 
 import java.net.http.HttpClient;
 
-public class ScopedFaunaClient extends FaunaClient {
+/**
+ * ScopedFaunaClient is a subclass of FaunaClient that applies a scope to the client,
+ * limiting the actions and requests to the specified scope.
+ */
+public final class ScopedFaunaClient extends FaunaClient {
     private final FaunaClient client;
     private final RequestBuilder requestBuilder;
     private final RequestBuilder streamRequestBuilder;
     private final RequestBuilder feedRequestBuilder;
 
-
-    public ScopedFaunaClient(FaunaClient client, FaunaScope scope) {
+    /**
+     * Constructs a new ScopedFaunaClient using the provided FaunaClient and FaunaScope.
+     *
+     * @param client The FaunaClient instance to base the scoped client on.
+     * @param scope The FaunaScope defining the scope for this client.
+     */
+    public ScopedFaunaClient(final FaunaClient client, final FaunaScope scope) {
         super(client.getFaunaSecret(), client.getLogger(),
-                client.getStatsCollector().clone());
+                client.getStatsCollector().createNew());
         this.client = client;
         this.requestBuilder = client.getRequestBuilder()
                 .scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
@@ -21,29 +30,53 @@ public class ScopedFaunaClient extends FaunaClient {
                 .scopedRequestBuilder(scope.getToken(client.getFaunaSecret()));
     }
 
-
+    /**
+     * Gets the retry strategy for the scoped client.
+     *
+     * @return The retry strategy used by the client.
+     */
     @Override
-    RetryStrategy getRetryStrategy() {
+    public RetryStrategy getRetryStrategy() {
         return client.getRetryStrategy();
     }
 
+    /**
+     * Gets the HttpClient used by the scoped client.
+     *
+     * @return The HttpClient used for making HTTP requests.
+     */
     @Override
-    HttpClient getHttpClient() {
+    public HttpClient getHttpClient() {
         return client.getHttpClient();
     }
 
+    /**
+     * Gets the RequestBuilder for the scoped client.
+     *
+     * @return The RequestBuilder used for constructing HTTP requests.
+     */
     @Override
-    RequestBuilder getRequestBuilder() {
+    public RequestBuilder getRequestBuilder() {
         return requestBuilder;
     }
 
+    /**
+     * Gets the RequestBuilder for streaming requests.
+     *
+     * @return The RequestBuilder used for constructing streaming HTTP requests.
+     */
     @Override
-    RequestBuilder getStreamRequestBuilder() {
+    public RequestBuilder getStreamRequestBuilder() {
         return streamRequestBuilder;
     }
 
+    /**
+     * Gets the RequestBuilder for feed requests.
+     *
+     * @return The RequestBuilder used for constructing feed HTTP requests.
+     */
     @Override
-    RequestBuilder getFeedRequestBuilder() {
+    public RequestBuilder getFeedRequestBuilder() {
         return feedRequestBuilder;
     }
 }

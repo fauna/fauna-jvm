@@ -7,7 +7,7 @@ import java.util.Set;
  * Built-in roles defined at:
  * <a href="https://docs.fauna.com/fauna/current/learn/security/roles/">docs.fauna.com</a>.
  */
-public class FaunaRole {
+public final class FaunaRole {
     private static final String ADMIN_ROLE_NAME = "admin";
     private static final String SERVER_ROLE_NAME = "server";
     private static final String SERVER_READ_ONLY_ROLE_NAME = "server-readonly";
@@ -29,15 +29,23 @@ public class FaunaRole {
      *
      * @param role The role name, either @role/name or one of the built-in role names.
      */
-    FaunaRole(String role) {
+    FaunaRole(final String role) {
         this.role = role;
     }
 
+    /**
+     * @return A {@link String} representation of the {@code FaunaRole}.
+     */
     public String toString() {
         return this.role;
     }
 
-    public static void validateRoleName(String name) {
+    /**
+     * Validates a role name.
+     *
+     * @param name The name of the role to validate.
+     */
+    public static void validateRoleName(final String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException(
                     "Role name cannot be null or empty.");
@@ -62,7 +70,13 @@ public class FaunaRole {
 
     }
 
-    public static FaunaRole named(String name) {
+    /**
+     * Creates a {@code FaunaRole} with the desired name prepended with {@code @role/}.
+     *
+     * @param name The name of the role to use.
+     * @return A {@code FaunaRole} instance.
+     */
+    public static FaunaRole named(final String name) {
         validateRoleName(name);
         return new FaunaRole(ROLE_PREFIX + name);
     }

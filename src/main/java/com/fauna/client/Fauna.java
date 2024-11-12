@@ -2,7 +2,10 @@ package com.fauna.client;
 
 import java.net.http.HttpClient;
 
-public class Fauna {
+public final class Fauna {
+
+    private Fauna() {
+    }
 
     /**
      * Create a default Fauna client.
@@ -19,7 +22,7 @@ public class Fauna {
      * @param config Fauna configuration object.
      * @return A FaunaClient (or subclass of it).
      */
-    public static FaunaClient client(FaunaConfig config) {
+    public static FaunaClient client(final FaunaConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
         }
@@ -34,8 +37,8 @@ public class Fauna {
      * @param retryStrategy An implementation of RetryStrategy.
      * @return A FaunaClient (or subclass of it).
      */
-    public static FaunaClient client(FaunaConfig config, HttpClient httpClient,
-                                     RetryStrategy retryStrategy) {
+    public static FaunaClient client(final FaunaConfig config, final HttpClient httpClient,
+                                     final RetryStrategy retryStrategy) {
         if (config == null) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
         }
@@ -49,7 +52,7 @@ public class Fauna {
      * @param database The name of the database.
      * @return A FaunaClient (or subclass of it).
      */
-    public static FaunaClient scoped(FaunaClient client, String database) {
+    public static FaunaClient scoped(final FaunaClient client, final String database) {
         if (client == null) {
             throw new IllegalArgumentException("FaunaClient cannot be null.");
         }
@@ -69,8 +72,8 @@ public class Fauna {
      * @param role     A Fauna role (either built-in or user defined).
      * @return A FaunaClient (or subclass of it).
      */
-    public static FaunaClient scoped(FaunaClient client, String database,
-                                     FaunaRole role) {
+    public static FaunaClient scoped(final FaunaClient client, final String database,
+                                     final FaunaRole role) {
         if (client == null) {
             throw new IllegalArgumentException("FaunaClient cannot be null.");
         }

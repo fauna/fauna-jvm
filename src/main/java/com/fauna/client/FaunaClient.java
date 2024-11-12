@@ -43,6 +43,10 @@ import static com.fauna.constants.ErrorMessages.QUERY_EXECUTION;
 import static com.fauna.constants.ErrorMessages.QUERY_PAGE;
 import static com.fauna.constants.ErrorMessages.STREAM_SUBSCRIPTION;
 
+/**
+ * A client to interact with the Fauna service, providing asynchronous and synchronous query execution,
+ * pagination, and streaming features.
+ */
 public abstract class FaunaClient {
 
     public static final RetryStrategy DEFAULT_RETRY_STRATEGY =
@@ -65,15 +69,29 @@ public abstract class FaunaClient {
 
     abstract RequestBuilder getFeedRequestBuilder();
 
-    public FaunaClient(String secret, Logger logger,
-                       StatsCollector statsCollector) {
+    /**
+     * Constructs a FaunaClient with the provided secret and logger.
+     *
+     * @param secret The Fauna secret used for authentication.
+     * @param logger The logger instance.
+     * @param statsCollector A collector for tracking statistics.
+     */
+    public FaunaClient(final String secret, final Logger logger,
+                       final StatsCollector statsCollector) {
         this.faunaSecret = secret;
         this.logger = logger;
         this.statsCollector = statsCollector;
     }
 
-    public FaunaClient(String secret, Handler logHandler,
-                       StatsCollector statsCollector) {
+    /**
+     * Constructs a FaunaClient with the provided secret and log handler.
+     *
+     * @param secret The Fauna secret used for authentication.
+     * @param logHandler The handler to manage log outputs.
+     * @param statsCollector A collector for tracking statistics.
+     */
+    public FaunaClient(final String secret, final Handler logHandler,
+                       final StatsCollector statsCollector) {
         this.faunaSecret = secret;
         this.logger = Logger.getLogger(this.getClass().getCanonicalName());
         this.logger.addHandler(logHandler);
@@ -81,25 +99,45 @@ public abstract class FaunaClient {
         this.statsCollector = statsCollector;
     }
 
+    /**
+     * Retrieves the Fauna secret used for authentication.
+     *
+     * @return The Fauna secret.
+     */
     protected String getFaunaSecret() {
         return this.faunaSecret;
     }
 
+    /**
+     * Retrieves the logger used for logging Fauna client activity.
+     *
+     * @return The logger instance.
+     */
     public Logger getLogger() {
         return this.logger;
     }
 
+    /**
+     * Retrieves the stats collector instance.
+     *
+     * @return The stats collector instance.
+     */
     public StatsCollector getStatsCollector() {
         return this.statsCollector;
     }
 
+    /**
+     * Retrieves the last known transaction timestamp.
+     *
+     * @return An Optional containing the last transaction timestamp, if available.
+     */
     public Optional<Long> getLastTransactionTs() {
         long ts = lastTransactionTs.get();
         return ts > 0 ? Optional.of(ts) : Optional.empty();
     }
 
     private static Optional<ServiceException> extractServiceException(
-            Throwable throwable) {
+            final Throwable throwable) {
         if (throwable instanceof ServiceException) {
             return Optional.of((ServiceException) throwable);
         } else if (throwable.getCause() instanceof ServiceException) {
@@ -109,7 +147,7 @@ public abstract class FaunaClient {
         }
     }
 
-    private void updateTs(QueryResponse resp) {
+    private void updateTs(final QueryResponse resp) {
         Long newTs = resp.getLastSeenTxn();
         if (newTs != null) {
             this.lastTransactionTs.updateAndGet(
@@ -117,8 +155,8 @@ public abstract class FaunaClient {
         }
     }
 
-    private <T> void completeRequest(QuerySuccess<T> success,
-                                     Throwable throwable) {
+    private <T> void completeRequest(final QuerySuccess<T> success,
+                                     final Throwable throwable) {
         if (success != null) {
             updateTs(success);
         } else if (throwable != null) {
@@ -127,8 +165,8 @@ public abstract class FaunaClient {
         }
     }
 
-    private <E> void completeFeedRequest(FeedPage<E> success,
-                                         Throwable throwable) {
+    private <E> void completeFeedRequest(final FeedPage<E> success,
+                                         final Throwable throwable) {
         // Feeds do not update the clients latest transaction timestamp.
         if (throwable != null) {
             extractServiceException(throwable).ifPresent(
@@ -136,16 +174,15 @@ public abstract class FaunaClient {
         }
     }
 
-    private void logResponse(HttpResponse<InputStream> response) {
+    private void logResponse(final HttpResponse<InputStream> response) {
         logger.fine(MessageFormat.format(
                 "Fauna HTTP Response {0} from {1}, headers: {2}",
                 response.statusCode(), response.uri(),
                 headersAsString(response.headers())));
-        // We could implement a LoggingInputStream or something to log the response here.
     }
 
     private <T> Supplier<CompletableFuture<QuerySuccess<T>>> makeAsyncRequest(
-            HttpClient client, HttpRequest request, Codec<T> codec) {
+            final HttpClient client, final HttpRequest request, final Codec<T> codec) {
         return () -> client.sendAsync(request,
                 HttpResponse.BodyHandlers.ofInputStream()).thenApply(
                 response -> {
@@ -156,7 +193,7 @@ public abstract class FaunaClient {
     }
 
     private <E> Supplier<CompletableFuture<FeedPage<E>>> makeAsyncFeedRequest(
-            HttpClient client, HttpRequest request, Codec<E> codec) {
+            final HttpClient client, final HttpRequest request, final Codec<E> codec) {
         return () -> client.sendAsync(request,
                 HttpResponse.BodyHandlers.ofInputStream()).thenApply(
                 response -> {
@@ -166,13 +203,11 @@ public abstract class FaunaClient {
                 }).whenComplete(this::completeFeedRequest);
     }
 
-    private <R> R completeAsync(CompletableFuture<R> future,
-                                String executionMessage) {
+    private <R> R completeAsync(final CompletableFuture<R> future, final String executionMessage) {
         try {
             return future.get();
         } catch (ExecutionException | InterruptedException exc) {
-            if (exc.getCause() != null &&
-                    exc.getCause() instanceof FaunaException) {
+            if (exc.getCause() != null && exc.getCause() instanceof FaunaException) {
                 throw (FaunaException) exc.getCause();
             } else {
                 logger.warning(
@@ -196,7 +231,7 @@ public abstract class FaunaClient {
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public CompletableFuture<QuerySuccess<Object>> asyncQuery(Query fql) {
+    public CompletableFuture<QuerySuccess<Object>> asyncQuery(final Query fql) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException(
                     "The provided FQL query is null.");
@@ -221,10 +256,12 @@ public abstract class FaunaClient {
      * @param options     A (nullable) set of options to pass to the query.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     *
+     * @param <T> The return type of the query.
      */
-    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql,
-                                                             Class<T> resultClass,
-                                                             QueryOptions options) {
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(final Query fql,
+                                                             final Class<T> resultClass,
+                                                             final QueryOptions options) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException(
                     "The provided FQL query is null.");
@@ -249,10 +286,12 @@ public abstract class FaunaClient {
      * @param options           A (nullable) set of options to pass to the query.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     *
+     * @param <E> The inner type for the parameterized wrapper.
      */
-    public <E> CompletableFuture<QuerySuccess<E>> asyncQuery(Query fql,
-                                                             ParameterizedOf<E> parameterizedType,
-                                                             QueryOptions options) {
+    public <E> CompletableFuture<QuerySuccess<E>> asyncQuery(final Query fql,
+                                                             final ParameterizedOf<E> parameterizedType,
+                                                             final QueryOptions options) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException(
                     "The provided FQL query is null.");
@@ -279,9 +318,11 @@ public abstract class FaunaClient {
      * @param resultClass The expected class of the query result.
      * @return QuerySuccess     A CompletableFuture that completes with the successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     *
+     * @param <T> The return type of the query.
      */
-    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(Query fql,
-                                                             Class<T> resultClass) {
+    public <T> CompletableFuture<QuerySuccess<T>> asyncQuery(final Query fql,
+                                                             final Class<T> resultClass) {
         return asyncQuery(fql, resultClass, null);
     }
 
@@ -296,9 +337,10 @@ public abstract class FaunaClient {
      * @param parameterizedType The expected class of the query result.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The inner type for the parameterized wrapper.
      */
-    public <E> CompletableFuture<QuerySuccess<E>> asyncQuery(Query fql,
-                                                             ParameterizedOf<E> parameterizedType) {
+    public <E> CompletableFuture<QuerySuccess<E>> asyncQuery(final Query fql,
+                                                             final ParameterizedOf<E> parameterizedType) {
         if (Objects.isNull(fql)) {
             throw new IllegalArgumentException(
                     "The provided FQL query is null.");
@@ -327,7 +369,7 @@ public abstract class FaunaClient {
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public QuerySuccess<Object> query(Query fql) throws FaunaException {
+    public QuerySuccess<Object> query(final Query fql) throws FaunaException {
         return completeAsync(asyncQuery(fql, Object.class, null),
                 "Unable to execute query.");
     }
@@ -342,8 +384,9 @@ public abstract class FaunaClient {
      * @param resultClass The expected class of the query result.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <T> The return type of the query.
      */
-    public <T> QuerySuccess<T> query(Query fql, Class<T> resultClass)
+    public <T> QuerySuccess<T> query(final Query fql, final Class<T> resultClass)
             throws FaunaException {
         return completeAsync(asyncQuery(fql, resultClass, null),
                 QUERY_EXECUTION);
@@ -359,9 +402,10 @@ public abstract class FaunaClient {
      * @param parameterizedType The expected class of the query result.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The inner type for the parameterized wrapper.
      */
-    public <E> QuerySuccess<E> query(Query fql,
-                                     ParameterizedOf<E> parameterizedType)
+    public <E> QuerySuccess<E> query(final Query fql,
+                                     final ParameterizedOf<E> parameterizedType)
             throws FaunaException {
         return completeAsync(asyncQuery(fql, parameterizedType),
                 QUERY_EXECUTION);
@@ -378,9 +422,10 @@ public abstract class FaunaClient {
      * @param options     A (nullable) set of options to pass to the query.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <T> The return type of the query.
      */
-    public <T> QuerySuccess<T> query(Query fql, Class<T> resultClass,
-                                     QueryOptions options)
+    public <T> QuerySuccess<T> query(final Query fql, final Class<T> resultClass,
+                                     final QueryOptions options)
             throws FaunaException {
         return completeAsync(asyncQuery(fql, resultClass, options),
                 QUERY_EXECUTION);
@@ -397,10 +442,11 @@ public abstract class FaunaClient {
      * @param options           A (nullable) set of options to pass to the query.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The inner type for the parameterized wrapper.
      */
-    public <E> QuerySuccess<E> query(Query fql,
-                                     ParameterizedOf<E> parameterizedType,
-                                     QueryOptions options)
+    public <E> QuerySuccess<E> query(final Query fql,
+                                     final ParameterizedOf<E> parameterizedType,
+                                     final QueryOptions options)
             throws FaunaException {
         return completeAsync(asyncQuery(fql, parameterizedType, options),
                 QUERY_EXECUTION);
@@ -420,7 +466,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <E> CompletableFuture<QuerySuccess<Page<E>>> asyncQueryPage(
-            AfterToken after, Class<E> elementClass, QueryOptions options) {
+            final AfterToken after, final Class<E> elementClass, final QueryOptions options) {
         return this.asyncQuery(PageIterator.buildPageQuery(after),
                 pageOf(elementClass), options);
     }
@@ -436,7 +482,7 @@ public abstract class FaunaClient {
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
     public <E> QuerySuccess<Page<E>> queryPage(
-            AfterToken after, Class<E> elementClass, QueryOptions options) {
+            final AfterToken after, final Class<E> elementClass, final QueryOptions options) {
         return completeAsync(asyncQueryPage(after, elementClass, options),
                 QUERY_PAGE);
     }
@@ -454,8 +500,8 @@ public abstract class FaunaClient {
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass,
-                                        QueryOptions options) {
+    public <E> PageIterator<E> paginate(final Query fql, final Class<E> elementClass,
+                                        final QueryOptions options) {
         return new PageIterator<>(this, fql, elementClass, options);
     }
 
@@ -466,7 +512,7 @@ public abstract class FaunaClient {
      * @return The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public PageIterator<Object> paginate(Query fql) {
+    public PageIterator<Object> paginate(final Query fql) {
         return paginate(fql, Object.class, null);
     }
 
@@ -478,7 +524,7 @@ public abstract class FaunaClient {
      * @return The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
      */
-    public PageIterator<Object> paginate(Query fql, QueryOptions options) {
+    public PageIterator<Object> paginate(final Query fql, final QueryOptions options) {
         return paginate(fql, Object.class, options);
     }
 
@@ -489,8 +535,9 @@ public abstract class FaunaClient {
      * @param elementClass The expected class of the query result.
      * @return QuerySuccess     The successful query result.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The type for each element in a page.
      */
-    public <E> PageIterator<E> paginate(Query fql, Class<E> elementClass) {
+    public <E> PageIterator<E> paginate(final Query fql, final Class<E> elementClass) {
         return paginate(fql, elementClass, null);
     }
     //endregion
@@ -504,12 +551,15 @@ public abstract class FaunaClient {
      *
      * @param eventSource   The Event Source (e.g. token from `.eventSource()`).
      * @param streamOptions The Stream Options (including start timestamp, retry strategy).
+     * @param elementClass  The target type into which event data will be deserialized.
      * @return CompletableFuture    A CompletableFuture of FaunaStream<E>.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The type for data in an event.
      */
     public <E> CompletableFuture<FaunaStream<E>> asyncStream(
-            EventSource eventSource,
-            StreamOptions streamOptions, Class<E> elementClass) {
+            final EventSource eventSource,
+            final StreamOptions streamOptions,
+            final Class<E> elementClass) {
         HttpRequest streamReq =
                 getStreamRequestBuilder().buildStreamRequest(eventSource,
                         streamOptions);
@@ -530,14 +580,16 @@ public abstract class FaunaClient {
      * Send a request to the Fauna stream endpoint to start a stream, and return a FaunaStream publisher.
      *
      * @param eventSource   The request object including a stream token, and optionally a cursor, or timestamp.
-     * @param streamOptions
+     * @param streamOptions The stream options.
      * @param elementClass  The expected class &lt;E&gt; of the stream events.
-     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow
+     * API.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The type for data in an event.
      */
-    public <E> FaunaStream<E> stream(EventSource eventSource,
-                                     StreamOptions streamOptions,
-                                     Class<E> elementClass) {
+    public <E> FaunaStream<E> stream(final EventSource eventSource,
+                                     final StreamOptions streamOptions,
+                                     final Class<E> elementClass) {
         return completeAsync(
                 asyncStream(eventSource, streamOptions, elementClass),
                 STREAM_SUBSCRIPTION);
@@ -553,11 +605,13 @@ public abstract class FaunaClient {
      *
      * @param fql          The FQL query to be executed. It must return an event source, e.g. ends in `.eventSource()`.
      * @param elementClass The expected class &lt;E&gt; of the stream events.
-     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow
+     * API.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The type for data in an event.
      */
-    public <E> CompletableFuture<FaunaStream<E>> asyncStream(Query fql,
-                                                             Class<E> elementClass) {
+    public <E> CompletableFuture<FaunaStream<E>> asyncStream(final Query fql,
+                                                             final Class<E> elementClass) {
         return this.asyncQuery(fql, EventSourceResponse.class)
                 .thenApply(queryResponse ->
                         this.stream(EventSource.fromResponse(
@@ -577,10 +631,12 @@ public abstract class FaunaClient {
      *
      * @param fql          The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
      * @param elementClass The expected class &lt;E&gt; of the stream events.
-     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow API.
+     * @return FaunaStream      A publisher, implementing Flow.Publisher&lt;StreamEvent&lt;E&gt;&gt; from the Java Flow
+     * API.
      * @throws FaunaException If the query does not succeed, an exception will be thrown.
+     * @param <E> The type for data in an event.
      */
-    public <E> FaunaStream<E> stream(Query fql, Class<E> elementClass) {
+    public <E> FaunaStream<E> stream(final Query fql, final Class<E> elementClass) {
         return completeAsync(asyncStream(fql, elementClass),
                 STREAM_SUBSCRIPTION);
     }
@@ -594,18 +650,17 @@ public abstract class FaunaClient {
      * @param eventSource  An EventSource object (e.g. token from `.eventSource()`)
      * @param feedOptions  The FeedOptions object (default options will be used if null).
      * @param elementClass The expected class &lt;E&gt; of the feed events.
-     * @param <E>          The type of the feed events.
+     * @param <E>          The type for data in an event.
      * @return CompletableFuture    A CompletableFuture that completes with a FeedPage&lt;E&gt;.
      */
-    public <E> CompletableFuture<FeedPage<E>> poll(EventSource eventSource,
-                                                   FeedOptions feedOptions,
-                                                   Class<E> elementClass) {
+    public <E> CompletableFuture<FeedPage<E>> poll(final EventSource eventSource,
+                                                   final FeedOptions feedOptions,
+                                                   final Class<E> elementClass) {
         return new RetryHandler<FeedPage<E>>(getRetryStrategy(),
                 logger).execute(makeAsyncFeedRequest(
                 getHttpClient(),
                 getFeedRequestBuilder().buildFeedRequest(eventSource,
-                        feedOptions != null ? feedOptions :
-                                FeedOptions.DEFAULT),
+                        feedOptions != null ? feedOptions : FeedOptions.DEFAULT),
                 codecProvider.get(elementClass)));
     }
 
@@ -617,12 +672,12 @@ public abstract class FaunaClient {
      * @param fql          The FQL query to be executed. It must return a token, e.g. ends in `.changesOn()`.
      * @param feedOptions  The FeedOptions object (must not be null).
      * @param elementClass The expected class &lt;E&gt; of the feed events.
-     * @param <E>          The type of the feed events.
+     * @param <E>          The type for data in an event.
      * @return FeedIterator A CompletableFuture that completes with a feed iterator that returns pages of Feed events.
      */
-    public <E> CompletableFuture<FeedIterator<E>> asyncFeed(Query fql,
-                                                            FeedOptions feedOptions,
-                                                            Class<E> elementClass) {
+    public <E> CompletableFuture<FeedIterator<E>> asyncFeed(final Query fql,
+                                                            final FeedOptions feedOptions,
+                                                            final Class<E> elementClass) {
         return this.asyncQuery(fql, EventSourceResponse.class).thenApply(
                 success -> this.feed(
                         EventSource.fromResponse(success.getData()),
@@ -636,11 +691,10 @@ public abstract class FaunaClient {
      * @param fql          The FQL query to be executed. It must return a token, e.g. ends in `.changesOn()`.
      * @param feedOptions  The Feed Op
      * @param elementClass The expected class &lt;E&gt; of the feed events.
-     * @param <E>          The type of the feed events.
+     * @param <E>          The type for data in an event.
      * @return FeedIterator An iterator that returns pages of Feed events.
      */
-    public <E> FeedIterator<E> feed(Query fql, FeedOptions feedOptions,
-                                    Class<E> elementClass) {
+    public <E> FeedIterator<E> feed(final Query fql, final FeedOptions feedOptions, final Class<E> elementClass) {
         return completeAsync(asyncFeed(fql, feedOptions, elementClass),
                 FEED_SUBSCRIPTION);
     }
@@ -649,13 +703,14 @@ public abstract class FaunaClient {
      * Send a request to the Feed endpoint and return a FeedIterator.
      *
      * @param eventSource  The Fauna Event Source.
+     * @param feedOptions  The feed options.
      * @param elementClass The expected class &lt;E&gt; of the feed events.
-     * @param <E>          The type of the feed events.
+     * @param <E>          The type for data in an event.
      * @return FeedIterator An iterator that returns pages of Feed events.
      */
-    public <E> FeedIterator<E> feed(EventSource eventSource,
-                                    FeedOptions feedOptions,
-                                    Class<E> elementClass) {
+    public <E> FeedIterator<E> feed(final EventSource eventSource,
+                                    final FeedOptions feedOptions,
+                                    final Class<E> elementClass) {
         return new FeedIterator<>(this, eventSource, feedOptions, elementClass);
     }
 

@@ -14,7 +14,7 @@ import static com.fauna.constants.Defaults.MAX_CONTENTION_RETRIES;
  * FaunaConfig is a configuration class used to set up and configure a connection to Fauna.
  * It encapsulates various settings such as the endpoint URL, secret key, and more.
  */
-public class FaunaConfig {
+public final class FaunaConfig {
 
     public static class FaunaEndpoint {
         public static final String DEFAULT = "https://db.fauna.com";
@@ -36,9 +36,8 @@ public class FaunaConfig {
      *
      * @param builder The builder used to create the FaunaConfig instance.
      */
-    private FaunaConfig(Builder builder) {
-        this.endpoint = builder.endpoint != null ? builder.endpoint :
-                FaunaEndpoint.DEFAULT;
+    private FaunaConfig(final Builder builder) {
+        this.endpoint = builder.endpoint != null ? builder.endpoint : FaunaEndpoint.DEFAULT;
         this.secret = builder.secret != null ? builder.secret : "";
         this.maxContentionRetries = builder.maxContentionRetries;
         this.clientTimeoutBuffer = builder.clientTimeoutBuffer;
@@ -122,7 +121,7 @@ public class FaunaConfig {
         private Handler logHandler = defaultLogHandler();
         private StatsCollector statsCollector = new StatsCollectorImpl();
 
-        static Level getLogLevel(String debug) {
+        static Level getLogLevel(final String debug) {
             if (debug == null || debug.isBlank()) {
                 return Level.WARNING;
             } else {
@@ -148,7 +147,7 @@ public class FaunaConfig {
          * @param endpoint A String representing the endpoint URL.
          * @return The current Builder instance.
          */
-        public Builder endpoint(String endpoint) {
+        public Builder endpoint(final String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
@@ -159,7 +158,7 @@ public class FaunaConfig {
          * @param secret A String representing the secret key.
          * @return The current Builder instance.
          */
-        public Builder secret(String secret) {
+        public Builder secret(final String secret) {
             this.secret = secret;
             return this;
         }
@@ -170,15 +169,18 @@ public class FaunaConfig {
          * @param maxContentionRetries A positive integer value.
          * @return The current Builder instance.
          */
-        public Builder maxContentionRetries(int maxContentionRetries) {
+        public Builder maxContentionRetries(final int maxContentionRetries) {
             this.maxContentionRetries = maxContentionRetries;
             return this;
         }
 
         /**
          * Set the client timeout buffer.
+         *
+         * @param duration The timeout buffer duration.
+         * @return The current Builder instance.
          */
-        public Builder clientTimeoutBuffer(Duration duration) {
+        public Builder clientTimeoutBuffer(final Duration duration) {
             this.clientTimeoutBuffer = duration;
             return this;
         }
@@ -189,7 +191,7 @@ public class FaunaConfig {
          * @param handler A log handler instance.
          * @return The current Builder instance.
          */
-        public Builder logHandler(Handler handler) {
+        public Builder logHandler(final Handler handler) {
             this.logHandler = handler;
             return this;
         }
@@ -200,7 +202,7 @@ public class FaunaConfig {
          * @param statsCollector A stats collector instance.
          * @return The current Builder instance.
          */
-        public Builder statsCollector(StatsCollector statsCollector) {
+        public Builder statsCollector(final StatsCollector statsCollector) {
             this.statsCollector = statsCollector;
             return this;
         }
@@ -223,10 +225,9 @@ public class FaunaConfig {
         private static final String FAUNA_ENDPOINT = "FAUNA_ENDPOINT";
         private static final String FAUNA_DEBUG = "FAUNA_DEBUG";
 
-        private static Optional<String> environmentVariable(String name) {
+        private static Optional<String> environmentVariable(final String name) {
             Optional<String> var = Optional.ofNullable(System.getenv(name));
-            return var.isPresent() && var.get().isBlank() ? Optional.empty() :
-                    var;
+            return var.isPresent() && var.get().isBlank() ? Optional.empty() : var;
         }
 
         /**
