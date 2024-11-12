@@ -14,20 +14,28 @@ import com.fauna.types.Page;
 import java.util.List;
 import java.util.Map;
 
-public class DynamicCodec extends BaseCodec<Object> {
+/**
+ * Codec for dynamically encoding and decoding various FQL types.
+ * <p>
+ * This codec adapts to different FQL types by delegating to other codecs as needed.
+ */
+public final class DynamicCodec extends BaseCodec<Object> {
     private final ListCodec<Object, List<Object>> list = new ListCodec<>(this);
     private final PageCodec<Object, Page<Object>> page = new PageCodec<>(this);
-    private final MapCodec<Object, Map<String, Object>> map =
-            new MapCodec<>(this);
+    private final MapCodec<Object, Map<String, Object>> map = new MapCodec<>(this);
     private final CodecProvider provider;
 
-    public DynamicCodec(CodecProvider provider) {
-
+    /**
+     * Constructs a {@code DynamicCodec} with the specified {@code CodecProvider}.
+     *
+     * @param provider The codec provider used to retrieve codecs.
+     */
+    public DynamicCodec(final CodecProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public Object decode(UTF8FaunaParser parser) throws CodecException {
+    public Object decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -62,6 +70,8 @@ public class DynamicCodec extends BaseCodec<Object> {
             case TRUE:
             case FALSE:
                 return parser.getValueAsBoolean();
+            default:
+                break;
         }
 
         throw new CodecException(this.unsupportedTypeDecodingMessage(
@@ -71,10 +81,9 @@ public class DynamicCodec extends BaseCodec<Object> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void encode(UTF8FaunaGenerator gen, Object obj)
+    public void encode(final UTF8FaunaGenerator gen, final Object obj)
             throws CodecException {
 
-        // TODO: deal with Object.class loop
         @SuppressWarnings("rawtypes")
         Codec codec = provider.get(obj.getClass());
         codec.encode(gen, obj);

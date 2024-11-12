@@ -20,23 +20,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import static com.fauna.codec.FaunaTokenType.BYTES;
-import static com.fauna.codec.FaunaTokenType.DATE;
-import static com.fauna.codec.FaunaTokenType.DOUBLE;
-import static com.fauna.codec.FaunaTokenType.END_ARRAY;
-import static com.fauna.codec.FaunaTokenType.END_DOCUMENT;
-import static com.fauna.codec.FaunaTokenType.END_OBJECT;
-import static com.fauna.codec.FaunaTokenType.END_PAGE;
-import static com.fauna.codec.FaunaTokenType.END_REF;
-import static com.fauna.codec.FaunaTokenType.INT;
-import static com.fauna.codec.FaunaTokenType.LONG;
-import static com.fauna.codec.FaunaTokenType.NONE;
-import static com.fauna.codec.FaunaTokenType.TIME;
-
 /**
  * Represents a reader that provides fast, non-cached, forward-only access to serialized data.
  */
-public class UTF8FaunaParser {
+public final class UTF8FaunaParser {
 
     private static final String INT_TAG = "@int";
     private static final String LONG_TAG = "@long";
@@ -53,22 +40,41 @@ public class UTF8FaunaParser {
 
     private final JsonParser jsonParser;
     private final Stack<Object> tokenStack = new Stack<>();
-    private FaunaTokenType currentFaunaTokenType = NONE;
+    private final Set<FaunaTokenType> closers = new HashSet<>(Arrays.asList(
+            FaunaTokenType.END_OBJECT,
+            FaunaTokenType.END_PAGE,
+            FaunaTokenType.END_DOCUMENT,
+            FaunaTokenType.END_REF,
+            FaunaTokenType.END_ARRAY
+    ));
+
+    private FaunaTokenType currentFaunaTokenType = FaunaTokenType.NONE;
     private FaunaTokenType bufferedFaunaTokenType;
     private Object bufferedTokenValue;
     private String taggedTokenValue;
-
 
     private enum InternalTokenType {
         START_ESCAPED_OBJECT,
         START_PAGE_UNMATERIALIZED
     }
 
-    public UTF8FaunaParser(JsonParser jsonParser) {
+    /**
+     * Constructs a {@code UTF8FaunaParser} instance with the given JSON parser.
+     *
+     * @param jsonParser The {@link JsonParser} used to read the JSON data.
+     */
+    public UTF8FaunaParser(final JsonParser jsonParser) {
         this.jsonParser = jsonParser;
     }
 
-    public static UTF8FaunaParser fromInputStream(InputStream body)
+    /**
+     * Creates a {@code UTF8FaunaParser} from an {@link InputStream}.
+     *
+     * @param body The input stream of JSON data.
+     * @return A {@code UTF8FaunaParser} instance.
+     * @throws CodecException if an {@link IOException} occurs while creating the parser.
+     */
+    public static UTF8FaunaParser fromInputStream(final InputStream body)
             throws CodecException {
         JsonFactory factory = new JsonFactory();
         try {
@@ -84,28 +90,28 @@ public class UTF8FaunaParser {
     }
 
     /**
-     * This method is only used for testing.
+     * Creates a {@code UTF8FaunaParser} from a JSON string
      *
-     * @param str
-     * @return
+     * @param str The JSON string.
+     * @return A {@code UTF8FaunaParser} instance.
      */
     public static UTF8FaunaParser fromString(String str) {
         return UTF8FaunaParser.fromInputStream(
                 new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
     }
 
+    /**
+     * Retrieves the current Fauna token type.
+     *
+     * @return The {@link FaunaTokenType} currently being processed.
+     */
     public FaunaTokenType getCurrentTokenType() {
         return currentFaunaTokenType;
     }
 
-    private final Set<FaunaTokenType> closers = new HashSet<>(Arrays.asList(
-            END_OBJECT,
-            END_PAGE,
-            END_DOCUMENT,
-            END_REF,
-            END_ARRAY
-    ));
-
+    /**
+     * Skips the current object or array in the JSON data.
+     */
     public void skip() {
         switch (getCurrentTokenType()) {
             case START_OBJECT:
@@ -127,6 +133,12 @@ public class UTF8FaunaParser {
         }
     }
 
+    /**
+     * Reads the next token from the JSON parser.
+     *
+     * @return {@code true} if there is another token to read, {@code false} if there are no more tokens.
+     * @throws CodecException if there is an error reading the token.
+     */
     public boolean read() throws CodecException {
         taggedTokenValue = null;
 
@@ -190,7 +202,6 @@ public class UTF8FaunaParser {
 
     private void handleStartObject() throws CodecException {
         advanceTrue();
-
         switch (jsonParser.currentToken()) {
             case FIELD_NAME:
                 switch (getText()) {
@@ -231,14 +242,11 @@ public class UTF8FaunaParser {
                     case SET_TAG:
                         advanceTrue();
                         currentFaunaTokenType = FaunaTokenType.START_PAGE;
-
-                        if (jsonParser.currentToken() ==
-                                JsonToken.VALUE_STRING) {
+                        if (jsonParser.currentToken() == JsonToken.VALUE_STRING) {
                             bufferedFaunaTokenType = FaunaTokenType.STRING;
 
                             try {
-                                bufferedTokenValue =
-                                        jsonParser.getValueAsString();
+                                bufferedTokenValue = jsonParser.getValueAsString();
                             } catch (IOException e) {
                                 throw new CodecException(e.getMessage(), e);
                             }
@@ -268,39 +276,34 @@ public class UTF8FaunaParser {
                 break;
             default:
                 throw new CodecException(
-                        "Unexpected token following StartObject: " +
-                                jsonParser.currentToken());
+                        "Unexpected token following StartObject: " + jsonParser.currentToken());
         }
     }
 
     private void handleEndObject() {
         Object startToken = tokenStack.pop();
         if (startToken.equals(FaunaTokenType.START_DOCUMENT)) {
-            currentFaunaTokenType = END_DOCUMENT;
+            currentFaunaTokenType = FaunaTokenType.END_DOCUMENT;
             advanceTrue();
-        } else if (startToken.equals(
-                InternalTokenType.START_PAGE_UNMATERIALIZED)) {
-            currentFaunaTokenType = END_PAGE;
+        } else if (startToken.equals(InternalTokenType.START_PAGE_UNMATERIALIZED)) {
+            currentFaunaTokenType = FaunaTokenType.END_PAGE;
         } else if (startToken.equals(FaunaTokenType.START_PAGE)) {
-            currentFaunaTokenType = END_PAGE;
+            currentFaunaTokenType = FaunaTokenType.END_PAGE;
             advanceTrue();
         } else if (startToken.equals(FaunaTokenType.START_REF)) {
-            currentFaunaTokenType = END_REF;
+            currentFaunaTokenType = FaunaTokenType.END_REF;
             advanceTrue();
         } else if (startToken.equals(InternalTokenType.START_ESCAPED_OBJECT)) {
-            currentFaunaTokenType = END_OBJECT;
+            currentFaunaTokenType = FaunaTokenType.END_OBJECT;
             advanceTrue();
         } else if (startToken.equals(FaunaTokenType.START_OBJECT)) {
-            currentFaunaTokenType = END_OBJECT;
+            currentFaunaTokenType = FaunaTokenType.END_OBJECT;
         } else {
-            throw new CodecException(
-                    "Unexpected token " + startToken +
-                            ". This might be a bug.");
+            throw new CodecException("Unexpected token " + startToken + ". This might be a bug.");
         }
     }
 
-    private void handleTaggedString(FaunaTokenType token)
-            throws CodecException {
+    private void handleTaggedString(final FaunaTokenType token) throws CodecException {
         try {
             advanceTrue();
             currentFaunaTokenType = token;
@@ -335,29 +338,37 @@ public class UTF8FaunaParser {
         }
     }
 
-    private void validateTaggedType(FaunaTokenType type) {
+    private void validateTaggedType(final FaunaTokenType type) {
         if (currentFaunaTokenType != type || taggedTokenValue == null) {
             throw new IllegalStateException(
-                    "CurrentTokenType is a " +
-                            currentFaunaTokenType.toString() +
-                            ", not a " + type.toString() + ".");
+                    "CurrentTokenType is a " + currentFaunaTokenType.toString() + ", not a " + type.toString() + ".");
         }
     }
 
-    private void validateTaggedTypes(FaunaTokenType... types) {
+    private void validateTaggedTypes(final FaunaTokenType... types) {
         if (!Arrays.asList(types).contains(currentFaunaTokenType)) {
             throw new IllegalStateException(
-                    "CurrentTokenType is a " +
-                            currentFaunaTokenType.toString() +
-                            ", not in " + Arrays.toString(types) + ".");
+                    "CurrentTokenType is a " + currentFaunaTokenType.toString() + ", not in " + Arrays.toString(types) + ".");
         }
     }
 
+    // Getters for various token types with appropriate validation
+
+    /**
+     * Retrieves the value as a {@code Character} if the current token type is {@link FaunaTokenType#INT}.
+     *
+     * @return The current value as a {@link Character}.
+     */
     public Character getValueAsCharacter() {
-        validateTaggedType(INT);
+        validateTaggedType(FaunaTokenType.INT);
         return (char) Integer.parseInt(taggedTokenValue);
     }
 
+    /**
+     * Retrieves the current value as a {@link String}.
+     *
+     * @return The current value as a {@link String}.
+     */
     public String getValueAsString() {
         try {
             if (bufferedTokenValue != null) {
@@ -370,112 +381,163 @@ public class UTF8FaunaParser {
         }
     }
 
+    /**
+     * Retrieves the tagged value as a {@link String}.
+     *
+     * @return The tagged value as a {@link String}.
+     */
     public String getTaggedValueAsString() {
         return taggedTokenValue;
     }
 
+    /**
+     * Retrieves the value as a byte array if the current token type is {@link FaunaTokenType#BYTES}.
+     *
+     * @return The current value as a byte array.
+     */
     public byte[] getValueAsByteArray() {
-        validateTaggedTypes(BYTES);
+        validateTaggedTypes(FaunaTokenType.BYTES);
         return Base64.getDecoder().decode(taggedTokenValue.getBytes());
     }
 
+    /**
+     * Retrieves the value as a {@code Byte} if the current token type is {@link FaunaTokenType#INT}.
+     *
+     * @return The current value as a {@code Byte}.
+     */
     public Byte getValueAsByte() {
-        validateTaggedType(INT);
+        validateTaggedType(FaunaTokenType.INT);
         try {
             return Byte.parseByte(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new CodecException("Error getting the current token as Byte",
-                    e);
+            throw new CodecException("Error getting the current token as Byte", e);
         }
-
     }
 
+    /**
+     * Retrieves the value as a {@code Short} if the current token type is {@link FaunaTokenType#INT}.
+     *
+     * @return The current value as a {@code Short}.
+     */
     public Short getValueAsShort() {
-        validateTaggedType(INT);
+        validateTaggedType(FaunaTokenType.INT);
         try {
             return Short.parseShort(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new CodecException("Error getting the current token as Short",
-                    e);
+            throw new CodecException("Error getting the current token as Short", e);
         }
-
     }
 
+    /**
+     * Retrieves the value as an {@code Integer} if the current token type is {@link FaunaTokenType#INT} or {@link FaunaTokenType#LONG}.
+     *
+     * @return The current value as an {@code Integer}.
+     */
     public Integer getValueAsInt() {
-        validateTaggedTypes(INT, FaunaTokenType.LONG);
+        validateTaggedTypes(FaunaTokenType.INT, FaunaTokenType.LONG);
         try {
             return Integer.parseInt(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new CodecException(
-                    "Error getting the current token as Integer", e);
+            throw new CodecException("Error getting the current token as Integer", e);
         }
     }
 
+    /**
+     * Retrieves the current value as a {@code Boolean}.
+     *
+     * @return The current value as a {@code Boolean}.
+     */
     public Boolean getValueAsBoolean() {
         try {
             return jsonParser.getValueAsBoolean();
         } catch (IOException e) {
-            throw new CodecException(
-                    "Error getting the current token as Boolean", e);
+            throw new CodecException("Error getting the current token as Boolean", e);
         }
     }
 
+    /**
+     * Retrieves the current value as a {@link LocalDate} if the current token type is {@link FaunaTokenType#DATE}.
+     *
+     * @return The current value as a {@link LocalDate}.
+     */
     public LocalDate getValueAsLocalDate() {
-        validateTaggedType(DATE);
+        validateTaggedType(FaunaTokenType.DATE);
         try {
             return LocalDate.parse(taggedTokenValue);
         } catch (DateTimeParseException e) {
-            throw new CodecException(
-                    "Error getting the current token as LocalDate", e);
+            throw new CodecException("Error getting the current token as LocalDate", e);
         }
     }
 
+    /**
+     * Retrieves the current value as an {@link Instant} if the current token type is {@link FaunaTokenType#TIME}.
+     *
+     * @return The current value as an {@link Instant}.
+     */
     public Instant getValueAsTime() {
-        validateTaggedType(TIME);
+        validateTaggedType(FaunaTokenType.TIME);
         try {
             return Instant.parse(taggedTokenValue);
         } catch (DateTimeParseException e) {
-            throw new CodecException(
-                    "Error getting the current token as LocalDateTime", e);
+            throw new CodecException("Error getting the current token as LocalDateTime", e);
         }
     }
 
+    /**
+     * Retrieves the value as a {@code Float} if the current token type is
+     * {@link FaunaTokenType#INT}, {@link FaunaTokenType#LONG}, or {@link FaunaTokenType#DOUBLE}.
+     *
+     * @return The current value as a {@code Float}.
+     */
     public Float getValueAsFloat() {
-        validateTaggedTypes(INT, LONG, DOUBLE);
+        validateTaggedTypes(FaunaTokenType.INT, FaunaTokenType.LONG, FaunaTokenType.DOUBLE);
         try {
             return Float.parseFloat(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new CodecException("Error getting the current token as Float",
-                    e);
+            throw new CodecException("Error getting the current token as Float", e);
         }
     }
 
+    /**
+     * Retrieves the value as a {@code Double} if the current token type is {@link FaunaTokenType#INT},
+     * {@link FaunaTokenType#LONG}, or {@link FaunaTokenType#DOUBLE}.
+     *
+     * @return The current value as a {@code Double}.
+     */
     public Double getValueAsDouble() {
-        validateTaggedTypes(INT, LONG, DOUBLE);
+        validateTaggedTypes(FaunaTokenType.INT, FaunaTokenType.LONG, FaunaTokenType.DOUBLE);
         try {
             return Double.parseDouble(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new CodecException(
-                    "Error getting the current token as Double", e);
+            throw new CodecException("Error getting the current token as Double", e);
         }
     }
 
+    /**
+     * Retrieves the value as a {@code Long} if the current token type is
+     * {@link FaunaTokenType#INT} or {@link FaunaTokenType#LONG}.
+     *
+     * @return The current value as a {@code Long}.
+     */
     public Long getValueAsLong() {
-        validateTaggedTypes(INT, LONG);
+        validateTaggedTypes(FaunaTokenType.INT, FaunaTokenType.LONG);
         try {
             return Long.parseLong(taggedTokenValue);
         } catch (NumberFormatException e) {
-            throw new CodecException("Error getting the current token as Long",
-                    e);
+            throw new CodecException("Error getting the current token as Long", e);
         }
     }
 
+    /**
+     * Retrieves the value as a {@link Module} if the current token type is {@link FaunaTokenType#MODULE}.
+     *
+     * @return The current value as a {@link Module}.
+     */
     public Module getValueAsModule() {
         try {
             return new Module(taggedTokenValue);
         } catch (Exception e) {
-            throw new CodecException(
-                    "Error getting the current token as Module", e);
+            throw new CodecException("Error getting the current token as Module", e);
         }
     }
 }

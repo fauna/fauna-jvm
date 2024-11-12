@@ -8,23 +8,31 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 import com.fauna.query.builder.QueryVal;
 
-public class QueryValCodec extends BaseCodec<QueryVal> {
+/**
+ * Codec for encoding and decoding {@link QueryVal} objects.
+ */
+@SuppressWarnings("rawtypes")
+public final class QueryValCodec extends BaseCodec<QueryVal> {
 
     private final CodecProvider provider;
 
-    public QueryValCodec(CodecProvider provider) {
-
+    /**
+     * Creates a new instance of the {@link QueryValCodec}.
+     *
+     * @param provider The codec provider to retrieve codecs for the underlying object types.
+     */
+    public QueryValCodec(final CodecProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public QueryVal decode(UTF8FaunaParser parser) throws CodecException {
+    public QueryVal decode(final UTF8FaunaParser parser) throws CodecException {
         throw new CodecException(
                 "Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryVal obj)
+    public void encode(final UTF8FaunaGenerator gen, final QueryVal obj)
             throws CodecException {
         if (obj == null) {
             gen.writeNullValue();

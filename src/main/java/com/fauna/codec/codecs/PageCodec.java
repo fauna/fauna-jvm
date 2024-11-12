@@ -10,18 +10,29 @@ import com.fauna.types.Page;
 
 import java.util.List;
 
-public class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
+/**
+ * Codec for encoding and decoding Fauna's paginated results.
+ *
+ * @param <E> The type of elements in the page.
+ * @param <L> The type of the Page (Page<E>).
+ */
+public final class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
 
     private final Codec<E> elementCodec;
     private final Codec<List<E>> listCodec;
 
-    public PageCodec(Codec<E> elementCodec) {
+    /**
+     * Constructs a {@code PageCodec} with the specified {@code Codec}.
+     *
+     * @param elementCodec The codec to use for elements of the page.
+     */
+    public PageCodec(final Codec<E> elementCodec) {
         this.elementCodec = elementCodec;
         this.listCodec = new ListCodec<>(elementCodec);
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws CodecException {
+    public L decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -57,7 +68,7 @@ public class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -71,8 +82,7 @@ public class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
         return elementCodec.getCodecClass();
     }
 
-
-    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken)
+    private L decodePage(final UTF8FaunaParser parser, final FaunaTokenType endToken)
             throws CodecException {
         List<E> data = null;
         String after = null;
@@ -88,6 +98,8 @@ public class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
                 case "after":
                     after = parser.getValueAsString();
                     break;
+                default:
+                    break;
             }
         }
 
@@ -101,7 +113,7 @@ public class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
         return res;
     }
 
-    private L wrapInPage(UTF8FaunaParser parser) throws CodecException {
+    private L wrapInPage(final UTF8FaunaParser parser) throws CodecException {
         E elem = this.elementCodec.decode(parser);
         @SuppressWarnings("unchecked")
         L res = (L) new Page<>(List.of(elem), null);

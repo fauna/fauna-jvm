@@ -15,6 +15,9 @@ import java.util.Map;
 
 class InternalDocument {
 
+    /**
+     * Builder class for constructing internal document representations.
+     */
     static class Builder {
 
         private String id = null;
@@ -25,13 +28,26 @@ class InternalDocument {
         private Instant ts = null;
         private final Map<String, Object> data = new HashMap<>();
 
+        /**
+         * Adds a data field to the document.
+         *
+         * @param key The field name.
+         * @param value The field value.
+         * @return This builder.
+         */
         InternalDocument.Builder withDataField(String key, Object value) {
             data.put(key, value);
             return this;
         }
 
-        InternalDocument.Builder withDocField(String fieldName,
-                                              UTF8FaunaParser parser) {
+        /**
+         * Adds document-specific fields such as id, name, collection, and timestamp.
+         *
+         * @param fieldName The field name.
+         * @param parser The parser used to read values.
+         * @return This builder.
+         */
+        InternalDocument.Builder withDocField(String fieldName, UTF8FaunaParser parser) {
             switch (fieldName) {
                 case "id":
                     if (parser.getCurrentTokenType() == FaunaTokenType.STRING) {
@@ -56,8 +72,14 @@ class InternalDocument {
             return this;
         }
 
-        InternalDocument.Builder withRefField(String fieldName,
-                                              UTF8FaunaParser parser) {
+        /**
+         * Adds reference-specific fields like id, name, collection, exists, and cause.
+         *
+         * @param fieldName The field name.
+         * @param parser The parser used to read values.
+         * @return This builder.
+         */
+        InternalDocument.Builder withRefField(String fieldName, UTF8FaunaParser parser) {
             switch (fieldName) {
                 case "id":
                     if (parser.getCurrentTokenType() == FaunaTokenType.STRING) {
@@ -75,9 +97,7 @@ class InternalDocument {
                     }
                     break;
                 case "exists":
-                    if (parser.getCurrentTokenType() == FaunaTokenType.FALSE ||
-                            parser.getCurrentTokenType() ==
-                                    FaunaTokenType.TRUE) {
+                    if (parser.getCurrentTokenType() == FaunaTokenType.FALSE || parser.getCurrentTokenType() == FaunaTokenType.TRUE) {
                         this.exists = parser.getValueAsBoolean();
                     }
                     break;
@@ -90,10 +110,15 @@ class InternalDocument {
             return this;
         }
 
+        /**
+         * Builds and returns the constructed document or reference object.
+         *
+         * @return The constructed document or reference object.
+         * @throws NullDocumentException If the document is marked as "exists: false" but lacks an id or name.
+         */
         Object build() {
             if (exists != null && !exists) {
-                throw new NullDocumentException(id != null ? id : name, coll,
-                        cause);
+                throw new NullDocumentException(id != null ? id : name, coll, cause);
             }
 
             if (id != null && coll != null && ts != null) {
@@ -115,7 +140,6 @@ class InternalDocument {
                 return new NamedDocumentRef(name, coll);
             }
 
-            // We got something we don't know how to handle, so just return it.
             if (id != null) {
                 data.put("id", id);
             }

@@ -5,22 +5,31 @@ import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 
-public class EnumCodec<T> extends BaseCodec<T> {
+/**
+ * Codec for encoding and decoding Java Enum types in the Fauna tagged data format.
+ *
+ * @param <T> The type of the enum.
+ */
+public final class EnumCodec<T> extends BaseCodec<T> {
     private final Class<T> enumType;
 
-    public EnumCodec(Class<T> enumType) {
+    /**
+     * Constructs an {@code EnumCodec} for the specified enum type.
+     *
+     * @param enumType The enum class to be encoded and decoded.
+     */
+    public EnumCodec(final Class<T> enumType) {
         this.enumType = enumType;
     }
 
     @Override
-    public T decode(UTF8FaunaParser parser) throws CodecException {
+    public T decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
             case STRING:
                 //noinspection unchecked,rawtypes
-                return (T) Enum.valueOf((Class<Enum>) enumType,
-                        parser.getValueAsString());
+                return (T) Enum.valueOf((Class<Enum>) enumType, parser.getValueAsString());
             default:
                 throw new CodecException(this.unsupportedTypeDecodingMessage(
                         parser.getCurrentTokenType().getFaunaType(),
@@ -29,7 +38,7 @@ public class EnumCodec<T> extends BaseCodec<T> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, T obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final T obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {

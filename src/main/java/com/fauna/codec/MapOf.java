@@ -4,13 +4,20 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
- * MapOf stores the generic parameter class to evade type erasure during decoding.
+ * Represents a {@link Map} with {@link String} keys and a specified value type, allowing for
+ * retention of the generic type {@code V} during deserialization by circumventing type erasure.
  *
- * @param <V> The value class of the Map.
+ * @param <K> The type of keys maintained by the map (constrained to {@link String}).
+ * @param <V> The type of mapped values.
  */
-public class MapOf<K extends String, V> extends ParameterizedOf<Map<K, V>> {
+public final class MapOf<K extends String, V> extends ParameterizedOf<Map<K, V>> {
 
-    public MapOf(Class<V> valueClass) {
-        super(Map.class, new Type[] {String.class, valueClass});
+    /**
+     * Constructs a {@code MapOf} instance for a map with {@link String} keys and the specified value type.
+     *
+     * @param valueClass The class of the map's values.
+     */
+    public MapOf(final Class<V> valueClass) {
+        super(Map.class, new Type[]{String.class, valueClass});
     }
 }

@@ -3,15 +3,20 @@ package com.fauna.codec;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
-
 /**
- * OptionalOf stores the generic parameter class to evade type erasure during deserialization.
+ * Represents an {@link Optional} with a specified element type, allowing for retention of the
+ * generic type {@code V} during deserialization by circumventing type erasure.
  *
- * @param <V> The element class of the list.
+ * @param <V> The element type within the optional.
  */
-public class OptionalOf<V> extends ParameterizedOf<Optional<V>> {
+public final class OptionalOf<V> extends ParameterizedOf<Optional<V>> {
 
-    public OptionalOf(Class<V> valueClass) {
-        super(Optional.class, new Type[] {valueClass});
+    /**
+     * Constructs an {@code OptionalOf} instance for the specified element type.
+     *
+     * @param valueClass The class of the elements contained in the optional.
+     */
+    public OptionalOf(final Class<V> valueClass) {
+        super(Optional.class, new Type[]{valueClass});
     }
 }
