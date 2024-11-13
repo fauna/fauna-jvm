@@ -4,6 +4,15 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
+  - name: buildx-resource
+    type: registry-image
+    privileged: true
+    source:
+      repository: shared-concourse-buildx
+      aws_access_key_id: ((prod-images-aws-access-key-id))
+      aws_secret_access_key: ((prod-images-aws-secret-key))
+      aws_region: us-east-2
+      tag: latest
 
 resources:
   - name: notify
@@ -41,6 +50,17 @@ resources:
       uri: git@github.com:fauna/testtools.git
       branch: main
       private_key: ((github-ssh-key))
+  - name: testtools-deps-repo
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:fauna/testtools.git
+      branch: main
+      private_key: ((github-ssh-key))
+      paths:
+        - fauna-driver-platform-tests/package.json
+        - fauna-driver-platform-tests/Dockerfile
+
   - name: testtools-image
     type: registry-image
     icon: docker
@@ -49,6 +69,13 @@ resources:
       aws_access_key_id: ((prod-images-aws-access-key-id))
       aws_secret_access_key: ((prod-images-aws-secret-key))
       aws_region: us-east-2
+  - name: build-and-publish-testtools-image
+    type: buildx-resource
+    source:
+      repo: ((prod-images-repo-url))/devex-dx-driver-platform-tests
+      aws_access_key_id: ((prod-images-aws-access-key-id))
+      aws_secret_access_key: ((prod-images-aws-secret-key))
+    icon: docker
 
   - name: perf-notify
     type: slack-notification
@@ -69,6 +96,21 @@ jobs:
         trigger: true
       - set_pipeline: self
         file: repo.git/concourse/pipeline.yml
+
+  - name: build-image
+    serial: true
+    plan:
+      - get: testtools-deps-repo
+        trigger: true
+
+      - put: build-and-publish-testtools-image
+        inputs:
+          - testtools-deps-repo
+        params:
+          dir: testtools-deps-repo/fauna-driver-platform-tests/
+          dockerfile: testtools-deps-repo/fauna-driver-platform-tests/Dockerfile.dotnet
+          build_platform: linux/amd64
+          tag: latest
 
   - name: tests-dev
     serial: true
