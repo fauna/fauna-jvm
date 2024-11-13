@@ -44,10 +44,10 @@ public class EventSource {
         return new EventSource(token);
     }
     /**
-     * Compares this {@code EventSourceResponse} with another object for equality.
+     * Compares this {@code EventSource} with another object for equality.
      *
      * @param o The object to compare with.
-     * @return {@code true} if the specified object is equal to this {@code EventSourceResponse}; {@code false} otherwise.
+     * @return {@code true} if the specified object is equal to this {@code EventSource}; {@code false} otherwise.
      */
     @Override
     public boolean equals(final Object o) {
@@ -69,7 +69,7 @@ public class EventSource {
     }
 
     /**
-     * Returns the hash code for this {@code EventSourceResponse}.
+     * Returns the hash code for this {@code EventSource}.
      *
      * @return An {@code int} representing the hash code of this object.
      */
