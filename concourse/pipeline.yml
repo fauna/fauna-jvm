@@ -72,7 +72,7 @@ resources:
   - name: build-and-publish-testtools-image
     type: buildx-resource
     source:
-      repo: ((prod-images-repo-url))/devex-dx-driver-platform-tests
+      repo: ((prod-images-repo-url))/devex-dx-drivers-platform-tests
       aws_access_key_id: ((prod-images-aws-access-key-id))
       aws_secret_access_key: ((prod-images-aws-secret-key))
     icon: docker
