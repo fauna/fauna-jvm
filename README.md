@@ -464,7 +464,7 @@ import com.fauna.event.FeedIterator;
 import com.fauna.event.EventSource;
 import com.fauna.event.FeedOptions;
 import com.fauna.event.FeedPage;
-import com.fauna.event.EventSourceResponse;
+import com.fauna.event.EventSource;
 import com.fauna.response.QuerySuccess;
 import com.fauna.event.FaunaEvent;
 
@@ -563,9 +563,9 @@ public class EventFeedExample {
         }
 
         // Example 4: Using `poll()`
-        QuerySuccess<EventSourceResponse> sourceQuery = client.query(
+        QuerySuccess<EventSource> sourceQuery = client.query(
             fql("Product.all().eventSource()"),
-            EventSourceResponse.class
+            EventSource.class
         );
         EventSource source = EventSource.fromResponse(sourceQuery.getData());
 
@@ -639,9 +639,9 @@ CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
 );
 
 // Example 3: Using `poll()`
-QuerySuccess<EventSourceResponse> sourceQuery = client.query(
+QuerySuccess<EventSource> sourceQuery = client.query(
     query,
-    EventSourceResponse.class
+    EventSource.class
 );
 EventSource source = EventSource.fromResponse(sourceQuery.getData());
 
@@ -682,9 +682,9 @@ CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
 );
 
 // Example 3: Using `poll()`
-QuerySuccess<EventSourceResponse> sourceQuery = client.query(
+QuerySuccess<EventSource> sourceQuery = client.query(
     query,
-    EventSourceResponse.class
+    EventSource.class
 );
 EventSource source = EventSource.fromResponse(sourceQuery.getData());
 
@@ -752,7 +752,7 @@ To start and subscribe to the stream, pass an `EventSource` and related
 ```java
 // Get an event source.
 Query query = fql("Product.all().eventSource() { name, stock }");
-QuerySuccess<EventSourceResponse> tokenResponse = client.query(query, EventSourceResponse.class);
+QuerySuccess<EventSource> tokenResponse = client.query(query, EventSource.class);
 EventSource eventSource = EventSource.fromResponse(querySuccess.getData());
 
 // Calculate the timestamp for 10 minutes ago in microseconds.
