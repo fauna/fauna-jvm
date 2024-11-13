@@ -5,7 +5,7 @@ import com.fauna.codec.CodecProvider;
 import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.event.EventSourceResponse;
+import com.fauna.event.EventSource;
 import com.fauna.exception.CodecException;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
@@ -52,7 +52,7 @@ public final class DynamicCodec extends BaseCodec<Object> {
             case START_DOCUMENT:
                 return provider.get(Document.class).decode(parser);
             case STREAM:
-                return provider.get(EventSourceResponse.class).decode(parser);
+                return provider.get(EventSource.class).decode(parser);
             case MODULE:
                 return parser.getValueAsModule();
             case INT:

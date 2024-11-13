@@ -4,7 +4,7 @@ import com.fauna.beans.ClassWithAttributes;
 import com.fauna.codec.Codec;
 import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.FaunaType;
-import com.fauna.event.EventSourceResponse;
+import com.fauna.event.EventSource;
 import com.fauna.exception.NullDocumentException;
 import com.fauna.types.Document;
 import com.fauna.types.DocumentRef;
@@ -84,7 +84,7 @@ public class DynamicCodecTest extends TestBase {
                         null, NULL_DOC_EXCEPTION),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC,
                         "{\"@stream\":\"token\"}",
-                        new EventSourceResponse("token"), null),
+                        new EventSource("token"), null),
                 Arguments.of(TestType.Decode, DYNAMIC_CODEC,
                         "{\"@bytes\": \"RmF1bmE=\"}",
                         new byte[] {70, 97, 117, 110, 97}, null)

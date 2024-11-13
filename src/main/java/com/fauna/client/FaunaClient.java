@@ -6,7 +6,6 @@ import com.fauna.codec.DefaultCodecProvider;
 import com.fauna.codec.DefaultCodecRegistry;
 import com.fauna.codec.ParameterizedOf;
 import com.fauna.event.EventSource;
-import com.fauna.event.EventSourceResponse;
 import com.fauna.event.FaunaStream;
 import com.fauna.event.FeedIterator;
 import com.fauna.event.FeedOptions;
@@ -612,11 +611,9 @@ public abstract class FaunaClient {
      */
     public <E> CompletableFuture<FaunaStream<E>> asyncStream(final Query fql,
                                                              final Class<E> elementClass) {
-        return this.asyncQuery(fql, EventSourceResponse.class)
+        return this.asyncQuery(fql, EventSource.class)
                 .thenApply(queryResponse ->
-                        this.stream(EventSource.fromResponse(
-                                        queryResponse.getData()),
-                                StreamOptions.builder().build(), elementClass));
+                        this.stream(queryResponse.getData(), StreamOptions.builder().build(), elementClass));
     }
 
     /**
@@ -625,8 +622,8 @@ public abstract class FaunaClient {
      *
      * <p>
      * Query = fql("Product.all().eventSource()");
-     * QuerySuccess&lt;EventSourceResponse&gt; querySuccess = client.query(fql, EventSourceResponse.class);
-     * EventSource source = EventSource.fromResponse(querySuccess.getData());
+     * QuerySuccess&lt;EventSource&gt; querySuccess = client.query(fql, EventSource.class);
+     * EventSource source = querySuccess.getData();
      * FaunaStream&lt;Product&gt; faunaStream = client.stream(source, StreamOptions.DEFAULT, Product.class)
      *
      * @param fql          The FQL query to be executed. It must return a stream, e.g. ends in `.toStream()`.
@@ -678,9 +675,9 @@ public abstract class FaunaClient {
     public <E> CompletableFuture<FeedIterator<E>> asyncFeed(final Query fql,
                                                             final FeedOptions feedOptions,
                                                             final Class<E> elementClass) {
-        return this.asyncQuery(fql, EventSourceResponse.class).thenApply(
+        return this.asyncQuery(fql, EventSource.class).thenApply(
                 success -> this.feed(
-                        EventSource.fromResponse(success.getData()),
+                        success.getData(),
                         feedOptions, elementClass));
     }
 

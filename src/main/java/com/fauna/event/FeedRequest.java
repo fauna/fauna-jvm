@@ -65,13 +65,13 @@ public class FeedRequest {
     }
 
     /**
-     * Creates a new {@code FeedRequest} from an {@link EventSourceResponse}.
+     * Creates a new {@code FeedRequest} from an {@link EventSource}.
      *
-     * @param resp    The {@link EventSourceResponse} containing the event source token.
+     * @param resp    The {@link EventSource} containing the event source token.
      * @param options The {@link FeedOptions} specifying additional feed request options.
      * @return A new {@code FeedRequest} instance based on the response and options.
      */
-    public static FeedRequest fromResponse(final EventSourceResponse resp, final FeedOptions options) {
-        return new FeedRequest(EventSource.fromToken(resp.getToken()), options);
+    public static FeedRequest fromResponse(final EventSource resp, final FeedOptions options) {
+        return new FeedRequest(resp, options);
     }
 }

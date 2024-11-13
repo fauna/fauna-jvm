@@ -7,7 +7,6 @@ import com.fauna.client.PageIterator;
 import com.fauna.client.QueryStatsSummary;
 import com.fauna.e2e.beans.Product;
 import com.fauna.event.EventSource;
-import com.fauna.event.EventSourceResponse;
 import com.fauna.event.FaunaEvent;
 import com.fauna.event.FaunaStream;
 import com.fauna.event.StreamOptions;
@@ -206,8 +205,7 @@ public class E2EStreamingTest {
         });
 
         // Now start a stream based on same query, and it's transaction timestamp.
-        EventSource eventSource =
-                EventSource.fromResponse(inventorySource.eventSource);
+        EventSource eventSource = inventorySource.eventSource;
         StreamOptions streamOptions =
                 StreamOptions.builder().startTimestamp(success.getLastSeenTxn())
                         .build();
@@ -253,10 +251,10 @@ public class E2EStreamingTest {
     public void handleStreamError() throws InterruptedException {
         // It would be nice to have another test that generates a stream with normal events, and then an error
         // event, but this at least tests some of the functionality.
-        QuerySuccess<EventSourceResponse> queryResp =
+        QuerySuccess<EventSource> queryResp =
                 client.query(fql("Product.all().eventSource()"),
-                        EventSourceResponse.class);
-        EventSource source = EventSource.fromResponse(queryResp.getData());
+                        EventSource.class);
+        EventSource source = queryResp.getData();
         StreamOptions options =
                 StreamOptions.builder().cursor("invalid_cursor").build();
         FaunaStream<Product> stream =
@@ -274,14 +272,12 @@ public class E2EStreamingTest {
 
     @Test
     public void handleStreamTimeout() {
-        QuerySuccess<EventSourceResponse> queryResp =
-                client.query(fql("Product.all().eventSource()"),
-                        EventSourceResponse.class);
-        EventSource source = EventSource.fromResponse(queryResp.getData());
+        QuerySuccess<EventSource> queryResp = client.query(
+                fql("Product.all().eventSource()"), EventSource.class);
         StreamOptions options =
                 StreamOptions.builder().timeout(Duration.ofMillis(1)).build();
         ClientException exc = assertThrows(ClientException.class,
-                () -> client.stream(source, options, Product.class));
+                () -> client.stream(queryResp.getData(), options, Product.class));
         assertEquals(ExecutionException.class, exc.getCause().getClass());
         assertEquals(HttpTimeoutException.class,
                 exc.getCause().getCause().getClass());

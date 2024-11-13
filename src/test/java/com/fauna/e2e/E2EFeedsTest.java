@@ -5,7 +5,6 @@ import com.fauna.client.FaunaClient;
 import com.fauna.client.FaunaConfig;
 import com.fauna.e2e.beans.Product;
 import com.fauna.event.EventSource;
-import com.fauna.event.EventSourceResponse;
 import com.fauna.event.FaunaEvent;
 import com.fauna.event.FeedIterator;
 import com.fauna.event.FeedOptions;
@@ -69,10 +68,10 @@ public class E2EFeedsTest {
     @Test
     public void manualFeed() {
         // Use the feeds API with complete (i.e. manual) control of the calls made to Fauna.
-        QuerySuccess<EventSourceResponse> sourceQuery =
+        QuerySuccess<EventSource> sourceQuery =
                 client.query(fql("Product.all().eventSource()"),
-                        EventSourceResponse.class);
-        EventSource source = EventSource.fromResponse(sourceQuery.getData());
+                        EventSource.class);
+        EventSource source = sourceQuery.getData();
         List<FaunaEvent<Product>> productUpdates = new ArrayList<>();
         FeedOptions initialOptions =
                 FeedOptions.builder().startTs(productCollectionTs).pageSize(2)
@@ -140,12 +139,9 @@ public class E2EFeedsTest {
     public void feedEventError() {
         // Fauna can also return a valid feed page, with HTTP 200, but an "error" event type.
         FeedOptions options = FeedOptions.builder().startTs(0L).build();
-        QuerySuccess<EventSourceResponse> sourceQuery =
-                client.query(fql("Product.all().eventSource()"),
-                        EventSourceResponse.class);
-        FeedIterator<Product> iter =
-                client.feed(EventSource.fromResponse(sourceQuery.getData()),
-                        options, Product.class);
+        QuerySuccess<EventSource> sourceQuery =
+                client.query(fql("Product.all().eventSource()"), EventSource.class);
+        FeedIterator<Product> iter = client.feed(sourceQuery.getData(), options, Product.class);
         FeedPage<Product> pageOne = iter.next();
         assertFalse(pageOne.hasNext());
         assertEquals(1, pageOne.getEvents().size());
