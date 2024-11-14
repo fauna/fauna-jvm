@@ -1,16 +1,19 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 
-public class FloatCodec extends BaseCodec<Float> {
+/**
+ * Codec for encoding and decoding {@link Float} values in the Fauna tagged data format.
+ */
+public final class FloatCodec extends BaseCodec<Float> {
 
-    public static final FloatCodec singleton = new FloatCodec();
+    public static final FloatCodec SINGLETON = new FloatCodec();
 
     @Override
-    public Float decode(UTF8FaunaParser parser) throws CodecException {
+    public Float decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -19,12 +22,15 @@ public class FloatCodec extends BaseCodec<Float> {
             case DOUBLE:
                 return parser.getValueAsFloat();
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, Float obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final Float obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -39,6 +45,7 @@ public class FloatCodec extends BaseCodec<Float> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Double, FaunaType.Int, FaunaType.Long, FaunaType.Null};
+        return new FaunaType[] {FaunaType.Double, FaunaType.Int, FaunaType.Long,
+                FaunaType.Null};
     }
 }

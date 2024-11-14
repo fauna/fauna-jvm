@@ -1,46 +1,49 @@
 package com.fauna.types;
 
-
-import java.util.Objects;
-
-
+/**
+ * Represents a reference to a document within a collection.
+ * This abstract class serves as a base for specific types of document references,
+ * encapsulating the collection to which the reference belongs.
+ */
 public abstract class BaseRef {
 
     private final Module collection;
 
     /**
-     * Constructs a new Ref object with the specified id and collection.
+     * Constructs a new {@code BaseRef} object with the specified collection.
      *
-     * @param coll The module to which the document ref belongs.
+     * @param coll The module to which the document reference belongs.
      */
-    public BaseRef(Module coll) {
+    public BaseRef(final Module coll) {
         this.collection = coll;
     }
 
     /**
-     * Gets the collection to which the ref belongs.
+     * Gets the collection to which this reference belongs.
      *
-     * @return The collection to which the ref belongs.
+     * @return The {@code Module} representing the collection associated with this reference.
      */
     public Module getCollection() {
         return collection;
     }
 
+    /**
+     * Indicates whether some other object is "equal to" this reference.
+     * This method should be overridden in subclasses to provide specific equality logic.
+     *
+     * @param o the reference object with which to compare.
+     * @return {@code true} if this reference is the same as the object argument;
+     *         {@code false} otherwise.
+     */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+    public abstract boolean equals(Object o);
 
-        if (o == null) return false;
-
-        if (getClass() != o.getClass()) return false;
-
-        BaseRef c = (BaseRef) o;
-
-        return getCollection().equals(c.getCollection());
-    }
-
+    /**
+     * Returns a hash code value for the object.
+     * This method should be overridden in subclasses to provide specific hash code logic.
+     *
+     * @return a hash code value for this reference.
+     */
     @Override
-    public int hashCode() {
-        return Objects.hash(getCollection());
-    }
+    public abstract int hashCode();
 }

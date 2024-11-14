@@ -1,7 +1,4 @@
-# The Official JVM Driver for [Fauna](https://fauna.com) (beta)
-
-> [!CAUTION]
-> This driver is currently in beta and should not be used in production.
+# Official JVM Driver for [Fauna v10](https://fauna.com) (current)
 
 The Fauna JVM driver is a lightweight, open-source wrapper for Fauna's [HTTP
 API](https://docs.fauna.com/fauna/current/reference/http/reference/). You can
@@ -334,7 +331,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaConfig;
 import com.fauna.exception.FaunaException;
 import com.fauna.exception.ServiceException;
 import com.fauna.query.builder.Query;
@@ -345,8 +341,7 @@ import com.fauna.response.QuerySuccess;
 public class App {
     public static void main(String[] args) {
         try {
-            FaunaConfig config = FaunaConfig.builder().secret("FAUNA_SECRET").build();
-            FaunaClient client = Fauna.client(config);
+            FaunaClient client = Fauna.client();
 
             Query query = fql("'Hello world'");
 
@@ -430,56 +425,369 @@ QueryOptions options = QueryOptions.builder()
 QuerySuccess result = client.query(query, String.class, options);
 ```
 
-## Event streaming
+## Event Feeds (beta)
 
-The driver supports [event streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+The driver supports [Event Feeds](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds).
 
-To get a stream token, append
-[`toStream()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/tostream)
+### Request an Event Feed
+
+An Event Feed asynchronously polls an [event
+source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source)
+for paginated events.
+
+To get an event source, append
+[`eventSource()`](https://docs.fauna.com/fauna/current/reference/fql-api/schema-entities/set/eventsource/)
 or
-[`changesOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/changeson)
-to a set from a [supported
-source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
+[`eventsOn()`](https://docs.fauna.com/fauna/current/reference/fql-api/schema-entities/set/eventson/)
+to a [supported Set](https://docs.fauna.com/fauna/current/reference/cdc/#sets).
 
-To start and subscribe to the stream, use a stream token to create a
-`StreamRequest` and pass the `StreamRequest` to  `stream()` or `asyncStream()`:
+To get an event feed, you can use one of the following methods:
+
+* `feed()`: Synchronously fetches an event feed and returns a `FeedIterator`
+   that you can use to iterate through the pages of events.
+
+* `asyncFeed()`: Asynchronously fetches an event feed and returns a
+   `CompletableFuture<FeedIterator>` that you can use to iterate through the
+   pages of events.
+
+* `poll()`: Asynchronously fetches a single page of events from the event feed
+   and returns a `CompletableFuture<FeedPage>` that you can use to handle each
+   page individually. You can repeatedly call `poll()` to get successive pages.
+
+You can use `flatten()` on a `FeedIterator` to iterate through events rather
+than pages.
 
 ```java
-// Get a stream token.
-Query query = fql("Product.all().toStream() { name, stock }");
-QuerySuccess<StreamTokenResponse> tokenResponse = client.query(query, StreamTokenResponse.class);
-String streamToken = tokenResponse.getData().getToken();
+import com.fauna.client.Fauna;
+import com.fauna.client.FaunaClient;
+import com.fauna.event.FeedIterator;
+import com.fauna.event.EventSource;
+import com.fauna.event.FeedOptions;
+import com.fauna.event.FeedPage;
+import com.fauna.event.EventSource;
+import com.fauna.response.QuerySuccess;
+import com.fauna.event.FaunaEvent;
 
-// Create a StreamRequest.
-StreamRequest request = new StreamRequest(streamToken);
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 
-// Use stream() when you want to ensure the stream is ready before proceeding
-// with other operations, or when working in a synchronous context.
-FaunaStream<Product> stream = client.stream(request, Product.class);
+import static com.fauna.query.builder.Query.fql;
 
-// Use asyncStream() when you want to start the stream operation without blocking,
-// which is useful in asynchronous applications or when you need to perform other
-// tasks while waiting for the stream to be established.
-CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(request, Product.class);
+// Import the Product class for event data.
+import org.example.Product;
+
+public class EventFeedExample {
+    private static void printEventDetails(FaunaEvent<Product> event) {
+        System.out.println("Event Details:");
+        System.out.println("  Type: " + event.getType());
+        System.out.println("  Cursor: " + event.getCursor());
+
+        event.getTimestamp().ifPresent(ts ->
+            System.out.println("  Timestamp: " + ts)
+        );
+
+        event.getData().ifPresent(product ->
+            System.out.println("  Product: " + product.toString())
+        );
+
+        if (event.getStats() != null) {
+            System.out.println("  Stats: " + event.getStats());
+        }
+
+        if (event.getError() != null) {
+            System.out.println("  Error: " + event.getError());
+        }
+
+        System.out.println("-------------------");
+    }
+
+    public static void main(String[] args) {
+        FaunaClient client = Fauna.client();
+
+        long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
+        FeedOptions options = FeedOptions.builder()
+                .startTs(tenMinutesAgo)
+                .pageSize(10)
+                .build();
+
+        // Example 1: Using `feed()`
+        FeedIterator<Product> syncIterator = client.feed(
+            fql("Product.all().eventsOn(.price, .stock)"),
+            options,
+            Product.class
+        );
+
+        System.out.println("----------------------");
+        System.out.println("`feed()` results:");
+        System.out.println("----------------------");
+        syncIterator.forEachRemaining(page -> {
+            for (FaunaEvent<Product> event : page.getEvents()) {
+                printEventDetails(event);
+            }
+        });
+
+        // Example 2: Using `asyncFeed()`
+        CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
+            fql("Product.all().eventsOn(.price, .stock)"),
+            options,
+            Product.class
+        );
+
+        FeedIterator<Product> iterator = iteratorFuture.join();
+        System.out.println("----------------------");
+        System.out.println("`asyncFeed()` results:");
+        System.out.println("----------------------");
+        iterator.forEachRemaining(page -> {
+            for (FaunaEvent<Product> event : page.getEvents()) {
+                printEventDetails(event);
+            }
+        });
+
+        // Example 3: Using `flatten()` on a `FeedIterator`
+        FeedIterator<Product> flattenedIterator = client.feed(
+            fql("Product.all().eventSource()"),
+            options,
+            Product.class
+        );
+
+        Iterator<FaunaEvent<Product>> eventIterator = flattenedIterator.flatten();
+        List<FaunaEvent<Product>> allEvents = new ArrayList<>();
+        eventIterator.forEachRemaining(allEvents::add);
+        System.out.println("----------------------");
+        System.out.println("`flatten()` results:");
+        System.out.println("----------------------");
+        for (FaunaEvent<Product> event : allEvents) {
+            printEventDetails(event);
+        }
+
+        // Example 4: Using `poll()`
+        QuerySuccess<EventSource> sourceQuery = client.query(
+            fql("Product.all().eventSource()"),
+            EventSource.class
+        );
+        EventSource source = EventSource.fromResponse(sourceQuery.getData());
+
+        CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+            source,
+            options,
+            Product.class
+        );
+
+        while (pageFuture != null) {
+            FeedPage<Product> page = pageFuture.join();
+            List<FaunaEvent<Product>> events = page.getEvents();
+
+            System.out.println("----------------------");
+            System.out.println("`poll()` results:");
+            System.out.println("----------------------");
+            for (FaunaEvent<Product> event : events) {
+                printEventDetails(event);
+            }
+
+            if (page.hasNext()) {
+                FeedOptions nextPageOptions = options.nextPage(page);
+                pageFuture = client.poll(source, nextPageOptions, Product.class);
+            } else {
+                pageFuture = null;
+            }
+        }
+    }
+}
 ```
 
-Alternatively, you can pass an FQL query that returns a stream token to `stream()` or
+If you pass an event source directly to `feed()` or `poll()` and changes occur
+between the creation of the event source and the Event Feed request, the feed
+replays and emits any related events.
+
+In most cases, you'll get events after a specific start time or cursor.
+
+### Get events after a specific start time
+
+When you first poll an event source using an Event Feed, you usually include a
+`startTs` (start timestamp) in the `FeedOptions` passed to `feed()`,
+`asyncFeed()`, or `poll()`.
+
+`startTs` is an integer representing a time in microseconds since the Unix
+epoch. The request returns events that occurred after the specified timestamp
+(exclusive).
+
+```java
+Query query = fql("Product.all().eventsOn(.price, .stock)");
+
+// Calculate the timestamp for 10 minutes ago in microseconds.
+long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
+
+FeedOptions options = FeedOptions.builder()
+        .startTs(tenMinutesAgo)
+        .pageSize(10)
+        .build();
+
+// Example 1: Using `feed()`
+FeedIterator<Product> syncIterator = client.feed(
+    query,
+    options,
+    Product.class
+);
+
+// Example 2: Using `asyncFeed()`
+CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
+    query,
+    options,
+    Product.class
+);
+
+// Example 3: Using `poll()`
+QuerySuccess<EventSource> sourceQuery = client.query(
+    query,
+    EventSource.class
+);
+EventSource source = EventSource.fromResponse(sourceQuery.getData());
+
+CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+    source,
+    options,
+    Product.class
+);
+```
+
+### Get events after a specific event cursor
+
+After the initial request, you usually get subsequent events using the cursor
+for the last page or event. To get events after a cursor (exclusive), include
+the cursor in the `FeedOptions` passed to passed to `feed()`,
+`asyncFeed()`, or `poll()`.
+
+```java
+Query query = fql("Product.all().eventsOn(.price, .stock)");
+
+FeedOptions options = FeedOptions.builder()
+        .cursor("gsGabc456") // Cursor for the last page
+        .pageSize(10)
+        .build();
+
+// Example 1: Using `feed()`
+FeedIterator<Product> syncIterator = client.feed(
+    query,
+    options,
+    Product.class
+);
+
+// Example 2: Using `asyncFeed()`
+CompletableFuture<FeedIterator<Product>> iteratorFuture = client.asyncFeed(
+    query,
+    options,
+    Product.class
+);
+
+// Example 3: Using `poll()`
+QuerySuccess<EventSource> sourceQuery = client.query(
+    query,
+    EventSource.class
+);
+EventSource source = EventSource.fromResponse(sourceQuery.getData());
+
+CompletableFuture<FeedPage<Product>> pageFuture = client.poll(
+    source,
+    options,
+    Product.class
+);
+```
+
+### Error handling
+
+Exceptions can be raised in two different places:
+
+* While fetching a page
+* While iterating a page's events
+
+This distinction lets ignore errors originating from event processing. For
+example:
+
+```java
+try {
+    FeedIterator<Product> syncIterator = client.feed(
+        fql("Product.all().map(.details.toUpperCase()).eventSource()"),
+        options,
+        Product.class
+    );
+
+    syncIterator.forEachRemaining(page -> {
+        try {
+            for (FaunaEvent<Product> event : page.getEvents()) {
+                // Event-specific handling.
+                System.out.println("Event: " + event);
+            }
+        } catch (FaunaException e) {
+            // Handle errors for specific events within the page.
+            System.err.println("Error processing event: " + e.getMessage());
+        }
+    });
+
+} catch (FaunaException e) {
+    // Additional handling for initialization errors.
+    System.err.println("Error occurred with event feed initialization: " + e.getMessage());
+}
+```
+
+## Event Streaming
+
+The driver supports [Event
+Streaming](https://docs.fauna.com/fauna/current/learn/cdc/#event-streaming).
+
+An Event Stream lets you consume events from an [event
+source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source)
+as a real-time subscription.
+
+To get an event source, append
+[`eventSource()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/eventsource)
+or
+[`eventsOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/eventson)
+to a [supported Set](https://docs.fauna.com/fauna/current/reference/cdc/#sets).
+
+To start and subscribe to the stream, pass an `EventSource` and related
+`StreamOptions` to `stream()` or `asyncStream()`:
+
+```java
+// Get an event source.
+Query query = fql("Product.all().eventSource() { name, stock }");
+QuerySuccess<EventSource> tokenResponse = client.query(query, EventSource.class);
+EventSource eventSource = EventSource.fromResponse(querySuccess.getData());
+
+// Calculate the timestamp for 10 minutes ago in microseconds.
+long tenMinutesAgo = System.currentTimeMillis() * 1000 - (10 * 60 * 1000 * 1000);
+StreamOptions streamOptions = StreamOptions.builder().startTimestamp(tenMinutesAgo).build();
+
+// Example 1: Using `stream()`
+FaunaStream<Product> stream = client.stream(eventSource, streamOptions, Product.class);
+
+// Example 2: Using `asyncStream()`
+CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(source, streamOptions, Product.class);
+```
+
+If changes occur between the creation of the event source and the stream
+request, the stream replays and emits any related events.
+
+Alternatively, you can pass an FQL query that returns an event source to `stream()` or
 `asyncStream()`:
 
 ```java
-Query query = fql("Product.all().toStream() { name, stock }");
-// Create and subscribe to a stream in one step.
-// stream() example:
+Query query = fql("Product.all().eventSource() { name, stock }");
+
+// Example 1: Using `stream()`
 FaunaStream<Product> stream = client.stream(query, Product.class);
-// asyncStream() example:
+
+// Example 2: Using `asyncStream()`
 CompletableFuture<FaunaStream<Product>> futureStream = client.asyncStream(query, Product.class);
 ```
 
 ### Create a subscriber class
 
-The methods return a `FaunaStream` publisher that lets you handle events as they
-arrive. Create a class with the `Flow.Subscriber` interface to process
-events:
+The methods return a
+[`FaunaStream`](https://fauna.github.io/fauna-jvm/latest/com/fauna/client/FaunaStream.html)
+publisher that lets you handle events as they arrive. Create a class with the
+`Flow.Subscriber` interface to process events:
 
 ```java
 package org.example;
@@ -490,21 +798,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
-import com.fauna.client.FaunaStream;
+import com.fauna.client.FaunaConfig;
+import com.fauna.event.FaunaEvent;
+import com.fauna.event.FaunaStream;
 import com.fauna.exception.FaunaException;
+
 import static com.fauna.query.builder.Query.fql;
-import com.fauna.response.StreamEvent;
 
 // Import the Product class for event data.
 import org.example.Product;
 
-public class App {
+public class EventStreamExample {
     public static void main(String[] args) throws InterruptedException {
         try {
-            FaunaClient client = Fauna.client();
+            FaunaConfig config = FaunaConfig.builder()
+                    .secret("FAUNA_SECRET")
+                    .build();
+            FaunaClient client = Fauna.client(config);
 
             // Create a stream of all products. Project the name and stock.
-            FaunaStream<Product> stream = client.stream(fql("Product.all().toStream() { name, stock }"), Product.class);
+            FaunaStream<Product> stream = client.stream(fql("Product.all().eventSource() { name, stock }"), Product.class);
 
             // Create a subscriber to handle stream events.
             ProductSubscriber subscriber = new ProductSubscriber();
@@ -520,7 +833,7 @@ public class App {
         }
     }
 
-    static class ProductSubscriber implements Flow.Subscriber<StreamEvent<Product>> {
+    static class ProductSubscriber implements Flow.Subscriber<FaunaEvent<Product>> {
         private final AtomicInteger eventCount = new AtomicInteger(0);
         private Flow.Subscription subscription;
         private final int maxEvents;
@@ -538,10 +851,11 @@ public class App {
         }
 
         @Override
-        public void onNext(StreamEvent<Product> event) {
+        public void onNext(FaunaEvent<Product> event) {
             // Handle each event...
             int count = eventCount.incrementAndGet();
             System.out.println("Received event " + count + ":");
+            System.out.println("  Type: " + event.getType());
             System.out.println("  Cursor: " + event.getCursor());
             System.out.println("  Timestamp: " + event.getTimestamp());
             System.out.println("  Data: " + event.getData().orElse(null));
@@ -574,6 +888,31 @@ public class App {
         public void awaitCompletion() throws InterruptedException {
             completionLatch.await();
         }
+    }
+}
+```
+
+## Debugging / Tracing
+If you would like to see the requests and responses the client is making and receiving, you can set the environment
+variable `FAUNA_DEBUG=1`. Fauna log the request and response (including headers) to `stderr`. You can also pass in your
+own log handler. Setting `Level.WARNING` is equivalent to `FAUNA_DEBUG=0`, while `Level.FINE` is equivalent to
+`FAUNA_DEBUG=1`. The client will log the request body at `Level.FINEST`.
+
+```java
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
+
+import com.fauna.client.Fauna;
+import com.fauna.client.FaunaClient;
+
+class App {
+    public static void main(String[] args) {
+        Handler handler = new ConsoleHandler();
+        handler.setLevel(Level.FINEST);
+        handler.setFormatter(new SimpleFormatter());
+        FaunaClient client = Fauna.client(FaunaConfig.builder().logHandler(handler).build());
     }
 }
 ```

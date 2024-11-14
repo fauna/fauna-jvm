@@ -17,7 +17,8 @@ public class TestExponentialBackoffStrategy {
     @Test
     public void testBackoffBehaviour() {
         // Set jitter to 0 just to make testing easier.
-        RetryStrategy strategy = new ExponentialBackoffStrategy(3, 2, 1000, 20_000, 0.0f);
+        RetryStrategy strategy =
+                new ExponentialBackoffStrategy(3, 2, 1000, 20_000, 0.0f);
         assertTrue(strategy.canRetry(1));
         assertEquals(1000, strategy.getDelayMillis(1));
         assertTrue(strategy.canRetry(1));
@@ -28,6 +29,7 @@ public class TestExponentialBackoffStrategy {
         assertFalse(strategy.canRetry(4));
 
     }
+
     @Test
     public void testDefaultBehaviour() {
         RetryStrategy strategy = FaunaClient.DEFAULT_RETRY_STRATEGY;
@@ -56,7 +58,8 @@ public class TestExponentialBackoffStrategy {
 
     @Test
     public void testMaxBackoffBehaviour() {
-        ExponentialBackoffStrategy strategy = ExponentialBackoffStrategy.builder().setMaxAttempts(7).build();
+        ExponentialBackoffStrategy strategy =
+                ExponentialBackoffStrategy.builder().maxAttempts(7).build();
         assertTrue(strategy.canRetry(0));
         assertEquals(0, strategy.getDelayMillis(0), 0);
 
@@ -78,7 +81,13 @@ public class TestExponentialBackoffStrategy {
 
     @Test
     public void testCustomStrategy() {
-        RetryStrategy strategy = new ExponentialBackoffStrategy(4, 4, 100, 2000, 0.1f);
+        RetryStrategy strategy = ExponentialBackoffStrategy.builder()
+                .backoffFactor(4)
+                .maxAttempts(4)
+                .initialIntervalMillis(100)
+                .maxBackoffMillis(2000)
+                .jitterFactor(0.1f)
+                .build();
 
         assertTrue(strategy.canRetry(1));
         assertTrue(strategy.getDelayMillis(1) >= 90);

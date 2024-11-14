@@ -8,22 +8,32 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 import com.fauna.query.builder.QueryObj;
 
-public class QueryObjCodec extends BaseCodec<QueryObj> {
+/**
+ * Codec for encoding and decoding {@link QueryObj} objects.
+ */
+@SuppressWarnings("rawtypes")
+public final class QueryObjCodec extends BaseCodec<QueryObj> {
 
     private final CodecProvider provider;
 
-    public QueryObjCodec(CodecProvider provider) {
-
+    /**
+     * Creates a new instance of the {@link QueryObjCodec}.
+     *
+     * @param provider The codec provider to retrieve codecs for the underlying object types.
+     */
+    public QueryObjCodec(final CodecProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public QueryObj decode(UTF8FaunaParser parser) throws CodecException {
-        throw new CodecException("Decoding into a QueryFragment is not supported");
+    public QueryObj decode(final UTF8FaunaParser parser) throws CodecException {
+        throw new CodecException(
+                "Decoding into a QueryFragment is not supported");
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryObj obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final QueryObj obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
@@ -31,6 +41,7 @@ public class QueryObjCodec extends BaseCodec<QueryObj> {
             gen.writeFieldName("object");
             Object unwrapped = obj.get();
             Codec codec = provider.get(unwrapped.getClass());
+            //noinspection unchecked
             codec.encode(gen, unwrapped);
             gen.writeEndObject();
         }

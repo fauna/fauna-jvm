@@ -5,27 +5,32 @@ import com.fauna.codec.FaunaType;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
-import com.fauna.types.*;
+import com.fauna.types.BaseRef;
+import com.fauna.types.DocumentRef;
+import com.fauna.types.NamedDocumentRef;
 
-import java.io.IOException;
-
-public class BaseRefCodec extends BaseCodec<BaseRef> {
+/**
+ * Codec for encoding and decoding FQL {@link BaseRef} instances.
+ */
+public final class BaseRefCodec extends BaseCodec<BaseRef> {
 
     public static final BaseRefCodec SINGLETON = new BaseRefCodec();
 
     @Override
-    public BaseRef decode(UTF8FaunaParser parser) throws CodecException {
+    public BaseRef decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
             case START_REF:
                 return (BaseRef) decodeInternal(parser);
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
-    private Object decodeInternal(UTF8FaunaParser parser) throws CodecException {
+    private Object decodeInternal(final UTF8FaunaParser parser) throws CodecException {
         var builder = new InternalDocument.Builder();
 
         while (parser.read() && parser.getCurrentTokenType() != FaunaTokenType.END_REF) {
@@ -43,6 +48,8 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
                 case "cause":
                     builder = builder.withRefField(fieldName, parser);
                     break;
+                default:
+                    break;
             }
         }
 
@@ -50,7 +57,7 @@ public class BaseRefCodec extends BaseCodec<BaseRef> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, BaseRef obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final BaseRef obj) throws CodecException {
         gen.writeStartRef();
 
         if (obj instanceof DocumentRef) {

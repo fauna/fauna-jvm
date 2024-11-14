@@ -10,33 +10,40 @@ import com.fauna.types.BaseDocument;
 import com.fauna.types.Document;
 import com.fauna.types.NamedDocument;
 
-import java.io.IOException;
-
-public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
+/**
+ * Codec for encoding and decoding FQL {@link BaseDocument} instances.
+ */
+public final class BaseDocumentCodec extends BaseCodec<BaseDocument> {
 
     private final CodecProvider provider;
 
-    public BaseDocumentCodec(CodecProvider provider) {
+    /**
+     * Constructs a {@code BaseDocumentCodec} with the specified codec provider.
+     *
+     * @param provider the codec provider
+     */
+    public BaseDocumentCodec(final CodecProvider provider) {
         this.provider = provider;
     }
 
     @Override
-    public BaseDocument decode(UTF8FaunaParser parser) throws CodecException {
+    public BaseDocument decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
             case START_REF:
                 var o = BaseRefCodec.SINGLETON.decode(parser);
-                // if we didn't throw a null ref, we can't deal with it
                 throw new CodecException(unexpectedTypeWhileDecoding(o.getClass()));
             case START_DOCUMENT:
                 return (BaseDocument) decodeInternal(parser);
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
-    private Object decodeInternal(UTF8FaunaParser parser) throws CodecException {
+    private Object decodeInternal(final UTF8FaunaParser parser) throws CodecException {
         var builder = new InternalDocument.Builder();
         var valueCodec = provider.get(Object.class);
 
@@ -67,7 +74,7 @@ public class BaseDocumentCodec extends BaseCodec<BaseDocument> {
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, BaseDocument obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final BaseDocument obj) throws CodecException {
         gen.writeStartRef();
 
         if (obj instanceof Document) {

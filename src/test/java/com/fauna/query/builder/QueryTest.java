@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class QueryTest {
 
 
-
     private String encode(Query q) throws IOException {
         var gen = new UTF8FaunaGenerator();
         DefaultCodecProvider.SINGLETON.get(Query.class).encode(gen, q);
@@ -30,7 +29,8 @@ class QueryTest {
     @Test
     public void testQueryBuilderStrings() {
         Query actual = fql("let x = 11", Collections.emptyMap());
-        QueryFragment[] expected = new QueryFragment[]{new QueryLiteral("let x = 11")};
+        QueryFragment[] expected =
+                new QueryFragment[] {new QueryLiteral("let x = 11")};
         assertArrayEquals(expected, actual.get());
     }
 
@@ -40,7 +40,8 @@ class QueryTest {
         args.put("n", null);
 
         Query actual = fql("let x = ${n}", args);
-        assertArrayEquals(new QueryFragment[] {new QueryLiteral("let x = "), new QueryVal(null)}, actual.get());
+        assertArrayEquals(new QueryFragment[] {new QueryLiteral("let x = "),
+                new QueryVal(null)}, actual.get());
     }
 
     @Test
@@ -50,14 +51,16 @@ class QueryTest {
 
         // Bug BT-5003, this would get into an infinite loop.
         Query actual = fql("let x = $n", args);
-        assertArrayEquals(new QueryFragment[] {new QueryLiteral("let x = "), new QueryLiteral("n")}, actual.get());
+        assertArrayEquals(new QueryFragment[] {new QueryLiteral("let x = "),
+                new QueryLiteral("n")}, actual.get());
     }
 
     @Test
     public void testQueryBuilderInterpolatedStrings() {
         Map<String, Object> variables = new HashMap<>();
         variables.put("n1", 5);
-        Query actual = fql("let age = ${n1}\n\"Alice is #{age} years old.\"", variables);
+        Query actual = fql("let age = ${n1}\n\"Alice is #{age} years old.\"",
+                variables);
         QueryFragment[] expected = new QueryFragment[] {
                 new QueryLiteral("let age = "),
                 new QueryVal(5),
@@ -72,7 +75,9 @@ class QueryTest {
                 "age", 0,
                 "birthdate", LocalDate.of(2023, 2, 24));
         Query actual = fql("let x = ${my_var}", Map.of("my_var", user));
-        QueryFragment[] expected = new QueryFragment[]{new QueryLiteral("let x = "), new QueryVal(user)};
+        QueryFragment[] expected =
+                new QueryFragment[] {new QueryLiteral("let x = "),
+                        new QueryVal(user)};
         assertArrayEquals(expected, actual.get());
     }
 
@@ -85,15 +90,18 @@ class QueryTest {
 
         Query inner = fql("let x = ${my_var}", Map.of("my_var", user));
         Query actual = fql("${inner}\nx { name }", Map.of("inner", inner));
-        QueryFragment[] expected = new QueryFragment[]{inner, new QueryLiteral("\nx { name }")};
+        QueryFragment[] expected =
+                new QueryFragment[] {inner, new QueryLiteral("\nx { name }")};
         assertArrayEquals(expected, actual.get());
     }
 
     @Test
     public void testOverloadedFqlBuildingMethods() {
         // Test that the four different fql(...) methods produce equivalent results.
-        Query explicit_vars = fql("let age = 5\n\"Alice is #{age} years old.\"", Map.of());
-        Query implicit_vars = fql("let age = 5\n\"Alice is #{age} years old.\"", null);
+        Query explicit_vars =
+                fql("let age = 5\n\"Alice is #{age} years old.\"", Map.of());
+        Query implicit_vars =
+                fql("let age = 5\n\"Alice is #{age} years old.\"", null);
         Query no_vars = fql("let age = 5\n\"Alice is #{age} years old.\"");
         assertArrayEquals(explicit_vars.get(), implicit_vars.get());
         assertArrayEquals(no_vars.get(), implicit_vars.get());
@@ -101,19 +109,23 @@ class QueryTest {
 
     @Test
     public void testQueryWithMissingArgs() {
-        IllegalArgumentException first = assertThrows(IllegalArgumentException.class,
-                () -> fql("let first = ${first}"));
+        IllegalArgumentException first =
+                assertThrows(IllegalArgumentException.class,
+                        () -> fql("let first = ${first}"));
         // I haven't figured out why yet, but these error messages are sometimes:
         // "java.lang.IllegalArgumentException: message", and sometimes just "message" ??
-        assertTrue(first.getMessage().contains("Template variable first not found in provided args."));
+        assertTrue(first.getMessage().contains(
+                "Template variable first not found in provided args."));
     }
 
     @Test
     public void testQueryUsingMessageFormat() {
         String email = "alice@home.com";
-        Query q1 = fql(MessageFormat.format("Users.firstWhere(.email == {0})", email));
+        Query q1 = fql(MessageFormat.format("Users.firstWhere(.email == {0})",
+                email));
         Query q2 = fql(String.format("Users.firstWhere(.email == %s)", email));
-        Query q3 = fql(new StringBuilder().append("Users.firstWhere(.email == ").append(email).append(")").toString());
+        Query q3 = fql("Users.firstWhere(.email == " +
+                email + ")");
         assertArrayEquals(q1.get(), q2.get());
         assertArrayEquals(q1.get(), q3.get());
     }

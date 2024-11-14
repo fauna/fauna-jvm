@@ -1,15 +1,17 @@
 package com.fauna.client;
 
-public class NoRetryStrategy implements RetryStrategy {
-
+/**
+ * Specifies that no retries will be made.
+ */
+public final class NoRetryStrategy implements RetryStrategy {
 
     @Override
-    public boolean canRetry(int retryAttempt) {
+    public boolean canRetry(final int retryAttempt) {
         return false;
     }
 
     @Override
-    public int getDelayMillis(int retryAttempt) {
+    public int getDelayMillis(final int retryAttempt) {
         return 0;
     }
 

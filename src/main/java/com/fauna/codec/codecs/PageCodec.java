@@ -3,26 +3,37 @@ package com.fauna.codec.codecs;
 import com.fauna.codec.Codec;
 import com.fauna.codec.FaunaTokenType;
 import com.fauna.codec.FaunaType;
-import com.fauna.exception.CodecException;
 import com.fauna.codec.UTF8FaunaGenerator;
 import com.fauna.codec.UTF8FaunaParser;
+import com.fauna.exception.CodecException;
 import com.fauna.types.Page;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
+/**
+ * Codec for encoding and decoding Fauna's paginated results.
+ *
+ * @param <E> The type of elements in the page.
+ * @param <L> The type of the Page (Page<E>).
+ */
+public final class PageCodec<E, L extends Page<E>> extends BaseCodec<L> {
 
     private final Codec<E> elementCodec;
     private final Codec<List<E>> listCodec;
 
-    public PageCodec(Codec<E> elementCodec) {
+    /**
+     * Constructs a {@code PageCodec} with the specified {@code Codec}.
+     *
+     * @param elementCodec The codec to use for elements of the page.
+     */
+    public PageCodec(final Codec<E> elementCodec) {
         this.elementCodec = elementCodec;
         this.listCodec = new ListCodec<>(elementCodec);
     }
 
     @Override
-    public L decode(UTF8FaunaParser parser) throws CodecException {
+    public L decode(final UTF8FaunaParser parser) throws CodecException {
         switch (parser.getCurrentTokenType()) {
             case NULL:
                 return null;
@@ -51,16 +62,19 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
                 // In the event the user requests a Page<T> but the query just returns T
                 return wrapInPage(parser);
             default:
-                throw new CodecException(this.unsupportedTypeDecodingMessage(parser.getCurrentTokenType().getFaunaType(), getSupportedTypes()));
+                throw new CodecException(this.unsupportedTypeDecodingMessage(
+                        parser.getCurrentTokenType().getFaunaType(),
+                        getSupportedTypes()));
         }
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, L obj) throws CodecException {
+    public void encode(final UTF8FaunaGenerator gen, final L obj) throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
-            throw new CodecException(this.unsupportedTypeMessage(obj.getClass()));
+            throw new CodecException(
+                    this.unsupportedTypeMessage(obj.getClass()));
         }
     }
 
@@ -69,12 +83,21 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
         return elementCodec.getCodecClass();
     }
 
+    private L decodePage(final UTF8FaunaParser parser, final FaunaTokenType endToken)
+            throws CodecException {
 
-    private L decodePage(UTF8FaunaParser parser, FaunaTokenType endToken) throws CodecException {
+        parser.read();
+        if (parser.getCurrentTokenType() == FaunaTokenType.STRING) {
+            return handleUnmaterialized(parser, endToken);
+        } else {
+            return handleMaterialized(parser, endToken);
+        }
+    }
+
+    private L handleMaterialized(final UTF8FaunaParser parser, final FaunaTokenType endToken) {
         List<E> data = null;
         String after = null;
-
-        while (parser.read() && parser.getCurrentTokenType() != endToken) {
+        do {
             String fieldName = parser.getValueAsString();
             parser.read();
 
@@ -85,19 +108,29 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
                 case "after":
                     after = parser.getValueAsString();
                     break;
+                default:
+                    break;
             }
-        }
+        } while (parser.read() && parser.getCurrentTokenType() != endToken);
 
-        if (data == null) {
-            throw new CodecException("No page data found while deserializing into Page<>");
-        }
-
-        @SuppressWarnings("unchecked")
-        L res = (L) new Page<>(data, after);
-        return res;
+        //noinspection unchecked
+        return (L) new Page<>(data, after);
     }
 
-    private L wrapInPage(UTF8FaunaParser parser) throws CodecException {
+    private L handleUnmaterialized(final UTF8FaunaParser parser, final FaunaTokenType endToken) {
+        var after = parser.getValueAsString();
+        parser.read();
+
+        if (parser.getCurrentTokenType() != endToken) {
+            throw new CodecException(unexpectedTokenExceptionMessage(parser.getCurrentTokenType()));
+        }
+
+        //noinspection unchecked
+        return (L) new Page<>(new ArrayList<>(), after);
+
+    }
+
+    private L wrapInPage(final UTF8FaunaParser parser) throws CodecException {
         E elem = this.elementCodec.decode(parser);
         @SuppressWarnings("unchecked")
         L res = (L) new Page<>(List.of(elem), null);
@@ -106,6 +139,10 @@ public class PageCodec<E,L extends Page<E>> extends BaseCodec<L> {
 
     @Override
     public FaunaType[] getSupportedTypes() {
-        return new FaunaType[]{FaunaType.Array, FaunaType.Boolean, FaunaType.Bytes, FaunaType.Date, FaunaType.Double, FaunaType.Document, FaunaType.Int, FaunaType.Long, FaunaType.Module, FaunaType.Null, FaunaType.Object,  FaunaType.Ref, FaunaType.Set, FaunaType.String, FaunaType.Time};
+        return new FaunaType[] {FaunaType.Array, FaunaType.Boolean,
+                FaunaType.Bytes, FaunaType.Date, FaunaType.Double,
+                FaunaType.Document, FaunaType.Int, FaunaType.Long,
+                FaunaType.Module, FaunaType.Null, FaunaType.Object,
+                FaunaType.Ref, FaunaType.Set, FaunaType.String, FaunaType.Time};
     }
 }

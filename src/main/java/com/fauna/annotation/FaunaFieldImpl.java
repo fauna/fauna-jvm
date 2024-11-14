@@ -1,5 +1,6 @@
 package com.fauna.annotation;
 
+@SuppressWarnings("ClassExplicitlyAnnotation")
 public class FaunaFieldImpl implements FaunaField {
 
     private final FaunaField annotation;
@@ -10,7 +11,8 @@ public class FaunaFieldImpl implements FaunaField {
 
     @Override
     public String name() {
-        return (annotation != null && !annotation.name().isEmpty()) ? annotation.name() : null;
+        return (annotation != null && !annotation.name().isEmpty()) ?
+                annotation.name() : null;
     }
 
     @Override

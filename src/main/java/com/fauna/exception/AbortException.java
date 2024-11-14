@@ -1,37 +1,52 @@
 package com.fauna.exception;
 
-import com.fauna.codec.CodecProvider;
-import com.fauna.codec.DefaultCodecProvider;
-import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.response.QueryFailure;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * An exception that represents an <a href="https://docs.fauna.com/fauna/current/reference/http/reference/errors/#abort">abort error</a> in Fauna.
+ * This exception extends {@link ServiceException} and includes methods to retrieve
+ * the abort data.
+ */
 public class AbortException extends ServiceException {
+    @SuppressWarnings("rawtypes")
+    private final Map<Class, Object> decoded = new HashMap<>();
 
-    private Object abort = null;
-    private final CodecProvider provider = DefaultCodecProvider.SINGLETON;
-
-    public AbortException(QueryFailure response) {
+    /**
+     * Constructs a new {@code AbortException} with the specified {@link QueryFailure} response.
+     *
+     * @param response The {@code QueryFailure} object containing details about the aborted query.
+     */
+    public AbortException(final QueryFailure response) {
         super(response);
     }
 
-    public Object getAbort() throws IOException {
+    /**
+     * Returns the abort data as a top-level {@code Object}. This is primarily useful for debugging
+     * or situations where the type of abort data may be unknown.
+     *
+     * @return An {@code Object} containing the abort data, or {@code null} if no data is present.
+     */
+    public Object getAbort() {
         return getAbort(Object.class);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getAbort(Class<T> clazz) throws IOException {
-        if (abort != null) return (T) abort;
-
-        var abStr = this.getResponse().getAbortString();
-        if (abStr.isPresent()) {
-            var codec = provider.get(clazz);
-            var parser = UTF8FaunaParser.fromString(abStr.get());
-            abort = codec.decode(parser);
-            return (T) abort;
-        } else {
-            return null;
+    /**
+     * Returns the abort data decoded into the specified class, or {@code null} if there is no abort data.
+     * The abort data is cached upon retrieval to avoid redundant decoding.
+     *
+     * @param clazz The {@code Class} to decode the abort data into.
+     * @param <T>   The type of the abort data.
+     * @return The decoded abort data of type {@code T}, or {@code null} if no data is available.
+     */
+    public <T> T getAbort(final Class<T> clazz) {
+        if (!decoded.containsKey(clazz)) {
+            Object abortData = getResponse().getAbort(clazz).orElse(null);
+            decoded.put(clazz, abortData);
         }
+        //noinspection unchecked
+        return (T) decoded.get(clazz);
     }
 }

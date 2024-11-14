@@ -1,34 +1,35 @@
 package com.fauna.exception;
 
-import java.util.Map;
-
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QueryStats;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * An exception representing a query failure returned by Fauna.
  *
- * <p>The exception extends {@link FaunaException} and contains details about
- * the failed query, including HTTP status codes, error codes, and other
- * metadata.</p>
+ * <p>This exception extends {@link FaunaException} and provides detailed information
+ * about the failed query, including HTTP status codes, error codes, statistics,
+ * and other metadata.</p>
  */
 public class ServiceException extends FaunaException {
     private final QueryFailure response;
 
     /**
-     * Constructs a new ServiceException with the specified QueryFailure response.
+     * Constructs a new {@code ServiceException} with the specified {@code QueryFailure} response.
      *
-     * @param response the QueryFailure object containing details about the failed query
+     * @param response The {@code QueryFailure} object containing details about the failed query.
      */
-    public ServiceException(QueryFailure response) {
+    public ServiceException(final QueryFailure response) {
         super(response.getFullMessage());
         this.response = response;
     }
 
     /**
-     * Returns the QueryFailure response associated with the exception.
+     * Returns the {@link QueryFailure} response associated with this exception.
      *
-     * @return the QueryFailure object
+     * @return The {@code QueryFailure} object containing details of the query failure.
      */
     public QueryFailure getResponse() {
         return this.response;
@@ -37,66 +38,65 @@ public class ServiceException extends FaunaException {
     /**
      * Returns the HTTP status code of the response returned by the query request.
      *
-     * @return the HTTP status code as an integer
+     * @return The HTTP status code as an integer.
      */
     public int getStatusCode() {
         return this.response.getStatusCode();
     }
 
     /**
-     * Returns the
-     * <a href="https://docs.fauna.com/fauna/current/reference/fql/error-codes/">Fauna error code</a>
-     * associated with the failure.
+     * Returns the <a href="https://docs.fauna.com/fauna/current/reference/fql/error-codes/">
+     * Fauna error code</a> associated with the failure.
      *
-     * <p>Codes indicate the cause of the error. It is safe to write
-     * programmatic logic against the code. They are part of the API contract.</p>
+     * <p>Fauna error codes indicate the specific cause of the error and are part of the API contract,
+     * allowing for programmatic logic based on the error type.</p>
      *
-     * @return the error code as a String
+     * @return The error code as a {@code String}.
      */
     public String getErrorCode() {
         return this.response.getErrorCode();
     }
 
     /**
-     * Returns a summary of the error.
+     * Returns a brief summary of the error.
      *
-     * @return a String containing the error summary
+     * @return A {@code String} containing the error summary.
      */
     public String getSummary() {
         return this.response.getSummary();
     }
 
     /**
-     * Returns the statistics for the failed query.
+     * Returns the statistics associated with the failed query.
      *
-     * @return a QueryStats object containing statistical information
+     * @return A {@link QueryStats} object containing statistical information for the failed query.
      */
     public QueryStats getStats() {
         return this.response.getStats();
     }
 
     /**
-     * Returns the faled query's last transaction timestamp.
+     * Returns the last transaction timestamp seen for the failed query, if available.
      *
-     * @return the transaction timestamp as a long value
+     * @return An {@code Optional<Long>} representing the last transaction timestamp, or {@code Optional.empty()} if not available.
      */
-    public long getTxnTs() {
-        return this.response.getLastSeenTxn();
+    public Optional<Long> getTxnTs() {
+        return Optional.ofNullable(this.response.getLastSeenTxn());
     }
 
     /**
-     * The schema version that was used for query execution.
+     * Returns the schema version used during query execution.
      *
-     * @return the schema version as a long value
+     * @return The schema version as a {@code Long} value.
      */
-    public long getSchemaVersion() {
+    public Long getSchemaVersion() {
         return this.response.getSchemaVersion();
     }
 
     /**
-     * Returns a map of query tags for the failed query.
+     * Returns a map of query tags for the failed query, containing key-value pairs of tags.
      *
-     * @return a Map containing query tags as key-value pairs
+     * @return A {@code Map<String, String>} with query tags.
      */
     public Map<String, String> getQueryTags() {
         return this.response.getQueryTags();

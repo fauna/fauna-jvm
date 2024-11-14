@@ -12,6 +12,7 @@ public final class BaseFaunaClient extends FaunaClient {
     private final HttpClient httpClient;
     private final RequestBuilder baseRequestBuilder;
     private final RequestBuilder streamRequestBuilder;
+    private final RequestBuilder feedRequestBuilder;
     private final RetryStrategy retryStrategy;
 
     /**
@@ -23,17 +24,24 @@ public final class BaseFaunaClient extends FaunaClient {
      * @param httpClient    A Java HTTP client instance.
      * @param retryStrategy An implementation of RetryStrategy.
      */
-    public BaseFaunaClient(FaunaConfig faunaConfig,
-                           HttpClient httpClient, RetryStrategy retryStrategy) {
-        super(faunaConfig.getSecret());
+    public BaseFaunaClient(final FaunaConfig faunaConfig,
+                           final HttpClient httpClient, final RetryStrategy retryStrategy) {
+        super(faunaConfig.getSecret(), faunaConfig.getLogHandler(),
+                faunaConfig.getStatsCollector());
         this.httpClient = httpClient;
         if (Objects.isNull(faunaConfig)) {
             throw new IllegalArgumentException("FaunaConfig cannot be null.");
         } else if (Objects.isNull(httpClient)) {
             throw new IllegalArgumentException("HttpClient cannot be null.");
         } else {
-            this.baseRequestBuilder = RequestBuilder.queryRequestBuilder(faunaConfig);
-            this.streamRequestBuilder = RequestBuilder.streamRequestBuilder(faunaConfig);
+            this.baseRequestBuilder =
+                    RequestBuilder.queryRequestBuilder(faunaConfig,
+                            getLogger());
+            this.streamRequestBuilder =
+                    RequestBuilder.streamRequestBuilder(faunaConfig,
+                            getLogger());
+            this.feedRequestBuilder =
+                    RequestBuilder.feedRequestBuilder(faunaConfig, getLogger());
         }
         this.retryStrategy = retryStrategy;
     }
@@ -44,8 +52,9 @@ public final class BaseFaunaClient extends FaunaClient {
      *
      * @param faunaConfig The Fauna configuration settings.
      */
-    public BaseFaunaClient(FaunaConfig faunaConfig) {
-        this(faunaConfig, HttpClient.newBuilder().build(), DEFAULT_RETRY_STRATEGY);
+    public BaseFaunaClient(final FaunaConfig faunaConfig) {
+        this(faunaConfig, HttpClient.newBuilder().build(),
+                DEFAULT_RETRY_STRATEGY);
     }
 
 
@@ -55,6 +64,10 @@ public final class BaseFaunaClient extends FaunaClient {
 
     RequestBuilder getStreamRequestBuilder() {
         return this.streamRequestBuilder;
+    }
+
+    RequestBuilder getFeedRequestBuilder() {
+        return this.feedRequestBuilder;
     }
 
     HttpClient getHttpClient() {

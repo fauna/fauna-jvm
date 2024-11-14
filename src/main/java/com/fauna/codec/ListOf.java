@@ -3,14 +3,20 @@ package com.fauna.codec;
 import java.lang.reflect.Type;
 import java.util.List;
 
-
 /**
- * ListOf stores the generic parameter class to evade type erasure during deserialization.
- * @param <E> The element class of the list.
+ * Represents a {@link List} with a specified element type, allowing for retention of the
+ * generic type {@code E} during deserialization by circumventing type erasure.
+ *
+ * @param <E> The type of elements in the list.
  */
-public class ListOf<E> extends ParameterizedOf<List<E>> {
+public final class ListOf<E> extends ParameterizedOf<List<E>> {
 
-    public ListOf(Class<E> elementClass) {
+    /**
+     * Constructs a {@code ListOf} instance for the specified element type.
+     *
+     * @param elementClass The class of the elements contained in the list.
+     */
+    public ListOf(final Class<E> elementClass) {
         super(List.class, new Type[]{elementClass});
     }
 }

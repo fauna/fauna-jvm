@@ -1,5 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
+    id 'checkstyle'
     id 'java'
+
     // this is a hopefully temporary plugin until maven central can add official gradle support
     id 'com.vanniktech.maven.publish' version '0.29.0'
 }
@@ -16,7 +20,15 @@ java {
     withSourcesJar()
 }
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags "perfTests"
+    }
+}
+
+tasks.register("perfTests", Test) {
+    useJUnitPlatform {
+        includeTags "perfTests"
+    }
 }
 
 repositories {
@@ -33,12 +45,13 @@ dependencies {
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
     testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
+    testImplementation 'org.apache.commons:commons-math3:3.6.1'
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
 
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
     coordinates(project.group, project.name, project.version)
@@ -79,18 +92,40 @@ mavenPublishing {
 
 // tasks
 
-task printVersion {
+tasks.register('printVersion') {
     doLast {
         println project.version
     }
 }
 
-task writeProps(type: WriteProperties) {
+tasks.register('writeProps', WriteProperties) {
     destinationFile = file("src/main/resources/version.properties")
     encoding = 'UTF-8'
     property('version', project.version)
     property('name', project.name)
     property('group', project.group)
 }
+
+tasks.register('packageJar', Zip) {
+    into('lib') {
+        from(tasks.jar)
+        from(configurations.runtimeClasspath)
+    }
+    archiveFileName = 'fauna-jvm-package.zip'
+}
+
+checkstyle {
+    toolVersion = '10.19.0'  // Latest Checkstyle version at the time of writing
+    ignoreFailures = false
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+}
+
+packageJar.dependsOn(compileJava)
 processResources.dependsOn(writeProps)
 sourcesJar.dependsOn(writeProps)

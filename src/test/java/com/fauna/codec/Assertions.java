@@ -15,6 +15,7 @@ public class Assertions {
      * assertStringEquivalence("abc", "cba") -> good!
      * assertStringEquivalence("abc", "abd") -> fail!
      * assertStringEquivalence("abc", "ab")  -> fail!
+     *
      * @param expected
      * @param actual
      */
@@ -25,9 +26,10 @@ public class Assertions {
         for (Character c : expected.toCharArray()) {
             expectedChars.put(c, expectedChars.getOrDefault(c, 0) + 1);
         }
-        for (Character c: actual.toCharArray()) {
+        for (Character c : actual.toCharArray()) {
             actualChars.put(c, actualChars.getOrDefault(c, 0) + 1);
         }
-        expectedChars.forEach((c, i) -> assertEquals(i, actualChars.getOrDefault(c, -1)));
+        expectedChars.forEach(
+                (c, i) -> assertEquals(i, actualChars.getOrDefault(c, -1)));
     }
 }

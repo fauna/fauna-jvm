@@ -21,6 +21,8 @@ public class NonNullDocumentTest extends TypeTestBase {
         var nonNull = new NonNullDocument<>(doc);
 
         var result = mapper.writeValueAsString(nonNull);
-        assertEquals("{\"value\":{\"data\":{\"some_key\":\"some_val\"},\"ts\":1706016790.300000000,\"collection\":{\"name\":\"MyColl\"},\"id\":\"123\"}}", result);
+        assertEquals(
+                "{\"value\":{\"data\":{\"some_key\":\"some_val\"},\"ts\":1706016790.300000000,\"collection\":{\"name\":\"MyColl\"},\"id\":\"123\"}}",
+                result);
     }
 }

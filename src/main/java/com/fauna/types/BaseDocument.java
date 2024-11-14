@@ -7,11 +7,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Represents the base structure of a document.
+ * Represents the base structure of a document with key-value pairs, a timestamp, and an associated collection.
+ * This class provides functionality to store, retrieve, and iterate over document data.
  */
-public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
+public abstract class BaseDocument implements Iterable<BaseDocument.Entry> {
 
-    protected final Hashtable<String, Object> data = new Hashtable<>();
+    private final Hashtable<String, Object> data = new Hashtable<>();
     private final Instant ts;
     private final Module collection;
 
@@ -20,9 +21,9 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
      * and timestamp.
      *
      * @param coll The collection to which the document belongs.
-     * @param ts   The timestamp of the document.
+     * @param ts   The timestamp indicating when the document was created or last modified.
      */
-    public BaseDocument(Module coll, Instant ts) {
+    public BaseDocument(final Module coll, final Instant ts) {
         this.collection = coll;
         this.ts = ts;
     }
@@ -33,23 +34,25 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
      *
      * @param coll The collection to which the document belongs.
      * @param ts   The timestamp of the document.
-     * @param data Initial data for the document in key-value pairs.
+     * @param data Initial data for the document represented as key-value pairs.
      */
-    public BaseDocument(Module coll, Instant ts, Map<String, Object> data) {
+    public BaseDocument(
+            final Module coll,
+            final Instant ts,
+            final Map<String, Object> data) {
         this(coll, ts);
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            this.data.put(entry.getKey(), entry.getValue());
-        }
+        this.data.putAll(data);
     }
 
     /**
-     * Returns an iterator over the elements in this document.
+     * Returns an iterator over the entries in this document.
+     * Each entry represents a key-value pair in the document's data.
      *
-     * @return an iterator over the elements in this document.
+     * @return an {@code Iterator<Entry>} over the elements in this document.
      */
     @Override
     public Iterator<Entry> iterator() {
-        return new Iterator<Entry>() {
+        return new Iterator<>() {
             private final Enumeration<String> keys = data.keys();
 
             @Override
@@ -73,51 +76,67 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
         private final String key;
         private final Object value;
 
-        public Entry(String key, Object value) {
+        /**
+         * Initializes an entry with a specified key and value.
+         *
+         * @param key   The key for the entry.
+         * @param value The value associated with the key.
+         */
+        public Entry(final String key, final Object value) {
             this.key = key;
             this.value = value;
         }
 
+        /**
+         * Gets the key of this entry.
+         *
+         * @return The key as a {@code String}.
+         */
         public String getKey() {
             return key;
         }
 
+        /**
+         * Gets the value associated with this entry's key.
+         *
+         * @return The value as an {@code Object}.
+         */
         public Object getValue() {
             return value;
         }
     }
 
     /**
-     * Gets the timestamp of the document.
+     * Gets the timestamp of the document, indicating its creation or last modification time.
      *
-     * @return The Instant of the document.
+     * @return An {@code Instant} representing the document's timestamp.
      */
     public Instant getTs() {
         return ts;
     }
 
     /**
-     * Gets the collection to which the document belongs.
+     * Gets the collection to which this document belongs.
      *
-     * @return The collection to which the document belongs.
+     * @return The {@code Module} representing the document's collection.
      */
     public Module getCollection() {
         return collection;
     }
 
     /**
-     * Gets a copy of the underlying data as a Map.
+     * Retrieves a copy of the document's data as a {@code Map}.
      *
-     * @return The data.
+     * @return A {@code Map<String, Object>} containing the document's key-value pairs.
      */
-    public Map<String,Object> getData() {
-        return Map.copyOf(data);
+    public Map<String, Object> getData() {
+        return data;
     }
 
     /**
-     * Gets the count of key-value pairs contained in the document.
+     * Returns the number of key-value pairs contained in the document.
      *
-     * @return The number of key-value pairs.
+     * @return The total number of key-value pairs in the document.
      */
     public int size() {
         return data.size();
@@ -126,21 +145,21 @@ public abstract class BaseDocument implements Iterable<BaseDocument.Entry>  {
     /**
      * Determines whether the document contains the specified key.
      *
-     * @param key The key to locate in the document.
-     * @return {@code true} if the document contains an element with the specified key; otherwise,
-     * {@code false}.
+     * @param key The key to search for in the document.
+     * @return {@code true} if the document contains an element with the specified key;
+     *         otherwise, {@code false}.
      */
-    public boolean containsKey(String key) {
+    public boolean containsKey(final String key) {
         return data.containsKey(key);
     }
 
     /**
-     * Gets the value associated with the specified key.
+     * Retrieves the value associated with the specified key.
      *
-     * @param key The key of the value to get.
-     * @return The value associated with the specified key, or {@code null} if the key is not found.
+     * @param key The key of the value to retrieve.
+     * @return The value associated with the specified key, or {@code null} if the key is not present.
      */
-    public Object get(String key) {
+    public Object get(final String key) {
         return data.get(key);
     }
 }

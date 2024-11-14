@@ -11,6 +11,14 @@ resources:
     source:
       url: ((slack-webhook))
 
+  - name: repo.git
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:fauna/fauna-jvm.git
+      branch: main
+      private_key: ((github-ssh-key))
+
   - name: fauna-jvm-repository
     type: git
     icon: github
@@ -26,26 +34,85 @@ resources:
       uri: git@github.com:fauna/fauna-jvm.git
       branch: gh-pages
       private_key: ((github-ssh-key))
+  - name: testtools-repo
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:fauna/testtools.git
+      branch: main
+      private_key: ((github-ssh-key))
+  - name: testtools-image
+    type: registry-image
+    icon: docker
+    source:
+      repository: devex-dx-drivers-platform-tests
+      aws_access_key_id: ((prod-images-aws-access-key-id))
+      aws_secret_access_key: ((prod-images-aws-secret-key))
+      aws_region: us-east-2
+
+  - name: perf-notify
+    type: slack-notification
+    source:
+      # webhook for #notify-driver-perf channel
+      url: ((driver-perf-slack-url))
+
+  - name: dev-tests-trigger
+    type: time
+    source:
+      interval: 6h
 
 jobs:
   - name: set-self
     serial: true
     plan:
-      - get: fauna-jvm-repository
-        trigger: true
-      - get: fauna-jvm-repository-docs
+      - get: repo.git
         trigger: true
       - set_pipeline: self
-        file: fauna-jvm-repository/concourse/pipeline.yml
+        file: repo.git/concourse/pipeline.yml
+
+  - name: tests-dev
+    serial: true
+    public: false
+    plan:
+      - get: dev-tests-trigger
+        trigger: true
+
+      - get: repo.git
+      - get: testtools-repo
+      - get: testtools-image
+
+      - in_parallel:
+          fail_fast: false
+          steps:
+            - task: run-perf
+              file: repo.git/concourse/tasks/perf.yml
+              params:
+                FAUNA_ENDPOINT: https://db.fauna-dev.com
+                FAUNA_SECRET: ((dev-driver-perf-test-key))
+                FAUNA_ENVIRONMENT: dev
+                CONCOURSE_URL: http://concourse.faunadb.net/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+              on_success:
+                put: perf-notify
+                params:
+                  text_file: slack-message/perf-stats
+            - task: aws-lambda-tests
+              image: testtools-image
+              file: testtools-repo/fauna-driver-platform-tests/concourse/tasks/java-aws-lambda-tests.yml
+              input_mapping:
+                driver-repo: repo.git
+              params:
+                FAUNA_JVM: repo.git
+                FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
+                AWS_LAMBDA_ROLE_ARN: ((drivers-platform-tests/aws-lambda-role-arn))
+                AWS_ACCESS_KEY_ID: ((drivers-platform-tests/aws-access-key-id))
+                AWS_SECRET_ACCESS_KEY: ((drivers-platform-tests/aws-secret-key))
   - name: release
     serial: true
     public: false
     plan:
       - get: fauna-jvm-repository
         trigger: true
-        passed: [set-self]
       - get: fauna-jvm-repository-docs
-        passed: [set-self]
 
       # - in_parallel:
       #   - task: integration-tests-oracle-jdk11

@@ -1,10 +1,13 @@
 package com.fauna.codec.codecs;
 
 import com.fauna.codec.FaunaTokenType;
-import com.fauna.exception.NullDocumentException;
 import com.fauna.codec.UTF8FaunaParser;
-import com.fauna.types.*;
+import com.fauna.exception.NullDocumentException;
+import com.fauna.types.Document;
+import com.fauna.types.DocumentRef;
 import com.fauna.types.Module;
+import com.fauna.types.NamedDocument;
+import com.fauna.types.NamedDocumentRef;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -12,6 +15,9 @@ import java.util.Map;
 
 class InternalDocument {
 
+    /**
+     * Builder class for constructing internal document representations.
+     */
     static class Builder {
 
         private String id = null;
@@ -21,13 +27,26 @@ class InternalDocument {
         private String cause = null;
         private Instant ts = null;
         private final Map<String, Object> data = new HashMap<>();
-        private boolean throwIfNotExists = true;
 
+        /**
+         * Adds a data field to the document.
+         *
+         * @param key The field name.
+         * @param value The field value.
+         * @return This builder.
+         */
         InternalDocument.Builder withDataField(String key, Object value) {
             data.put(key, value);
             return this;
         }
 
+        /**
+         * Adds document-specific fields such as id, name, collection, and timestamp.
+         *
+         * @param fieldName The field name.
+         * @param parser The parser used to read values.
+         * @return This builder.
+         */
         InternalDocument.Builder withDocField(String fieldName, UTF8FaunaParser parser) {
             switch (fieldName) {
                 case "id":
@@ -53,6 +72,13 @@ class InternalDocument {
             return this;
         }
 
+        /**
+         * Adds reference-specific fields like id, name, collection, exists, and cause.
+         *
+         * @param fieldName The field name.
+         * @param parser The parser used to read values.
+         * @return This builder.
+         */
         InternalDocument.Builder withRefField(String fieldName, UTF8FaunaParser parser) {
             switch (fieldName) {
                 case "id":
@@ -84,8 +110,14 @@ class InternalDocument {
             return this;
         }
 
+        /**
+         * Builds and returns the constructed document or reference object.
+         *
+         * @return The constructed document or reference object.
+         * @throws NullDocumentException If the document is marked as "exists: false" but lacks an id or name.
+         */
         Object build() {
-            if (exists != null && !exists && throwIfNotExists) {
+            if (exists != null && !exists) {
                 throw new NullDocumentException(id != null ? id : name, coll, cause);
             }
 
@@ -108,7 +140,6 @@ class InternalDocument {
                 return new NamedDocumentRef(name, coll);
             }
 
-            // We got something we don't know how to handle, so just return it.
             if (id != null) {
                 data.put("id", id);
             }

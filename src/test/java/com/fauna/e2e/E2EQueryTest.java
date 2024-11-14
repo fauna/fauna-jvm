@@ -2,8 +2,11 @@ package com.fauna.e2e;
 
 import com.fauna.client.Fauna;
 import com.fauna.client.FaunaClient;
+import com.fauna.client.FaunaConfig;
 import com.fauna.e2e.beans.Author;
 import com.fauna.exception.AbortException;
+import com.fauna.exception.QueryRuntimeException;
+import com.fauna.exception.QueryTimeoutException;
 import com.fauna.query.QueryOptions;
 import com.fauna.query.builder.Query;
 import com.fauna.response.QuerySuccess;
@@ -14,18 +17,20 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static com.fauna.codec.Generic.nullableDocumentOf;
-import static com.fauna.query.builder.Query.fql;
 import static com.fauna.codec.Generic.listOf;
 import static com.fauna.codec.Generic.mapOf;
-import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.codec.Generic.nullableDocumentOf;
 import static com.fauna.codec.Generic.optionalOf;
+import static com.fauna.codec.Generic.pageOf;
+import static com.fauna.query.builder.Query.fql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,6 +54,36 @@ public class E2EQueryTest {
     }
 
     @Test
+    public void clientTransactionTsOnSuccess() {
+        FaunaClient client = Fauna.local();
+        assertTrue(client.getLastTransactionTs().isEmpty());
+        client.query(fql("42"));
+        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() *
+                1_000_000;
+        assertTrue(client.getLastTransactionTs().orElseThrow() > y2k);
+    }
+
+    @Test
+    public void clientTransactionTsOnFailure() {
+        FaunaClient client = Fauna.local();
+        assertTrue(client.getLastTransactionTs().isEmpty());
+        assertThrows(QueryRuntimeException.class,
+                () -> client.query(fql("NonExistantCollection.all()")));
+        long y2k = Instant.parse("1999-12-31T23:59:59.99Z").getEpochSecond() *
+                1_000_000;
+        assertTrue(client.getLastTransactionTs().orElseThrow() > y2k);
+    }
+
+    @Test
+    public void queryTimeout() {
+        QueryOptions opts =
+                QueryOptions.builder().timeout(Duration.ofMillis(1)).build();
+        QueryTimeoutException exc = assertThrows(QueryTimeoutException.class,
+                () -> c.query(fql("Author.all()"), listOf(Author.class), opts));
+        assertTrue(exc.getMessage().contains("Client set aggressive deadline"));
+    }
+
+    @Test
     public void query_syncWithClass() {
         var q = fql("42");
         var res = c.query(q, int.class);
@@ -68,7 +103,7 @@ public class E2EQueryTest {
     @Test
     public void query_syncWithClassAndOptions() {
         var q = fql("42");
-        var res = c.query(q, int.class, QueryOptions.builder().build());
+        var res = c.query(q, int.class, QueryOptions.getDefault());
         var exp = 42;
         assertEquals(exp, res.getData());
     }
@@ -76,7 +111,7 @@ public class E2EQueryTest {
     @Test
     public void query_syncWithParameterizedAndOptions() {
         var q = fql("[42]");
-        var res = c.query(q, listOf(int.class), QueryOptions.builder().build());
+        var res = c.query(q, listOf(int.class), QueryOptions.getDefault());
         var exp = List.of(42);
         assertEquals(exp, res.getData());
     }
@@ -90,7 +125,8 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithClass() throws ExecutionException, InterruptedException {
+    public void query_asyncWithClass()
+            throws ExecutionException, InterruptedException {
         var q = fql("42");
         var res = c.asyncQuery(q, int.class).get();
         var exp = 42;
@@ -98,7 +134,8 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithParameterized() throws ExecutionException, InterruptedException {
+    public void query_asyncWithParameterized()
+            throws ExecutionException, InterruptedException {
         var q = fql("[42]");
         var res = c.asyncQuery(q, listOf(int.class)).get();
         var exp = List.of(42);
@@ -106,17 +143,20 @@ public class E2EQueryTest {
     }
 
     @Test
-    public void query_asyncWithClassAndOptions() throws ExecutionException, InterruptedException {
+    public void query_asyncWithClassAndOptions()
+            throws ExecutionException, InterruptedException {
         var q = fql("42");
-        var res = c.asyncQuery(q, int.class, QueryOptions.builder().build()).get();
+        var res = c.asyncQuery(q, int.class, QueryOptions.getDefault()).get();
         var exp = 42;
         assertEquals(exp, res.getData());
     }
 
     @Test
-    public void query_asyncWithParameterizedAndOptions() throws ExecutionException, InterruptedException {
+    public void query_asyncWithParameterizedAndOptions()
+            throws ExecutionException, InterruptedException {
         var q = fql("[42]");
-        var res = c.asyncQuery(q, listOf(int.class), QueryOptions.builder().build()).get();
+        var res =
+                c.asyncQuery(q, listOf(int.class), QueryOptions.getDefault()).get();
         var exp = List.of(42);
         assertEquals(exp, res.getData());
     }
@@ -135,11 +175,13 @@ public class E2EQueryTest {
 
     @Test
     public void query_arrayOfPersonOutgoing() {
-        var q = fql("${var}", Map.of("var", List.of(new Author("alice","smith","w", 42))));
+        var q = fql("${var}",
+                Map.of("var", List.of(new Author("alice", "smith", "w", 42))));
 
         var res = c.query(q);
 
-        List<Map<String, Object>> elem = (List<Map<String, Object>>) res.getData();
+        List<Map<String, Object>> elem =
+                (List<Map<String, Object>>) res.getData();
         assertEquals("alice", elem.get(0).get("firstName"));
     }
 
@@ -172,7 +214,7 @@ public class E2EQueryTest {
     @Test
     public void query_optionalNull() {
         var empty = Optional.empty();
-        var q = fql("${empty}", new HashMap<>(){{
+        var q = fql("${empty}", new HashMap<>() {{
             put("empty", empty);
         }});
 
@@ -185,7 +227,7 @@ public class E2EQueryTest {
     @Test
     public void query_optionalNotNull() {
         var val = Optional.of(42);
-        var q = fql("${val}", new HashMap<>(){{
+        var q = fql("${val}", new HashMap<>() {{
             put("val", val);
         }});
 
@@ -203,7 +245,7 @@ public class E2EQueryTest {
         var qs = c.query(q, nullableDocumentOf(Author.class));
         NullableDocument<Author> actual = qs.getData();
         assertInstanceOf(NullDocument.class, actual);
-        assertEquals("not found", ((NullDocument<Author>)actual).getCause());
+        assertEquals("not found", ((NullDocument<Author>) actual).getCause());
     }
 
     @Test
@@ -212,14 +254,16 @@ public class E2EQueryTest {
         var qs = c.query(q, nullableDocumentOf(Author.class));
         NullableDocument<Author> actual = qs.getData();
         assertInstanceOf(NonNullDocument.class, actual);
-        assertEquals("Alice", ((NonNullDocument<Author>)actual).getValue().getFirstName());
+        assertEquals("Alice",
+                ((NonNullDocument<Author>) actual).getValue().getFirstName());
     }
 
     @Test
-    public void query_abortEmpty() throws IOException {
+    public void query_abortNull() throws IOException {
         var q = fql("abort(null)");
         var e = assertThrows(AbortException.class, () -> c.query(q));
         assertNull(e.getAbort());
+        assertNull(e.getAbort(Author.class));
     }
 
     @Test
@@ -234,5 +278,47 @@ public class E2EQueryTest {
         var q = fql("abort({firstName:\"alice\"})");
         var e = assertThrows(AbortException.class, () -> c.query(q));
         assertEquals("alice", e.getAbort(Author.class).getFirstName());
+    }
+
+    @Test
+    public void query_withTags() {
+        QuerySuccess<NullableDocument<Author>> success = c.query(
+                fql("Author.byId('9090090')"),
+                nullableDocumentOf(Author.class), QueryOptions.builder()
+                        .queryTag("first", "1")
+                        .queryTag("second", "2").build());
+        assertEquals("1", success.getQueryTags().get("first"));
+        assertEquals("2", success.getQueryTags().get("second"));
+    }
+
+    @Test
+    public void query_trackStatsOnSuccess() {
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .build();
+        var client = Fauna.client(cfg);
+
+        var q = fql("Author.all().toArray()");
+
+        client.query(q, listOf(Author.class));
+        var stats = client.getStatsCollector().read();
+        assertEquals(10, stats.getReadOps());
+        assertEquals(1, stats.getComputeOps());
+    }
+
+    @Test
+    public void query_trackStatsOnFailure() throws IOException {
+        var cfg = FaunaConfig.builder()
+                .secret("secret")
+                .endpoint("http://localhost:8443")
+                .build();
+        var client = Fauna.client(cfg);
+
+        var q = fql("Author.all().toArray()\nabort(null)");
+        assertThrows(AbortException.class, () -> client.query(q));
+        var stats = client.getStatsCollector().read();
+        assertEquals(8, stats.getReadOps());
+        assertEquals(1, stats.getComputeOps());
     }
 }

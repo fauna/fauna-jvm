@@ -1,15 +1,15 @@
 package com.fauna.query.template;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FaunaTemplateTest {
 
@@ -30,7 +30,8 @@ class FaunaTemplateTest {
     void testTemplate_WithDollarSignDoesNotInfiniteLoop(String literal) {
         FaunaTemplate template = new FaunaTemplate(literal);
         FaunaTemplate.TemplatePart[] parts = StreamSupport.stream(
-                template.spliterator(), true).toArray(FaunaTemplate.TemplatePart[]::new);
+                        template.spliterator(), true)
+                .toArray(FaunaTemplate.TemplatePart[]::new);
         // The dollar sign gets swallowed, even if it's escaped?
         assertEquals(2, parts.length);
         for (FaunaTemplate.TemplatePart part : parts) {
@@ -40,7 +41,8 @@ class FaunaTemplateTest {
 
     @Test
     void testTemplate_WithDuplicateVariable() {
-        FaunaTemplate template = new FaunaTemplate("let x = ${my_var}\nlet y = ${my_var}\nx * y");
+        FaunaTemplate template = new FaunaTemplate(
+                "let x = ${my_var}\nlet y = ${my_var}\nx * y");
         List<FaunaTemplate.TemplatePart> expanded = new ArrayList<>();
         template.forEach(expanded::add);
         assertEquals(5, expanded.size());

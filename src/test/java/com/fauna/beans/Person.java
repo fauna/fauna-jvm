@@ -11,7 +11,8 @@ public class Person {
 
     private int age;
 
-    public Person(String firstName, String lastName, char middleInitial, int age) {
+    public Person(String firstName, String lastName, char middleInitial,
+                  int age) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.middleInitial = middleInitial;

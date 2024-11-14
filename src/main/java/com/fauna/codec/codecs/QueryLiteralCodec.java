@@ -6,15 +6,27 @@ import com.fauna.codec.UTF8FaunaParser;
 import com.fauna.exception.CodecException;
 import com.fauna.query.builder.QueryLiteral;
 
-public class QueryLiteralCodec extends BaseCodec<QueryLiteral> {
+/**
+ * Codec for encoding and decoding {@link QueryLiteral} objects.
+ */
+public final class QueryLiteralCodec extends BaseCodec<QueryLiteral> {
 
-    @Override
-    public QueryLiteral decode(UTF8FaunaParser parser) throws CodecException {
-        throw new CodecException("Decoding into a QueryFragment is not supported");
+    /**
+     * Creates a new instance of the {@link QueryLiteralCodec}.
+     */
+    public QueryLiteralCodec() {
+        // No additional setup required for the QueryLiteralCodec.
     }
 
     @Override
-    public void encode(UTF8FaunaGenerator gen, QueryLiteral obj) throws CodecException {
+    public QueryLiteral decode(final UTF8FaunaParser parser) throws CodecException {
+        throw new CodecException(
+                "Decoding into a QueryFragment is not supported");
+    }
+
+    @Override
+    public void encode(final UTF8FaunaGenerator gen, final QueryLiteral obj)
+            throws CodecException {
         if (obj == null) {
             gen.writeNullValue();
         } else {
