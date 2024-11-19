@@ -30,7 +30,9 @@ public class FeedOptions {
      *                 {@code startTs}.
      * @param startTs  A {@code Long} representing the start timestamp for the feed. Represents a time in microseconds since the Unix epoch. Cannot be provided with a
      *                 {@code cursor}.
-     * @param pageSize An {@code Integer} specifying the number of items per feed page.
+     * @param pageSize An {@code Integer} specifying the maximum number of
+*                      events returned per page. Must be in the range 1 to 16000
+*                      (inclusive). Defaults to 16.
      * @param timeout  A {@code Duration} specifying the timeout for the feed request.
      * @throws IllegalArgumentException if both {@code cursor} and {@code startTs} are set.
      */
