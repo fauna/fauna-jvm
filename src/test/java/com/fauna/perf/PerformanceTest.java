@@ -32,8 +32,9 @@ public class PerformanceTest {
     }
 
     @BeforeAll
-    public static void setup() {
+    public static void setup() throws IllegalArgumentException, InterruptedException, ExecutionException {
         client = Fauna.client();
+        client.asyncQuery(fql("null")).get();
     }
 
     @AfterAll
