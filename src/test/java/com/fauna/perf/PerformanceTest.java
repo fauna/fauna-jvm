@@ -34,6 +34,8 @@ public class PerformanceTest {
     @BeforeAll
     public static void setup() throws IllegalArgumentException, InterruptedException, ExecutionException {
         client = Fauna.client();
+
+        // Throw away results of initial query used just for establishing connection
         client.asyncQuery(fql("null")).get();
     }
 
