@@ -12,6 +12,7 @@ import com.fauna.event.FeedPage;
 import com.fauna.exception.InvalidRequestException;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QuerySuccess;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -104,7 +105,7 @@ public class E2EFeedsTest {
         assertEquals(50, productUpdates.size());
         assertEquals(25, pageCount);
 
-        client.query(fql("Product.create({name:\"newProduct\",quantity:1})"),
+        client.query(fql("Product.create({name:\"newProduct\",quantity:123})"),
             Product.class);
 
         FeedOptions newOptions =
@@ -114,7 +115,11 @@ public class E2EFeedsTest {
         FeedPage<Product> newPageFuture =
             client.poll(source, newOptions, Product.class).join();
 
-        assertEquals(1, newPageFuture.getEvents().size());
+        List<FaunaEvent<Product>> newEvents = newPageFuture.getEvents();
+
+        assertEquals(1, newEvents.size());
+        assertEquals("newProduct", newEvents.get(0).getData().get().getName());
+        assertEquals(123, newEvents.get(0).getData().get().getQuantity());
     }
 
     @Test
