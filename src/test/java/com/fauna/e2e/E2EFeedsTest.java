@@ -85,8 +85,10 @@ public class E2EFeedsTest {
             // Handle page
             FeedPage<Product> latestPage = pageFuture.join();
             lastPageCursor = latestPage.getCursor();
-            System.out.println(lastPageCursor);
-            productUpdates.addAll(latestPage.getEvents());
+
+            List<FaunaEvent<Product>> pageOfEvents = latestPage.getEvents();
+
+            productUpdates.addAll(pageOfEvents);
             pageCount++;
 
             // Get next page (if it's not null)
@@ -101,6 +103,18 @@ public class E2EFeedsTest {
         }
         assertEquals(50, productUpdates.size());
         assertEquals(25, pageCount);
+
+        client.query(fql("Product.create({name:\"newProduct\",quantity:1})"),
+            Product.class);
+
+        FeedOptions newOptions =
+            FeedOptions.builder().cursor(lastPageCursor).pageSize(2)
+                .build();
+
+        FeedPage<Product> newPageFuture =
+            client.poll(source, newOptions, Product.class).join();
+
+        assertEquals(1, newPageFuture.getEvents().size());
     }
 
     @Test
