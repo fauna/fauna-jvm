@@ -14,6 +14,7 @@ import com.fauna.response.QueryFailure;
 import com.fauna.response.QuerySuccess;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -47,6 +48,10 @@ public class E2EFeedsTest {
         FaunaConfig config =
                 FaunaConfig.builder().endpoint(LOCAL).secret("secret").build();
         client = Fauna.client(config);
+    }
+
+    @BeforeEach
+    public void setupEach() {
         productCollectionTs = Fixtures.ProductCollection(client);
     }
 
