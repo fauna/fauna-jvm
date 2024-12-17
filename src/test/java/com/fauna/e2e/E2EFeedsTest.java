@@ -105,8 +105,7 @@ public class E2EFeedsTest {
         assertEquals(50, productUpdates.size());
         assertEquals(25, pageCount);
 
-        client.query(fql("Product.create({name:\"newProduct\",quantity:123})"),
-            Product.class);
+        client.query(fql("Product.create({name:\"newProduct\",quantity:123})"));
 
         FeedOptions newOptions =
             FeedOptions.builder().cursor(lastPageCursor).pageSize(2)
