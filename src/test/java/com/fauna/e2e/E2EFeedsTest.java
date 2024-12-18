@@ -12,7 +12,9 @@ import com.fauna.event.FeedPage;
 import com.fauna.exception.InvalidRequestException;
 import com.fauna.response.QueryFailure;
 import com.fauna.response.QuerySuccess;
+
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -46,6 +48,10 @@ public class E2EFeedsTest {
         FaunaConfig config =
                 FaunaConfig.builder().endpoint(LOCAL).secret("secret").build();
         client = Fauna.client(config);
+    }
+
+    @BeforeEach
+    public void setupEach() {
         productCollectionTs = Fixtures.ProductCollection(client);
     }
 
@@ -85,7 +91,10 @@ public class E2EFeedsTest {
             // Handle page
             FeedPage<Product> latestPage = pageFuture.join();
             lastPageCursor = latestPage.getCursor();
-            productUpdates.addAll(latestPage.getEvents());
+
+            List<FaunaEvent<Product>> pageOfEvents = latestPage.getEvents();
+
+            productUpdates.addAll(pageOfEvents);
             pageCount++;
 
             // Get next page (if it's not null)
@@ -100,11 +109,21 @@ public class E2EFeedsTest {
         }
         assertEquals(50, productUpdates.size());
         assertEquals(25, pageCount);
-        // Because there is no filtering, these cursors are the same.
-        // If we filtered events, then the page cursor could be different from the cursor of the last element.
-        assertEquals(lastPageCursor,
-                productUpdates.get(productUpdates.size() - 1).getCursor());
 
+        client.query(fql("Product.create({name:\"newProduct\",quantity:123})"));
+
+        FeedOptions newOptions =
+            FeedOptions.builder().cursor(lastPageCursor).pageSize(2)
+                .build();
+
+        FeedPage<Product> newPageFuture =
+            client.poll(source, newOptions, Product.class).join();
+
+        List<FaunaEvent<Product>> newEvents = newPageFuture.getEvents();
+
+        assertEquals(1, newEvents.size());
+        assertEquals("newProduct", newEvents.get(0).getData().get().getName());
+        assertEquals(123, newEvents.get(0).getData().get().getQuantity());
     }
 
     @Test
