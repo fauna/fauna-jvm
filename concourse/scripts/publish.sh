@@ -36,4 +36,4 @@ git config --global user.email "production@fauna.com"
 git config --global user.name "Fauna Engineering"
 git tag "release-$PACKAGE_VERSION"
 
-echo "fauna-jvm@$PACKAGE_VERSION has been published. (Can be delayed showing up in maven central.)" > ../slack-message/publish
+echo "fauna-jvm@$PACKAGE_VERSION has been published. (Remember to click publish in maven central.)" > ../slack-message/publish
