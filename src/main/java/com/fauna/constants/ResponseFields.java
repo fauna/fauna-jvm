@@ -135,18 +135,18 @@ public final class ResponseFields {
      */
     public static final String CURSOR_FIELD_NAME = "cursor";
     /**
-     * Field name for the event type in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> and <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a> responses.
+     * Field name for the event type in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">event feed</a> and <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">event stream</a> responses.
      */
     public static final String STREAM_TYPE_FIELD_NAME = "type";
 
     // Feed-related fields
     /**
-     * Field name for events in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> responses.
+     * Field name for events in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">event feed</a> responses.
      */
     public static final String EVENTS_FIELD_NAME = "events";
 
     /**
-     * Field name indicating whether there are more pages in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> responses.
+     * Field name indicating whether there are more pages in <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">event feed</a> responses.
      */
     public static final String FEED_HAS_NEXT_FIELD_NAME = "has_next";
 }

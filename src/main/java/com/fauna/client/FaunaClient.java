@@ -639,7 +639,7 @@ public abstract class FaunaClient {
     }
     //endregion
 
-    //region Event Feeds
+    //region Event feeds
 
     /**
      * Send a request to the Fauna feed endpoint, and return a CompletableFuture that completes with the feed page.

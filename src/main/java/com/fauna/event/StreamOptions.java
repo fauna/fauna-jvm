@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * Represents configuration options for a Fauna <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a>.
+ * Represents configuration options for a Fauna <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">event stream</a>.
  * <p>
  * The {@code StreamOptions} class allows customization of the stream request, including cursor,
  * retry strategy, start timestamp, status events, and timeout.
