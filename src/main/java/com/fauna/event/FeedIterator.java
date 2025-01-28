@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 /**
- * FeedIterator iterates over Event Feed pages from Fauna.
+ * FeedIterator iterates over event feed pages from Fauna.
  *
  * @param <E>
  */

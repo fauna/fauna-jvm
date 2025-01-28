@@ -41,7 +41,7 @@ public final class QueryStats {
      * @param storageBytesRead  Amount of data read from storage, in bytes.
      * @param storageBytesWrite Amount of data written to storage, in bytes.
      * @param processingTimeMs  Aggregate event processing time in milliseconds.
-     *                          Only applies to Event Feed and Event Stream
+     *                          Only applies to event feed and event stream
      *                          requests.
      * @param rateLimitsHit     Operation types that exceeded
      *                          <a href="https://docs.fauna.com/fauna/current/manage/plans-billing/plan-details/#throughput-limits">plan
@@ -167,7 +167,7 @@ public final class QueryStats {
 
     /**
      * Gets the event processing time in milliseconds.
-     * Applies to Event Feeds and Event Stream requests only.
+     * Applies to event feeds and event stream requests only.
      *
      * @return An int representing the processing time in milliseconds.
      */

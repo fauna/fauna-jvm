@@ -6,9 +6,9 @@ import java.util.Objects;
 
 /**
  * Represents an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-source">event source</a>. You can consume event sources
-as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feeds</a> by
+as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">event feeds</a> by
  * calling {@link com.fauna.client.FaunaClient#feed(EventSource, FeedOptions, Class) FaunaClient.feed()}
- * or as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Streams</a> by calling
+ * or as <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">event streams</a> by calling
  * {@link com.fauna.client.FaunaClient#stream(EventSource, StreamOptions, Class) FaunaClient.stream()}.
  * <p>
  * The {@code EventSource} class provides methods for constructing instances from event source tokens and responses

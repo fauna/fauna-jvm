@@ -78,7 +78,7 @@ public enum FaunaType {
 
     /**
      * Represents an event source in FQL.
-     * Event sources are used to track events as Event Feeds or Event Streams.
+     * Event sources are used to track events as event feeds or event streams.
      */
     Stream,
 

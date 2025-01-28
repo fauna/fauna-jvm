@@ -425,13 +425,13 @@ QueryOptions options = QueryOptions.builder()
 QuerySuccess result = client.query(query, String.class, options);
 ```
 
-## Event Feeds
+## Event feeds
 
-The driver supports [Event Feeds](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds).
+The driver supports [event feeds](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds).
 
-### Request an Event Feed
+### Request an event feed
 
-An Event Feed asynchronously polls an [event
+An event feed asynchronously polls an [event
 source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source)
 for paginated events.
 
@@ -598,14 +598,14 @@ public class EventFeedExample {
 ```
 
 If you pass an event source directly to `feed()` or `poll()` and changes occur
-between the creation of the event source and the Event Feed request, the feed
+between the creation of the event source and the event feed request, the feed
 replays and emits any related events.
 
 In most cases, you'll get events after a specific start time or cursor.
 
 ### Get events after a specific start time
 
-When you first poll an event source using an Event Feed, you usually include a
+When you first poll an event source using an event feed, you usually include a
 `startTs` (start timestamp) in the `FeedOptions` passed to `feed()`,
 `asyncFeed()`, or `poll()`.
 
@@ -731,12 +731,12 @@ try {
 }
 ```
 
-## Event Streaming
+## Event streams
 
-The driver supports [Event
-Streaming](https://docs.fauna.com/fauna/current/learn/cdc/#event-streaming).
+The driver supports [event
+streams](https://docs.fauna.com/fauna/current/learn/cdc/#event-streaming).
 
-An Event Stream lets you consume events from an [event
+An event stream lets you consume events from an [event
 source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source)
 as a real-time subscription.
 

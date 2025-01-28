@@ -20,7 +20,7 @@ import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STREAM_TYPE_FIELD_NAME;
 
 /**
- * Represents an event emitted in an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a> or <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Stream</a>.
+ * Represents an event emitted in an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">event feed</a> or <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">event stream</a>.
  * @param <E> The type of data contained in the event.
  */
 public final class FaunaEvent<E> {

@@ -6,7 +6,7 @@ import java.util.Optional;
 import static com.fauna.constants.Defaults.DEFAULT_TIMEOUT;
 
 /**
- * Represents the options for configuring an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">Event Feed</a> request in Fauna.
+ * Represents the options for configuring an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-streaming">event feed</a> request in Fauna.
  * <p>
  * The {@code FeedOptions} class provides configuration parameters such as cursor,
  * start timestamp, page size, and timeout for retrieving feeds from Fauna.

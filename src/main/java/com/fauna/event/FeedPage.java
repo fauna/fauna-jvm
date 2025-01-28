@@ -24,7 +24,7 @@ import static com.fauna.constants.ResponseFields.FEED_HAS_NEXT_FIELD_NAME;
 import static com.fauna.constants.ResponseFields.STATS_FIELD_NAME;
 
 /**
- * Represents a page of events from an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">Event Feed</a>.
+ * Represents a page of events from an <a href="https://docs.fauna.com/fauna/current/reference/cdc/#event-feeds">event feed</a>.
  *
  * @param <E> The type of data contained in each event.
  */

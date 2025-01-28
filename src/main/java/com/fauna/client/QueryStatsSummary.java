@@ -33,7 +33,7 @@ public final class QueryStatsSummary {
      *                                     consumed by the requests.
      * @param queryTimeMs                  Aggregate query run time for the
      *                                     requests in milliseconds.
-     * @param contentionRetries            Aggregate number of 
+     * @param contentionRetries            Aggregate number of
      *                                     <a href="https://docs.fauna.com/fauna/current/learn/transactions/contention/#retries">retries
      *                                     for contended transactions</a>.
      * @param storageBytesRead             Aggregate amount of data read from
@@ -41,8 +41,8 @@ public final class QueryStatsSummary {
      * @param storageBytesWrite            Aggregate amount of data written to
      *                                     storage, in bytes.
      * @param processingTimeMs             Aggregate event processing time in
-     *                                     milliseconds. Only applies to Event
-     *                                     Feed and Event Stream requests.
+     *                                     milliseconds. Only applies to event
+     *                                     feed and event stream requests.
      * @param queryCount                   Number of requests included in the
      *                                     summary.
      * @param rateLimitedReadQueryCount    Aggregate count of requests that
@@ -158,7 +158,7 @@ public final class QueryStatsSummary {
 
     /**
      * Gets the aggregate event processing time in milliseconds.
-     * Applies to Event Feeds and Event Stream requests only.
+     * Applies to event feeds and event stream requests only.
      *
      * @return A long representing the aggregate processing time in
      * milliseconds.
